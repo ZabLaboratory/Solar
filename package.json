@@ -1,0 +1,69 @@
+{
+  "name": "@zablab/solar",
+  "version": "0.0.0",
+  "description": "Solar — scene runtime bundle for the Zablab broadcast platform (Pulsar CEF + Prism webview + editor preview)",
+  "type": "module",
+  "private": true,
+  "main": "./dist/solar.js",
+  "module": "./dist/solar.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/solar.js"
+    },
+    "./style.css": "./dist/solar.css"
+  },
+  "files": [
+    "dist"
+  ],
+  "author": {
+    "name": "Zablab",
+    "email": "wellplayedprincipale@gmail.com"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint --max-warnings 0 .",
+    "typecheck": "tsc -b --pretty",
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "check:bundle": "node scripts/check-bundle-size.mjs"
+  },
+  "dependencies": {
+    "@preact/signals-react": "^3.2.1",
+    "framer-motion": "^12.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.1",
+    "@tailwindcss/postcss": "^4.0.7",
+    "@types/node": "^22.13.5",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.24.0",
+    "@typescript-eslint/parser": "^8.24.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "eslint": "^9.20.1",
+    "eslint-config-prettier": "^10.0.1",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.1.0",
+    "globals": "^17.6.0",
+    "happy-dom": "^20.9.0",
+    "postcss": "^8.5.2",
+    "prettier": "^3.5.2",
+    "tailwindcss": "^4.0.7",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0",
+    "vite": "^6.1.0",
+    "vite-plugin-dts": "^4.5.0",
+    "vitest": "^4.1.5",
+    "ws": "^8.18.0"
+  }
+}

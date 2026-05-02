@@ -1,0 +1,19 @@
+node_modules
+dist
+*.log
+
+# Platform noise
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode
+.idea
+
+# Build caches
+*.tsbuildinfo
+
+# Test artefacts
+coverage
+playwright-report
+test-results

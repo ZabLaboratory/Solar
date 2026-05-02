@@ -1,0 +1,14 @@
+# CODEOWNERS for Solar
+# Workspace governance rules — see ../docs/rules/git.md.
+
+# Default owner for everything in the repo
+* @ClodoCapeo
+
+# Workflows and CI - maintainer only
+/.github/workflows/ @ClodoCapeo
+
+# Governance - maintainer only
+/CLAUDE.md @ClodoCapeo
+
+# Health status - automated CI account only
+/.health.json @cyell-ci
