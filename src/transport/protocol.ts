@@ -46,6 +46,53 @@ export interface Patch {
   path: string;
   value: unknown;
   transition?: Transition;
+  /** Optional Action descriptor (chantier Solar action runner).
+   *  When present, Solar's action-runner reconstructs dense patches
+   *  locally rather than receiving them frame-by-frame. Patches
+   *  without `action` follow the existing transitions.ts pipeline
+   *  untouched — fully backward compatible. */
+  action?: ActionDescriptor;
+}
+
+// --- action descriptors (chantier Solar action runner) ---------------
+
+export type ActionKind =
+  | "count-up"
+  | "curve-path"
+  | "text-reveal"
+  | "stagger-group"
+  | "reorder"
+  | "mask-reveal";
+
+/** Easing reference resolved by `animate/easing-resolver.ts` — either
+ *  a string id (`"ease-out"`, `"cubic-in-out"`, …) or an inline spring
+ *  configuration. */
+export type EasingRef =
+  | string
+  | { stiffness: number; damping: number };
+
+/** A descriptor authored by Prism's Action compiler and consumed by
+ *  Solar's action-runner. Inputs are intentionally permissive
+ *  (`Record<string, unknown>`) — each runner validates its own params. */
+export interface ActionDescriptor {
+  kind: ActionKind;
+  params: Record<string, unknown>;
+  easing?: EasingRef;
+  duration_ms?: number;
+  stops?: Array<{ at_pct: number; value: unknown; easing?: string }>;
+  curve?: {
+    anchors: Array<{
+      t_pct: number;
+      value: number;
+      in_tangent?: { dt: number; dv: number };
+      out_tangent?: { dt: number; dv: number };
+    }>;
+    sample_hz: 30 | 60;
+  };
+  child_selector?: {
+    kind: "index" | "all" | "css-selector";
+    value: number | string;
+  };
 }
 
 // --- server → client messages -----------------------------------------

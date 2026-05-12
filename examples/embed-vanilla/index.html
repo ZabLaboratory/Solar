@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Solar — vanilla embed</title>
+    <style>
+      :root { color-scheme: dark; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        background: #0b0d12;
+        color: #e8eaf0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        gap: 1.5rem;
+      }
+      .card {
+        background: #161a23;
+        border: 1px solid #2a3142;
+        border-radius: 12px;
+        padding: 2rem 3rem;
+        text-align: center;
+      }
+      .card p { margin: 0 0 0.25rem; color: #8e95a7; font-size: 0.85rem; letter-spacing: 0.08em; text-transform: uppercase; }
+      .card h1 { margin: 0; font-size: 4rem; font-variant-numeric: tabular-nums; font-weight: 800; }
+      button {
+        background: #4c6ef5;
+        color: white;
+        border: 0;
+        border-radius: 8px;
+        padding: 0.6rem 1.2rem;
+        font-size: 0.95rem;
+        cursor: pointer;
+      }
+      button:hover { background: #5c7cfa; }
+    </style>
+  </head>
+  <body>
+    <div id="scene"></div>
+    <button id="play">Run Score Update → 1891</button>
+
+    <!-- React + react-dom peer deps. Pin to a specific minor version
+         when you deploy this template. -->
+    <script crossorigin src="https://unpkg.com/react@19/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@19/umd/react-dom.production.min.js"></script>
+    <!-- Solar UMD — exposes `window.Solar`. -->
+    <script src="../../dist/solar.umd.js"></script>
+
+    <script>
+      const sceneJson = {
+        state: { "score.value": 0 },
+        html: `
+          <div class="card">
+            <p>Score</p>
+            <h1 data-anim-path="score.value">0</h1>
+          </div>
+        `,
+        animations: {
+          Reveal: {
+            patches: [
+              { path: "score.value", value: 0 },
+            ],
+          },
+          "Score Update": {
+            patches: [
+              {
+                path: "score.value",
+                value: "${param.score_to}",
+                action: {
+                  kind: "count-up",
+                  params: { from: 0, to: "${param.score_to}" },
+                  duration_ms: 800,
+                  easing: "ease-out",
+                },
+              },
+            ],
+          },
+        },
+      };
+
+      const scene = new Solar.PrismScene({ sceneJson });
+      scene.mount(document.querySelector("#scene"));
+
+      scene.on("animation:completed", ({ asset_id }) => {
+        console.log("solar :: animation completed —", asset_id);
+      });
+
+      document.getElementById("play").addEventListener("click", () => {
+        scene.playAnimation("Score Update", { score_to: 1891 }).catch((err) => {
+          if (err && err.code === "ALREADY_PLAYING") return; // ignore
+          console.error(err);
+        });
+      });
+    </script>
+  </body>
+</html>
