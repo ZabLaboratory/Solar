@@ -16,13 +16,9 @@ authoring.
 | Prism live control panel | `control` | Scene + operator overlay |
 | Editor preview iframe | `test` | Scene + adapter mocker + state inspector |
 
-## Three consumers, one API
-
-The same bundle backs three hosts with two public entry points :
+## Public API
 
 ```ts
-// Live host — Pulsar CEF browser source, Prism live control panel,
-// editor preview iframe. Drives off Orion's WS state stream.
 import { mount } from "@zablab/solar";
 
 const handle = mount({
@@ -31,20 +27,13 @@ const handle = mount({
   token: showToken,
   mode: "broadcast",
 });
+
+// later
+handle.setToken(rotatedToken);
+handle.disconnect();
 ```
 
-```ts
-// Web embed — any HTML page, no Pulsar / CEF / Electron. Drives off
-// a Prism-exported sceneJson + named animations.
-import { PrismScene } from "@zablab/solar";
-
-const scene = new PrismScene({ sceneJson });
-scene.mount(document.querySelector("#container")!);
-scene.playAnimation("Score Update", { score_to: 1891 });
-```
-
-Full integration guide : [`docs/embed-on-website.md`](./docs/embed-on-website.md).
-Action descriptor reference : [`docs/action-descriptors.md`](./docs/action-descriptors.md).
+The complete typed surface lives in `src/types/index.ts`.
 
 ## Status
 

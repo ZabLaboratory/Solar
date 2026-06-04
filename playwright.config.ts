@@ -12,8 +12,11 @@ export default defineConfig({
   reporter: process.env.CI ? "github" : "list",
   timeout: 30_000,
   expect: { timeout: 5_000 },
-  globalSetup: "./tests/e2e/global-setup.ts",
-  globalTeardown: "./tests/e2e/global-teardown.ts",
+  // ADR 007 sub-chantier B : the bespoke mock-orion global setup was
+  // removed with Solar's home-grown protocol. The LSDP/1.1 E2E harness
+  // (a stub Lumencast server + the runtime's server kit) is Probe's
+  // follow-up — acceptance (b)/(c)/(e). Until then `test:e2e` has no
+  // specs and is a no-op (E2E is not in the push gate).
   use: {
     baseURL: `http://localhost:${VITE_PORT}`,
     headless: true,

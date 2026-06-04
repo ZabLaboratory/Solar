@@ -1,195 +1,86 @@
-import { signal } from "@preact/signals-react";
-import { createRoot, type Root } from "react-dom/client";
-import { createElement } from "react";
-import type { MountOptions, SolarHandle, SolarError, SolarToken } from "./types";
-import { createStore } from "./state/store";
-import { applySnapshot } from "./state/apply-snapshot";
-import { applyDelta } from "./state/apply-delta";
-import {
-  createBundleFetcher,
-  type BundleFetcher,
-  type RenderBundle,
-} from "./render/bundle";
-import { TransportError, WsClient, type ConnectionStatus } from "./transport/ws";
-import { SolarApp } from "./app";
+// Solar's public mount() — a thin adapter over @lumencast/runtime.
+//
+// Since ADR 007 (Lumencast convergence, sub-chantier B), Solar no longer
+// carries its own render tree, LSDP transport or leaf-grain state. Those
+// were duplicates of what `@lumencast/runtime` already ships to spec
+// (LSML 1.1 render + LSDP/1.1 wire). Solar's reason to exist is now the
+// Zab-facing contract : a stable `mount()` + `SolarError` taxonomy the
+// three hosts (Pulsar CEF / Prism webview / editor preview) depend on,
+// mapped onto the runtime's `mount()`.
+//
+// Contract mapping (Solar → runtime) :
+//   - `orionUrl`            → `serverUrl`   (Zab keeps the Orion-named field)
+//   - `token` (SolarToken)  → `token`       (structurally identical)
+//   - `mode`                → `mode`        (same broadcast/control/test union)
+//   - `testSession`/`scene` → idem          (only meaningful in test mode)
+//   - `onStatus`            → `onStatus`    (identical disconnected/connecting/live)
+//   - `onError`             → `onError`     (LumencastError ≡ SolarError ; the
+//                                            protocol ErrorCode union is byte-
+//                                            equal to SolarErrorCode)
+//   - return SolarHandle    ← LumencastHandle ({ disconnect, setToken } same shape)
+//
+// The runtime owns the lifecycle (subscribe → snapshot → bundle fetch →
+// delta → scene_changed → crossfade → token rotation → teardown). Solar
+// validates options up-front (host-friendly errors with the `solar.mount:`
+// prefix the hosts assert on) and delegates.
+
+import { mount as mountRuntime } from "@lumencast/runtime";
+import type {
+  LumencastError,
+  LumencastStatus,
+  MountOptions as RuntimeMountOptions,
+} from "@lumencast/runtime";
 import { validateOptions } from "./internal/validate-options";
+import type { MountOptions, SolarError, SolarHandle, SolarStatus } from "./types";
 
-/**
- * Mount Solar against an Orion WS endpoint and render the active scene
- * (or a test session's scene) into `target`.
- *
- * Lifecycle :
- *   1. Open the WS, send subscribe (handled by WsClient).
- *   2. On snapshot : fetch render bundle by `scene_version`, seed
- *      store, render React tree.
- *   3. On delta : apply patches to store ; bound signals update,
- *      bound primitives re-render.
- *   4. On scene_changed : fetch new bundle, swap tree (the Crossfade
- *      wrapper fades old → new based on `crossfadeKey` change).
- *   5. setToken() rotates the WS auth without re-mounting React.
- *   6. disconnect() tears down the WS, unmounts the React root.
- */
 export function mount(options: MountOptions): SolarHandle {
+  // Host-friendly validation with Solar's own message prefix. The runtime
+  // validates too, but its messages say "Lumencast" — hosts assert on
+  // "solar.mount:".
   validateOptions(options);
-  options.onStatus?.("disconnected");
 
-  const store = createStore();
-  const baseUrl = deriveBaseUrl(options.orionUrl);
-  const bundleFetcher = createBundleFetcher({ baseUrl });
-
-  const bundleSignal = signal<RenderBundle | null>(null);
-  const statusSignal = signal<ConnectionStatus>("disconnected");
-  const crossfadeKeySignal = signal<string>("__initial__");
-
-  // Forward status to the host without dropping the operator-overlay
-  // signal-driven updates.
-  const setStatus = (status: ConnectionStatus): void => {
-    statusSignal.value = status;
-    options.onStatus?.(status);
-  };
-
-  // Plumb the host's onError through to a typed SolarError.
-  const reportError = (err: SolarError): void => {
-    options.onError?.(err);
-  };
-
-  let active = true;
-
-  const ws = new WsClient({
-    url: options.orionUrl,
+  const runtimeOptions: RuntimeMountOptions = {
+    target: options.target,
+    serverUrl: options.orionUrl,
     token: options.token,
-    onStatus: setStatus,
-    onSnapshot: (msg) => {
-      if (!active) return;
-      void onSnapshot(
-        bundleFetcher,
-        store,
-        bundleSignal,
-        crossfadeKeySignal,
-        msg.scene_id,
-        msg.scene_version,
-        () => {
-          applySnapshot(store, msg);
-        },
-        reportError,
-      );
-    },
-    onDelta: (msg) => {
-      if (!active) return;
-      applyDelta(store, msg);
-    },
-    onSceneChanged: (_msg) => {
-      if (!active) return;
-      // The fresh snapshot that follows will carry the new
-      // scene_version, drive the bundle fetch, and flip the
-      // crossfade key. We don't act eagerly here — the snapshot is
-      // always the source of truth (ADR 002 § 11). Server-declared
-      // transition duration is honoured by Crossfade's default for
-      // v1 ; per-event duration override lands in a follow-up.
-    },
-    onServerError: (msg) => {
-      reportError({
-        code: msg.code,
-        message: msg.message,
-        recoverable: msg.recoverable,
-      });
-    },
-    onTransportError: (err) => {
-      reportError(transportToSolarError(err));
-    },
-  });
+    mode: options.mode,
+    ...(options.testSession !== undefined
+      ? { testSession: options.testSession }
+      : {}),
+    ...(options.scene !== undefined ? { scene: options.scene } : {}),
+    ...(options.onStatus
+      ? { onStatus: (status: LumencastStatus): void => options.onStatus?.(toSolarStatus(status)) }
+      : {}),
+    ...(options.onError
+      ? { onError: (err: LumencastError): void => options.onError?.(toSolarError(err)) }
+      : {}),
+  };
 
-  void (async function bootstrap() {
-    if (options.mode === "test") {
-      // Test sessions are scene-scoped — their WS URL already
-      // identifies the scene, so the server's first snapshot fixes
-      // the active scene.
-    }
-    ws.start();
-  })();
-
-  // React root.
-  const root: Root = createRoot(options.target);
-  root.render(
-    createElement(SolarApp, {
-      mode: options.mode,
-      store,
-      bundleSignal,
-      statusSignal,
-      crossfadeKeySignal,
-      sendInput: (path, value, clientMsgId) =>
-        ws.sendInput(path, value, clientMsgId),
-    }),
-  );
+  const handle = mountRuntime(runtimeOptions);
 
   return {
-    disconnect() {
-      if (!active) return;
-      active = false;
-      ws.close();
-      root.unmount();
-    },
-    setToken(token: SolarToken) {
-      if (!active) return;
-      ws.setToken(token);
-    },
+    disconnect: () => handle.disconnect(),
+    setToken: (token) => handle.setToken(token),
   };
-
-  // --- helpers (closures over outer scope) ----------------------
-
-  async function onSnapshot(
-    fetcher: BundleFetcher,
-    _store: typeof store,
-    bSignal: typeof bundleSignal,
-    cSignal: typeof crossfadeKeySignal,
-    sceneId: string,
-    sceneVersion: string,
-    applyState: () => void,
-    onErr: (err: SolarError) => void,
-  ): Promise<void> {
-    let bundle: RenderBundle;
-    try {
-      bundle = await fetcher.get(sceneId, sceneVersion);
-    } catch (err) {
-      onErr({
-        code: "BUNDLE_FETCH_FAILED",
-        message:
-          err instanceof Error ? err.message : "render bundle fetch failed",
-        recoverable: true,
-      });
-      return;
-    }
-    if (!active) return;
-    applyState();
-    bSignal.value = bundle;
-    // Trigger the crossfade : a fresh key drives AnimatePresence to
-    // mount the new tree with an opacity tween.
-    cSignal.value = `${sceneId}::${sceneVersion}`;
-  }
 }
 
-// --- error mapping --------------------------------------------
+// --- contract mapping helpers -----------------------------------------
 
-function transportToSolarError(err: TransportError): SolarError {
-  // The transport reports its own typed reason ; we map a few well-
-  // known cases to dedicated Solar codes and fall back to INTERNAL.
+// The two status unions are identical ("disconnected" | "connecting" |
+// "live") ; this keeps the boundary explicit and would fail to compile if
+// either side drifted.
+function toSolarStatus(status: LumencastStatus): SolarStatus {
+  return status;
+}
+
+// `LumencastError` and `SolarError` are structurally identical and the
+// protocol `ErrorCode` union is byte-equal to `SolarErrorCode`, so the
+// forward is lossless. The explicit object construction documents the
+// contract boundary and pins it at compile time.
+function toSolarError(err: LumencastError): SolarError {
   return {
-    code: "INTERNAL",
+    code: err.code,
     message: err.message,
     recoverable: err.recoverable,
   };
-}
-
-// --- URL helpers ----------------------------------------------
-
-function deriveBaseUrl(wsUrl: string): string {
-  // wss://<host>/orion/api/v1/show/stream → https://<host>
-  // ws://<host>/orion/api/v1/show/stream  → http://<host>
-  try {
-    const u = new URL(wsUrl);
-    const httpScheme = u.protocol === "wss:" ? "https:" : "http:";
-    return `${httpScheme}//${u.host}`;
-  } catch {
-    return "";
-  }
 }
