@@ -16,15 +16,34 @@ const BROADCAST_BUDGET = 200 * 1024;
 const CONTROL_BUDGET = 280 * 1024;
 const TEST_BUDGET = 360 * 1024;
 
+// Since ADR 007 (Solar = thin adapter over @lumencast/runtime), the
+// per-mode chunks come from the runtime and may carry TWO hash segments
+// (the runtime's own chunk hash + Vite's re-bundle hash), e.g.
+// `broadcast-BqOhSNsY-8nj7XQpl.js`. Match against the known source names
+// rather than trying to guess where the hash boundary is.
+const KNOWN_PREFIXES = [
+  "solar",
+  "index",
+  "tree",
+  "broadcast",
+  "control",
+  "test",
+  "status-pill",
+];
+
 const files = readdirSync(DIST).filter((f) => f.endsWith(".js"));
-const fileMap = new Map(); // basename prefix → { full, raw, gzip }
+const fileMap = new Map(); // source name → { full, raw, gzip }
 for (const f of files) {
   const buf = readFileSync(join(DIST, f));
   const gzip = gzipSync(buf).length;
-  // strip the hash suffix to get the source name (e.g.
-  // broadcast-CcsEAg11.js → broadcast)
-  const prefix = f.replace(/-[A-Za-z0-9_]+\.js$/, "").replace(/\.js$/, "");
-  fileMap.set(prefix, { full: f, raw: buf.length, gzip });
+  // A chunk maps to a known prefix when its name is exactly the prefix
+  // (`solar.js`) or the prefix followed by a hash segment
+  // (`broadcast-XXXX[-YYYY].js`). Longest match wins so `status-pill`
+  // isn't shadowed by a shorter prefix.
+  const match = KNOWN_PREFIXES.filter(
+    (p) => f === `${p}.js` || f.startsWith(`${p}-`),
+  ).sort((a, b) => b.length - a.length)[0];
+  if (match) fileMap.set(match, { full: f, raw: buf.length, gzip });
 }
 
 function need(prefix) {

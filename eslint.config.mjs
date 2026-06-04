@@ -7,7 +7,15 @@ import prettier from "eslint-config-prettier";
 
 export default tseslint.config(
   {
-    ignores: ["dist", "node_modules", "playwright-report", "test-results"],
+    ignores: [
+      "dist",
+      "node_modules",
+      "playwright-report",
+      "test-results",
+      // Agent worktrees / harness checkouts live untracked under .claude
+      // and carry their own built dist — never Solar's lintable source.
+      ".claude",
+    ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
