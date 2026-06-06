@@ -143,6 +143,42 @@ describe("Solar mount() over @lumencast/runtime", () => {
     target.remove();
   });
 
+  it("renders text fontFamily (resolved.font) and image intrinsic width/height", async () => {
+    const target = document.createElement("div");
+    document.body.appendChild(target);
+    // Render-vocab bundle (what Orion's lowerRenderProps serves): text.font +
+    // image.width/height. Proves the runtime fixes — text.tsx applies
+    // fontFamily, image.tsx honours width/height instead of forcing 100%.
+    const bundle: RenderBundle = {
+      scene_version: SCENE_VERSION,
+      root: {
+        kind: "stack",
+        children: [
+          { kind: "text", id: "t", props: { value: "FONT", font: "Bebas Neue", size: 48 } },
+          { kind: "image", id: "i", props: { src: "http://x/logo.svg", width: 96, height: 64, fit: "contain" } },
+        ],
+      },
+    };
+    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify(bundle), { status: 200 })));
+    vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
+
+    const handle = mount({
+      target, orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+      token: "t", mode: "broadcast",
+    });
+    await waitFor(() => target.querySelector("img") !== null && target.textContent?.includes("FONT") === true);
+
+    const span = target.querySelector("span");
+    const img = target.querySelector("img") as HTMLImageElement | null;
+    expect(span?.style.fontFamily).toContain("Bebas Neue");
+    expect(img?.style.width).toBe("96px");
+    expect(img?.style.height).toBe("64px");
+    expect(img?.getAttribute("src")).toBe("http://x/logo.svg");
+
+    handle.disconnect();
+    target.remove();
+  });
+
   it("maps orionUrl onto the runtime serverUrl (WS opened against it)", async () => {
     const target = document.createElement("div");
     document.body.appendChild(target);
