@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content="@zablab/solar dev" />
+    <title>Solar</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #000;
+      }
+      #scene {
+        position: relative;
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Host / standalone bundle entry (ADR 001 dual-build). Vite's host
+      target (vite.config.host.ts) rewrites this module reference to a
+      hashed, self-contained, relatively-imported JS chunk under
+      dist/host/ — zero bare specifiers. The black 100vh #scene mirrors
+      broadcast hosts' expectation (Pulsar CEF composites it as a
+      transparent overlay over the operator's video sources).
+    -->
+    <div id="scene" data-testid="solar-scene-root"></div>
+    <script type="module" src="/src/host-entry.tsx"></script>
+  </body>
+</html>

@@ -34,7 +34,8 @@
     "tests/**/*.tsx",
     "src/**/*.ts",
     "src/**/*.tsx",
-    "src/dev-entry.tsx"
+    "src/dev-entry.tsx",
+    "src/host-entry.tsx"
   ],
   "exclude": ["dist", "node_modules"],
   "references": [{ "path": "./tsconfig.lib.json" }]

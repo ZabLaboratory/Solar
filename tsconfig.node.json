@@ -26,5 +26,5 @@
 
     "types": ["node"]
   },
-  "include": ["vite.config.ts", "vitest.config.ts"]
+  "include": ["vite.config.ts", "vite.config.host.ts", "vitest.config.ts"]
 }

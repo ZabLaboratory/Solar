@@ -18,6 +18,7 @@ export default defineConfig({
         "src/**/*.test.ts",
         "src/**/*.test.tsx",
         "src/dev-entry.tsx",
+        "src/host-entry.tsx",
       ],
       outDir: "dist",
       rollupTypes: true,
