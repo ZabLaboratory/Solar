@@ -1,8 +1,8 @@
 # ADR 001 — Dual-build : library externals (Prism) + self-contained host bundle (CEF)
 
-- **Status**: proposed
+- **Status**: accepted
 - **Date**: 2026-06-08
-- **Decided**: —
+- **Decided**: 2026-06-08
 - **Deciders**: @ClodoCapeo (maintainer)
 - **Author**: Atlas (architect agent)
 - **Supersedes**: —
