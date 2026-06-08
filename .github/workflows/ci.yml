@@ -30,6 +30,12 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm run check:bundle
+      # ADR 001 §6.3 gate: the served host bundle must load and mount() in
+      # a real browser with NO import map. Runs against the built
+      # dist/host/ (produced by `npm run build` above).
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
 
   deps-audit:
     name: Dependency audit (npm audit)

@@ -15,10 +15,16 @@ export default defineConfig({
   // ADR 007 sub-chantier B : the bespoke mock-orion global setup was
   // removed with Solar's home-grown protocol. The LSDP/1.1 E2E harness
   // (a stub Lumencast server + the runtime's server kit) is Probe's
-  // follow-up — acceptance (b)/(c)/(e). Until then `test:e2e` has no
-  // specs and is a no-op (E2E is not in the push gate).
+  // follow-up — acceptance (b)/(c)/(e).
+  //
+  // ADR 001 (dual-build) adds the served-host-bundle smoke test
+  // (tests/e2e/host-bundle.spec.ts). That spec serves the BUILT
+  // dist/host/ over its own static HTTP server (no Vite, no import map) to
+  // reproduce the Pulsar CEF / Orion static-serve conditions, so it does
+  // NOT need the Vite dev webServer. The dev `webServer` is therefore
+  // wired only when a spec opts into `baseURL` — left off by default so
+  // the host smoke test stays self-contained and CI-stable.
   use: {
-    baseURL: `http://localhost:${VITE_PORT}`,
     headless: true,
     trace: "retain-on-failure",
   },
@@ -28,12 +34,8 @@ export default defineConfig({
       use: { ...devices["Desktop Chrome"] },
     },
   ],
-  webServer: {
-    command: `npm run dev -- --port ${VITE_PORT} --strictPort`,
-    url: `http://localhost:${VITE_PORT}`,
-    reuseExistingServer: !process.env.CI,
-    timeout: 30_000,
-    stdout: "ignore",
-    stderr: "pipe",
-  },
 });
+
+// VITE_PORT is retained for a future dev-server-backed harness; reference
+// it so the unused-var lint stays green until that harness lands.
+void VITE_PORT;

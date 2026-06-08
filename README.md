@@ -10,11 +10,11 @@ authoring.
 
 ## Hosts
 
-| Host | Mode | What's visible |
-|---|---|---|
-| Pulsar CEF browser source | `broadcast` | The composed scene only — no UI |
-| Prism live control panel | `control` | Scene + operator overlay |
-| Editor preview iframe | `test` | Scene + adapter mocker + state inspector |
+| Host                      | Mode        | What's visible                           |
+| ------------------------- | ----------- | ---------------------------------------- |
+| Pulsar CEF browser source | `broadcast` | The composed scene only — no UI          |
+| Prism live control panel  | `control`   | Scene + operator overlay                 |
+| Editor preview iframe     | `test`      | Scene + adapter mocker + state inspector |
 
 ## Public API
 
@@ -61,19 +61,26 @@ npm run dev          # Vite dev server (HMR while iterating on src/)
 npm run lint         # ESLint, --max-warnings 0
 npm run typecheck    # tsc --noEmit
 npm test             # Vitest unit tests
-npm run build        # Library build → dist/solar.{js,css} + types
-npm run test:e2e     # Playwright (lands when mock-orion is wired)
+npm run build        # Dual build: dist/solar.{js,css}+types (library, for
+                     #   Prism) AND dist/host/** (self-contained, for the
+                     #   CEF / Orion static serve). See ADR 001.
+npm run test:e2e     # Playwright served-bundle smoke test (no import map)
 ```
 
 ## Distribution
 
 Solar publishes as `@zablab/solar` to a private registry once one
-exists. In the interim, consumers (Prism, Orion's static host)
-vendor a built `dist/` keyed by version :
+exists. In the interim, consumers vendor a built artefact keyed by
+version. The two consumers have opposite bundling needs, so the build
+emits **two** artefacts (ADR 001) :
 
-- Orion serves `/orion/static/solar/v{N.N.N}/...` — Pulsar CEF
-  browser source URL.
-- Prism vendors `Prism/resources/solar/v{N.N.N}/...` — webview load.
+- **Orion static serve → Pulsar CEF.** Serves `dist/host/**` at
+  `/orion/static/solar/v{N.N.N}/...` — a **self-contained** bundle with
+  every runtime dep inlined (no bare specifiers; the CEF has no bundler
+  and no import map). This is the `index.html` the browser source loads.
+- **Prism webview.** Vendors the **library** entry (`dist/solar.js`,
+  externals) into `Prism/resources/solar/v{N.N.N}/...`; Prism re-bundles
+  and supplies React / Framer from its own tree.
 
 A breaking change to the render-bundle format bumps the major and
 ships a migration helper in Orion's compiler. Compatibility within

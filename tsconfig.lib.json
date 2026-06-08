@@ -35,6 +35,7 @@
     "dist",
     "node_modules",
     "tests/**/*",
-    "src/dev-entry.tsx"
+    "src/dev-entry.tsx",
+    "src/host-entry.tsx"
   ]
 }
