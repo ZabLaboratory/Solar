@@ -5,6 +5,22 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.3] - 2026-06-09
+
+Mount-play foundation — rebuild against `@lumencast/runtime` **^0.3.0**
+(lumencast-js PR #23) : the LSML 1.1 `animate` directive now carries a
+`from` (mount-time initial state), the compiler lowers it to a flat
+`animate_initial` framer map, and the runtime primitives (Image / Frame /
+Text / Shape) pass framer-motion `initial={from}` + `animate={target}` —
+an authored scene **plays its animation on mount** (e.g. the Zab
+white+logo transition scene fades + scales the logo in) with **no
+KeyframePlayer and no compiler-generated transition code**. Without
+`from`, behaviour is byte-identical to 0.2.2 (no mount-play). No Solar
+`src/` change : the capability ships inside the self-contained host
+bundle (`dist/host/**`) by rebuilding with the patched runtime. `mount()`
+/ `SolarError` public surface and the LSDP wire dialect are **unchanged**.
+GPU-only rule respected : `from` drives `opacity` / `transform` only.
+
 ## [0.2.2] - 2026-06-09
 
 M10 overlay engine — `wipe-cover` authored element (`src/overlay/wipe-cover.ts`,
