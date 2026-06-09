@@ -5,6 +5,29 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.4] - 2026-06-09
+
+Mount-play default-timing fallback — rebuild against
+`@lumencast/runtime` **^0.4.0** (lumencast-js PR #25, published v0.4.0).
+v0.3.0 wired framer `initial`/`animate` but resolved the transition
+only from the primitive's native prop keys; on the real wire shape
+(Orion emits the raw LSML `animate` envelope under `transitions` with a
+`transition` key the runtime never looked up) `toFramer(undefined)`
+returned `{ duration: 0 }` and the element snapped blank→settled in a
+single frame — no ramp. Runtime 0.4.0 adds `resolveTransition` +
+`DEFAULT_MOUNT_PLAY_TRANSITION` (400 ms default tween) so a `from`
+without an explicit per-prop transition mount-plays with the runtime's
+default timing instead of a zero-duration snap. **No Solar `src/`
+change** : the fix ships inside the self-contained host bundle by
+rebuilding with the patched runtime — exactly what a Solar release is
+for. `mount()` / `SolarError` surface and the LSDP wire dialect are
+**unchanged**. Lockfile resolves `@lumencast/runtime`
+0.3.0 → 0.4.0 (+ `@lumencast/protocol` 0.3.0 → 0.4.0); no new
+third-party dependency, audit posture byte-identical to 0.2.3
+(same 3 pre-existing transitive advisories, none introduced here).
+
+Refs M10 final pass.
+
 ## [0.2.3] - 2026-06-09
 
 Mount-play foundation — rebuild against `@lumencast/runtime` **^0.3.0**
