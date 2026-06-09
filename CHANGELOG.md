@@ -5,6 +5,17 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.2] - 2026-06-09
+
+M10 overlay engine — `wipe-cover` authored element (`src/overlay/wipe-cover.ts`,
+#12). The full-screen opaque cover the Blue-driven `scene_control` leaf replays
+(reveal → hold → retract) now paints a **visible magenta fill**
+(`DEFAULT_COVER_FILL = #C81E5A`) so the on-air transition is provably *our*
+engine's paint (the MID frame is magenta, not an ambiguous cold/black capture)
+and the in-DOM transition is visible. `mount()` / `SolarError` public surface
+and the LSDP wire dialect are **unchanged** — this is a patch publishing the
+already-reviewed overlay (Pulsar ADR 003 Amendment 4 §A4.2). Refs #12.
+
 ## [0.2.1] - 2026-06-08
 
 Served-bundle fix. `v0.2.0`'s served artefact (`dist/index.html` +
