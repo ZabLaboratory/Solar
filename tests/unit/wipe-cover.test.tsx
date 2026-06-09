@@ -49,7 +49,13 @@ describe("buildWipeCoverNode() — authored keyframe structure", () => {
     expect(node.kind).toBe("frame");
     // Full-screen, opaque, static (never on the layout path).
     expect(node.props).toMatchObject({ width: "100%", height: "100%" });
-    expect(typeof node.props?.background).toBe("string");
+    // The cover paints a VISIBLE magenta fill by default (#C81E5A, the M9
+    // demo colour) — NOT black. At the opaque plateau (opacity 1) the whole
+    // screen is this magenta; that is what the M10 probe asserts on the MID
+    // frame to distinguish "our engine painted the cover" from "cold black
+    // capture". A black default would make MID indistinguishable from a
+    // non-rendered frame.
+    expect(node.props?.background).toBe("#C81E5A");
     // THE reactive trigger: the keyframe `key` is the leaf path, so a delta
     // on that leaf replays the sequence (M9). Not scene_changed.
     expect(node.keyframes?.key).toBe(LEAF);

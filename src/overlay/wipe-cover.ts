@@ -55,10 +55,14 @@ export interface WipeCoverOverlay {
   retract_ms: number;
 }
 
-/** Opaque colour of the cover. Black is the safe default for a broadcast
- *  wipe; authored scenes may override per-build, but the cover MUST be
- *  fully opaque at the plateau or the hidden hard-cut would be visible. */
-const DEFAULT_COVER_FILL = "#000000";
+/** Opaque colour of the cover. A franc, visible magenta (the M9 demo
+ *  colour) is the default so the cover is unmistakably OUR engine's paint:
+ *  at the opaque plateau the whole screen is magenta, which the M10 probe
+ *  asserts on the MID frame. A black cover would be indistinguishable from
+ *  a cold/black capture, defeating the proof. Authored scenes may override
+ *  per-build, but the cover MUST be fully opaque at the plateau or the
+ *  hidden hard-cut would be visible. */
+const DEFAULT_COVER_FILL = "#C81E5A";
 
 /** Narrow an unknown leaf value to a `WipeCoverOverlay`. Used by callers
  *  reading the live `scene_control` leaf (the `overlay` sub-object) before
@@ -91,7 +95,7 @@ export interface BuildWipeCoverNodeOptions {
   overlay: WipeCoverOverlay;
   /** Stable node id for keyed reconciliation. Defaults to `"wipe-cover"`. */
   id?: string;
-  /** Opaque cover fill. Defaults to black. */
+  /** Opaque cover fill. Defaults to the magenta `DEFAULT_COVER_FILL`. */
   fill?: string;
 }
 
