@@ -5,6 +5,21 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.6] - 2026-06-11
+
+Auth header for the render-bundle fetch — clears the 401 black frame
+behind ZabGate. `@lumencast/runtime` **^0.6.0** now sends the show token
+as `Authorization: Bearer <token>` on the render-bundle fetch (previously
+the bundle URL carried no credentials, so Orion behind ZabGate replied
+401 and nothing rendered). Solar already forwards the show token through
+`mount({ token })`, and the runtime propagates it to the bundle request
+automatically — **no Solar code change**. `mount()` / `SolarError`
+public surface and the LSDP wire dialect are **unchanged**, so this is a
+patch. Lockfile resolves `@lumencast/runtime` 0.5.0 → 0.6.0; no new
+third-party dependency.
+
+Refs Orion ADR 004 § 2 (render-bundle route), ADR 007 (thin adapter).
+
 ## [0.2.5] - 2026-06-11
 
 Render-bundle URL resolver — unblocks the black frame behind ZabGate.
