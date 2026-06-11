@@ -10,12 +10,15 @@
 // entry — it never ships in solar.js.
 
 import { mount } from "./mount";
+import { resolveShowToken } from "./internal/resolve-show-token";
 import type { SolarMode } from "./types";
 
 const params = new URLSearchParams(window.location.search);
 const orionUrl =
   params.get("orion") ?? `ws://${location.host}/lsdp/v1/show/stream`;
-const token = params.get("token") ?? "";
+// Mirror the host entry: the show-token may be embedded in `orionUrl`'s
+// query rather than a top-level `?token=` (the Pulsar browser-source shape).
+const token = resolveShowToken(orionUrl, params.get("token"));
 const modeParam = params.get("mode") ?? "broadcast";
 const mode: SolarMode = (
   ["broadcast", "control", "test"] as const

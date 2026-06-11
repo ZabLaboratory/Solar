@@ -15,12 +15,17 @@
 // mode, externals) — it never ships in solar.js.
 
 import { mount } from "./mount";
+import { resolveShowToken } from "./internal/resolve-show-token";
 import type { SolarMode } from "./types";
 
 const params = new URLSearchParams(window.location.search);
 const orionUrl =
   params.get("orion") ?? `wss://${location.host}/orion/api/v1/show/stream`;
-const token = params.get("token") ?? "";
+// The Pulsar browser source packs the show-token inside `orionUrl`'s query
+// (`…/show/stream.lsdp?token=<SHOW>`), not as a top-level `?token=`. Surface
+// it so the runtime can attach `Authorization: Bearer <token>` to the
+// render-bundle fetch — otherwise the GET is header-less and Orion 401s.
+const token = resolveShowToken(orionUrl, params.get("token"));
 const modeParam = params.get("mode") ?? "broadcast";
 const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   modeParam as SolarMode,

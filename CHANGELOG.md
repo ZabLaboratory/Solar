@@ -5,6 +5,32 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.8] - 2026-06-12
+
+Extract the show-token from the packed `orionUrl` — the missing half of the
+0.2.6 auth-header fix. 0.2.6 added `Authorization: Bearer <token>` to the
+render-bundle fetch and assumed Solar already forwarded the show token through
+`mount({ token })`. In production it did not: the Pulsar browser source
+addresses Solar with `index.html?orion=<orionUrl>&mode=broadcast`, where the
+show-token lives **inside** `orionUrl`'s query
+(`…/show/stream.lsdp?token=<SHOW>`), not as a top-level `?token=`. The host
+entries read `params.get("token")` and got `""`, so `mount({ token: "" })` →
+the runtime resolved an empty token → the bundle GET went out header-less →
+Orion behind ZabGate replied **401** → black frame (`BUNDLE_FETCH_FAILED`).
+
+The host and dev entries now resolve the show-token via `resolveShowToken()`
+(explicit top-level `?token=` wins, else the token embedded in `orionUrl`),
+and pass it to `mount({ token })`. The runtime then attaches
+`Authorization: Bearer <show-token>` to the render-bundle fetch. Solar-only —
+**no `@lumencast/runtime` change**, no new dependency. `mount()` / `SolarError`
+public surface unchanged (patch).
+
+An end-to-end test mounts the real runtime against the Pulsar browser-source
+URL shape and asserts the bundle GET carries `Authorization: Bearer <token>`
+(and that an empty token yields a header-less fetch — the regression guard).
+
+Refs Zablab architecture (show-token: Pulsar CEF → Orion WS upgrade).
+
 ## [0.2.6] - 2026-06-11
 
 Auth header for the render-bundle fetch — clears the 401 black frame
