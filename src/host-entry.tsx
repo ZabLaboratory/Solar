@@ -47,6 +47,16 @@ mount({
     // Broadcast hosts must not surface chrome — log to console and let the
     // operator overlay (control/test modes) display a degraded state
     // through Solar's own UI.
-    console.error("[solar]", err);
+    //
+    // SolarError is a plain `{ code, message, recoverable }` object (NOT an
+    // Error subclass), so a CEF/console bridge that string-coerces the
+    // second arg renders it as the useless `[object Object]` — which hid
+    // the real cause during the M3 black-screen incident. Log the fields
+    // explicitly so `code`/`message` always survive, whatever the host
+    // console does with object args.
+    console.error(
+      `[solar] ${err.code}: ${err.message}` +
+        (err.recoverable ? " (recoverable)" : " (fatal)"),
+    );
   },
 });

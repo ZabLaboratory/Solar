@@ -40,7 +40,12 @@ mount({
   onError: (err) => {
     // Dev only — surface to the console. Broadcast hosts must not render
     // chrome ; the operator overlay (control/test modes) is the runtime's
-    // own concern now.
-    console.error("[solar dev]", err);
+    // own concern now. Log the SolarError fields explicitly (it is a plain
+    // object, not an Error) so `code`/`message` never collapse to
+    // `[object Object]` in a string-coercing console bridge.
+    console.error(
+      `[solar dev] ${err.code}: ${err.message}` +
+        (err.recoverable ? " (recoverable)" : " (fatal)"),
+    );
   },
 });
