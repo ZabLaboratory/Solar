@@ -1,6 +1,6 @@
 {
   "name": "@zablab/solar",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "Solar — scene runtime bundle for the Zablab broadcast platform (Pulsar CEF + Prism webview + editor preview)",
   "type": "module",
   "private": true,
@@ -38,7 +38,7 @@
     "check:bundle": "node scripts/check-bundle-size.mjs && node scripts/check-host-bundle.mjs"
   },
   "dependencies": {
-    "@lumencast/runtime": "^0.5.0",
+    "@lumencast/runtime": "^0.6.0",
     "@preact/signals-react": "^3.2.1",
     "framer-motion": "^12.0.0",
     "react": "^19.0.0",
