@@ -5,6 +5,29 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.5] - 2026-06-11
+
+Render-bundle URL resolver — unblocks the black frame behind ZabGate.
+The runtime fetched the bundle from its default host-root LSDP layout
+(`https://<host>/lsdp/v1/scenes/{id}/bundle`) and **404'd**; Orion behind
+ZabGate serves it at
+`https://zabgate.cyell.dev/orion/api/v1/scenes/{id}/render-bundle?v={hash}`,
+so nothing rendered. `@lumencast/runtime` **^0.5.0** adds
+`MountOptions.resolveBundleUrl?: (sceneId, sceneVersion) => string`;
+`mount()` now derives the gateway-prefixed URL from the WS `orionUrl` and
+passes it through. New internal helper `orionBundleUrl(serverUrl)` :
+`wss`→`https` / `ws`→`http`, strip the `/show/stream.lsdp` WS suffix to
+recover the API root, rebuild `…/scenes/{id}/render-bundle?v={hash}` with
+percent-encoded scene id and version (Orion's `r.URL.Query().Get("v")`
+URL-decodes back for the byte-for-byte hash match). This is exactly the
+adapter's job under ADR 007 — it owns Orion's URL contract; the mapping is
+kept minimal and unit-tested. `mount()` / `SolarError` public surface and
+the LSDP wire dialect are **unchanged**, so this is a patch. Lockfile
+resolves `@lumencast/runtime` 0.4.0 → 0.5.0 (+ `@lumencast/protocol`
+0.4.0 → 0.5.0); no new third-party dependency.
+
+Refs Orion ADR 004 § 2 (render-bundle route), ADR 007 (thin adapter).
+
 ## [0.2.4] - 2026-06-09
 
 Mount-play default-timing fallback — rebuild against
