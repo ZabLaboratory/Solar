@@ -48,10 +48,10 @@ export type SolarErrorCode =
 export interface MountOptions {
   target: HTMLElement;
   /** WebSocket URL of the LSDP/1.1 server. In the Zab platform this is
-   *  Orion (`wss://<gate>/orion/api/v1/show/stream` for live, or
-   *  `.../scenes/{id}/test` for test mode) once Orion converges to a
-   *  Lumencast server (ADR 007 sub-chantier C). Maps to the runtime's
-   *  `serverUrl`. */
+   *  Orion behind ZabGate (`wss://<gate>/orion/api/v1/show/stream.lsdp` for
+   *  live, or `.../scenes/{id}/test` for test mode). Maps to the runtime's
+   *  `serverUrl`, and is also the source from which `mount()` derives the
+   *  gateway-prefixed render-bundle URL (`resolveBundleUrl`). */
   orionUrl: string;
   token: SolarToken;
   mode: SolarMode;

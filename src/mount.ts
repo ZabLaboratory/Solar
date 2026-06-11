@@ -30,6 +30,7 @@ import type {
   LumencastStatus,
   MountOptions as RuntimeMountOptions,
 } from "@lumencast/runtime";
+import { orionBundleUrl } from "./internal/orion-bundle-url";
 import { validateOptions } from "./internal/validate-options";
 import type { MountOptions, SolarError, SolarHandle, SolarStatus } from "./types";
 
@@ -44,6 +45,12 @@ export function mount(options: MountOptions): SolarHandle {
     serverUrl: options.orionUrl,
     token: options.token,
     mode: options.mode,
+    // Orion lives behind ZabGate (`/orion/api/v1`) and serves the bundle at
+    // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
+    // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
+    // WS `orionUrl` so the runtime fetches the right artefact (ADR 007 —
+    // adapter owns Orion's URL contract).
+    resolveBundleUrl: orionBundleUrl(options.orionUrl),
     ...(options.testSession !== undefined
       ? { testSession: options.testSession }
       : {}),
