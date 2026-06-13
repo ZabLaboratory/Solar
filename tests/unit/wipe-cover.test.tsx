@@ -177,11 +177,21 @@ afterEach(() => {
 
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
-/** The runtime's KeyframePlayer wraps the played subtree in a
- *  `display:contents` motion.div whose opacity carries the live keyframe
- *  value. This reads it. */
+/** The runtime's KeyframePlayer wraps the played subtree in a motion.div
+ *  whose opacity carries the live keyframe value. Since the ADR 011 I7
+ *  compositing fix that wrapper is a REAL box (`position:absolute; inset:0`)
+ *  — a `display:contents` element generated no box and silently dropped the
+ *  animated opacity at the antenna. We read the opacity off the player box,
+ *  identified as the positioned `inset:0` wrapper that framer-motion drives
+ *  (it carries an `opacity` style). The live CSSOM `style` property is read
+ *  directly (happy-dom does not always serialise it into the attribute). */
 function overlayOpacity(target: HTMLElement): number | undefined {
-  const wrapper = target.querySelector("div[style*='display: contents']") as HTMLElement | null;
+  const wrapper = Array.from(target.querySelectorAll<HTMLElement>("div")).find(
+    (el) =>
+      el.style.position === "absolute" &&
+      (el.style.inset === "0px" || el.style.inset === "0") &&
+      el.style.opacity !== "",
+  );
   if (!wrapper) return undefined;
   const v = Number(wrapper.style.opacity);
   return Number.isNaN(v) ? undefined : v;
@@ -215,8 +225,8 @@ describe("wipe-cover overlay — leaf delta replays the animation (M9 path)", ()
     });
 
     // The opaque cover frame is rendered (full-screen 100% box), wrapped by
-    // the runtime's KeyframePlayer (a `display:contents` motion.div carrying
-    // the live opacity).
+    // the runtime's KeyframePlayer — a REAL compositing box (`position:
+    // absolute; inset:0`, post-ADR-011-I7 fix) carrying the live opacity.
     await waitFor(() => overlayOpacity(target) !== undefined);
 
     // --- THE DELTA: a new scene_control value carrying the overlay. This is

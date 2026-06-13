@@ -5,6 +5,48 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.9] - 2026-06-13
+
+Fix the keyframe-animation RUNTIME so `core.animation.play@1` actually moves
+and fades at the antenna (ADR 011 I7, 3rd and last link). The render bundle
+Orion served was already correct — a keyframed `frame` wrapper carrying the
+target's static geometry (x:80,y:360, 160×160) with the animated
+`transform`/`opacity` keyframes, the resolved target nested beneath — yet the
+box rendered 100×100 pinned at (0,0), immobile, with no translateX and no fade
+(proven by live frame-diff, tir I7 #2). Two distinct runtime bugs in
+`@lumencast/runtime`'s keyframe path, BOTH dropping the animated geometry:
+
+- **Dead wrapper box.** The `KeyframePlayer` wrapped the played subtree in a
+  `<motion.div style={{display:"contents"}}>`. A `display:contents` element
+  generates no box, so the browser silently dropped the `transform`/`opacity`/
+  `filter` framer-motion wrote onto it — the wrapper's geometry never
+  composited and the nested target rendered dead at its default origin. The
+  player is now a real compositing box (`position:absolute; inset:0`) that also
+  becomes the containing block for the absolutely-positioned target nested
+  beneath, preserving its authored x/y.
+- **Wrong framer transform key.** `compileForFramer` emitted the authored
+  `translateX`/`translateY` channels verbatim, but framer-motion animates
+  transform through its shorthand motion keys `x`/`y` — so the translation was
+  silently ignored even once the box composited (only the opacity fade
+  survived). The translate channels now map onto the framer keys.
+
+Both are repairs to the EXISTING keyframe player (no new runtime primitive —
+ADR 011 §6 criterion #6), shipped as a committed `patch-package` patch over
+`@lumencast/runtime@0.6.0` since the buggy code lives in the bundled
+dependency. Solar re-bundles the patched runtime into `dist/`. The wipe-cover
+degenerate case (full-screen self-painting cover, no nested target) is
+preserved: the cover still fills the screen and fades through the same
+keyframe path; its byte-pinned authored shape is unchanged.
+
+A runtime test (`tests/unit/animation-compositing.test.tsx`) mounts Solar
+end-to-end against a bundle shaped exactly like the live render-bundle and
+proves the wrapper composites the keyframe `translateX(400px)` + `opacity:1`
+onto a real positioned box, with the nested 160×160 target preserved at
+(80,360) — not (0,0)/default. The wipe-cover test reads the live opacity off
+the new compositing box.
+
+`mount()` / `SolarError` public surface unchanged (patch). Refs ADR 011 I7.
+
 ## [0.2.8] - 2026-06-12
 
 Extract the show-token from the packed `orionUrl` — the missing half of the
