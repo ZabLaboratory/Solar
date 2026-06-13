@@ -53,9 +53,19 @@ export interface BuildAnimationNodeOptions {
    *  or the overlay id). Defaults to `"wipe-cover"` for byte-parity with the
    *  degenerate wipe-cover node. */
   id?: string;
-  /** Opaque cover / animated-surface fill. Defaults to the magenta
-   *  `DEFAULT_ANIMATION_FILL`. */
-  fill?: string;
+  /** The wrapper frame's props. For the general `animation.play` path these
+   *  are the TARGET overlay's geometry (`x`/`y`/`width`/`height`) so the
+   *  animated box is dimensioned to the overlay, not the full screen (the
+   *  I7 fix). Defaults to the full-screen self-painting cover props
+   *  (`{width:"100%",height:"100%",background:DEFAULT_FILL}`) for the
+   *  degenerate `wipe-cover` node. */
+  props?: Record<string, unknown>;
+  /** Child render nodes nested beneath the animation wrapper. For
+   *  `animation.play` this is the resolved TARGET overlay node — nesting it
+   *  under the keyframe wrapper makes it inherit the animated
+   *  `transform`/`opacity` (the I7 fix). Omitted for the self-painting
+   *  `wipe-cover` cover (it paints itself, no nested target). */
+  children?: RenderNode[];
 }
 
 /** Default fill — the franc magenta the M9/M10 probe asserts at the opaque
@@ -63,29 +73,52 @@ export interface BuildAnimationNodeOptions {
  *  so the delegated wipe-cover node is byte-identical). */
 const DEFAULT_ANIMATION_FILL = "#C81E5A";
 
+/** The degenerate full-screen cover props — the default when no target
+ *  geometry is supplied (`wipe-cover`'s self-painting opaque cover). */
+const FULLSCREEN_COVER_PROPS: Record<string, unknown> = {
+  width: "100%",
+  height: "100%",
+  background: DEFAULT_ANIMATION_FILL,
+};
+
 /**
- * Build the lowered Animation Asset `RenderNode` — a full-screen `frame`
+ * Build the lowered Animation Asset `RenderNode` — a keyframed `frame`
  * carrying the authored keyframe block, keyed on the compile-bound scalar
  * leaf. The single source of truth for the node shape Orion's
  * `buildAnimationNode` (Go) must match byte-for-byte (ADR 011 §3.3 / D6).
+ *
+ * GEOMETRY (I7 live-bug fix). The general `animation.play` node is a
+ * TRANSFORM WRAPPER dimensioned to the target overlay (`props` = the
+ * target's `x`/`y`/`width`/`height`), with the target NESTED beneath
+ * (`children`) so it inherits the animated `transform`/`opacity`. It is NOT
+ * a full-screen aplat — translating/fading a 1920×1080 uniform fill is
+ * invisible. `wipe-cover` is the degenerate case: no `props`/`children` are
+ * supplied, so it defaults to the full-screen self-painting cover (the
+ * byte-identical M10 node).
  *
  * The `key` is set to `leafPath` (the compiler-bound generation leaf),
  * overriding any `key` the asset authored — the general `animation.play`
  * trigger is a compiler concern (§3.3). Every other keyframe field
  * (`duration_ms`, `easing`, `steps`) rides through verbatim.
+ *
+ * NOTE (runtime dependency). The keyframe `transform`/`opacity` only becomes
+ * VISIBLE if `@lumencast/runtime`'s KeyframePlayer applies the animated
+ * channels to a real, compositing box (not a `display:contents` wrapper,
+ * which generates no box and silently drops them). This builder fixes the
+ * node STRUCTURE; the compositing fix is a runtime concern.
  */
 export function buildAnimationNode(options: BuildAnimationNodeOptions): RenderNode {
-  const { leafPath, keyframes, id = "wipe-cover", fill = DEFAULT_ANIMATION_FILL } = options;
-  return {
+  const {
+    leafPath,
+    keyframes,
+    id = "wipe-cover",
+    props = FULLSCREEN_COVER_PROPS,
+    children,
+  } = options;
+  const node: RenderNode = {
     kind: "frame",
     id,
-    props: {
-      // Full-screen opaque surface. Static size (off the layout path);
-      // `background` paints the fill; per-frame opacity rides the keyframes.
-      width: "100%",
-      height: "100%",
-      background: fill,
-    },
+    props,
     keyframes: {
       ...keyframes,
       // THE reactive trigger: a value change at this leaf replays the
@@ -93,4 +126,8 @@ export function buildAnimationNode(options: BuildAnimationNodeOptions): RenderNo
       key: leafPath,
     },
   };
+  if (children !== undefined) {
+    node.children = children;
+  }
+  return node;
 }

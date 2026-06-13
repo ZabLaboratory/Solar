@@ -56,6 +56,58 @@ describe("buildAnimationNode()", () => {
     expect(node.id).toBe("wipe-cover");
   });
 
+  it("frames the general animation.play path as a transform WRAPPER dimensioned to the target, with the target NESTED (I7 geometry fix)", () => {
+    // The I7 live-bug fix: the general path is NOT a full-screen aplat
+    // (translating/fading a 1920×1080 uniform fill is invisible). The
+    // wrapper is sized/positioned to the target overlay, and the target is
+    // nested beneath so it inherits the animated transform/opacity. The
+    // wrapper carries NO background — it is a transparent transform host.
+    const node = buildAnimationNode({
+      leafPath: "__anim.anim_box",
+      id: "anim-1",
+      props: { x: 80, y: 360, width: 160, height: 160 },
+      children: [
+        {
+          kind: "shape",
+          id: "anim_box",
+          props: { width: 160, height: 160, background: "#C81E5A" },
+        },
+      ],
+      keyframes: {
+        duration_ms: 500,
+        easing: "ease-out",
+        steps: [
+          { at: 0, transform: { translateX: 0 } },
+          { at: 1, transform: { translateX: 200 } },
+        ],
+      },
+    });
+
+    expect(node).toEqual({
+      kind: "frame",
+      id: "anim-1",
+      // wrapper geometry = the target's box; NO background (transparent host)
+      props: { x: 80, y: 360, width: 160, height: 160 },
+      keyframes: {
+        key: "__anim.anim_box",
+        duration_ms: 500,
+        easing: "ease-out",
+        steps: [
+          { at: 0, transform: { translateX: 0 } },
+          { at: 1, transform: { translateX: 200 } },
+        ],
+      },
+      // target nested beneath → inherits the animated transform
+      children: [
+        {
+          kind: "shape",
+          id: "anim_box",
+          props: { width: 160, height: 160, background: "#C81E5A" },
+        },
+      ],
+    });
+  });
+
   it("subsumes wipe-cover: a reveal/hold/retract asset frames identically (§3.5)", () => {
     // The wipe-cover specialisation expressed as a general Animation Asset:
     // the same 4-step opacity geometry buildWipeCoverNode emits, framed by
