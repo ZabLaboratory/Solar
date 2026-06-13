@@ -21,3 +21,16 @@ export type {
   WipeCoverOverlay,
   BuildWipeCoverNodeOptions,
 } from "./overlay/wipe-cover";
+
+// Animation Asset overlay element (ADR 011 §3.3 — `core.animation.play@1`
+// reconciliation). The Solar oracle twin of Orion's `lower_animation.go`
+// `buildAnimationNode`: it frames an authored keyframe block into the
+// keyframed `frame` RenderNode keyed on the scalar generation leaf
+// `__anim.<overlay_id>`. No new runtime primitive — a bundle-fragment
+// builder, like `buildWipeCoverNode`, of which it is the generalisation.
+export { buildAnimationNode } from "./overlay/animation";
+export type {
+  AnimationStep,
+  AnimationKeyframes,
+  BuildAnimationNodeOptions,
+} from "./overlay/animation";
