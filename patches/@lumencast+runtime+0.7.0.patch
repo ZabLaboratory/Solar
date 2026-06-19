@@ -34,28 +34,28 @@ index 5df7b99..41197db 100644
  }
  /** No-op effect placeholder — kept for symmetry / future hooks like
   *  reporting playback completion to the renderer. */
-diff --git a/node_modules/@lumencast/runtime/dist/tree-DBj9SJgs.js b/node_modules/@lumencast/runtime/dist/tree-DBj9SJgs.js
-index c53e909..3bfad28 100644
---- a/node_modules/@lumencast/runtime/dist/tree-DBj9SJgs.js
-+++ b/node_modules/@lumencast/runtime/dist/tree-DBj9SJgs.js
-@@ -689,7 +689,13 @@ function U(t, e, n) {
-     const l = o.transform?.[e];
-     typeof l == "number" ? (r = !0, s = l, i.push(l)) : i.push(s ?? ze(e));
+diff --git a/node_modules/@lumencast/runtime/dist/tree-BIimahCf.js b/node_modules/@lumencast/runtime/dist/tree-BIimahCf.js
+index b0cf865..7a55bfe 100644
+--- a/node_modules/@lumencast/runtime/dist/tree-BIimahCf.js
++++ b/node_modules/@lumencast/runtime/dist/tree-BIimahCf.js
+@@ -984,7 +984,13 @@ function et(t, e, n) {
+     const a = o.transform?.[e];
+     typeof a == "number" ? (i = !0, s = a, r.push(a)) : r.push(s ?? wn(e));
    }
--  r && (e === "rotate" ? n.rotate = i.map((o) => `${o}deg`) : n[e] = i);
+-  i && (e === "rotate" ? n.rotate = r.map((o) => `${o}deg`) : n[e] = r);
 +  // ADR 011 I7 live-bug fix (2nd half): framer-motion animates transform via
 +  // its shorthand motion keys `x`/`y`, NOT `translateX`/`translateY` — those
 +  // were silently dropped (the box never moved at the antenna). Map the
 +  // authored `translateX`/`translateY` channels onto the framer keys so the
 +  // translation actually composites. `scale`/`rotate` already match framer.
 +  const TRANSLATE_TO_FRAMER = { translateX: "x", translateY: "y" };
-+  r && (e === "rotate" ? n.rotate = i.map((o) => `${o}deg`) : n[TRANSLATE_TO_FRAMER[e] ?? e] = i);
++  i && (e === "rotate" ? n.rotate = r.map((o) => `${o}deg`) : n[TRANSLATE_TO_FRAMER[e] ?? e] = r);
  }
- function ze(t) {
+ function wn(t) {
    return t === "scale" ? 1 : 0;
-@@ -719,7 +725,12 @@ function We({
-   return /* @__PURE__ */ Ct(
-     D.div,
+@@ -1014,7 +1020,12 @@ function $n({
+   return /* @__PURE__ */ G(
+     I.div,
      {
 -      style: { display: "contents" },
 +      // ADR 011 I7 live-bug fix: `display:contents` generates no box, so the
@@ -64,8 +64,8 @@ index c53e909..3bfad28 100644
 +      // becomes the containing block for the absolutely-positioned primitive
 +      // nested beneath — preserving the target's authored x/y.
 +      style: { position: "absolute", inset: 0 },
-       initial: Be(a.animate),
-       animate: a.animate,
+       initial: Sn(l.animate),
+       animate: l.animate,
        transition: c,
 diff --git a/node_modules/@lumencast/runtime/src/animate/keyframes.ts b/node_modules/@lumencast/runtime/src/animate/keyframes.ts
 index 5a7a10d..784e212 100644
