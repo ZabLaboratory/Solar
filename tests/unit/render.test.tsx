@@ -149,13 +149,22 @@ describe("Solar mount() over @lumencast/runtime", () => {
     // Render-vocab bundle (what Orion's lowerRenderProps serves): text.font +
     // image.width/height. Proves the runtime fixes — text.tsx applies
     // fontFamily, image.tsx honours width/height instead of forcing 100%.
+    //
+    // `@lumencast/runtime` 0.7.0 (LSML 1.2, ADR 002 #F — Bastion T1/T2) gates
+    // every image `src` BEFORE it reaches the DOM, deny-by-default:
+    //   T2 — only `https:` URLs may reach a remote host (no `http:`).
+    //   T1 — the URL host must appear in the bundle's `assets.allowedHosts`.
+    // A bundle that violates either has its `<img>` omitted entirely. The
+    // host (`cdn.example`) is declared and the scheme is https so the image
+    // renders — this mirrors the contract Orion's compiler now emits.
     const bundle: RenderBundle = {
       scene_version: SCENE_VERSION,
+      assets: { allowedHosts: ["cdn.example"] },
       root: {
         kind: "stack",
         children: [
           { kind: "text", id: "t", props: { value: "FONT", font: "Bebas Neue", size: 48 } },
-          { kind: "image", id: "i", props: { src: "http://x/logo.svg", width: 96, height: 64, fit: "contain" } },
+          { kind: "image", id: "i", props: { src: "https://cdn.example/logo.svg", width: 96, height: 64, fit: "contain" } },
         ],
       },
     };
@@ -173,7 +182,7 @@ describe("Solar mount() over @lumencast/runtime", () => {
     expect(span?.style.fontFamily).toContain("Bebas Neue");
     expect(img?.style.width).toBe("96px");
     expect(img?.style.height).toBe("64px");
-    expect(img?.getAttribute("src")).toBe("http://x/logo.svg");
+    expect(img?.getAttribute("src")).toBe("https://cdn.example/logo.svg");
 
     handle.disconnect();
     target.remove();

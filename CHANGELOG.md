@@ -5,6 +5,38 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [Unreleased]
+
+### Changed
+
+- Bump `@lumencast/runtime` **^0.6.0 → ^0.7.0** (lockfile resolves `0.7.0`).
+  Solar's public surface (`mount()`, `MountOptions`, `SolarError`/`SolarStatus`)
+  is unchanged: the runtime's `mount` / `MountOptions` / `LumencastError` /
+  `LumencastStatus` / `RenderNode` / `RenderBundle` signatures Solar consumes
+  are byte-identical across 0.6 → 0.7, so the adapter (`src/mount.ts`,
+  `src/types/index.ts`) needed no code change and `tsc -b` is green untouched.
+- Re-target the ADR 011 I7 keyframe-compositing `patch-package` patch from
+  `@lumencast/runtime@0.6.0` to `@lumencast/runtime@0.7.0`. The fix is still
+  NOT upstreamed in 0.7.0 (the `display:contents` dead-wrapper box and the
+  `translateX`/`translateY` → framer `x`/`y` mapping are both still absent in
+  the published 0.7.0 dist), so the patch remains necessary and is regenerated
+  against the 0.7.0 files (`patches/@lumencast+runtime+0.7.0.patch`, 5 file
+  diffs — same edits as before). The obsolete `0.6.0` patch is removed.
+  `npm ci` re-applies the patch cleanly.
+
+### Fixed
+
+- `tests/unit/render.test.tsx` — adapt the render-vocab test bundle to
+  `@lumencast/runtime` 0.7.0's new **deny-by-default asset host gate** (LSML
+  1.2, ADR 002 #F — Bastion T1/T2). 0.7.0 routes every image `src` through
+  `gateSrc(...)` before the DOM: T2 admits only `https:` schemes, T1 requires
+  the URL host to appear in the bundle's `assets.allowedHosts`. A bundle with
+  no allowlist has its `<img>` omitted entirely. The test's `http://x/logo.svg`
+  (no allowlist) silently produced no `<img>` under 0.7. Bundle updated to
+  declare `assets.allowedHosts: ["cdn.example"]` and serve
+  `https://cdn.example/logo.svg`; assertions on `img.width`/`height`/`src`
+  preserved. This is a legitimate runtime hardening, not a Solar regression.
+
 ## [0.2.9] - 2026-06-13
 
 Fix the keyframe-animation RUNTIME so `core.animation.play@1` actually moves
