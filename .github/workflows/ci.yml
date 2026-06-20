@@ -3,8 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [main]
-  push:
-    branches: [main]
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -13,11 +11,20 @@ concurrency:
 permissions:
   contents: read
 
+# ---------------------------------------------------------------------------
+# Self-hosted runners on vps-ovh (org GitHub Actions billing frozen).
+# Jobs run on the shared org-scoped ephemeral pool (label `vps-ovh`).
+# Node toolchain via setup-node; Playwright installs Chromium + system deps
+# on the runner (--with-deps, runner is root so apt works). No Docker needed.
+# CI runs on `pull_request` ONLY (Solar has no VPS deploy; release.yml on tag).
+# ---------------------------------------------------------------------------
+
 jobs:
   check:
     name: Lint + typecheck + test + build
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+    runs-on: [self-hosted, vps-ovh]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -31,15 +38,15 @@ jobs:
       - run: npm run build
       - run: npm run check:bundle
       # ADR 001 §6.3 gate: the served host bundle must load and mount() in
-      # a real browser with NO import map. Runs against the built
-      # dist/host/ (produced by `npm run build` above).
+      # a real browser with NO import map. Runs against the built dist/host/.
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
 
   deps-audit:
     name: Dependency audit (npm audit)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, vps-ovh]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
@@ -51,25 +58,27 @@ jobs:
 
   secret-scan:
     name: Secret scan (trufflehog)
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, vps-ovh]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - name: Install trufflehog
+        # Native binary — the docker action exits 125 on the no-Docker runner.
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh \
+            | sh -s -- -b "$RUNNER_TEMP/bin" v3.90.10
+          "$RUNNER_TEMP/bin/trufflehog" --version
       - name: TruffleHog scan
-        # Empty base + head=HEAD triggers filesystem mode, which works
-        # identically on push (where base==head) and pull_request events.
-        uses: trufflesecurity/trufflehog@main
-        with:
-          path: ./
-          base: ""
-          head: HEAD
-          extra_args: --results=verified,unknown
+        run: |
+          "$RUNNER_TEMP/bin/trufflehog" git file://. --fail --no-update --results=verified,unknown
 
   lockfile-check:
     name: Lockfile check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, vps-ovh]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4
@@ -77,13 +86,13 @@ jobs:
         with:
           node-version: "22"
       - name: Verify package-lock.json is in sync with package.json
-        # `npm ci` strict-mode rejects any drift between package.json and
-        # package-lock.json with EUSAGE, so a successful run is the proof.
+        # `npm ci` strict-mode rejects any drift with EUSAGE.
         run: npm ci --ignore-scripts
 
   codeowners-check:
     name: CODEOWNERS present
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, vps-ovh]
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4

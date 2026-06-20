@@ -11,7 +11,8 @@ permissions:
 jobs:
   build-and-release:
     name: Build and publish bundle tarball
-    runs-on: ubuntu-latest
+    # Self-hosted org-scoped pool on vps-ovh (org GitHub Actions billing frozen).
+    runs-on: [self-hosted, vps-ovh]
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
