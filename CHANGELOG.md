@@ -7,35 +7,32 @@ behavioural changes that keep the `mount()` API stable).
 
 ## [Unreleased]
 
+## [0.2.10] - 2026-06-24
+
+### Added
+
+- **`x-zab.capture` device resolution** (Lumencast ADR 004 §A1.3). `mount()`
+  now forwards a `resolveCaptureDevice(deviceRef, sourceKind)` resolver to the
+  runtime's ACQUIRE path. The default resolver reads a host-injected page
+  global, `window.__ZAB_CAPTURE_DEVICES__` (a `deviceRef → deviceId` map the
+  Prism preview host pins via its scene-server bootstrap), and maps a bundle's
+  LOGICAL `deviceRef` onto a physical `getUserMedia` `deviceId`. Absent/empty
+  map → `null` → the runtime acquires the host's default cam (no constraint).
+  A host may override via `MountOptions.resolveCaptureDevice`. Solar never
+  calls `getUserMedia` itself — acquisition stays in the runtime. New public
+  type `ResolveCaptureDevice` (`src/types/index.ts`); wiring in `src/mount.ts`.
+  Only consulted on a capture-capable host (the Electron preview webview);
+  on-air (CEF/Pulsar) renders the placeholder.
+
 ### Changed
 
-- Bump `@lumencast/runtime` **^0.6.0 → ^0.7.0** (lockfile resolves `0.7.0`).
-  Solar's public surface (`mount()`, `MountOptions`, `SolarError`/`SolarStatus`)
-  is unchanged: the runtime's `mount` / `MountOptions` / `LumencastError` /
-  `LumencastStatus` / `RenderNode` / `RenderBundle` signatures Solar consumes
-  are byte-identical across 0.6 → 0.7, so the adapter (`src/mount.ts`,
-  `src/types/index.ts`) needed no code change and `tsc -b` is green untouched.
-- Re-target the ADR 011 I7 keyframe-compositing `patch-package` patch from
-  `@lumencast/runtime@0.6.0` to `@lumencast/runtime@0.7.0`. The fix is still
-  NOT upstreamed in 0.7.0 (the `display:contents` dead-wrapper box and the
-  `translateX`/`translateY` → framer `x`/`y` mapping are both still absent in
-  the published 0.7.0 dist), so the patch remains necessary and is regenerated
-  against the 0.7.0 files (`patches/@lumencast+runtime+0.7.0.patch`, 5 file
-  diffs — same edits as before). The obsolete `0.6.0` patch is removed.
-  `npm ci` re-applies the patch cleanly.
-
-### Fixed
-
-- `tests/unit/render.test.tsx` — adapt the render-vocab test bundle to
-  `@lumencast/runtime` 0.7.0's new **deny-by-default asset host gate** (LSML
-  1.2, ADR 002 #F — Bastion T1/T2). 0.7.0 routes every image `src` through
-  `gateSrc(...)` before the DOM: T2 admits only `https:` schemes, T1 requires
-  the URL host to appear in the bundle's `assets.allowedHosts`. A bundle with
-  no allowlist has its `<img>` omitted entirely. The test's `http://x/logo.svg`
-  (no allowlist) silently produced no `<img>` under 0.7. Bundle updated to
-  declare `assets.allowedHosts: ["cdn.example"]` and serve
-  `https://cdn.example/logo.svg`; assertions on `img.width`/`height`/`src`
-  preserved. This is a legitimate runtime hardening, not a Solar regression.
+- Bump `@lumencast/runtime` from the local `0.8.0` test tarball to the
+  published **`^0.9.0`** from npm (lockfile resolves `0.9.0`, transitively
+  `@lumencast/protocol@0.9.0`). 0.9.0 ships context-aware capture
+  (ACQUIRE/PLACEHOLDER) and the ADR 011 I7 keyframe-compositing fix **natively**
+  — the `patch-package` crutch (`patches/`, the `.local-runtime/` test tarball,
+  and the `patch-package` devDependency) is removed entirely; `npm ci` no longer
+  applies any patch. Solar's public surface is unchanged.
 
 ## [0.2.9] - 2026-06-13
 

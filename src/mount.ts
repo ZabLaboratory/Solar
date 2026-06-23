@@ -32,7 +32,32 @@ import type {
 } from "@lumencast/runtime";
 import { orionBundleUrl } from "./internal/orion-bundle-url";
 import { validateOptions } from "./internal/validate-options";
-import type { MountOptions, SolarError, SolarHandle, SolarStatus } from "./types";
+import type {
+  MountOptions,
+  ResolveCaptureDevice,
+  SolarError,
+  SolarHandle,
+  SolarStatus,
+} from "./types";
+
+// Contract with the Prism preview host : the scene-server's bootstrap script
+// pins a `deviceRef → deviceId` map on the page before Solar mounts. ACQUIRE
+// (the capture-capable webview) reads it to map a bundle's LOGICAL deviceRef
+// onto a physical Electron media device. The name is shared verbatim with
+// Prism's `injectBootstrap` (scene-server.ts) — change it in BOTH places.
+const ZAB_CAPTURE_DEVICES_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
+
+// Default resolver : look the logical deviceRef up in the host-injected map.
+// Absent/empty map → null → the runtime calls getUserMedia WITHOUT a deviceId
+// constraint (the host's default cam). Solar never calls getUserMedia itself ;
+// the runtime owns acquisition.
+const captureDeviceResolver: ResolveCaptureDevice = (deviceRef) => {
+  const map = (
+    globalThis as { [ZAB_CAPTURE_DEVICES_GLOBAL]?: Record<string, string> }
+  )[ZAB_CAPTURE_DEVICES_GLOBAL];
+  const id = map?.[deviceRef];
+  return id ? { deviceId: id } : null;
+};
 
 export function mount(options: MountOptions): SolarHandle {
   // Host-friendly validation with Solar's own message prefix. The runtime
@@ -61,6 +86,10 @@ export function mount(options: MountOptions): SolarHandle {
     ...(options.onError
       ? { onError: (err: LumencastError): void => options.onError?.(toSolarError(err)) }
       : {}),
+    // ACQUIRE device mapping : a host-supplied resolver wins ; otherwise the
+    // default reads the Prism-injected page global. Either way the runtime
+    // only uses the result as a live getUserMedia constraint.
+    resolveCaptureDevice: options.resolveCaptureDevice ?? captureDeviceResolver,
   };
 
   const handle = mountRuntime(runtimeOptions);

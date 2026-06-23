@@ -63,7 +63,25 @@ export interface MountOptions {
   scene?: string;
   onError?: (err: SolarError) => void;
   onStatus?: (status: SolarStatus) => void;
+  /** Host resolver for the `x-zab.capture` primitive's ACQUIRE mode (runtime
+   *  ADR 004 §A1.3). Given the LOGICAL `(deviceRef, sourceKind)` from the
+   *  bundle, return `{ deviceId }` to pin a physical device, or `null` for the
+   *  host's default device. Forwarded verbatim to the runtime ; `deviceId`
+   *  is only ever a live `getUserMedia` constraint, never enters the bundle
+   *  or its content hash. Only consulted on a capture-capable host (the
+   *  Electron preview webview) ; ignored on-air (CEF/Pulsar render the
+   *  placeholder). */
+  resolveCaptureDevice?: ResolveCaptureDevice;
 }
+
+/** `(deviceRef, sourceKind) → { deviceId } | null` — see
+ *  {@link MountOptions.resolveCaptureDevice}. Structurally identical to the
+ *  runtime's `ResolveCaptureDevice` ; re-declared here so the Zab-facing
+ *  surface owns its own contract (no runtime type leaks across `mount()`). */
+export type ResolveCaptureDevice = (
+  deviceRef: string,
+  sourceKind: string,
+) => { deviceId?: string } | null;
 
 export interface SolarHandle {
   /** Tear down the WS, unmount the React tree, release timers. Idempotent. */
