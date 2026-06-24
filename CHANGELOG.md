@@ -7,6 +7,20 @@ behavioural changes that keep the `mount()` API stable).
 
 ## [Unreleased]
 
+## [0.2.11] - 2026-06-24
+
+### Fixed
+
+- **Transparent host page background** (`host.html`). The host page now sets
+  `background: transparent` instead of `#000`. Pulsar's CEF browser_source
+  composites the host over the OBS scene in alpha; an opaque background painted
+  a full-frame black fill that hid every native OBS source anchored behind the
+  browser_source. For an `x-zab.capture` scene — whose only on-air content is a
+  transparent placeholder (getUserMedia is blocked on air) — that produced a
+  fully black antenna while the native cam/screen source rendered correctly but
+  invisibly underneath. Opaque scene content still paints over the transparent
+  page exactly as before, so non-capture scenes are unchanged.
+
 ## [0.2.10] - 2026-06-24
 
 ### Added
