@@ -1,0 +1,79 @@
+name: Release
+
+# Restores the Solar release pipeline removed in #26 (commit 7fd68de), where
+# Solar was switched to manual VPS hot-pushes. That left no versioned source of
+# truth for the dist/ artefacts that Orion's static-serve and Prism's vendoring
+# both consume — a fresh box could not be rebuilt. This re-creates the
+# MECHANISM: a semver tag push builds dist/ and publishes the versioned tarball
+# as a GitHub Release asset.
+#
+# Asset contract (DO NOT CHANGE without updating Orion deploy.yml): the asset is
+# named `solar-<tag>.tgz` and is `dist/` packed flat (`tar -C dist .`). Orion's
+# deploy.yml downloads it anonymously from
+#   releases/download/<tag>/solar-<tag>.tgz
+# and extracts it into $APP_PATH/solar/<tag>. Solar is a PUBLIC repo so the
+# download needs no token.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and publish bundle tarball
+    # Org Actions billing is frozen → the whole org runs on the self-hosted
+    # vps-ovh pool, not ubuntu-latest (see zab-ci-self-hosted-runner-substrate).
+    # Runners are EPHEMERAL/JIT (spawned per job), so setup-node's npm cache
+    # never hits — omitted on purpose (same rationale as Orion ci.yml).
+    runs-on: [self-hosted, vps-ovh]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - run: npm run check:bundle
+
+      - name: Install Playwright Chromium
+        # No --with-deps: the JIT self-hosted runner is non-root with nosuid, so
+        # the sudo apt step of --with-deps fails ("effective uid is not 0").
+        # The pool image bakes the OS deps; we only fetch the browser binary.
+        run: npx playwright install chromium chromium-headless-shell
+      - run: npm run test:e2e
+
+      - name: Resolve version from tag
+        id: version
+        # refs/tags/v1.2.3 → value=1.2.3
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package.json version matches tag
+        run: |
+          pkg_version=$(node -p "require('./package.json').version")
+          if [ "$pkg_version" != "${{ steps.version.outputs.value }}" ]; then
+            echo "::error::package.json version ($pkg_version) does not match tag (${{ steps.version.outputs.value }})"
+            exit 1
+          fi
+
+      - name: Pack dist as solar-vX.Y.Z.tgz
+        # Versioned tarball consumed by Orion v2 static-serve and Prism
+        # vendoring via gh release. Flat pack of dist/ (asset-name + layout
+        # are a contract with Orion deploy.yml — see header).
+        run: |
+          mkdir -p release
+          tar -czf "release/solar-${GITHUB_REF_NAME}.tgz" -C dist .
+          ls -la release/
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: release/solar-*.tgz
