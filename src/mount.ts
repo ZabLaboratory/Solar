@@ -24,7 +24,12 @@
 // validates options up-front (host-friendly errors with the `solar.mount:`
 // prefix the hosts assert on) and delegates.
 
-import { mount as mountRuntime } from "@lumencast/runtime";
+import {
+  createPeerViewerFromInjection,
+  mount as mountRuntime,
+  type PeerViewer,
+  type PeerViewerInjection,
+} from "@lumencast/runtime";
 import type {
   LumencastError,
   LumencastStatus,
@@ -59,11 +64,97 @@ const captureDeviceResolver: ResolveCaptureDevice = (deviceRef) => {
   return id ? { deviceId: id } : null;
 };
 
+// Contract with the Prism return-webview host (ADR 006 #3↔#4 glue) : when the
+// page is showing a multi-publisher show, the scene-server pins the room's
+// viewer credentials on the page before Solar mounts. Solar then joins the Meet
+// room as a VIEWER (no capture) and feeds the runtime's LIVE `media` primitive
+// (`meet.peer` node) the peer streams keyed by `peer_label`. Absent → Solar
+// mounts exactly as before (no viewer, the `meet.peer` box stays stream-less).
+// Shared verbatim with Prism's scene-server injection — change it in BOTH.
+const ZAB_PEER_VIEWER_GLOBAL = "__ZAB_PEER_VIEWER__";
+
+/** One room's credentials the scene-server pins so Solar can join it as a
+ *  viewer. Mirrors the ZabCam room credentials (#6) ; the token is the
+ *  room-level Meet token, NOT an antenne JWT. */
+interface PeerViewerRoom {
+  signalingUrl: string;
+  roomId: string;
+  token: string;
+}
+
+/** Read the host-injected viewer config (FINAL MODEL : multi-room
+ *  `{ rooms: [...] }`). Returns the normalised injection the runtime's
+ *  `createPeerViewerFromInjection` consumes, or `null` when no usable room is
+ *  present. The legacy single-room shape is still tolerated (back-compat) and
+ *  normalised by the runtime. */
+function readPeerViewerInjection(): PeerViewerInjection | null {
+  const isUsableRoom = (r: unknown): r is PeerViewerRoom =>
+    typeof r === "object" &&
+    r !== null &&
+    typeof (r as PeerViewerRoom).signalingUrl === "string" &&
+    typeof (r as PeerViewerRoom).roomId === "string" &&
+    typeof (r as PeerViewerRoom).token === "string" &&
+    (r as PeerViewerRoom).signalingUrl !== "" &&
+    (r as PeerViewerRoom).roomId !== "";
+
+  const cfg = (
+    globalThis as {
+      [ZAB_PEER_VIEWER_GLOBAL]?: { rooms?: unknown } | PeerViewerRoom;
+    }
+  )[ZAB_PEER_VIEWER_GLOBAL];
+  if (cfg === undefined) return null;
+
+  // Multi-room shape `{ rooms: [...] }` — keep only usable rooms.
+  if ("rooms" in cfg && Array.isArray(cfg.rooms)) {
+    const rooms = cfg.rooms.filter(isUsableRoom);
+    return rooms.length > 0 ? { rooms } : null;
+  }
+  // Legacy single-room shape — pass through if usable.
+  return isUsableRoom(cfg) ? { rooms: [cfg] } : null;
+}
+
 export function mount(options: MountOptions): SolarHandle {
   // Host-friendly validation with Solar's own message prefix. The runtime
   // validates too, but its messages say "Lumencast" — hosts assert on
   // "solar.mount:".
   validateOptions(options);
+
+  // ADR 006 #3 — if the host pinned room viewer credentials, join the Meet room
+  // as a viewer and bridge its peer streams into the runtime's LIVE `media`
+  // primitive. The viewer OWNS the peer connections + track lifecycle ; the
+  // primitive is a pure consumer (RC-ReadOnly : it never mutates the scene, and
+  // RC-Geo is enforced inside the primitive — the stream fills the node's box).
+  const peerViewerInjection = readPeerViewerInjection();
+  let peerViewer: PeerViewer | null = null;
+  if (peerViewerInjection !== null) {
+    // FINAL MODEL — join EVERY pinned room and aggregate the peers into one
+    // `peer_label → stream` registry (first-connected-wins). The `meet.peer`
+    // renderer resolves a label to its stream regardless of which room it
+    // published in. The viewer announce name is set per-room by the runtime
+    // (default `solar-viewer`), distinct from any publisher's `peer_label`.
+    peerViewer = createPeerViewerFromInjection(peerViewerInjection);
+    // Join is async ; a `meet.peer` node that mounts before a peer connects
+    // shows a stream-less box and re-renders via `subscribePeerStream` on
+    // arrival. A join failure must not take the whole scene down — surface it
+    // through `onError` (broadcast hosts log, control/test overlay it) and let
+    // the rest of the scene render.
+    void peerViewer.join().catch((err: unknown) => {
+      options.onError?.({
+        code: "INTERNAL",
+        message: `peer-viewer join failed: ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+        recoverable: true,
+      });
+    });
+
+    // A webview reload/close doesn't run `disconnect()` (the host owns that),
+    // so leave the mesh explicitly on unload: the server then removes the peer
+    // immediately (a {type:"leave"} is sent + the socket closes) instead of
+    // waiting for the heartbeat / TCP timeout. This is what stops `solar-viewer`
+    // ghosts from piling up in a room across reloads.
+    window.addEventListener("beforeunload", () => peerViewer?.leave());
+  }
 
   const runtimeOptions: RuntimeMountOptions = {
     target: options.target,
@@ -90,12 +181,26 @@ export function mount(options: MountOptions): SolarHandle {
     // default reads the Prism-injected page global. Either way the runtime
     // only uses the result as a live getUserMedia constraint.
     resolveCaptureDevice: options.resolveCaptureDevice ?? captureDeviceResolver,
+    // ADR 006 #4 — when a viewer is active, thread its peer-stream resolvers so
+    // LIVE `media` nodes render the matching peer's MediaStream in `srcObject`.
+    ...(peerViewer !== null
+      ? {
+          resolvePeerStream: peerViewer.resolvePeerStream,
+          subscribePeerStream: peerViewer.subscribePeerStream,
+        }
+      : {}),
   };
 
   const handle = mountRuntime(runtimeOptions);
 
   return {
-    disconnect: () => handle.disconnect(),
+    disconnect: () => {
+      // Tear the viewer down with the scene : leave the room and drop the peer
+      // connections (the viewer owns them) so a webview reload doesn't leak a
+      // ghost peer into the mesh.
+      peerViewer?.leave();
+      handle.disconnect();
+    },
     setToken: (token) => handle.setToken(token),
   };
 }
