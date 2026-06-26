@@ -56,12 +56,18 @@ const ZAB_CAPTURE_DEVICES_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
 // Absent/empty map → null → the runtime calls getUserMedia WITHOUT a deviceId
 // constraint (the host's default cam). Solar never calls getUserMedia itself ;
 // the runtime owns acquisition.
-const captureDeviceResolver: ResolveCaptureDevice = (deviceRef) => {
+const captureDeviceResolver: ResolveCaptureDevice = (deviceRef, sourceKind) => {
   const map = (
     globalThis as { [ZAB_CAPTURE_DEVICES_GLOBAL]?: Record<string, string> }
   )[ZAB_CAPTURE_DEVICES_GLOBAL];
   const id = map?.[deviceRef];
-  return id ? { deviceId: id } : null;
+  if (id === undefined || id === "") return null;
+  // A screen/window id is a desktopCapturer source id (→ chromeMediaSource:
+  // desktop), a cam id is a getUserMedia deviceId. The runtime applies each
+  // accordingly in `acquireStream`.
+  return sourceKind === "media.screen" || sourceKind === "media.window"
+    ? { captureSourceId: id }
+    : { deviceId: id };
 };
 
 // Contract with the Prism return-webview host (ADR 006 #3↔#4 glue) : when the
