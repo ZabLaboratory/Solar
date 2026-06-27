@@ -52,22 +52,78 @@ import type {
 // Prism's `injectBootstrap` (scene-server.ts) — change it in BOTH places.
 const ZAB_CAPTURE_DEVICES_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
 
-// Default resolver : look the logical deviceRef up in the host-injected map.
-// Absent/empty map → null → the runtime calls getUserMedia WITHOUT a deviceId
-// constraint (the host's default cam). Solar never calls getUserMedia itself ;
-// the runtime owns acquisition.
-const captureDeviceResolver: ResolveCaptureDevice = (deviceRef, sourceKind) => {
+// One host-injected entry: a PORTABLE label + the picker-origin deviceId (NOT
+// reusable here) for cams, or an origin-independent captureSourceId for screens.
+interface ZabCaptureEntry {
+  label?: string;
+  deviceId?: string;
+  captureSourceId?: string;
+  kind?: string;
+}
+
+// Per-origin label → deviceId, resolved ONCE and shared across capture nodes.
+// getUserMedia deviceIds are salted per origin/partition, so the picker-origin
+// id is useless in this webview; the LABEL is the portable key. enumerateDevices
+// only exposes labels after a getUserMedia grant in THIS origin, so we warm one
+// up first (auto-granted in the preview webview), best-effort.
+let originLabelMapPromise: Promise<Record<string, string>> | null = null;
+function originLabelMap(): Promise<Record<string, string>> {
+  if (originLabelMapPromise !== null) return originLabelMapPromise;
+  originLabelMapPromise = (async () => {
+    const md = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+    if (md?.enumerateDevices === undefined) return {};
+    try {
+      if (md.getUserMedia !== undefined) {
+        const warm = await md.getUserMedia({ video: true });
+        for (const t of warm.getTracks()) t.stop();
+      }
+    } catch {
+      /* permission denied → labels stay blank, resolve to {} (PLACEHOLDER) */
+    }
+    const out: Record<string, string> = {};
+    try {
+      for (const d of await md.enumerateDevices()) {
+        if (d.label.length > 0) out[d.label] = d.deviceId;
+      }
+    } catch {
+      /* best-effort */
+    }
+    return out;
+  })();
+  return originLabelMapPromise;
+}
+
+// Default resolver (ADR 004 §A1.3, async per 2026-06-27 amendment). A declared
+// deviceRef with no resolvable device → `null` → PLACEHOLDER (the runtime no
+// longer falls back to the host default cam). The runtime AWAITS this, so there
+// is no race against a late global mutation.
+const captureDeviceResolver: ResolveCaptureDevice = async (
+  deviceRef,
+  sourceKind,
+) => {
   const map = (
-    globalThis as { [ZAB_CAPTURE_DEVICES_GLOBAL]?: Record<string, string> }
+    globalThis as {
+      [ZAB_CAPTURE_DEVICES_GLOBAL]?: Record<string, ZabCaptureEntry>;
+    }
   )[ZAB_CAPTURE_DEVICES_GLOBAL];
-  const id = map?.[deviceRef];
-  if (id === undefined || id === "") return null;
-  // A screen/window id is a desktopCapturer source id (→ chromeMediaSource:
-  // desktop), a cam id is a getUserMedia deviceId. The runtime applies each
-  // accordingly in `acquireStream`.
-  return sourceKind === "media.screen" || sourceKind === "media.window"
-    ? { captureSourceId: id }
-    : { deviceId: id };
+  const entry = map?.[deviceRef];
+  if (entry === undefined) {
+    return null;
+  }
+  // Screen/window: a desktopCapturer source id is origin-independent → verbatim.
+  if (sourceKind === "media.screen" || sourceKind === "media.window") {
+    return entry.captureSourceId !== undefined && entry.captureSourceId !== ""
+      ? { captureSourceId: entry.captureSourceId }
+      : null;
+  }
+  // Cam/mic: re-resolve the PORTABLE label against this origin's devices. No
+  // label / no match → null → PLACEHOLDER, never the wrong default cam.
+  if (entry.label === undefined || entry.label === "") {
+    return null;
+  }
+  const byLabel = await originLabelMap();
+  const local = byLabel[entry.label];
+  return local !== undefined ? { deviceId: local } : null;
 };
 
 // Contract with the Prism return-webview host (ADR 006 #3↔#4 glue) : when the

@@ -74,14 +74,20 @@ export interface MountOptions {
   resolveCaptureDevice?: ResolveCaptureDevice;
 }
 
-/** `(deviceRef, sourceKind) → { deviceId } | null` — see
- *  {@link MountOptions.resolveCaptureDevice}. Structurally identical to the
- *  runtime's `ResolveCaptureDevice` ; re-declared here so the Zab-facing
- *  surface owns its own contract (no runtime type leaks across `mount()`). */
+/** `(deviceRef, sourceKind) → { deviceId | captureSourceId } | null`, sync OR
+ *  async — see {@link MountOptions.resolveCaptureDevice}. Structurally
+ *  identical to the runtime's `ResolveCaptureDevice` ; re-declared here so the
+ *  Zab-facing surface owns its own contract. MAY return a Promise: physical
+ *  getUserMedia ids are salted per origin/partition, so the host re-resolves a
+ *  portable key (label) against THIS context's devices — an async step. `null`
+ *  → no device bound → PLACEHOLDER (never the host default camera). */
 export type ResolveCaptureDevice = (
   deviceRef: string,
   sourceKind: string,
-) => { deviceId?: string } | null;
+) =>
+  | { deviceId?: string; captureSourceId?: string }
+  | null
+  | Promise<{ deviceId?: string; captureSourceId?: string } | null>;
 
 export interface SolarHandle {
   /** Tear down the WS, unmount the React tree, release timers. Idempotent. */
