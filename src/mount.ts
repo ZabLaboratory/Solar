@@ -28,7 +28,6 @@ import {
   createPeerViewerFromInjection,
   mount as mountRuntime,
   type PeerViewer,
-  type PeerViewerInjection,
 } from "@lumencast/runtime";
 import type {
   LumencastError,
@@ -36,6 +35,8 @@ import type {
   MountOptions as RuntimeMountOptions,
 } from "@lumencast/runtime";
 import { orionBundleUrl } from "./internal/orion-bundle-url";
+import { readPeerViewerInjection } from "./peer-viewer/injection";
+import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
 import { validateOptions } from "./internal/validate-options";
 import type {
   MountOptions,
@@ -126,54 +127,12 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
   return local !== undefined ? { deviceId: local } : null;
 };
 
-// Contract with the Prism return-webview host (ADR 006 #3↔#4 glue) : when the
-// page is showing a multi-publisher show, the scene-server pins the room's
-// viewer credentials on the page before Solar mounts. Solar then joins the Meet
-// room as a VIEWER (no capture) and feeds the runtime's LIVE `media` primitive
-// (`meet.peer` node) the peer streams keyed by `peer_label`. Absent → Solar
-// mounts exactly as before (no viewer, the `meet.peer` box stays stream-less).
-// Shared verbatim with Prism's scene-server injection — change it in BOTH.
-const ZAB_PEER_VIEWER_GLOBAL = "__ZAB_PEER_VIEWER__";
-
-/** One room's credentials the scene-server pins so Solar can join it as a
- *  viewer. Mirrors the ZabCam room credentials (#6) ; the token is the
- *  room-level Meet token, NOT an antenne JWT. */
-interface PeerViewerRoom {
-  signalingUrl: string;
-  roomId: string;
-  token: string;
-}
-
-/** Read the host-injected viewer config (FINAL MODEL : multi-room
- *  `{ rooms: [...] }`). Returns the normalised injection the runtime's
- *  `createPeerViewerFromInjection` consumes, or `null` when no usable room is
- *  present. The legacy single-room shape is still tolerated (back-compat) and
- *  normalised by the runtime. */
-function readPeerViewerInjection(): PeerViewerInjection | null {
-  const isUsableRoom = (r: unknown): r is PeerViewerRoom =>
-    typeof r === "object" &&
-    r !== null &&
-    typeof (r as PeerViewerRoom).signalingUrl === "string" &&
-    typeof (r as PeerViewerRoom).roomId === "string" &&
-    typeof (r as PeerViewerRoom).token === "string" &&
-    (r as PeerViewerRoom).signalingUrl !== "" &&
-    (r as PeerViewerRoom).roomId !== "";
-
-  const cfg = (
-    globalThis as {
-      [ZAB_PEER_VIEWER_GLOBAL]?: { rooms?: unknown } | PeerViewerRoom;
-    }
-  )[ZAB_PEER_VIEWER_GLOBAL];
-  if (cfg === undefined) return null;
-
-  // Multi-room shape `{ rooms: [...] }` — keep only usable rooms.
-  if ("rooms" in cfg && Array.isArray(cfg.rooms)) {
-    const rooms = cfg.rooms.filter(isUsableRoom);
-    return rooms.length > 0 ? { rooms } : null;
-  }
-  // Legacy single-room shape — pass through if usable.
-  return isUsableRoom(cfg) ? { rooms: [cfg] } : null;
-}
+// The peer-viewer injection sources (preview `__ZAB_PEER_VIEWER__` + antenne
+// LSDP `__ZAB_LSDP_PEER_VIEWER__`) and the slotRef re-keying registry live in
+// `./peer-viewer/*` (ADR Blue 009 §3.2–3.3). `mount()` reads both sources, joins
+// every pinned room as a VIEWER (no capture), and feeds the runtime the peer
+// streams keyed by `peer_label`. On the antenne, slot→peer assignments re-key
+// `x-zab.meet-peer` nodes by `slotRef` ; on the preview path nothing changes.
 
 export function mount(options: MountOptions): SolarHandle {
   // Host-friendly validation with Solar's own message prefix. The runtime
@@ -186,8 +145,16 @@ export function mount(options: MountOptions): SolarHandle {
   // primitive. The viewer OWNS the peer connections + track lifecycle ; the
   // primitive is a pure consumer (RC-ReadOnly : it never mutates the scene, and
   // RC-Geo is enforced inside the primitive — the stream fills the node's box).
-  const peerViewerInjection = readPeerViewerInjection();
+  const { injection: peerViewerInjection, slotBindings, fromLsdp } =
+    readPeerViewerInjection();
   let peerViewer: PeerViewer | null = null;
+  // Peer-stream resolvers threaded into the runtime. On the antenne (LSDP creds
+  // effectively present) they are the slotRef-aware view that re-keys
+  // `x-zab.meet-peer` nodes through the `__cam.slots.*` assignments ; on the
+  // preview-only path they are the viewer's raw `peer_label` resolvers, BYTE-
+  // IDENTICAL to the prior wiring (ADR Blue 009 §3.2 — gated by cred presence).
+  let resolvePeerStream: PeerViewer["resolvePeerStream"] | undefined;
+  let subscribePeerStream: PeerViewer["subscribePeerStream"] | undefined;
   if (peerViewerInjection !== null) {
     // FINAL MODEL — join EVERY pinned room and aggregate the peers into one
     // `peer_label → stream` registry (first-connected-wins). The `meet.peer`
@@ -216,6 +183,28 @@ export function mount(options: MountOptions): SolarHandle {
     // waiting for the heartbeat / TCP timeout. This is what stops `solar-viewer`
     // ghosts from piling up in a room across reloads.
     window.addEventListener("beforeunload", () => peerViewer?.leave());
+
+    if (fromLsdp) {
+      // ANTENNE — slotRef re-keying (ADR Blue 009 §3.1–3.3). `x-zab.meet-peer`
+      // nodes carry only a `slotRef` ; the slot→peer binding lives in the LSDP
+      // `__cam.slots.*` deltas. The slot-aware registry maps slotRef→peer_label→
+      // stream over the viewer's raw `peer_label` registry, re-keying a slot
+      // instantly on reassignment. A bare `peer_label` (legacy `meet.peer`) key
+      // passes straight through, so this is a strict superset.
+      //
+      // ⚠️ Chaining debt : the active render only flows once the vendored
+      // Lumencast runtime renders `x-zab.meet-peer` and feeds these resolvers a
+      // `slotRef` key (and surfaces the `__cam.slots.*` deltas via `assign()`).
+      // The v0.9.0 runtime does neither, and `fromLsdp` is false until Orion #261
+      // pins LSDP viewer creds — so this path is INERT today (preview unchanged).
+      const slots = createSlotBindingRegistry(peerViewer.registry, slotBindings);
+      resolvePeerStream = slots.resolve;
+      subscribePeerStream = slots.subscribe;
+    } else {
+      // PREVIEW — raw `peer_label` resolvers, byte-identical to the prior wiring.
+      resolvePeerStream = peerViewer.resolvePeerStream;
+      subscribePeerStream = peerViewer.subscribePeerStream;
+    }
   }
 
   const runtimeOptions: RuntimeMountOptions = {
@@ -245,11 +234,9 @@ export function mount(options: MountOptions): SolarHandle {
     resolveCaptureDevice: options.resolveCaptureDevice ?? captureDeviceResolver,
     // ADR 006 #4 — when a viewer is active, thread its peer-stream resolvers so
     // LIVE `media` nodes render the matching peer's MediaStream in `srcObject`.
-    ...(peerViewer !== null
-      ? {
-          resolvePeerStream: peerViewer.resolvePeerStream,
-          subscribePeerStream: peerViewer.subscribePeerStream,
-        }
+    // On the antenne these are slotRef-aware (ADR Blue 009 §3.3).
+    ...(resolvePeerStream !== undefined && subscribePeerStream !== undefined
+      ? { resolvePeerStream, subscribePeerStream }
       : {}),
   };
 
