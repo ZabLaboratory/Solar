@@ -27,16 +27,17 @@
 import {
   createPeerViewerFromInjection,
   mount as mountRuntime,
-  type PeerViewer,
 } from "@lumencast/runtime";
 import type {
   LumencastError,
   LumencastStatus,
   MountOptions as RuntimeMountOptions,
+  ResolvePeerStream,
+  SubscribePeerStream,
 } from "@lumencast/runtime";
 import { orionBundleUrl } from "./internal/orion-bundle-url";
 import { readPeerViewerInjection } from "./peer-viewer/injection";
-import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
+import { createAntenneController } from "./peer-viewer/antenne-controller";
 import { validateOptions } from "./internal/validate-options";
 import type {
   MountOptions,
@@ -140,71 +141,74 @@ export function mount(options: MountOptions): SolarHandle {
   // "solar.mount:".
   validateOptions(options);
 
-  // ADR 006 #3 — if the host pinned room viewer credentials, join the Meet room
-  // as a viewer and bridge its peer streams into the runtime's LIVE `media`
-  // primitive. The viewer OWNS the peer connections + track lifecycle ; the
-  // primitive is a pure consumer (RC-ReadOnly : it never mutates the scene, and
-  // RC-Geo is enforced inside the primitive — the stream fills the node's box).
+  // ADR 006 #3 / ADR Blue 009 §3.2–3.3 — bridge receive-only Meet peer streams
+  // into the runtime's LIVE `media` / `x-zab.meet-peer` primitives. The viewer
+  // OWNS the peer connections + track lifecycle ; the primitive is a pure
+  // consumer (RC-ReadOnly : never mutates the scene ; RC-Geo enforced inside the
+  // primitive — the stream fills the node's box). Two activation paths :
+  //
+  //   PREVIEW (Prism) — the scene-server pins `__ZAB_PEER_VIEWER__` BEFORE mount.
+  //     Read synchronously, join every room, thread the viewer's RAW
+  //     `peer_label` resolvers. Frozen path — byte-identical to the prior wiring,
+  //     and the reserved-leaf hook is NOT registered (preview carries no
+  //     `__cam.*` projection).
+  //
+  //   ANTENNE (Pulsar CEF) — there is no Prism : the viewer creds + slot→peer
+  //     projection arrive ASYNC on Orion's LSDP, surfaced by the runtime
+  //     (≥ 0.11.0) via `onReservedLeaves`. A slot-aware controller is threaded at
+  //     mount and armed by the hook (`leaves.viewer` → join receive-only ;
+  //     `leaves.slots` → re-key `x-zab.meet-peer` nodes by `slotRef`). The legacy
+  //     `__ZAB_LSDP_PEER_VIEWER__` global (#29) still arms it synchronously for
+  //     back-compat.
   const { injection: peerViewerInjection, slotBindings, fromLsdp } =
     readPeerViewerInjection();
-  let peerViewer: PeerViewer | null = null;
-  // Peer-stream resolvers threaded into the runtime. On the antenne (LSDP creds
-  // effectively present) they are the slotRef-aware view that re-keys
-  // `x-zab.meet-peer` nodes through the `__cam.slots.*` assignments ; on the
-  // preview-only path they are the viewer's raw `peer_label` resolvers, BYTE-
-  // IDENTICAL to the prior wiring (ADR Blue 009 §3.2 — gated by cred presence).
-  let resolvePeerStream: PeerViewer["resolvePeerStream"] | undefined;
-  let subscribePeerStream: PeerViewer["subscribePeerStream"] | undefined;
-  if (peerViewerInjection !== null) {
-    // FINAL MODEL — join EVERY pinned room and aggregate the peers into one
-    // `peer_label → stream` registry (first-connected-wins). The `meet.peer`
-    // renderer resolves a label to its stream regardless of which room it
-    // published in. The viewer announce name is set per-room by the runtime
-    // (default `solar-viewer`), distinct from any publisher's `peer_label`.
-    peerViewer = createPeerViewerFromInjection(peerViewerInjection);
-    // Join is async ; a `meet.peer` node that mounts before a peer connects
-    // shows a stream-less box and re-renders via `subscribePeerStream` on
-    // arrival. A join failure must not take the whole scene down — surface it
-    // through `onError` (broadcast hosts log, control/test overlay it) and let
-    // the rest of the scene render.
-    void peerViewer.join().catch((err: unknown) => {
-      options.onError?.({
-        code: "INTERNAL",
-        message: `peer-viewer join failed: ${
-          err instanceof Error ? err.message : String(err)
-        }`,
-        recoverable: true,
-      });
+  let resolvePeerStream: ResolvePeerStream | undefined;
+  let subscribePeerStream: SubscribePeerStream | undefined;
+  let onReservedLeaves: RuntimeMountOptions["onReservedLeaves"];
+  let teardownPeerViewer: () => void = () => {};
+
+  const surfaceJoinError = (err: unknown): void => {
+    options.onError?.({
+      code: "INTERNAL",
+      message: `peer-viewer join failed: ${
+        err instanceof Error ? err.message : String(err)
+      }`,
+      recoverable: true,
     });
+  };
 
-    // A webview reload/close doesn't run `disconnect()` (the host owns that),
-    // so leave the mesh explicitly on unload: the server then removes the peer
-    // immediately (a {type:"leave"} is sent + the socket closes) instead of
-    // waiting for the heartbeat / TCP timeout. This is what stops `solar-viewer`
-    // ghosts from piling up in a room across reloads.
-    window.addEventListener("beforeunload", () => peerViewer?.leave());
-
-    if (fromLsdp) {
-      // ANTENNE — slotRef re-keying (ADR Blue 009 §3.1–3.3). `x-zab.meet-peer`
-      // nodes carry only a `slotRef` ; the slot→peer binding lives in the LSDP
-      // `__cam.slots.*` deltas. The slot-aware registry maps slotRef→peer_label→
-      // stream over the viewer's raw `peer_label` registry, re-keying a slot
-      // instantly on reassignment. A bare `peer_label` (legacy `meet.peer`) key
-      // passes straight through, so this is a strict superset.
-      //
-      // ⚠️ Chaining debt : the active render only flows once the vendored
-      // Lumencast runtime renders `x-zab.meet-peer` and feeds these resolvers a
-      // `slotRef` key (and surfaces the `__cam.slots.*` deltas via `assign()`).
-      // The v0.9.0 runtime does neither, and `fromLsdp` is false until Orion #261
-      // pins LSDP viewer creds — so this path is INERT today (preview unchanged).
-      const slots = createSlotBindingRegistry(peerViewer.registry, slotBindings);
-      resolvePeerStream = slots.resolve;
-      subscribePeerStream = slots.subscribe;
-    } else {
-      // PREVIEW — raw `peer_label` resolvers, byte-identical to the prior wiring.
-      resolvePeerStream = peerViewer.resolvePeerStream;
-      subscribePeerStream = peerViewer.subscribePeerStream;
+  if (peerViewerInjection !== null && !fromLsdp) {
+    // PREVIEW — join EVERY pinned room and thread the viewer's RAW resolvers
+    // (first-connected-wins aggregation, `peer_label`-keyed). A `meet.peer` node
+    // that mounts before its peer connects shows a stream-less box and re-renders
+    // via `subscribePeerStream` on arrival. A join failure must not take the
+    // scene down — surface it through `onError` and let the rest render.
+    const peerViewer = createPeerViewerFromInjection(peerViewerInjection);
+    void peerViewer.join().catch(surfaceJoinError);
+    // A webview reload/close doesn't run `disconnect()` (the host owns that), so
+    // leave the mesh explicitly on unload — stops `solar-viewer` ghosts piling up.
+    window.addEventListener("beforeunload", () => peerViewer.leave());
+    resolvePeerStream = peerViewer.resolvePeerStream;
+    subscribePeerStream = peerViewer.subscribePeerStream;
+    teardownPeerViewer = () => peerViewer.leave();
+  } else {
+    // ANTENNE — slot-aware controller threaded now, armed by the runtime hook
+    // (and synchronously by a mount-time `__ZAB_LSDP_PEER_VIEWER__` global, #29).
+    // `x-zab.meet-peer` nodes resolve through it ; a bare `peer_label` passes
+    // straight through, so this is a strict superset of the `meet.peer` path.
+    const controller = createAntenneController({
+      createViewer: createPeerViewerFromInjection,
+      onJoinError: surfaceJoinError,
+    });
+    if (peerViewerInjection !== null) {
+      // Back-compat : a mount-time LSDP global already carries the antenne creds
+      // (+ slot snapshot) — arm the controller exactly as the hook would.
+      controller.applyReservedLeaves({ viewer: peerViewerInjection, slots: slotBindings });
     }
+    resolvePeerStream = controller.resolvePeerStream;
+    subscribePeerStream = controller.subscribePeerStream;
+    onReservedLeaves = (leaves) => controller.applyReservedLeaves(leaves);
+    teardownPeerViewer = () => controller.leave();
   }
 
   const runtimeOptions: RuntimeMountOptions = {
@@ -238,6 +242,12 @@ export function mount(options: MountOptions): SolarHandle {
     ...(resolvePeerStream !== undefined && subscribePeerStream !== undefined
       ? { resolvePeerStream, subscribePeerStream }
       : {}),
+    // ADR Blue 009 §3.2–3.3 — on the antenne the runtime surfaces the reserved
+    // `__cam.*` LSDP leaves here (full projection on every change). The controller
+    // arms the receive-only viewer from `leaves.viewer` and re-keys
+    // `x-zab.meet-peer` nodes from `leaves.slots`. Not registered on the preview
+    // path (Prism carries no `__cam.*` projection).
+    ...(onReservedLeaves !== undefined ? { onReservedLeaves } : {}),
   };
 
   const handle = mountRuntime(runtimeOptions);
@@ -247,7 +257,7 @@ export function mount(options: MountOptions): SolarHandle {
       // Tear the viewer down with the scene : leave the room and drop the peer
       // connections (the viewer owns them) so a webview reload doesn't leak a
       // ghost peer into the mesh.
-      peerViewer?.leave();
+      teardownPeerViewer();
       handle.disconnect();
     },
     setToken: (token) => handle.setToken(token),

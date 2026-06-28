@@ -160,12 +160,16 @@ describe("peer-viewer glue (multi-room)", () => {
     });
   });
 
-  it("does NOT create a viewer when the global is absent", () => {
+  it("does NOT create a viewer at mount when the global is absent (antenne)", () => {
     mount(baseOptions());
+    // No mount-time creds → no viewer yet, but the antenne controller's slot-aware
+    // resolvers + the reserved-leaf hook ARE threaded so the runtime can light the
+    // `x-zab.meet-peer` path up once Orion's LSDP delivers the creds.
     expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
     const runtimeOpts = runtimeOptsOf();
-    expect(runtimeOpts.resolvePeerStream).toBeUndefined();
-    expect(runtimeOpts.subscribePeerStream).toBeUndefined();
+    expect(typeof runtimeOpts.resolvePeerStream).toBe("function");
+    expect(typeof runtimeOpts.subscribePeerStream).toBe("function");
+    expect(typeof runtimeOpts.onReservedLeaves).toBe("function");
   });
 
   it("does NOT create a viewer when rooms is present but all malformed", () => {
@@ -313,5 +317,116 @@ describe("peer-viewer glue — second LSDP source + slotRef re-keying (antenne)"
     };
     mount(baseOptions());
     expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
+  });
+});
+
+describe("peer-viewer glue — runtime onReservedLeaves hook (antenne, 0.11.0)", () => {
+  /** Pull the reserved-leaf sink the (mocked) runtime mount was handed. */
+  function hookOf(): (leaves: { viewer?: unknown; slots: Record<string, string> }) => void {
+    const fn = runtimeOptsOf().onReservedLeaves;
+    expect(typeof fn).toBe("function");
+    return fn as (leaves: { viewer?: unknown; slots: Record<string, string> }) => void;
+  }
+
+  it("arms the receive-only viewer from leaves.viewer (no mount-time global)", () => {
+    mount(baseOptions());
+    expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
+
+    hookOf()({
+      viewer: {
+        rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" }],
+      },
+      slots: {},
+    });
+
+    // The hook arms the viewer + joins RECEIVE-ONLY (never publishes).
+    expect(createPeerViewerFromInjection).toHaveBeenCalledWith({
+      rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" }],
+    });
+    expect(join).toHaveBeenCalledTimes(1);
+  });
+
+  it("resolves slotRef → peer_label → track once armed by the hook", () => {
+    const cam = { id: "cam-1" } as unknown as MediaStream;
+    registryResolve.mockImplementation((label: string) => (label === "alice" ? cam : null));
+    mount(baseOptions());
+
+    hookOf()({
+      viewer: {
+        rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" }],
+      },
+      slots: { "cam-caster-1": "alice" },
+    });
+
+    const resolve = runtimeOptsOf().resolvePeerStream as (k: string) => unknown;
+    expect(resolve("cam-caster-1")).toBe(cam);
+    expect(registryResolve).toHaveBeenCalledWith("alice");
+    // An unbound slot → placeholder (null), never the wrong cam.
+    expect(resolve("cam-unbound")).toBeNull();
+  });
+
+  it("reconciles the snapshot : a slot dropped from leaves.slots is released", () => {
+    const cam = { id: "cam-1" } as unknown as MediaStream;
+    registryResolve.mockImplementation((label: string) => (label === "alice" ? cam : null));
+    mount(baseOptions());
+    const hook = hookOf();
+
+    hook({
+      viewer: {
+        rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" }],
+      },
+      slots: { "cam-caster-1": "alice" },
+    });
+    const resolve = runtimeOptsOf().resolvePeerStream as (k: string) => unknown;
+    expect(resolve("cam-caster-1")).toBe(cam);
+
+    // Newer snapshot no longer carries cam-caster-1 → it must unbind (placeholder).
+    hook({ slots: {} });
+    expect(resolve("cam-caster-1")).toBeNull();
+  });
+
+  it("reconciles the live room set on a later emission via setRooms", () => {
+    const viewer = {
+      join,
+      leave,
+      resolvePeerStream,
+      subscribePeerStream,
+      setRooms: vi.fn(() => Promise.resolve()),
+      registry: { resolve: registryResolve, subscribe: vi.fn(() => () => undefined), set: vi.fn(), remove: vi.fn(), clear: vi.fn() },
+    };
+    createPeerViewerFromInjection.mockReturnValueOnce(viewer);
+    mount(baseOptions());
+    const hook = hookOf();
+
+    hook({
+      viewer: { rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "a", token: "t1" }] },
+      slots: {},
+    });
+    expect(createPeerViewerFromInjection).toHaveBeenCalledTimes(1);
+
+    hook({
+      viewer: { rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "b", token: "t2" }] },
+      slots: {},
+    });
+    // A second viewer is NOT created — the existing one reconciles its room set.
+    expect(createPeerViewerFromInjection).toHaveBeenCalledTimes(1);
+    expect(viewer.setRooms).toHaveBeenCalledWith([
+      { signalingUrl: "wss://meet.example/ws", roomId: "b", token: "t2" },
+    ]);
+  });
+
+  it("does nothing for a leaves emission with no usable viewer creds", () => {
+    mount(baseOptions());
+    hookOf()({ slots: { "cam-caster-1": "alice" } });
+    // Slots without creds can't arm the viewer — stays inert until creds arrive.
+    expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
+  });
+
+  it("is NOT registered on the preview path (frozen)", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "meet-a", token: "tok-a" }],
+    };
+    mount(baseOptions());
+    expect(runtimeOptsOf().onReservedLeaves).toBeUndefined();
   });
 });

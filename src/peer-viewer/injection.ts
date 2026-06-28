@@ -22,7 +22,7 @@
 //     inert and only the preview source is live. Solar reads it defensively so
 //     it activates the day the carrier ships, with no further Solar change.
 
-import type { PeerViewerInjection } from "@lumencast/runtime";
+import type { MultiRoomPeerViewerOptions, PeerViewerInjection } from "@lumencast/runtime";
 
 /** Prism PREVIEW source — pinned by the scene-server before Solar mounts. Shared
  *  verbatim with Prism's injection ; change it in BOTH places. */
@@ -92,6 +92,18 @@ function slotsOf(cfg: ViewerInjectionShape | undefined): Record<string, string> 
     if (typeof peerLabel === "string" && peerLabel !== "") out[slotRef] = peerLabel;
   }
   return out;
+}
+
+/** Normalise the runtime hook's opaque `__cam.viewer` leaf (ADR Blue 009 §3.2,
+ *  Orion #268) into a multi-room viewer injection. The leaf is the SAME
+ *  `{ rooms: [{ signalingUrl, roomId, token }] }` shape the LSDP global carries ;
+ *  the runtime forwards it verbatim (receive-only, never reads the token). Returns
+ *  `null` when the leaf is absent or carries no usable room — the antenne viewer
+ *  then stays unarmed. */
+export function viewerInjectionFromLeaf(raw: unknown): MultiRoomPeerViewerOptions | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const rooms = roomsOf(raw as ViewerInjectionShape);
+  return rooms.length > 0 ? { rooms } : null;
 }
 
 /** Read the viewer config from BOTH sources (preview global OR/AND LSDP global,
