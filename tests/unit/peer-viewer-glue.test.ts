@@ -12,11 +12,16 @@ const {
   createPeerViewerFromInjection,
   resolvePeerStream,
   subscribePeerStream,
+  registryResolve,
   join,
   leave,
 } = vi.hoisted(() => {
   const resolvePeerStream = vi.fn(() => null);
   const subscribePeerStream = vi.fn(() => () => undefined);
+  // A minimal `peer_label`-keyed registry the slot-binding view wraps on the
+  // antenne path. `registryResolve` lets a test assert slotRef → peer_label
+  // translation without a real WebRTC stack.
+  const registryResolve = vi.fn((_peerLabel: string): unknown => null);
   const join = vi.fn(() => Promise.resolve());
   const leave = vi.fn();
   return {
@@ -27,10 +32,20 @@ const {
       resolvePeerStream,
       subscribePeerStream,
       setRooms: vi.fn(() => Promise.resolve()),
-      registry: {},
+      registry: {
+        resolve: registryResolve,
+        subscribe: vi.fn((_l: string, cb: (s: unknown) => void) => {
+          cb(null);
+          return () => undefined;
+        }),
+        set: vi.fn(),
+        remove: vi.fn(),
+        clear: vi.fn(),
+      },
     })),
     resolvePeerStream,
     subscribePeerStream,
+    registryResolve,
     join,
     leave,
   };
@@ -46,6 +61,7 @@ import { mount } from "../../src/mount";
 import type { MountOptions } from "../../src/index";
 
 const PEER_GLOBAL = "__ZAB_PEER_VIEWER__";
+const LSDP_GLOBAL = "__ZAB_LSDP_PEER_VIEWER__";
 
 function baseOptions(over: Partial<MountOptions> = {}): MountOptions {
   return {
@@ -69,10 +85,12 @@ function runtimeOptsOf(): Record<string, unknown> {
 afterEach(() => {
   vi.clearAllMocks();
   delete (globalThis as Record<string, unknown>)[PEER_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[LSDP_GLOBAL];
 });
 
 beforeEach(() => {
   delete (globalThis as Record<string, unknown>)[PEER_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[LSDP_GLOBAL];
 });
 
 describe("peer-viewer glue (multi-room)", () => {
@@ -178,6 +196,19 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(leave).toHaveBeenCalledTimes(1);
   });
 
+  it("threads the RAW resolvers on the preview-only path (byte-identical)", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "meet-a", token: "tok-a" },
+      ],
+    };
+    mount(baseOptions());
+    const runtimeOpts = runtimeOptsOf();
+    // No LSDP source → raw viewer resolvers, NOT the slot-aware wrapper.
+    expect(runtimeOpts.resolvePeerStream).toBe(resolvePeerStream);
+    expect(runtimeOpts.subscribePeerStream).toBe(subscribePeerStream);
+  });
+
   it("surfaces a join failure through onError without throwing", async () => {
     join.mockRejectedValueOnce(new Error("ws handshake failed"));
     (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
@@ -193,5 +224,94 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({ code: "INTERNAL", recoverable: true }),
     );
+  });
+});
+
+describe("peer-viewer glue — second LSDP source + slotRef re-keying (antenne)", () => {
+  it("reads viewer creds from the LSDP global without Prism (antenne)", () => {
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" },
+      ],
+    };
+    mount(baseOptions());
+    expect(createPeerViewerFromInjection).toHaveBeenCalledWith({
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" },
+      ],
+    });
+  });
+
+  it("threads the SLOT-AWARE resolvers when the LSDP source is present", () => {
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" },
+      ],
+    };
+    mount(baseOptions());
+    const runtimeOpts = runtimeOptsOf();
+    // The wrapper, NOT the raw viewer resolver identity.
+    expect(runtimeOpts.resolvePeerStream).not.toBe(resolvePeerStream);
+    expect(typeof runtimeOpts.resolvePeerStream).toBe("function");
+    expect(typeof runtimeOpts.subscribePeerStream).toBe("function");
+  });
+
+  it("resolves slotRef → peer_label → track via the LSDP slot snapshot", () => {
+    const cam = { id: "cam-1" } as unknown as MediaStream;
+    registryResolve.mockImplementation((label: string) => (label === "alice" ? cam : null));
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" },
+      ],
+      slots: { "cam-caster-1": "alice" },
+    };
+    mount(baseOptions());
+    const resolve = runtimeOptsOf().resolvePeerStream as (k: string) => unknown;
+    // The runtime hands the node's slotRef ; the wrapper translates to peer_label.
+    expect(resolve("cam-caster-1")).toBe(cam);
+    expect(registryResolve).toHaveBeenCalledWith("alice");
+  });
+
+  it("renders the placeholder (null) for an unbound slot", () => {
+    registryResolve.mockReturnValue(null);
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-a", token: "lsdp-tok" },
+      ],
+    };
+    mount(baseOptions());
+    const resolve = runtimeOptsOf().resolvePeerStream as (k: string) => unknown;
+    expect(resolve("cam-unbound")).toBeNull();
+  });
+
+  it("merges preview + LSDP rooms and de-dups by roomId", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "shared", token: "preview-tok" },
+        { signalingUrl: "wss://meet.example/ws", roomId: "preview-only", token: "p-tok" },
+      ],
+    };
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "shared", token: "lsdp-tok" },
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-only", token: "a-tok" },
+      ],
+    };
+    mount(baseOptions());
+    expect(createPeerViewerFromInjection).toHaveBeenCalledWith({
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "shared", token: "preview-tok" },
+        { signalingUrl: "wss://meet.example/ws", roomId: "preview-only", token: "p-tok" },
+        { signalingUrl: "wss://meet.example/ws", roomId: "antenne-only", token: "a-tok" },
+      ],
+    });
+  });
+
+  it("ignores a malformed LSDP global (no usable room)", () => {
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [{ signalingUrl: "wss://meet.example/ws", token: "no-room-id" }],
+    };
+    mount(baseOptions());
+    expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
   });
 });
