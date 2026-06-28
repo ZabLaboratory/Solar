@@ -7,7 +7,24 @@ behavioural changes that keep the `mount()` API stable).
 
 ## [Unreleased]
 
-## [0.2.11] - 2026-06-24
+## [0.2.12] - 2026-06-28
+
+### Added
+
+- **Antenne `x-zab.meet-peer` activation** (re-vendor of Solar `main` #29 `69631a3`
+  / #31 `d020d67`). This version cut packages the merged meet-peer broadcast path so
+  the bundle vendored by Prism (`resources/solar/v0.2.12/`) and static-served by Orion
+  (`/orion/static/solar/v0.2.12/`) carries it. The host bundle now consumes the
+  `@lumencast/runtime@0.11.0` `onReservedLeaves` hook (antenne controller, `mount.ts`)
+  and renders the `x-zab.meet-peer` kind (slotRef re-keying from the #29 registry). No
+  source change in this version beyond the package version bump — it exists to give the
+  meet-peer-bearing bundle a distinct immutable version path (the previous `v0.2.11`
+  artefact predates #29/#31 and must not be overwritten under its frozen cache key).
+
+### Changed
+
+- `@lumencast/runtime` `^0.9.0` → `^0.11.0` (already on `main` via #31; recorded here for
+  the version cut).
 
 ### Fixed
 
