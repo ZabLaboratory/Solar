@@ -38,6 +38,7 @@ import type {
 import { orionBundleUrl } from "./internal/orion-bundle-url";
 import { readPeerViewerInjection } from "./peer-viewer/injection";
 import { createAntenneController } from "./peer-viewer/antenne-controller";
+import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
 import { validateOptions } from "./internal/validate-options";
 import type {
   MountOptions,
@@ -188,8 +189,17 @@ export function mount(options: MountOptions): SolarHandle {
     // A webview reload/close doesn't run `disconnect()` (the host owns that), so
     // leave the mesh explicitly on unload — stops `solar-viewer` ghosts piling up.
     window.addEventListener("beforeunload", () => peerViewer.leave());
-    resolvePeerStream = peerViewer.resolvePeerStream;
-    subscribePeerStream = peerViewer.subscribePeerStream;
+    // Slot-aware on the PREVIEW too (parity with the antenne): wrap the raw
+    // `peer_label`-keyed registry with the slot-binding so an `x-zab.meet-peer`
+    // node keyed by a positional `@<n>` (auto-fill in arrival order) or a slotRef
+    // resolves. A bare `peer_label` passes straight through — a strict superset of
+    // the prior raw wiring. Without this the preview resolved `@0` as a LITERAL
+    // label → no peer → empty slot, even with the stream received (positional was
+    // ANTENNE-only). The registry's `subscribeRoster` drives the re-resolve on a
+    // peer connect/leave so a late arrival fills the slot.
+    const slots = createSlotBindingRegistry(peerViewer.registry);
+    resolvePeerStream = (key) => slots.resolve(key);
+    subscribePeerStream = (key, listener) => slots.subscribe(key, listener);
     teardownPeerViewer = () => peerViewer.leave();
   } else {
     // ANTENNE — slot-aware controller threaded now, armed by the runtime hook
