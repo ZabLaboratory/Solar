@@ -18,13 +18,21 @@ function fakePeerRegistry(): PeerStreamRegistry & {
 } {
   const streams = new Map<string, MediaStream>();
   const subs = new Map<string, Set<PeerStreamListener>>();
+  const rosterSubs = new Set<() => void>();
   const push = (peerLabel: string, stream: MediaStream | null): void => {
+    const wasPresent = streams.has(peerLabel);
     if (stream === null) streams.delete(peerLabel);
     else streams.set(peerLabel, stream);
     for (const l of subs.get(peerLabel) ?? []) l(stream);
+    // Mirror the runtime : roster shifts on a new arrival or a departure, not on
+    // a same-label stream replacement.
+    const isArrival = stream !== null && !wasPresent;
+    const isDeparture = stream === null && wasPresent;
+    if (isArrival || isDeparture) for (const r of [...rosterSubs]) r();
   };
   return {
     resolve: (peerLabel) => streams.get(peerLabel) ?? null,
+    orderedLabels: () => [...streams.keys()],
     subscribe: (peerLabel, listener) => {
       let set = subs.get(peerLabel);
       if (set === undefined) {
@@ -34,6 +42,10 @@ function fakePeerRegistry(): PeerStreamRegistry & {
       set.add(listener);
       listener(streams.get(peerLabel) ?? null);
       return () => set.delete(listener);
+    },
+    subscribeRoster: (listener) => {
+      rosterSubs.add(listener);
+      return () => rosterSubs.delete(listener);
     },
     set: (peerLabel, stream) => push(peerLabel, stream),
     remove: (peerLabel) => push(peerLabel, null),
@@ -141,5 +153,78 @@ describe("slot-binding registry", () => {
 
   it("exposes the LSDP leaf prefix Orion emits", () => {
     expect(CAM_SLOTS_PREFIX).toBe("__cam.slots.");
+  });
+
+  /* ---- positional `@<n>` resolution (ADR Blue 009 axe 1, positional) ---- */
+
+  it("resolves a positional `@<n>` key to the n-th peer in arrival order", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    const a = streamFor("cam-a");
+    const b = streamFor("cam-b");
+    peers.push("alice", a); // arrives first → @0
+    peers.push("bob", b); // arrives second → @1
+
+    expect(reg.resolve("@0")).toBe(a);
+    expect(reg.resolve("@1")).toBe(b);
+    expect(reg.resolve("@2")).toBeNull(); // out of range → placeholder
+  });
+
+  it("reactively follows a late arrival into a positional slot", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    const seen: (MediaStream | null)[] = [];
+    reg.subscribe("@0", (s) => seen.push(s));
+    expect(seen.at(-1)).toBeNull(); // roster empty → placeholder
+
+    const a = streamFor("cam-a");
+    peers.push("alice", a); // first peer connects mid-show
+    expect(seen.at(-1)).toBe(a);
+  });
+
+  it("shifts positions up when an earlier peer leaves (slot 0 re-keys)", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    const a = streamFor("cam-a");
+    const b = streamFor("cam-b");
+    peers.push("alice", a);
+    peers.push("bob", b);
+
+    const seen0: (MediaStream | null)[] = [];
+    const seen1: (MediaStream | null)[] = [];
+    reg.subscribe("@0", (s) => seen0.push(s));
+    reg.subscribe("@1", (s) => seen1.push(s));
+    expect(seen0.at(-1)).toBe(a);
+    expect(seen1.at(-1)).toBe(b);
+
+    // Alice (the first arrival) leaves → bob is now the first peer.
+    peers.push("alice", null);
+    expect(reg.resolve("@0")).toBe(b);
+    expect(seen0.at(-1)).toBe(b); // slot 0 re-resolved to the new first peer
+    expect(reg.resolve("@1")).toBeNull();
+    expect(seen1.at(-1)).toBeNull(); // slot 1 now empty
+  });
+
+  it("re-emits a positional slot when the bound peer's stream is replaced", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    peers.push("alice", streamFor("cam-a"));
+    const seen: (MediaStream | null)[] = [];
+    reg.subscribe("@0", (s) => seen.push(s));
+
+    const a2 = streamFor("cam-a2");
+    peers.push("alice", a2); // same peer, new stream
+    expect(seen.at(-1)).toBe(a2);
+  });
+
+  it("stops watching the roster after a positional key unsubscribes", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    const listener = vi.fn();
+    const off = reg.subscribe("@0", listener);
+    listener.mockClear();
+    off();
+    peers.push("alice", streamFor("cam-a")); // roster shift after unsubscribe
+    expect(listener).not.toHaveBeenCalled();
   });
 });
