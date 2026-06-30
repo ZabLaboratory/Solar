@@ -13,15 +13,18 @@ const {
   resolvePeerStream,
   subscribePeerStream,
   registryResolve,
+  registryOrderedLabels,
   join,
   leave,
 } = vi.hoisted(() => {
   const resolvePeerStream = vi.fn(() => null);
   const subscribePeerStream = vi.fn(() => () => undefined);
-  // A minimal `peer_label`-keyed registry the slot-binding view wraps on the
-  // antenne path. `registryResolve` lets a test assert slotRef → peer_label
-  // translation without a real WebRTC stack.
+  // A minimal `peer_label`-keyed registry the slot-binding view wraps on BOTH
+  // the preview and the antenne paths. `registryResolve` / `registryOrderedLabels`
+  // let a test assert bare peer_label pass-through AND positional `@<n>`
+  // resolution without a real WebRTC stack.
   const registryResolve = vi.fn((_peerLabel: string): unknown => null);
+  const registryOrderedLabels = vi.fn((): string[] => []);
   const join = vi.fn(() => Promise.resolve());
   const leave = vi.fn();
   return {
@@ -34,6 +37,8 @@ const {
       setRooms: vi.fn(() => Promise.resolve()),
       registry: {
         resolve: registryResolve,
+        orderedLabels: registryOrderedLabels,
+        subscribeRoster: vi.fn(() => () => undefined),
         subscribe: vi.fn((_l: string, cb: (s: unknown) => void) => {
           cb(null);
           return () => undefined;
@@ -46,6 +51,7 @@ const {
     resolvePeerStream,
     subscribePeerStream,
     registryResolve,
+    registryOrderedLabels,
     join,
     leave,
   };
@@ -114,8 +120,12 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(join).toHaveBeenCalledTimes(1);
 
     const runtimeOpts = runtimeOptsOf();
-    expect(runtimeOpts.resolvePeerStream).toBe(resolvePeerStream);
-    expect(runtimeOpts.subscribePeerStream).toBe(subscribePeerStream);
+    // PREVIEW is now slot-aware (parity with the antenne): the threaded resolver
+    // is the slot-binding wrapper, not the raw viewer fn. A bare peer_label still
+    // passes straight through to the registry.
+    expect(runtimeOpts.resolvePeerStream).not.toBe(resolvePeerStream);
+    (runtimeOpts.resolvePeerStream as (k: string) => unknown)("alice");
+    expect(registryResolve).toHaveBeenCalledWith("alice");
   });
 
   it("wraps a legacy single-room global as a one-room array (back-compat)", () => {
@@ -200,7 +210,7 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(leave).toHaveBeenCalledTimes(1);
   });
 
-  it("threads the RAW resolvers on the preview-only path (byte-identical)", () => {
+  it("threads SLOT-AWARE resolvers on the preview path (positional @<n>)", () => {
     (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
       rooms: [
         { signalingUrl: "wss://meet.example/ws", roomId: "meet-a", token: "tok-a" },
@@ -208,9 +218,19 @@ describe("peer-viewer glue (multi-room)", () => {
     };
     mount(baseOptions());
     const runtimeOpts = runtimeOptsOf();
-    // No LSDP source → raw viewer resolvers, NOT the slot-aware wrapper.
-    expect(runtimeOpts.resolvePeerStream).toBe(resolvePeerStream);
-    expect(runtimeOpts.subscribePeerStream).toBe(subscribePeerStream);
+    // The preview wraps the raw registry with the slot-binding so a positional
+    // `@0` resolves to the first-arrived peer (auto-fill) and a bare peer_label
+    // passes through. (Was ANTENNE-only before → the preview cam stayed empty
+    // even with the stream received.)
+    const stream = {} as MediaStream;
+    registryOrderedLabels.mockReturnValue(["alice"]);
+    registryResolve.mockImplementation((l: string) =>
+      l === "alice" ? stream : null,
+    );
+    const resolve = runtimeOpts.resolvePeerStream as (k: string) => unknown;
+    expect(resolve("@0")).toBe(stream);
+    expect(resolve("bob")).toBe(null);
+    expect(registryResolve).toHaveBeenCalledWith("bob");
   });
 
   it("surfaces a join failure through onError without throwing", async () => {
@@ -392,7 +412,7 @@ describe("peer-viewer glue — runtime onReservedLeaves hook (antenne, 0.11.0)",
       resolvePeerStream,
       subscribePeerStream,
       setRooms: vi.fn(() => Promise.resolve()),
-      registry: { resolve: registryResolve, subscribe: vi.fn(() => () => undefined), set: vi.fn(), remove: vi.fn(), clear: vi.fn() },
+      registry: { resolve: registryResolve, orderedLabels: registryOrderedLabels, subscribeRoster: vi.fn(() => () => undefined), subscribe: vi.fn(() => () => undefined), set: vi.fn(), remove: vi.fn(), clear: vi.fn() },
     };
     createPeerViewerFromInjection.mockReturnValueOnce(viewer);
     mount(baseOptions());
