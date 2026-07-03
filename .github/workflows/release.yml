@@ -44,9 +44,12 @@ jobs:
       - run: npm run check:bundle
 
       - name: Install Playwright Chromium
-        # No --with-deps: the JIT self-hosted runner is non-root with nosuid, so
-        # the sudo apt step of --with-deps fails ("effective uid is not 0").
-        # The pool image bakes the OS deps; we only fetch the browser binary.
+        # Browser binary only, NO --with-deps: the JIT job container mounts its
+        # rootfs `nosuid`, so sudo cannot elevate at job time ("effective uid is
+        # not 0 … nosuid") — --with-deps' internal `sudo apt-get` fails there even
+        # though NOPASSWD sudo is baked. Chromium's OS libs (libnspr4/libnss3/
+        # libasound2 …) are instead pre-baked into the org runner image
+        # zab-org-runner:pg — see Orion docs/runbooks/ci-runner-pg-image.md.
         run: npx playwright install chromium chromium-headless-shell
       - run: npm run test:e2e
 
