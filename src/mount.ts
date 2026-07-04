@@ -258,6 +258,14 @@ export function mount(options: MountOptions): SolarHandle {
     // `x-zab.meet-peer` nodes from `leaves.slots`. Not registered on the preview
     // path (Prism carries no `__cam.*` projection).
     ...(onReservedLeaves !== undefined ? { onReservedLeaves } : {}),
+    // ADR 013 Prism §3.1 (issue #41) — a one-shot render-tree transform the
+    // runtime applies ONCE per loaded bundle (the atlas z-band split, wired
+    // from `?atlas=` by the host entries). Forwarded verbatim; ABSENT from the
+    // runtime options entirely when the host omits it, so the default render
+    // path stays byte-identical (strict non-regression).
+    ...(options.transformRoot !== undefined
+      ? { transformRoot: options.transformRoot }
+      : {}),
   };
 
   const handle = mountRuntime(runtimeOptions);

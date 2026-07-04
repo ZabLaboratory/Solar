@@ -11,6 +11,8 @@
 // change. The field name `orionUrl` is preserved (vs the runtime's
 // `serverUrl`) because hosts pass it ; `mount()` maps it across.
 
+import type { RenderNode } from "@lumencast/runtime";
+
 export type SolarMode = "broadcast" | "control" | "test";
 
 export type SolarStatus = "disconnected" | "connecting" | "live";
@@ -72,6 +74,16 @@ export interface MountOptions {
    *  Electron preview webview) ; ignored on-air (CEF/Pulsar render the
    *  placeholder). */
   resolveCaptureDevice?: ResolveCaptureDevice;
+  /** One-shot render-tree transform applied by the runtime ONCE per loaded
+   *  bundle, before the first render — not per delta (ADR 013 Prism §3.1,
+   *  issue #41, runtime `@lumencast/runtime` ≥ 0.12.3). Solar forwards it
+   *  verbatim to the runtime's `transformRoot`. Its sole in-tree use is the
+   *  atlas z-band split (`buildAtlasRoot`), wired from the `?atlas=` URL param
+   *  by the host entries. MUST NOT re-key any leaf `id` / state path (the
+   *  runtime addresses leaves by path — see the runtime hook's invariant).
+   *  Omit it and `mount()` renders the fetched bundle verbatim (strict
+   *  non-regression). */
+  transformRoot?: (root: RenderNode) => RenderNode;
 }
 
 /** `(deviceRef, sourceKind) → { deviceId | captureSourceId } | null`, sync OR
