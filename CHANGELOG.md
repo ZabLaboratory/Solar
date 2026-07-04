@@ -7,6 +7,22 @@ behavioural changes that keep the `mount()` API stable).
 
 ## [Unreleased]
 
+## [0.2.17] - 2026-07-04
+
+### Added
+
+- **Atlas z-order mode** (`?atlas=<labels>`): the mount reads the query param and
+  applies `buildAtlasRoot` via the new `@lumencast/runtime@0.12.3` `transformRoot`
+  hook, splitting the render tree into vertically-stacked z-bands so native OBS
+  capture sources (webcam, window capture) can be interleaved between layers of
+  DOM content instead of only sitting above or below the whole composition
+  (ADR 013, Prism). Absent `?atlas=`, `mount()` behaves byte-identically to before
+  (verified, #39/#42).
+
+### Changed
+
+- `@lumencast/runtime` `^0.12.2` → `^0.12.3` (the `transformRoot` hook).
+
 ## [0.2.12] - 2026-06-28
 
 ### Added
