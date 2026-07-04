@@ -11,6 +11,7 @@
 
 import { mount } from "./mount";
 import { resolveShowToken } from "./internal/resolve-show-token";
+import { atlasMountOptions } from "./internal/atlas-mount";
 import type { SolarMode } from "./types";
 
 const params = new URLSearchParams(window.location.search);
@@ -40,6 +41,9 @@ mount({
   mode,
   ...(mode === "test" && scene ? { scene } : {}),
   ...(mode === "test" && testSession ? { testSession } : {}),
+  // ADR 013 Prism §3.1 (issue #41) — `?atlas=` opts into the texture-atlas
+  // z-band render. Absent/malformed → no `transformRoot` key → verbatim render.
+  ...atlasMountOptions(window.location.search),
   onError: (err) => {
     // Dev only — surface to the console. Broadcast hosts must not render
     // chrome ; the operator overlay (control/test modes) is the runtime's
