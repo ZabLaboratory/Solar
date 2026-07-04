@@ -34,3 +34,18 @@ export type {
   AnimationKeyframes,
   BuildAnimationNodeOptions,
 } from "./overlay/animation";
+
+// Atlas render mode (ADR 013 Prism §3.1, issue #38). The `?atlas=` URL param
+// parser + the pure band-split transform that wraps a composed scene `root`
+// into N stacked, transparent z-bands (1920×1080 each) in a 1920×(1080·N)
+// frame — the texture-atlas broadcast layout. A composition of the existing
+// `frame` primitive, consumed by the render-bundle serving path; the default
+// (atlas-less) render path is untouched.
+export { parseAtlasParam } from "./atlas/atlas-param";
+export type { AtlasSpec } from "./atlas/atlas-param";
+export {
+  buildAtlasRoot,
+  ATLAS_BAND_HEIGHT,
+  ATLAS_STAGE_WIDTH,
+} from "./atlas/atlas-node";
+export type { BuildAtlasRootOptions } from "./atlas/atlas-node";
