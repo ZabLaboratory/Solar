@@ -5,6 +5,17 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.20] - 2026-07-06
+
+### Fixed
+
+- **Guest camera image no longer freezes on-air.** `@lumencast/runtime` 0.13.0's
+  `liveAudio` un-mute (0.2.19) regressed the video itself : Chromium's autoplay
+  policy silently blocks `.play()` on a non-muted `<video autoplay>` with no
+  user gesture — exactly Pulsar's headless CEF. Bumped to `@lumencast/runtime@
+  0.13.1`, which always autoplays muted (autoplay always allowed) then flips
+  `el.muted` imperatively once playback has started (not gated by the policy).
+
 ## [0.2.19] - 2026-07-06
 
 ### Fixed
