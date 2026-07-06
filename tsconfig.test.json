@@ -27,7 +27,7 @@
     "outDir": "./dist/types-test",
     "rootDir": ".",
 
-    "types": ["node", "vitest/globals"]
+    "types": ["node", "vitest/globals", "vite/client"]
   },
   "include": [
     "tests/**/*.ts",

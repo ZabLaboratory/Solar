@@ -18,6 +18,11 @@ import { mount } from "./mount";
 import { resolveShowToken } from "./internal/resolve-show-token";
 import { atlasMountOptions } from "./internal/atlas-mount";
 import type { SolarMode } from "./types";
+// Self-hosted Geist / Geist Mono @font-face — Solar's served host/CEF/atlas
+// page owns its fonts (Prism's editor CSS never reaches it). Vite inlines the
+// woff2 as hashed, relatively-referenced assets under dist/host/ (base "./"),
+// so the CEF resolves them with no bundler/import map.
+import "./styles/fonts.css";
 
 const params = new URLSearchParams(window.location.search);
 const orionUrl =

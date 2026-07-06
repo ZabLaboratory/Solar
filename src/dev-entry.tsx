@@ -13,6 +13,10 @@ import { mount } from "./mount";
 import { resolveShowToken } from "./internal/resolve-show-token";
 import { atlasMountOptions } from "./internal/atlas-mount";
 import type { SolarMode } from "./types";
+// Self-hosted Geist / Geist Mono @font-face — Solar's page owns its fonts
+// (Prism's editor CSS never reaches it). Must be on BOTH entries so preview
+// AND REC/antenne render the picked family instead of a system fallback.
+import "./styles/fonts.css";
 
 const params = new URLSearchParams(window.location.search);
 const orionUrl =
