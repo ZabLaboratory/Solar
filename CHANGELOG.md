@@ -5,6 +5,20 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.19] - 2026-07-06
+
+### Fixed
+
+- **Guest camera audio reaches the antenne / REC.** `LivePeerVideo` (the
+  `x-zab.meet-peer` / `meet.peer` guest-cam renderer) hard-muted its `<video>`
+  unconditionally — the only place a remote peer's audio track exists is inside
+  the page, so muting it silenced the room's audio forever, on-air and in
+  recordings. `host-entry` now opts into `@lumencast/runtime@0.13.0`'s new
+  `liveAudio` mount option for `broadcast`/`test` mode (the served/recorded
+  bundle) ; `dev-entry` (the interactive editor) stays muted to avoid audio
+  feedback for the operator, and `host-entry`'s own `control` mode stays muted
+  for the same reason.
+
 ## [0.2.18] - 2026-07-06
 
 ### Fixed
