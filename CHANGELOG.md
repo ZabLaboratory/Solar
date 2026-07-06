@@ -5,7 +5,7 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
-## [Unreleased]
+## [0.2.18] - 2026-07-06
 
 ### Fixed
 
