@@ -192,6 +192,12 @@ test("served host bundle self-hosts the Geist @font-face (asset resolves)", asyn
       } catch {
         continue; // cross-origin sheet — none expected here
       }
+      // Relative url()s in an @font-face resolve against the OWNING
+      // stylesheet's location, not the document's — the served CSS lives at
+      // .../assets/host-*.css and points at `./geist-*.woff2` (a sibling in
+      // assets/). Resolving against location.href instead would drop the
+      // `assets/` segment and fabricate a 404 the browser never hits.
+      const base = sheet.href ?? location.href;
       for (const rule of Array.from(rules)) {
         if (rule instanceof CSSFontFaceRule) {
           const fam = rule.style
@@ -201,7 +207,7 @@ test("served host bundle self-hosts the Geist @font-face (asset resolves)", asyn
           if (fam) families.push(fam);
           const src = rule.style.getPropertyValue("src");
           for (const m of src.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)) {
-            srcUrls.push(new URL(m[1]!, location.href).href);
+            srcUrls.push(new URL(m[1]!, base).href);
           }
         }
       }
