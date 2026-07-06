@@ -7,6 +7,18 @@ behavioural changes that keep the `mount()` API stable).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Geist text renders with the picked font, not a system fallback.** Solar's
+  own served page (preview webview, REC/antenne scene-server serve, Pulsar CEF
+  atlas) declared no `@font-face` and bundled no font file, so a text node whose
+  LSML carried `fontFamily: "Geist"` (the Prism picker default, emitted verbatim)
+  fell back to the system default in every context. Solar now vendors and
+  self-hosts the Geist / Geist Mono latin-subset woff2 (SIL OFL 1.1) and declares
+  their `@font-face` (weight-range 400–700 / 400–600, `font-display: swap`) from
+  a CSS module loaded by both entry points, plus a Geist-first fallback stack on
+  the scene root.
+
 ## [0.2.17] - 2026-07-04
 
 ### Added

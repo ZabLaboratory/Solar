@@ -1,0 +1,49 @@
+/* ─────────────────────────────────────────────────────────────────────
+ * Self-hosted fonts for Solar's OWN served page.
+ *
+ * Solar is the render engine for every broadcast context — the Prism
+ * preview webview, the REC/antenne scene-server serve, and the Pulsar CEF
+ * atlas. In ALL of them the page that paints the scene is Solar's own
+ * host bundle (dist/host), NOT Prism's editor chrome. Prism declares
+ * `@font-face` for "Geist" in its renderer CSS, but that CSS never reaches
+ * Solar's page, so a text node whose LSML carries `fontFamily: "Geist"`
+ * (the picker default in Prism, emitted verbatim by from-scene.ts) hit a
+ * source-less family and silently fell back to the system default in
+ * preview AND on-air.
+ *
+ * Fix: Solar vendors and self-hosts the same Geist / Geist Mono latin-subset
+ * woff2 Prism uses (Google Fonts variable file, one file per family covering
+ * the whole weight axis), under ../assets/fonts/, licensed SIL OFL 1.1
+ * (LICENSE-Geist.txt there). This module is imported by BOTH entry points
+ * (dev-entry.tsx for the editor/preview + e2e harness, host-entry.tsx for
+ * the served host/CEF/atlas bundle) so every context Solar renders carries
+ * the declaration.
+ *
+ * font-display:swap keeps first paint instant; the woff2 are tiny
+ * (~23–29 KB) so the swap is imperceptible.
+ * ──────────────────────────────────────────────────────────────────── */
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("../assets/fonts/geist-latin.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("../assets/fonts/geist-mono-latin.woff2") format("woff2");
+}
+
+/* Scene-root default. A text node with NO explicit fontFamily in its LSML
+ * style now inherits Geist (then a system fallback) instead of the bare
+ * browser default — a coherent baseline across preview and on-air. Nodes
+ * that DO carry an inline fontFamily still win (inline style beats this
+ * rule), so this only affects the previously-unstyled case. */
+#scene {
+  font-family: "Geist", system-ui, sans-serif;
+}

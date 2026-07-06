@@ -156,3 +156,79 @@ test("served host bundle loads with no import map and mount() runs", async ({
     `served bundle raised a fatal bootstrap/module error: ${pageErrors.join(" | ")}`,
   ).toEqual([]);
 });
+
+// The Geist self-hosting fix (Prism's editor CSS never reaches Solar's own
+// page, so a `fontFamily: "Geist"` text node fell back to the system default
+// in preview AND on-air). Proven end-to-end here: the SERVED host page carries
+// a stylesheet whose @font-face declares Geist, and the referenced woff2
+// actually fetches 200 through the same static serve — no bare/404 asset.
+test("served host bundle self-hosts the Geist @font-face (asset resolves)", async ({
+  page,
+}) => {
+  const failedFontRequests: string[] = [];
+  page.on("requestfailed", (req) => {
+    if (/\.woff2?(\?|$)/i.test(req.url())) failedFontRequests.push(req.url());
+  });
+  const fontResponses: { url: string; status: number }[] = [];
+  page.on("response", (res) => {
+    if (/\.woff2?(\?|$)/i.test(res.url())) {
+      fontResponses.push({ url: res.url(), status: res.status() });
+    }
+  });
+
+  await page.goto(baseUrl, { waitUntil: "load" });
+  await page.waitForTimeout(300);
+
+  // Collect every @font-face family declared by the page's stylesheets and
+  // the woff2 URLs they point at — read from the live CSSOM so we assert the
+  // real served + parsed rules, not the HTML text.
+  const declared = await page.evaluate(() => {
+    const families: string[] = [];
+    const srcUrls: string[] = [];
+    for (const sheet of Array.from(document.styleSheets)) {
+      let rules: CSSRuleList;
+      try {
+        rules = sheet.cssRules;
+      } catch {
+        continue; // cross-origin sheet — none expected here
+      }
+      for (const rule of Array.from(rules)) {
+        if (rule instanceof CSSFontFaceRule) {
+          const fam = rule.style
+            .getPropertyValue("font-family")
+            .replace(/["']/g, "")
+            .trim();
+          if (fam) families.push(fam);
+          const src = rule.style.getPropertyValue("src");
+          for (const m of src.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/g)) {
+            srcUrls.push(new URL(m[1]!, location.href).href);
+          }
+        }
+      }
+    }
+    return { families, srcUrls };
+  });
+
+  expect(
+    declared.families,
+    `served page declares no Geist @font-face (families: ${declared.families.join(", ") || "none"})`,
+  ).toContain("Geist");
+  expect(declared.families).toContain("Geist Mono");
+  expect(declared.srcUrls.length).toBeGreaterThanOrEqual(2);
+
+  // Every declared woff2 must actually be reachable through the static serve
+  // (the CEF/Orion serve has no bundler to rewrite it) — a 404 here is exactly
+  // the missing-asset bug.
+  for (const url of declared.srcUrls) {
+    const resp = await page.request.get(url);
+    expect(resp.status(), `font asset 404 / not served: ${url}`).toBe(200);
+  }
+
+  expect(
+    failedFontRequests,
+    `font requests failed: ${failedFontRequests.join(" | ")}`,
+  ).toEqual([]);
+  for (const r of fontResponses) {
+    expect(r.status, `font ${r.url} returned ${r.status}`).toBeLessThan(400);
+  }
+});
