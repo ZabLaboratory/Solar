@@ -74,6 +74,19 @@ export interface MountOptions {
    *  Electron preview webview) ; ignored on-air (CEF/Pulsar render the
    *  placeholder). */
   resolveCaptureDevice?: ResolveCaptureDevice;
+  /** Un-mute the live `<video>` of `meet.peer` / `x-zab.meet-peer` guest peers
+   *  so their WebRTC audio joins the page's audio output — and thus the on-air /
+   *  recording mix a Pulsar/OBS `browser_source` captures. Forwarded verbatim to
+   *  the runtime's `liveAudio`. Muted by default (omitted / `false`) so every
+   *  consumer that does not opt in keeps today's behaviour.
+   *
+   *  DANGER — set this ONLY on a host that KNOWS it is the flux réellement
+   *  diffusé/enregistré (antenne prod, REC/test render, Pulsar CEF atlas). NEVER
+   *  set it on an interactive operator host (the Prism editor preview, or Solar's
+   *  interactive `control` mode) : the operator may have the same ZabCam room open
+   *  elsewhere and un-muting the peer there causes audio feedback / echo. Only the
+   *  `src/host-entry.tsx` served bundle opts in, and only for the diffused modes. */
+  liveAudio?: boolean;
   /** One-shot render-tree transform applied by the runtime ONCE per loaded
    *  bundle, before the first render — not per delta (ADR 013 Prism §3.1,
    *  issue #41, runtime `@lumencast/runtime` ≥ 0.12.3). Solar forwards it

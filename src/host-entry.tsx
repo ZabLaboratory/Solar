@@ -52,6 +52,16 @@ mount({
   orionUrl,
   token,
   mode,
+  // This is the SERVED bundle — the flux réellement diffusé/enregistré (antenne
+  // prod via Orion, REC/test render via Prism's scene-server, Pulsar CEF atlas).
+  // Un-mute guest-peer WebRTC audio so it reaches the on-air / recording mix
+  // (runtime ≥ 0.13.0). Opt in ONLY for the diffused/recorded modes: `control`
+  // is Solar's interactive operator view (like the dev-entry editor) where the
+  // room may be open elsewhere — un-muting there would cause echo/feedback, so
+  // it stays muted. dev-entry.tsx never opts in for the same reason. Allowlist
+  // (not `!== "control"`) so any future mode defaults to muted per the runtime's
+  // opt-in DANGER contract.
+  liveAudio: mode === "broadcast" || mode === "test",
   ...(mode === "test" && scene ? { scene } : {}),
   ...(mode === "test" && testSession ? { testSession } : {}),
   // ADR 013 Prism §3.1 (issue #41) — `?atlas=` opts into the texture-atlas

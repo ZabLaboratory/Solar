@@ -258,6 +258,12 @@ export function mount(options: MountOptions): SolarHandle {
     // `x-zab.meet-peer` nodes from `leaves.slots`. Not registered on the preview
     // path (Prism carries no `__cam.*` projection).
     ...(onReservedLeaves !== undefined ? { onReservedLeaves } : {}),
+    // Un-mute live guest-peer audio into the page mix (Pulsar/OBS browser_source
+    // captures page audio) — runtime `@lumencast/runtime` ≥ 0.13.0. Forwarded
+    // verbatim; ABSENT from the runtime options when the host omits it, so muted
+    // stays the byte-identical default for every non-opt-in consumer. Only the
+    // served host bundle sets it, and only for the diffused/recorded modes.
+    ...(options.liveAudio !== undefined ? { liveAudio: options.liveAudio } : {}),
     // ADR 013 Prism §3.1 (issue #41) — a one-shot render-tree transform the
     // runtime applies ONCE per loaded bundle (the atlas z-band split, wired
     // from `?atlas=` by the host entries). Forwarded verbatim; ABSENT from the
