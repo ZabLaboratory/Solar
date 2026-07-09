@@ -5,6 +5,24 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.22] - 2026-07-09
+
+### Added
+
+- **noise / texture / glass layer effects reach the antenne.** Bumped
+  `@lumencast/runtime` to `0.15.0`, which adds the LSML schema + SVG
+  (`feTurbulence` / gradient) rendering for `node.noise` / `node.texture` /
+  `node.glass`, clamped R2/R8 at both compile- and run-time.
+
+### Fixed
+
+- **`backdropBlur` (and the new noise/texture/glass) now actually render.**
+  `@lumencast/runtime@0.15.0` fixes a silent end-to-end no-op: `tree.tsx` only
+  wired `blur` from resolved props to `UniversalWrapper` and never read
+  `backdropBlur` / `noise` / `texture` / `glass`. The `backdropBlur` shipped in
+  Solar v0.2.21 (runtime 0.14.0) was therefore inert in prod — this release
+  activates it for real, on top of the three new effects.
+
 ## [0.2.21] - 2026-07-09
 
 ### Changed
