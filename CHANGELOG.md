@@ -5,6 +5,18 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [0.2.21] - 2026-07-09
+
+### Changed
+
+- **`backdrop-blur` layer effect now reaches the antenne.** Bumped
+  `@lumencast/runtime` to `0.14.0`, which adds the `node.backdropBlur` LSML field
+  (compiler + runtime) rendered via CSS `backdrop-filter` in `UniversalWrapper`
+  (Prism ADR 014, Tier B step 1). The runtime bump also lands the security
+  hardening that clamps `node.blur` / `node.backdropBlur` / `node.shadow[]` at
+  both compile- and run-time (previously passed through unbounded). Solar's own
+  `mount()` surface is unchanged — this is a runtime passthrough.
+
 ## [0.2.20] - 2026-07-06
 
 ### Fixed
