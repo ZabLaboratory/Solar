@@ -50,6 +50,13 @@ describe("orionBundleUrl()", () => {
     );
   });
 
+  it("preserves an already-http scheme when the input is not a WS URL", () => {
+    const resolve = orionBundleUrl("https://localhost:4007/orion/api/v1");
+    expect(resolve("SCENE", "v1")).toBe(
+      "https://localhost:4007/orion/api/v1/scenes/SCENE/render-bundle?v=v1",
+    );
+  });
+
   it("throws a host-friendly error on a non-absolute URL", () => {
     expect(() => orionBundleUrl("not-a-url")).toThrow(/orionUrl.*absolute/);
   });

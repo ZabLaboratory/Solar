@@ -79,8 +79,12 @@ describe("slot-binding registry", () => {
     const peers = fakePeerRegistry();
     const cam = streamFor("cam-2");
     peers.push("bob", cam);
-    const reg = createSlotBindingRegistry(peers, { "cam-caster-2": "bob" });
+    const reg = createSlotBindingRegistry(peers, {
+      "cam-caster-2": "bob",
+      "empty-slot": "",
+    });
     expect(reg.resolve("cam-caster-2")).toBe(cam);
+    expect(reg.boundPeer("empty-slot")).toBeNull();
   });
 
   it("renders the placeholder (null) for an unbound slot", () => {
@@ -146,9 +150,56 @@ describe("slot-binding registry", () => {
     const off = reg.subscribe("cam-caster-1", listener);
     listener.mockClear();
     off();
+    off();
     peers.push("alice", streamFor("cam-x"));
     reg.assign("cam-caster-1", "bob");
     expect(listener).not.toHaveBeenCalled();
+  });
+
+  it("supports multiple listeners on one key and tears down only after the last one", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers, { "cam-caster-1": "alice" });
+    const first = vi.fn();
+    const second = vi.fn();
+    const offFirst = reg.subscribe("cam-caster-1", first);
+    const offSecond = reg.subscribe("cam-caster-1", second);
+
+    first.mockClear();
+    second.mockClear();
+    offFirst();
+    peers.push("alice", streamFor("cam-after-first-off"));
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalled();
+
+    second.mockClear();
+    offSecond();
+    peers.push("alice", streamFor("cam-after-last-off"));
+    expect(second).not.toHaveBeenCalled();
+  });
+
+  it("ignores a late peer callback after the last listener is gone", () => {
+    const callbacks = new Set<PeerStreamListener>();
+    const peers = {
+      resolve: () => null,
+      orderedLabels: () => [],
+      subscribe: (_label: string, listener: PeerStreamListener) => {
+        callbacks.add(listener);
+        listener(null);
+        return () => undefined;
+      },
+      subscribeRoster: () => () => undefined,
+      set: () => undefined,
+      remove: () => undefined,
+      clear: () => undefined,
+    } as unknown as PeerStreamRegistry;
+    const reg = createSlotBindingRegistry(peers, { "cam-caster-1": "alice" });
+    const listener = vi.fn();
+    const off = reg.subscribe("cam-caster-1", listener);
+    off();
+
+    for (const callback of callbacks) callback(null);
+
+    expect(listener).toHaveBeenCalledTimes(1);
   });
 
   it("exposes the LSDP leaf prefix Orion emits", () => {

@@ -1,0 +1,20 @@
+{
+  "v": 1,
+  "type": "delta",
+  "seq": 2,
+  "patches": [
+    {
+      "path": "blue.preview.status",
+      "value": "PROJECTION APPLIED"
+    }
+  ],
+  "cause": {
+    "source": "blue-runtime"
+  },
+  "schema_version": "orion.blue-solar-projection.v1",
+  "scene_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "runtime_instance_id": "runtime-preview-1",
+  "target": "preview",
+  "render_revision": "render-revision-preview-1",
+  "correlation_id": "correlation-preview-1"
+}

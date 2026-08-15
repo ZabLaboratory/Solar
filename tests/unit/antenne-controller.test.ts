@@ -59,9 +59,31 @@ function fakeViewer(registry: ReturnType<typeof fakeRegistry>) {
 const ROOM = { signalingUrl: "wss://meet/ws", roomId: "r", token: "tok" };
 const viewerLeaf = { rooms: [ROOM] };
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe("antenne controller", () => {
+  it("arms without installing a browser unload hook outside a window", () => {
+    vi.stubGlobal("window", undefined);
+    const viewer = fakeViewer(fakeRegistry());
+    const ctl = createAntenneController({ createViewer: () => viewer });
+
+    ctl.applyReservedLeaves({ viewer: viewerLeaf, slots: {} });
+
+    expect(viewer.join).toHaveBeenCalledTimes(1);
+  });
+
+  it("can be torn down before it is armed", () => {
+    const viewer = fakeViewer(fakeRegistry());
+    const ctl = createAntenneController({ createViewer: () => viewer });
+
+    ctl.leave();
+
+    expect(viewer.leave).not.toHaveBeenCalled();
+  });
+
   it("arms the viewer once and joins receive-only", () => {
     const reg = fakeRegistry();
     const viewer = fakeViewer(reg);
@@ -111,6 +133,30 @@ describe("antenne controller", () => {
     expect(seen[seen.length - 1]).toBe(cam);
   });
 
+  it("does not replay a pre-arm subscription cancelled before arming", () => {
+    const reg = fakeRegistry();
+    const ctl = createAntenneController({ createViewer: () => fakeViewer(reg) });
+    const listener = vi.fn();
+
+    const unsub = ctl.subscribePeerStream("cam-1", listener);
+    unsub();
+    ctl.applyReservedLeaves({ viewer: viewerLeaf, slots: {} });
+
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  it("subscribes directly once the controller is armed", () => {
+    const reg = fakeRegistry();
+    const ctl = createAntenneController({ createViewer: () => fakeViewer(reg) });
+    ctl.applyReservedLeaves({ viewer: viewerLeaf, slots: {} });
+
+    const listener = vi.fn();
+    const unsub = ctl.subscribePeerStream("alice", listener);
+    unsub();
+
+    expect(listener).toHaveBeenCalledWith(null);
+  });
+
   it("releases a slot that disappears from a newer snapshot", () => {
     const reg = fakeRegistry();
     const cam = { id: "alice-cam" } as unknown as MediaStream;
@@ -151,6 +197,27 @@ describe("antenne controller", () => {
 
     expect(createViewer).toHaveBeenCalledTimes(1);
     expect(viewer.setRooms).toHaveBeenCalledWith([ROOM2]);
+  });
+
+  it("surfaces a room reconciliation rejection through onJoinError", async () => {
+    const reg = fakeRegistry();
+    const viewer = fakeViewer(reg);
+    const onJoinError = vi.fn();
+    viewer.setRooms.mockRejectedValueOnce(new Error("room update failed"));
+    const ctl = createAntenneController({
+      createViewer: () => viewer,
+      onJoinError,
+    });
+
+    ctl.applyReservedLeaves({ viewer: viewerLeaf, slots: {} });
+    ctl.applyReservedLeaves({
+      viewer: { rooms: [{ signalingUrl: "wss://meet/ws", roomId: "r2", token: "tok2" }] },
+      slots: {},
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onJoinError).toHaveBeenCalledWith(expect.any(Error));
   });
 
   it("stays inert when slots arrive before any usable viewer creds", () => {

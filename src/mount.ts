@@ -172,10 +172,10 @@ export function mount(options: MountOptions): SolarHandle {
   //     back-compat.
   const { injection: peerViewerInjection, slotBindings, fromLsdp } =
     readPeerViewerInjection();
-  let resolvePeerStream: ResolvePeerStream | undefined;
-  let subscribePeerStream: SubscribePeerStream | undefined;
+  let resolvePeerStream: ResolvePeerStream;
+  let subscribePeerStream: SubscribePeerStream;
   let onReservedLeaves: RuntimeMountOptions["onReservedLeaves"];
-  let teardownPeerViewer: () => void = () => {};
+  let teardownPeerViewer: () => void;
 
   const surfaceJoinError = (err: unknown): void => {
     options.onError?.({
@@ -258,9 +258,8 @@ export function mount(options: MountOptions): SolarHandle {
     // ADR 006 #4 — when a viewer is active, thread its peer-stream resolvers so
     // LIVE `media` nodes render the matching peer's MediaStream in `srcObject`.
     // On the antenne these are slotRef-aware (ADR Blue 009 §3.3).
-    ...(resolvePeerStream !== undefined && subscribePeerStream !== undefined
-      ? { resolvePeerStream, subscribePeerStream }
-      : {}),
+    resolvePeerStream,
+    subscribePeerStream,
     // ADR Blue 009 §3.2–3.3 — on the antenne the runtime surfaces the reserved
     // `__cam.*` LSDP leaves here (full projection on every change). The controller
     // arms the receive-only viewer from `leaves.viewer` and re-keys

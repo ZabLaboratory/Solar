@@ -156,4 +156,13 @@ describe("buildAtlasRoot()", () => {
     // twoBandRoot has ONE capture → 2 bands, not 3.
     expect(() => buildAtlasRoot(twoBandRoot, spec)).toThrow(/atlas/i);
   });
+
+  it("builds a single transparent band when the root has no children", () => {
+    const spec = parseAtlasParam("only");
+    if (spec === null) throw new Error("fixture: spec must parse");
+
+    const atlas = buildAtlasRoot({ kind: "stack" }, spec);
+    expect(atlas.children).toHaveLength(1);
+    expect(atlas.children?.[0]?.children).toEqual([]);
+  });
 });

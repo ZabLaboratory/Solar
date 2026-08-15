@@ -6,6 +6,11 @@
 // resolver threading, teardown) without a real WS.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  readPeerViewerInjection,
+  ZAB_LSDP_PEER_VIEWER_GLOBAL,
+  ZAB_PEER_VIEWER_GLOBAL,
+} from "../../src/peer-viewer/injection";
 
 const {
   mountRuntime,
@@ -213,6 +218,29 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(leave).toHaveBeenCalledTimes(1);
   });
 
+  it("wires preview subscriptions, token updates, and the unload teardown", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "meet-unload", token: "room-tok" },
+      ],
+    };
+    const add = vi.spyOn(window, "addEventListener");
+    const handle = mount(baseOptions());
+    const runtimeOpts = runtimeOptsOf();
+    const off = (runtimeOpts.subscribePeerStream as (key: string, listener: (s: MediaStream | null) => void) => () => void)(
+      "alice",
+      vi.fn(),
+    );
+    off();
+    handle.setToken("next-token");
+
+    const unload = add.mock.calls.find(([type]) => type === "beforeunload")?.[1];
+    expect(typeof unload).toBe("function");
+    (unload as EventListener)(new Event("beforeunload"));
+    expect(leave).toHaveBeenCalled();
+    add.mockRestore();
+  });
+
   it("threads SLOT-AWARE resolvers on the preview path (positional @<n>)", () => {
     (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
       rooms: [
@@ -250,6 +278,25 @@ describe("peer-viewer glue (multi-room)", () => {
     await Promise.resolve();
     expect(onError).toHaveBeenCalledWith(
       expect.objectContaining({ code: "INTERNAL", recoverable: true }),
+    );
+  });
+
+  it("stringifies a non-Error join rejection at the Solar boundary", async () => {
+    join.mockRejectedValueOnce("ws handshake failed");
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "meet-string-error", token: "room-tok" },
+      ],
+    };
+    const onError = vi.fn();
+    mount(baseOptions({ onError }));
+    await Promise.resolve();
+    await Promise.resolve();
+
+    expect(onError).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "peer-viewer join failed: ws handshake failed",
+      }),
     );
   });
 });
@@ -340,6 +387,56 @@ describe("peer-viewer glue — second LSDP source + slotRef re-keying (antenne)"
     };
     mount(baseOptions());
     expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
+  });
+
+  it("accepts a legacy room object even when it carries a non-array rooms field", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: "legacy-marker",
+      signalingUrl: "wss://meet.example/ws",
+      roomId: "legacy-with-marker",
+      token: "room-tok",
+    };
+    mount(baseOptions());
+
+    expect(createPeerViewerFromInjection).toHaveBeenCalledWith({
+      rooms: [
+        {
+          rooms: "legacy-marker",
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "legacy-with-marker",
+          token: "room-tok",
+        },
+      ],
+    });
+  });
+
+  it("takes the defensive legacy path when rooms is not an array", () => {
+    (globalThis as Record<string, unknown>)[ZAB_PEER_VIEWER_GLOBAL] = {
+      rooms: "not-an-array",
+      signalingUrl: "wss://meet.example/ws",
+      roomId: "legacy-direct",
+      token: "room-tok",
+    };
+
+    expect(readPeerViewerInjection().injection).toEqual({
+      rooms: [
+        {
+          rooms: "not-an-array",
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "legacy-direct",
+          token: "room-tok",
+        },
+      ],
+    });
+
+    (globalThis as Record<string, unknown>)[ZAB_LSDP_PEER_VIEWER_GLOBAL] = {
+      slots: {
+        "cam-valid": "alice",
+        "cam-empty": "",
+        "cam-malformed": 42,
+      },
+    };
+    expect(readPeerViewerInjection().slotBindings).toEqual({ "cam-valid": "alice" });
   });
 });
 
@@ -445,12 +542,23 @@ describe("peer-viewer glue — runtime onReservedLeaves hook (antenne, 0.11.0)",
     expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
   });
 
+  it("does nothing when the viewer leaf has an empty rooms array", () => {
+    mount(baseOptions());
+    hookOf()({ viewer: { rooms: [] }, slots: {} });
+    expect(createPeerViewerFromInjection).not.toHaveBeenCalled();
+  });
+
   it("is NOT registered on the preview path (frozen)", () => {
     (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
       rooms: [{ signalingUrl: "wss://meet.example/ws", roomId: "meet-a", token: "tok-a" }],
     };
     mount(baseOptions());
     expect(runtimeOptsOf().onReservedLeaves).toBeUndefined();
+  });
+
+  it("forwards the explicit liveAudio opt-in to the runtime", () => {
+    mount(baseOptions({ liveAudio: true }));
+    expect(runtimeOptsOf().liveAudio).toBe(true);
   });
 });
 
