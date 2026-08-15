@@ -185,6 +185,10 @@ describe("Solar preview consumes Orion's additive projection over LSDP/1.1", () 
       await waitFor(() => target.textContent?.includes("PREVIEW READY") === true);
 
       expect(errors).toHaveLength(0);
+      expect(FakeWebSocket.last?.url).toBe(
+        "wss://gate.example/orion/api/v1/show/stream.lsdp",
+      );
+      expect(FakeWebSocket.last?.protocols).toEqual(["lsdp.v1.1", "lsdp.v1"]);
       expect(statuses).toContain("live");
       expect(FakeWebSocket.lastSubscribe).toMatchObject({
         v: 1,
@@ -204,6 +208,14 @@ describe("Solar preview consumes Orion's additive projection over LSDP/1.1", () 
       expect(target.querySelector("span")?.textContent).toBe("PREVIEW READY");
 
       const rawDelta = projectionDeltaWire();
+      expect(JSON.parse(rawDelta)).toMatchObject({
+        schema_version: DELTA_FIXTURE.schema_version,
+        scene_digest: DELTA_FIXTURE.scene_digest,
+        runtime_instance_id: DELTA_FIXTURE.runtime_instance_id,
+        target: DELTA_FIXTURE.target,
+        render_revision: DELTA_FIXTURE.render_revision,
+        correlation_id: DELTA_FIXTURE.correlation_id,
+      });
       const decoded = decodeServerFrame(rawDelta);
       expect(decoded).toMatchObject({
         type: "delta",
