@@ -76,9 +76,12 @@ const isUsableRoom = (r: unknown): r is PeerViewerRoom =>
  *  legacy single-room shape). */
 function roomsOf(cfg: ViewerInjectionShape | PeerViewerRoom | undefined): PeerViewerRoom[] {
   if (cfg === undefined) return [];
-  if ("rooms" in cfg && Array.isArray(cfg.rooms)) return cfg.rooms.filter(isUsableRoom);
-  // Legacy single-room shape (preview back-compat).
-  return isUsableRoom(cfg) ? [cfg] : [];
+  if ("rooms" in cfg && Array.isArray(cfg.rooms)) {
+    return cfg.rooms.filter(isUsableRoom);
+  } else {
+    // Legacy single-room shape (preview back-compat).
+    return isUsableRoom(cfg) ? [cfg] : [];
+  }
 }
 
 /** Pull the slot→peer snapshot out of a source global. Only string→string

@@ -69,6 +69,34 @@ describe("host-entry.tsx — served bundle opts into live guest audio", () => {
     await import("../../src/host-entry");
     expect(lastOptions().liveAudio).toBe(false);
   });
+
+  it("uses the safe broadcast default for an unknown mode and logs both error severities", async () => {
+    stage("?mode=not-a-solar-mode");
+    await import("../../src/host-entry");
+    const opts = lastOptions();
+    expect(opts.mode).toBe("broadcast");
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    opts.onError?.({ code: "INTERNAL", message: "recoverable", recoverable: true });
+    opts.onError?.({ code: "INTERNAL", message: "fatal", recoverable: false });
+
+    expect(error).toHaveBeenNthCalledWith(1, "[solar] INTERNAL: recoverable (recoverable)");
+    expect(error).toHaveBeenNthCalledWith(2, "[solar] INTERNAL: fatal (fatal)");
+    error.mockRestore();
+  });
+
+  it("falls back to broadcast when the mode query is absent", async () => {
+    stage("");
+    await import("../../src/host-entry");
+    expect(lastOptions().mode).toBe("broadcast");
+  });
+
+  it("reports a missing scene target before mounting", async () => {
+    window.history.replaceState({}, "", "/");
+    document.body.innerHTML = "";
+    await expect(import("../../src/host-entry")).rejects.toThrow(/#scene target missing/);
+    expect(mountSpy).not.toHaveBeenCalled();
+  });
 });
 
 describe("dev-entry.tsx — interactive editor stays muted by default", () => {
@@ -85,5 +113,33 @@ describe("dev-entry.tsx — interactive editor stays muted by default", () => {
     stage("?mode=test&scene=scene-42&session=uuid-1");
     await import("../../src/dev-entry");
     expect("liveAudio" in lastOptions()).toBe(false);
+  });
+
+  it("uses the safe broadcast default for an unknown mode and logs both error severities", async () => {
+    stage("?mode=not-a-solar-mode");
+    await import("../../src/dev-entry");
+    const opts = lastOptions();
+    expect(opts.mode).toBe("broadcast");
+    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+
+    opts.onError?.({ code: "INTERNAL", message: "recoverable", recoverable: true });
+    opts.onError?.({ code: "INTERNAL", message: "fatal", recoverable: false });
+
+    expect(error).toHaveBeenNthCalledWith(1, "[solar dev] INTERNAL: recoverable (recoverable)");
+    expect(error).toHaveBeenNthCalledWith(2, "[solar dev] INTERNAL: fatal (fatal)");
+    error.mockRestore();
+  });
+
+  it("falls back to broadcast when the mode query is absent", async () => {
+    stage("");
+    await import("../../src/dev-entry");
+    expect(lastOptions().mode).toBe("broadcast");
+  });
+
+  it("reports a missing scene target before mounting", async () => {
+    window.history.replaceState({}, "", "/");
+    document.body.innerHTML = "";
+    await expect(import("../../src/dev-entry")).rejects.toThrow(/#scene target missing/);
+    expect(mountSpy).not.toHaveBeenCalled();
   });
 });
