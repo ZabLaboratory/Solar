@@ -32,7 +32,7 @@
     "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc -b --pretty",
     "format": "prettier --write .",
-    "test": "vitest run",
+    "test": "vitest run && node --test scripts/check-bundle-size.test.mjs",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check:bundle": "node scripts/check-bundle-size.mjs && node scripts/check-host-bundle.mjs"
