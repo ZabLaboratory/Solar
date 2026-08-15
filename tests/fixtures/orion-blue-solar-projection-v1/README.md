@@ -16,4 +16,3 @@ then feeds the result through the same codec/runtime path Solar consumes. The
 metadata is deliberately ignored; the existing `patches` field remains the
 only state application seam. This is a local compatibility fixture, not a live
 or PGM proof.
-
