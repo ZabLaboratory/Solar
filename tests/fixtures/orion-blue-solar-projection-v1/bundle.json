@@ -1,0 +1,19 @@
+{
+  "scene_version": "sha256:32c2c68057c2ce439e62fa7fe3797e2b0b0a43f515251fb26d07ca9e62ee12a9",
+  "root": {
+    "kind": "stack",
+    "children": [
+      {
+        "kind": "text",
+        "id": "preview-status",
+        "props": {
+          "size": 32,
+          "colour": "#ffffff"
+        },
+        "bindings": {
+          "value": "blue.preview.status"
+        }
+      }
+    ]
+  }
+}
