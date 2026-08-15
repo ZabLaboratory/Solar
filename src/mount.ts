@@ -113,8 +113,17 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
   if (entry === undefined) {
     return null;
   }
-  // Screen/window: a desktopCapturer source id is origin-independent → verbatim.
-  if (sourceKind === "media.screen" || sourceKind === "media.window") {
+  // Screen/window/app: a desktopCapturer source id is origin-independent →
+  // verbatim. `media.app` (RFC-0001 Amendment 3) resolves the SAME shape —
+  // Prism's page-global injection re-resolves it fresh (against the
+  // currently open windows, by app name) on every serve, so by the time it
+  // reaches here it is just another desktopCapturer id, exactly like a
+  // picked window.
+  if (
+    sourceKind === "media.screen" ||
+    sourceKind === "media.window" ||
+    sourceKind === "media.app"
+  ) {
     return entry.captureSourceId !== undefined && entry.captureSourceId !== ""
       ? { captureSourceId: entry.captureSourceId }
       : null;

@@ -68,6 +68,7 @@ import type { MountOptions } from "../../src/index";
 
 const PEER_GLOBAL = "__ZAB_PEER_VIEWER__";
 const LSDP_GLOBAL = "__ZAB_LSDP_PEER_VIEWER__";
+const CAPTURE_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
 
 function baseOptions(over: Partial<MountOptions> = {}): MountOptions {
   return {
@@ -92,11 +93,13 @@ afterEach(() => {
   vi.clearAllMocks();
   delete (globalThis as Record<string, unknown>)[PEER_GLOBAL];
   delete (globalThis as Record<string, unknown>)[LSDP_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL];
 });
 
 beforeEach(() => {
   delete (globalThis as Record<string, unknown>)[PEER_GLOBAL];
   delete (globalThis as Record<string, unknown>)[LSDP_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL];
 });
 
 describe("peer-viewer glue (multi-room)", () => {
@@ -448,5 +451,48 @@ describe("peer-viewer glue — runtime onReservedLeaves hook (antenne, 0.11.0)",
     };
     mount(baseOptions());
     expect(runtimeOptsOf().onReservedLeaves).toBeUndefined();
+  });
+});
+
+describe("capture source resolution (screen/window/app compatibility path)", () => {
+  it("passes desktop-capture IDs through for media.app (legacy capture global API)", async () => {
+    (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL] = {
+      "app-window-id": { captureSourceId: "desktop-capture-id" },
+    };
+
+    mount(baseOptions());
+
+    const resolver = runtimeOptsOf().resolveCaptureDevice as (
+      deviceRef: string,
+      sourceKind: string,
+    ) =>
+      | { captureSourceId?: string; deviceId?: string }
+      | null
+      | Promise<{ captureSourceId?: string; deviceId?: string } | null>;
+    expect(typeof resolver).toBe("function");
+
+    const result = await Promise.resolve(
+      resolver("app-window-id", "media.app"),
+    );
+    expect(result).toEqual({ captureSourceId: "desktop-capture-id" });
+  });
+
+  it("keeps cam/mic behavior on missing source-id for media.app (placeholder)", async () => {
+    (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL] = {
+      "app-window-id": { captureSourceId: "" },
+    };
+
+    mount(baseOptions());
+
+    const resolver = runtimeOptsOf().resolveCaptureDevice as (
+      deviceRef: string,
+      sourceKind: string,
+    ) =>
+      | { captureSourceId?: string; deviceId?: string }
+      | null
+      | Promise<{ captureSourceId?: string; deviceId?: string } | null>;
+    expect(
+      await Promise.resolve(resolver("app-window-id", "media.app")),
+    ).toBeNull();
   });
 });
