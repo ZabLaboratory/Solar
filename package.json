@@ -46,6 +46,7 @@
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
+    "@lumencast/protocol": "^0.18.1",
     "@playwright/test": "^1.49.1",
     "@tailwindcss/postcss": "^4.0.7",
     "@types/node": "^22.13.5",

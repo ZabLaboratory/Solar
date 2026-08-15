@@ -74,8 +74,8 @@ function validDeltaFrame(): ReturnType<typeof delta> {
 
 /**
  * Build a valid LSDP/1.1 delta with the real codec, then add the producer's
- * logical projection metadata as unknown JSON fields. Solar must consume the
- * existing `patches` envelope and ignore those additive fields.
+ * additive projection metadata. Solar consumes the existing `patches`
+ * envelope and does not use the metadata for render semantics.
  */
 function projectionDeltaWire(): string {
   const wire = JSON.parse(encodeFrame(validDeltaFrame())) as Record<string, unknown>;
@@ -222,8 +222,13 @@ describe("Solar preview consumes Orion's additive projection over LSDP/1.1", () 
         seq: DELTA_FIXTURE.seq,
         patches: DELTA_FIXTURE.patches,
         cause: DELTA_FIXTURE.cause,
+        schema_version: DELTA_FIXTURE.schema_version,
+        scene_digest: DELTA_FIXTURE.scene_digest,
+        runtime_instance_id: DELTA_FIXTURE.runtime_instance_id,
+        target: DELTA_FIXTURE.target,
+        render_revision: DELTA_FIXTURE.render_revision,
+        correlation_id: DELTA_FIXTURE.correlation_id,
       });
-      expect(decoded).not.toHaveProperty("schema_version");
 
       FakeWebSocket.last!.push(rawDelta);
       await waitFor(() => target.textContent?.includes("PROJECTION APPLIED") === true);
