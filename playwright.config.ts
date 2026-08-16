@@ -26,6 +26,9 @@ export default defineConfig({
   // the host smoke test stays self-contained and CI-stable.
   use: {
     headless: true,
+    // Local PowerShell: $env:SOLAR_E2E_BROWSER='system-chrome'; npm run test:e2e
+    channel:
+      process.env.SOLAR_E2E_BROWSER === "system-chrome" ? "chrome" : undefined,
     trace: "retain-on-failure",
   },
   projects: [
