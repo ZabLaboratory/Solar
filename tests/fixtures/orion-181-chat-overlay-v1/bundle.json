@@ -1,0 +1,30 @@
+{
+  "scene_version": "sha256:6bc6a9dbdcb4c24c7f2811c21a3344859610ab734ee49d112b159f84a5f97bee",
+  "root": {
+    "kind": "stack",
+    "children": [
+      {
+        "kind": "text",
+        "id": "overlay-message",
+        "props": {
+          "size": 32,
+          "colour": "#ffffff"
+        },
+        "bindings": {
+          "value": "overlay_message"
+        }
+      },
+      {
+        "kind": "text",
+        "id": "chat-count",
+        "props": {
+          "size": 32,
+          "colour": "#ffffff"
+        },
+        "bindings": {
+          "value": "chat_count"
+        }
+      }
+    ]
+  }
+}
