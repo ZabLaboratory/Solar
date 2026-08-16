@@ -7,6 +7,8 @@ pins their identity, the render bundle, and the LSDP/1.1 frames Solar reads.
 
 ## Producer provenance
 
+- Work unit: `ZabLaboratory/Solar#50`, ADR-BLUE-012 R6 revision
+  `f2afceac32ad8c29f6043920cce9d362cc963614`.
 - Blue PR #327 merged at `5d644a6a2f1b25682c9d79ffdcb470c6d2f92216`.
 - Orion PR #382 merged at `c5a2c25b2aed1d68079ed0ab6224625a51516358`.
 - Blue source: `tests/contract/orion_181_chat_overlay_program.json`.
