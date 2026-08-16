@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "type": "snapshot",
+  "seq": 1,
+  "scene_id": "orion-181-chat-overlay",
+  "scene_version": "sha256:6bc6a9dbdcb4c24c7f2811c21a3344859610ab734ee49d112b159f84a5f97bee",
+  "state": {
+    "chat_count": 0,
+    "overlay_message": ""
+  }
+}

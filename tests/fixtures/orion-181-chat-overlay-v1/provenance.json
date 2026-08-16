@@ -1,0 +1,91 @@
+{
+  "artifact_kind": "blue.program.v1",
+  "program_id": "orion-181-chat-overlay",
+  "program_digest": "sha256:e37e2d6e989b4b56f1ff1b74a4f6323331d263fd80b2dc829a5b293deaf502ef",
+  "schema_version": "blue.program.v1",
+  "compiler_version": "0.1.0",
+  "runtime_abi": "blue-runtime-abi.v1",
+  "source_revision": {
+    "digest": "sha256:260dab9fdae19d6612e2d3fd6d32c7344c30f40ceb51345aa520b65d4c36fe52",
+    "id": "orion-181-chat-overlay",
+    "kind": "blueprint-version",
+    "revision": 1
+  },
+  "producer_copies": [
+    {
+      "repo": "ZabLaboratory/Blue",
+      "pull_request": 327,
+      "merge_commit": "5d644a6a2f1b25682c9d79ffdcb470c6d2f92216",
+      "path": "tests/contract/orion_181_chat_overlay_program.json",
+      "byte_length": 5505,
+      "sha256": "fc5cd671729f44bbe09ad278d93a8cc0ac0add9c275c541df2aa6b16f4a3b97a",
+      "byte_identical_to_orion_copy": true
+    },
+    {
+      "repo": "ZabLaboratory/Orion",
+      "pull_request": 382,
+      "merge_commit": "c5a2c25b2aed1d68079ed0ab6224625a51516358",
+      "path": "internal/api/testdata/orion_181_chat_overlay_program.json",
+      "byte_length": 5505,
+      "sha256": "fc5cd671729f44bbe09ad278d93a8cc0ac0add9c275c541df2aa6b16f4a3b97a",
+      "byte_identical_to_blue_copy": true
+    }
+  ],
+  "entrypoint": {
+    "kind": "platform-event",
+    "leaf": "__inputs.platform.twitch.zablab_chat.last_chat_message",
+    "platform": "twitch",
+    "channel": "zablab_chat",
+    "event_type": "chat_message"
+  },
+  "state": {
+    "outputs": [
+      { "name": "chat_count", "type": "core.number" },
+      { "name": "overlay_message", "type": "core.string" }
+    ],
+    "variables": [
+      { "initial": 0, "name": "chat_count", "type": "core.number" },
+      { "initial": "", "name": "overlay_message", "type": "core.string" }
+    ]
+  },
+  "ordering": {
+    "duplicate_event": "idempotent_same_digest",
+    "event_inbox": "fifo_by_runtime_sequence",
+    "sequence_gap": "reject"
+  },
+  "projection": {
+    "schema_version": "orion.blue-solar-projection.v1",
+    "scene_digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "runtime_instance_id": "ref-1",
+    "target": "program",
+    "render_revision": "rev-1",
+    "correlation_id": "corr-181"
+  },
+  "accepted_states": [
+    {
+      "frame": "snapshot",
+      "seq": 1,
+      "event_id": null,
+      "message": null,
+      "overlay_message": "",
+      "chat_count": 0
+    },
+    {
+      "frame": "delta",
+      "seq": 2,
+      "event_id": "evt-1",
+      "message": "gg",
+      "overlay_message": "chat: gg",
+      "chat_count": 1
+    },
+    {
+      "frame": "delta",
+      "seq": 3,
+      "event_id": "evt-2",
+      "message": "hello",
+      "overlay_message": "chat: hello",
+      "chat_count": 2
+    }
+  ],
+  "render_bundle_scene_version": "sha256:6bc6a9dbdcb4c24c7f2811c21a3344859610ab734ee49d112b159f84a5f97bee"
+}
