@@ -239,8 +239,16 @@ export function mount(options: MountOptions): SolarHandle {
     // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
     // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
     // WS `orionUrl` so the runtime fetches the right artefact (ADR 007 —
-    // adapter owns Orion's URL contract).
-    resolveBundleUrl: orionBundleUrl(options.orionUrl),
+    // adapter owns Orion's URL contract). The boot show-token (a string —
+    // exactly what the host entries resolve via `resolveShowToken`) rides
+    // along as `&token=`: ZabGate gates this route on a viewer `?token=`,
+    // mirroring the WS gate the same token already passes. A provider token
+    // (`SolarTokenProvider`) can't be awaited in the sync resolver — it
+    // keeps the runtime's `Authorization: Bearer` path only.
+    resolveBundleUrl: orionBundleUrl(
+      options.orionUrl,
+      typeof options.token === "string" ? options.token : undefined,
+    ),
     ...(options.testSession !== undefined
       ? { testSession: options.testSession }
       : {}),
