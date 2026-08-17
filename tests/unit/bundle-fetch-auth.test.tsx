@@ -141,4 +141,48 @@ describe("render-bundle fetch carries Authorization from the show-token", () => 
     // header is driven by the token, i.e. the token IS what was missing.
     expect(init).toBeUndefined();
   });
+
+  // ZabGate's render-bundle gate accepts a viewer `?token=` on the exact
+  // route `GET /orion/api/v1/scenes/{id}/render-bundle` (mirror of the WS
+  // gate). The CEF bundle fetch must carry the show-token in the URL query,
+  // not only in the Authorization header — same production seam as above
+  // (resolveShowToken → mount → runtime bundle fetcher).
+  it("carries the show-token as `token=` in the bundle URL query", async () => {
+    const target = document.createElement("div");
+    document.body.appendChild(target);
+
+    const token = resolveShowToken(ORION_URL, null);
+    mount({ target, orionUrl: ORION_URL, token, mode: "broadcast" });
+
+    await Promise.resolve();
+    FakeWebSocket.instances[0]!.pushSnapshot();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    const [url] = fetchMock.mock.calls[0]!;
+    const parsed = new URL(String(url));
+    expect(parsed.pathname).toBe(
+      "/orion/api/v1/scenes/scene-finale/render-bundle",
+    );
+    expect(parsed.searchParams.get("v")).toBe(SCENE_VERSION);
+    expect(parsed.searchParams.get("token")).toBe(SHOW_TOKEN);
+  });
+
+  it("emits NO token= param in the bundle URL when Solar boots without a token", async () => {
+    const target = document.createElement("div");
+    document.body.appendChild(target);
+
+    const noTokenUrl =
+      "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp";
+    const token = resolveShowToken(noTokenUrl, null);
+    mount({ target, orionUrl: noTokenUrl, token, mode: "broadcast" });
+
+    await Promise.resolve();
+    FakeWebSocket.instances[0]!.pushSnapshot();
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+
+    const [url] = fetchMock.mock.calls[0]!;
+    // Never an empty `token=` — the unauthenticated dev/local URL shape is
+    // preserved byte-for-byte.
+    expect(new URL(String(url)).searchParams.has("token")).toBe(false);
+  });
 });

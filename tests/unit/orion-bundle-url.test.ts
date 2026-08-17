@@ -60,4 +60,38 @@ describe("orionBundleUrl()", () => {
   it("throws a host-friendly error on a non-absolute URL", () => {
     expect(() => orionBundleUrl("not-a-url")).toThrow(/orionUrl.*absolute/);
   });
+
+  // ZabGate gates the render-bundle route on a viewer `?token=` (mirror of
+  // the WS gate) — the resolver appends the boot show-token when present.
+  describe("show-token propagation", () => {
+    it("appends `&token=` when a token is supplied", () => {
+      const resolve = orionBundleUrl(
+        "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp?token=SHOW",
+        "SHOW",
+      );
+      expect(resolve("SCENE", "sha256:V")).toBe(
+        "https://zabgate.cyell.dev/orion/api/v1/scenes/SCENE/render-bundle?v=sha256%3AV&token=SHOW",
+      );
+    });
+
+    it("percent-encodes the token", () => {
+      const resolve = orionBundleUrl(
+        "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp",
+        "a+b/c=d",
+      );
+      expect(resolve("SCENE", "v1")).toBe(
+        "https://zabgate.cyell.dev/orion/api/v1/scenes/SCENE/render-bundle?v=v1&token=a%2Bb%2Fc%3Dd",
+      );
+    });
+
+    it("emits NO token= param for an empty token (unauthenticated dev/local)", () => {
+      const resolve = orionBundleUrl(
+        "ws://localhost:4007/orion/api/v1/show/stream.lsdp",
+        "",
+      );
+      expect(resolve("SCENE", "v1")).toBe(
+        "http://localhost:4007/orion/api/v1/scenes/SCENE/render-bundle?v=v1",
+      );
+    });
+  });
 });

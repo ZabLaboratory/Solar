@@ -34,10 +34,19 @@ const WS_SUFFIX = "/show/stream.lsdp";
  * `r.URL.Query().Get("v")` URL-decodes it back to the exact hash before
  * the byte-for-byte DB match (`scenes_get.go`).
  *
+ * When Solar holds a show-token at boot, the URL also carries it as
+ * `&token=` — ZabGate gates this exact route on a viewer `?token=`, the
+ * mirror of the WS gate the same token already passes. An absent/empty
+ * `token` emits NO `token=` param (never an empty one), preserving the
+ * unauthenticated dev/local shape byte-for-byte. The token lives ONLY in
+ * this URL: it is never logged, and the runtime's fetch-failure errors
+ * do not echo the URL.
+ *
  * @throws TypeError if `serverUrl` is not a parseable absolute URL.
  */
 export function orionBundleUrl(
   serverUrl: string,
+  token?: string,
 ): (sceneId: string, sceneVersion: string) => string {
   let url: URL;
   try {
@@ -68,7 +77,14 @@ export function orionBundleUrl(
 
   const origin = `${scheme}//${url.host}`;
 
+  // Pre-encode once: the token is fixed for the resolver's lifetime (boot
+  // show-token; rotation reconnects through a fresh mount).
+  const tokenSuffix =
+    token !== undefined && token !== ""
+      ? `&token=${encodeURIComponent(token)}`
+      : "";
+
   return (sceneId: string, sceneVersion: string): string =>
     `${origin}${apiRoot}/scenes/${encodeURIComponent(sceneId)}` +
-    `/render-bundle?v=${encodeURIComponent(sceneVersion)}`;
+    `/render-bundle?v=${encodeURIComponent(sceneVersion)}${tokenSuffix}`;
 }
