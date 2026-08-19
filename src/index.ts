@@ -10,6 +10,7 @@ export type {
   SolarTokenProvider,
   SolarError,
   SolarErrorCode,
+  SolarSceneRosterEntry,
 } from "./types";
 
 // Authored "wipe-cover" overlay element (M10 — Pulsar ADR 003 §A4.2). A

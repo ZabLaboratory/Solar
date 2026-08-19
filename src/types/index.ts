@@ -13,6 +13,14 @@
 
 import type { RenderNode } from "@lumencast/runtime";
 
+/** Content-addressed bundle identity advertised by Orion for client-side
+ * preloading. Kept structurally compatible with Lumencast's protocol type so
+ * Solar remains a thin adapter and does not own a second wire schema. */
+export interface SolarSceneRosterEntry {
+  scene_id: string;
+  scene_version: string;
+}
+
 export type SolarMode = "broadcast" | "control" | "test";
 
 export type SolarStatus = "disconnected" | "connecting" | "live";
@@ -62,8 +70,12 @@ export interface MountOptions {
   testSession?: string;
   /** Required when mode === "test" — the scene id that the test session
    *  cloned. Ignored otherwise. */
-  scene?: string;
-  onError?: (err: SolarError) => void;
+	scene?: string;
+	/** Preload validated render bundles known by the host. The runtime also
+	 * consumes Orion's `scene_roster` frames, so this is an optional host-side
+	 * hint rather than a second scene lifecycle. */
+	preloadRoster?: readonly SolarSceneRosterEntry[];
+	onError?: (err: SolarError) => void;
   onStatus?: (status: SolarStatus) => void;
   /** Host resolver for the `x-zab.capture` primitive's ACQUIRE mode (runtime
    *  ADR 004 §A1.3). Given the LOGICAL `(deviceRef, sourceKind)` from the

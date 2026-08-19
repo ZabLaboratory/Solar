@@ -245,6 +245,9 @@ export function mount(options: MountOptions): SolarHandle {
       ? { testSession: options.testSession }
       : {}),
     ...(options.scene !== undefined ? { scene: options.scene } : {}),
+    ...(options.preloadRoster !== undefined && options.preloadRoster.length > 0
+      ? { preloadRoster: options.preloadRoster }
+      : {}),
     ...(options.onStatus
       ? { onStatus: (status: LumencastStatus): void => options.onStatus?.(toSolarStatus(status)) }
       : {}),
