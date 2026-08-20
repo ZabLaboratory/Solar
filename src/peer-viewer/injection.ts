@@ -87,8 +87,13 @@ function roomsOf(cfg: ViewerInjectionShape | PeerViewerRoom | undefined): PeerVi
 /** Pull the slot→peer snapshot out of a source global. Only string→string
  *  entries are kept ; anything else is dropped (defensive against a malformed
  *  global). */
-function slotsOf(cfg: ViewerInjectionShape | undefined): Record<string, string> {
-  const raw = cfg?.slots;
+function slotsOf(
+  cfg: ViewerInjectionShape | PeerViewerRoom | undefined,
+): Record<string, string> {
+  const raw =
+    cfg !== undefined && "slots" in cfg
+      ? (cfg as ViewerInjectionShape).slots
+      : undefined;
   if (typeof raw !== "object" || raw === null) return {};
   const out: Record<string, string> = {};
   for (const [slotRef, peerLabel] of Object.entries(raw as Record<string, unknown>)) {
@@ -128,9 +133,14 @@ export function readPeerViewerInjection(): ResolvedInjection {
   }
 
   const lsdpRooms = roomsOf(lsdp);
+  const slotBindings = {
+    ...slotsOf(preview),
+    // LSDP is authoritative on-air state when both sources are present.
+    ...slotsOf(lsdp),
+  };
   return {
     injection: merged.length > 0 ? { rooms: merged } : null,
-    slotBindings: slotsOf(lsdp),
+    slotBindings,
     fromLsdp: lsdpRooms.length > 0,
   };
 }

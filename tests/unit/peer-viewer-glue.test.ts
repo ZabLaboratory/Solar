@@ -381,6 +381,29 @@ describe("peer-viewer glue — second LSDP source + slotRef re-keying (antenne)"
     });
   });
 
+  it("merges preview slot bindings and lets LSDP override the live slot", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "preview", token: "p-tok" },
+      ],
+      slots: {
+        "cam-0": "preview-peer",
+        "cam-1": "preview-only",
+      },
+    };
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "live", token: "a-tok" },
+      ],
+      slots: { "cam-0": "live-peer" },
+    };
+
+    expect(readPeerViewerInjection().slotBindings).toEqual({
+      "cam-0": "live-peer",
+      "cam-1": "preview-only",
+    });
+  });
+
   it("ignores a malformed LSDP global (no usable room)", () => {
     (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
       rooms: [{ signalingUrl: "wss://meet.example/ws", token: "no-room-id" }],
