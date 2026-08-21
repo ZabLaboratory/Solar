@@ -47,3 +47,15 @@
 #scene {
   font-family: "Geist", system-ui, sans-serif;
 }
+
+/* LSML text primitives are inline-blocks by design. A fixed-size frame is
+ * still their containing block, so constrain the inline box to that frame
+ * instead of allowing a long live value to grow past the crop boundary.
+ * `anywhere` is intentional: chat/user input can contain an unbroken token
+ * and must never escape the scene's fixed broadcast geometry. */
+#scene span {
+  box-sizing: border-box;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
