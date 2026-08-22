@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 
-const [archivePath, version, repository, tag, outputPath] = process.argv.slice(2);
+const [archivePath, version, repository, tag, outputPath] =
+  process.argv.slice(2);
 
 if (!archivePath || !version || !repository || !tag || !outputPath) {
   throw new Error(
@@ -27,4 +28,3 @@ const manifest = {
 
 writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 console.log(`created ${outputPath} for Solar ${version} (${artifactSha256})`);
-
