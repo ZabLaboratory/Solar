@@ -24,6 +24,17 @@
 
 import type { MultiRoomPeerViewerOptions, PeerViewerInjection } from "@lumencast/runtime";
 
+function tracePublisherOfferPolicy(message: string): void {
+  if (typeof location === "undefined") return;
+  if (!new URL(location.href).searchParams.has("prism_e2e")) return;
+  const g = globalThis as Record<string, unknown>;
+  const entries = Array.isArray(g.__PRISM_SOLAR_MEET_DIAG__)
+    ? (g.__PRISM_SOLAR_MEET_DIAG__ as unknown[])
+    : [];
+  entries.push({ message, at: Date.now() });
+  g.__PRISM_SOLAR_MEET_DIAG__ = entries;
+}
+
 /** Prism PREVIEW source — pinned by the scene-server before Solar mounts. Shared
  *  verbatim with Prism's injection ; change it in BOTH places. */
 export const ZAB_PEER_VIEWER_GLOBAL = "__ZAB_PEER_VIEWER__";
@@ -61,6 +72,138 @@ export interface ResolvedInjection {
    *  slot-aware re-keying path : preview-only stays byte-identical, the antenne
    *  path activates only once the LSDP creds are effectively present. */
   fromLsdp: boolean;
+}
+
+/**
+ * The Prism publisher owns offer creation for the receive-only mesh. The
+ * vendored Lumencast viewer still installs a `negotiationneeded` offerer
+ * handler, which creates glare as soon as it allocates its recvonly
+ * transceivers. Keep the runtime untouched and inject a native-compatible
+ * RTCPeerConnection subclass that suppresses only that viewer handler. All
+ * other WebRTC events and methods retain the browser implementation.
+ */
+export function publisherOfferViewerInjection(
+  injection: PeerViewerInjection,
+): PeerViewerInjection {
+  const NativePeerConnection = globalThis.RTCPeerConnection;
+  const NativeWebSocket = globalThis.WebSocket;
+  if (
+    typeof NativePeerConnection !== "function" ||
+    typeof NativeWebSocket !== "function"
+  ) {
+    return injection;
+  }
+
+  const PublisherOfferPeerConnection = function (
+    configuration?: RTCConfiguration,
+  ): RTCPeerConnection {
+    const pc = new NativePeerConnection(configuration);
+    const nativeSetLocalDescription = pc.setLocalDescription.bind(pc);
+    Object.defineProperty(pc, "setLocalDescription", {
+      configurable: true,
+      value: (
+        description?: RTCLocalSessionDescriptionInit,
+        successCallback?: VoidFunction,
+        failureCallback?: RTCPeerConnectionErrorCallback,
+      ): Promise<void> => {
+        // MeetViewer calls setLocalDescription() from its negotiationneeded
+        // offerer callback. A viewer must not create a local offer while stable;
+        // it must wait for the publisher offer and answer that offer instead.
+        // The have-remote-offer case is deliberately forwarded: that is the
+        // answer path and is required for media to flow.
+        if (
+          description === undefined &&
+          successCallback === undefined &&
+          failureCallback === undefined &&
+          (pc.signalingState === "stable" ||
+            pc.signalingState === "have-local-offer")
+        ) {
+          tracePublisherOfferPolicy("blocked-local-offer");
+          return Promise.reject(
+            new DOMException(
+              "A receive-only peer viewer cannot create a local offer",
+              "InvalidStateError",
+            ),
+          );
+        }
+        if (successCallback !== undefined || failureCallback !== undefined) {
+          return nativeSetLocalDescription(
+            description as RTCLocalSessionDescriptionInit,
+            successCallback as VoidFunction,
+            failureCallback as RTCPeerConnectionErrorCallback,
+          );
+        }
+        return nativeSetLocalDescription(description);
+      },
+    });
+    const nativeAddEventListener = pc.addEventListener.bind(pc);
+    Object.defineProperty(pc, "addEventListener", {
+      configurable: true,
+      value: (
+        type: string,
+        listener: EventListenerOrEventListenerObject | null,
+        options?: boolean | AddEventListenerOptions,
+      ): void => {
+        if (type === "negotiationneeded") return;
+        if (listener !== null) nativeAddEventListener(type, listener, options);
+      },
+    });
+    return pc;
+  } as unknown as typeof RTCPeerConnection;
+
+  const PublisherOfferWebSocket = function (
+    url: string | URL,
+    protocols?: string | string[],
+  ): WebSocket {
+    const ws = new NativeWebSocket(url, protocols);
+    const nativeSend = ws.send.bind(ws);
+    Object.defineProperty(ws, "send", {
+      configurable: true,
+      value: (data: string | ArrayBufferLike | Blob | ArrayBufferView<ArrayBufferLike>): void => {
+        if (typeof data === "string") {
+          try {
+            const message = JSON.parse(data) as {
+              type?: string;
+              payload?: { kind?: string; description?: { type?: string } };
+              to?: unknown;
+            };
+            if (
+              message.type === "signal" &&
+              message.payload?.kind === "sdp" &&
+              message.payload.description?.type === "offer"
+            ) {
+              tracePublisherOfferPolicy(
+                `blocked-offer to=${String(message.to ?? "?")}`,
+              );
+              return;
+            }
+            if (message.type === "join") tracePublisherOfferPolicy("send-join");
+            if (message.type === "leave") tracePublisherOfferPolicy("send-leave");
+            if (message.type === "signal") {
+              tracePublisherOfferPolicy(
+                `send-signal kind=${String(message.payload?.kind ?? "?")} to=${String(message.to ?? "?")}`,
+              );
+            }
+          } catch {
+            /* Non-JSON application data is forwarded unchanged. */
+          }
+        }
+        nativeSend(data);
+      },
+    });
+    return ws;
+  } as unknown as typeof WebSocket;
+  Object.setPrototypeOf(PublisherOfferWebSocket, NativeWebSocket);
+
+  const currentDeps = "deps" in injection ? injection.deps : undefined;
+  return {
+    ...injection,
+    deps: {
+      ...currentDeps,
+      RTCPeerConnection: PublisherOfferPeerConnection,
+      WebSocket: PublisherOfferWebSocket,
+    },
+  } as PeerViewerInjection;
 }
 
 const isUsableRoom = (r: unknown): r is PeerViewerRoom =>

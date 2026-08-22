@@ -63,6 +63,10 @@ export interface MountOptions {
    *  `serverUrl`, and is also the source from which `mount()` derives the
    *  gateway-prefixed render-bundle URL (`resolveBundleUrl`). */
   orionUrl: string;
+  /** Optional host-owned render-bundle resolver. This is used by embedded
+   * hosts such as Prism when the LSDP WebSocket remains remote but the
+   * content-addressed bundle is fetched through a same-origin local proxy. */
+  resolveBundleUrl?: (sceneId: string, sceneVersion: string) => string;
   token: SolarToken;
   mode: SolarMode;
   /** Required when mode === "test" — the test session UUID handed back by

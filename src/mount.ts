@@ -36,7 +36,11 @@ import type {
   SubscribePeerStream,
 } from "@lumencast/runtime";
 import { orionBundleUrl } from "./internal/orion-bundle-url";
-import { readPeerViewerInjection } from "./peer-viewer/injection";
+import { installLiveVideoAutoplay } from "./internal/live-video-autoplay";
+import {
+  publisherOfferViewerInjection,
+  readPeerViewerInjection,
+} from "./peer-viewer/injection";
 import { createAntenneController } from "./peer-viewer/antenne-controller";
 import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
 import { validateOptions } from "./internal/validate-options";
@@ -193,7 +197,9 @@ export function mount(options: MountOptions): SolarHandle {
     // that mounts before its peer connects shows a stream-less box and re-renders
     // via `subscribePeerStream` on arrival. A join failure must not take the
     // scene down — surface it through `onError` and let the rest render.
-    const peerViewer = createPeerViewerFromInjection(peerViewerInjection);
+    const peerViewer = createPeerViewerFromInjection(
+      publisherOfferViewerInjection(peerViewerInjection),
+    );
     void peerViewer.join().catch(surfaceJoinError);
     // A webview reload/close doesn't run `disconnect()` (the host owns that), so
     // leave the mesh explicitly on unload — stops `solar-viewer` ghosts piling up.
@@ -216,13 +222,17 @@ export function mount(options: MountOptions): SolarHandle {
     // `x-zab.meet-peer` nodes resolve through it ; a bare `peer_label` passes
     // straight through, so this is a strict superset of the `meet.peer` path.
     const controller = createAntenneController({
-      createViewer: createPeerViewerFromInjection,
+      createViewer: (injection) =>
+        createPeerViewerFromInjection(publisherOfferViewerInjection(injection)),
       onJoinError: surfaceJoinError,
     });
     if (peerViewerInjection !== null) {
       // Back-compat : a mount-time LSDP global already carries the antenne creds
       // (+ slot snapshot) — arm the controller exactly as the hook would.
-      controller.applyReservedLeaves({ viewer: peerViewerInjection, slots: slotBindings });
+      controller.applyReservedLeaves({
+        viewer: publisherOfferViewerInjection(peerViewerInjection),
+        slots: slotBindings,
+      });
     }
     resolvePeerStream = controller.resolvePeerStream;
     subscribePeerStream = controller.subscribePeerStream;
@@ -240,7 +250,8 @@ export function mount(options: MountOptions): SolarHandle {
     // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
     // WS `orionUrl` so the runtime fetches the right artefact (ADR 007 —
     // adapter owns Orion's URL contract).
-    resolveBundleUrl: orionBundleUrl(options.orionUrl),
+    resolveBundleUrl:
+      options.resolveBundleUrl ?? orionBundleUrl(options.orionUrl),
     ...(options.testSession !== undefined
       ? { testSession: options.testSession }
       : {}),
@@ -286,9 +297,13 @@ export function mount(options: MountOptions): SolarHandle {
   };
 
   const handle = mountRuntime(runtimeOptions);
+  const teardownLiveVideoAutoplay = installLiveVideoAutoplay(
+    options.liveAudio === true,
+  );
 
   return {
     disconnect: () => {
+      teardownLiveVideoAutoplay();
       // Tear the viewer down with the scene : leave the room and drop the peer
       // connections (the viewer owns them) so a webview reload doesn't leak a
       // ghost peer into the mesh.
@@ -299,6 +314,13 @@ export function mount(options: MountOptions): SolarHandle {
   };
 }
 
+/**
+ * The runtime creates the live video element before the WebRTC stream arrives
+ * and assigns `srcObject` later. Chromium does not reliably re-run the
+ * declarative `autoPlay` path for that late assignment, especially in a
+ * hidden CEF/webview host. Start playback imperatively once metadata or a
+ * playable frame exists; muting first keeps the operation gesture-free.
+ */
 // --- contract mapping helpers -----------------------------------------
 
 // The two status unions are identical ("disconnected" | "connecting" |
