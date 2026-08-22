@@ -17,6 +17,7 @@
 import { mount } from "./mount";
 import { resolveShowToken } from "./internal/resolve-show-token";
 import { atlasMountOptions } from "./internal/atlas-mount";
+import { localBundleUrl } from "./internal/local-bundle-url";
 import type { SolarMode } from "./types";
 // Self-hosted Geist / Geist Mono @font-face — Solar's served host/CEF/atlas
 // page owns its fonts (Prism's editor CSS never reaches it). Vite inlines the
@@ -32,6 +33,17 @@ const orionUrl =
 // it so the runtime can attach `Authorization: Bearer <token>` to the
 // render-bundle fetch — otherwise the GET is header-less and Orion 401s.
 const token = resolveShowToken(orionUrl, params.get("token"));
+const bundleBase = params.get("bundle");
+const resolveBundleUrl =
+  bundleBase === null
+    ? undefined
+    : (sceneId: string, sceneVersion: string): string =>
+        localBundleUrl(
+          bundleBase,
+          window.location.href,
+          sceneId,
+          sceneVersion,
+        );
 const modeParam = params.get("mode") ?? "broadcast";
 const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   modeParam as SolarMode,
@@ -50,6 +62,7 @@ if (!(target instanceof HTMLElement)) {
 mount({
   target,
   orionUrl,
+  ...(resolveBundleUrl !== undefined ? { resolveBundleUrl } : {}),
   token,
   mode,
   // This is the SERVED bundle — the flux réellement diffusé/enregistré (antenne
