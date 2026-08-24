@@ -7,7 +7,7 @@ export interface RenderAssetEndpoint {
 const SCENE_ASSET_PATH = /^\/canvas\/api\/v1\/scene-assets\/[0-9a-f]{64}\/bytes$/i;
 const DDRAGON_IMAGE_PATH = /^\/cdn\/[^/]+\/img\/(?:champion|item|spell|rune)\//i;
 
-interface RenderAssetEndpointGlobal extends RenderAssetEndpoint {}
+type RenderAssetEndpointGlobal = RenderAssetEndpoint;
 
 export function readRenderAssetEndpoint(): RenderAssetEndpoint | null {
   const value = (globalThis as { __ZAB_RENDER_ASSET_ENDPOINT__?: unknown })
