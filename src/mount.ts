@@ -44,6 +44,10 @@ import {
 import { createAntenneController } from "./peer-viewer/antenne-controller";
 import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
 import { validateOptions } from "./internal/validate-options";
+import {
+  createRenderAssetWebSocket,
+  readRenderAssetEndpoint,
+} from "./internal/render-asset-wire";
 import type {
   MountOptions,
   ResolveCaptureDevice,
@@ -250,11 +254,20 @@ export function mount(options: MountOptions): SolarHandle {
     teardownPeerViewer = () => controller.leave();
   }
 
+  const renderAssetEndpoint = readRenderAssetEndpoint();
+  const renderAssetWebSocket =
+    renderAssetEndpoint === null
+      ? undefined
+      : createRenderAssetWebSocket(renderAssetEndpoint);
+
   const runtimeOptions: RuntimeMountOptions = {
     target: options.target,
     serverUrl: options.orionUrl,
     token: options.token,
     mode: options.mode,
+    ...(renderAssetWebSocket !== undefined
+      ? { webSocketImpl: renderAssetWebSocket }
+      : {}),
     // Orion lives behind ZabGate (`/orion/api/v1`) and serves the bundle at
     // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
     // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
