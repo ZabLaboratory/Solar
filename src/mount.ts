@@ -176,6 +176,9 @@ export function mount(options: MountOptions): SolarHandle {
   //     back-compat.
   const { injection: peerViewerInjection, slotBindings, fromLsdp } =
     readPeerViewerInjection();
+  const disablePeerViewer =
+    (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: unknown })
+      .__ZAB_DISABLE_PEER_VIEWER__ === true;
   let resolvePeerStream: ResolvePeerStream;
   let subscribePeerStream: SubscribePeerStream;
   let onReservedLeaves: RuntimeMountOptions["onReservedLeaves"];
@@ -191,7 +194,14 @@ export function mount(options: MountOptions): SolarHandle {
     });
   };
 
-  if (peerViewerInjection !== null && !fromLsdp) {
+  if (disablePeerViewer) {
+    resolvePeerStream = () => null;
+    subscribePeerStream = (_key, listener) => {
+      listener(null);
+      return () => undefined;
+    };
+    teardownPeerViewer = () => undefined;
+  } else if (peerViewerInjection !== null && !fromLsdp) {
     // PREVIEW — join EVERY pinned room and thread the viewer's RAW resolvers
     // (first-connected-wins aggregation, `peer_label`-keyed). A `meet.peer` node
     // that mounts before its peer connects shows a stream-less box and re-renders

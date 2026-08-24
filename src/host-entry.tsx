@@ -26,6 +26,9 @@ import type { SolarMode } from "./types";
 import "./styles/fonts.css";
 
 const params = new URLSearchParams(window.location.search);
+if (params.get("disable_peer_viewer") === "1") {
+  (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: boolean }).__ZAB_DISABLE_PEER_VIEWER__ = true;
+}
 const orionUrl =
   params.get("orion") ?? `wss://${location.host}/orion/api/v1/show/stream`;
 // The Pulsar browser source packs the show-token inside `orionUrl`'s query
