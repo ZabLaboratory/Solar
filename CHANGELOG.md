@@ -5,6 +5,13 @@ follows [Keep a Changelog](https://keepachangelog.com/), and the project
 adheres to Semantic Versioning (pre-1.0 : minor bumps may carry
 behavioural changes that keep the `mount()` API stable).
 
+## [2.0.0] - 2026-08-25
+
+### Changed
+
+- Publish Solar 2.0.0 as the versioned local runtime bundle consumed by Prism.
+- Preserve manifest and archive digest verification for launch-time updates.
+
 ## [0.2.22] - 2026-07-09
 
 ### Added
