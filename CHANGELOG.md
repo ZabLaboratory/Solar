@@ -12,6 +12,16 @@ behavioural changes that keep the `mount()` API stable).
 - Publish Solar 2.0.0 as the versioned local runtime bundle consumed by Prism.
 - Preserve manifest and archive digest verification for launch-time updates.
 
+
+### Release diff summary
+
+- Range: `v0.2.26..v2.0.0`.
+- Complete ancestry: 1 commits.
+- Diffstat: 3 files changed, 11 insertions(+), 3 deletions(-)
+
+### Complete commit inventory
+
+- `1ee0598` 2026-08-25 - release(solar): 2.0.0
 ## [0.2.22] - 2026-07-09
 
 ### Added

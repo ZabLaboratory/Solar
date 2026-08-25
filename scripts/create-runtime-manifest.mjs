@@ -12,7 +12,7 @@ if (!archivePath || !version || !repository || !tag || !outputPath) {
 if (!/^\d+\.\d+\.\d+$/.test(version)) {
   throw new Error(`invalid Solar version: ${version}`);
 }
-if (!/^v\d+\.\d+\.\d+$/.test(tag)) {
+if (!/^v\d+\.\d+\.\d+[A-Za-z0-9.-]*$/.test(tag)) {
   throw new Error(`invalid Solar tag: ${tag}`);
 }
 
@@ -20,7 +20,9 @@ const archive = readFileSync(archivePath);
 const artifactSha256 = createHash("sha256").update(archive).digest("hex");
 const manifest = {
   schema_version: "solar.runtime.manifest.v1",
+  component: "solar",
   version,
+  release_tag: tag,
   protocol_version: "solar.host.v1",
   artifact_url: `https://github.com/${repository}/releases/download/${tag}/solar-${tag}.tgz`,
   artifact_sha256: artifactSha256,

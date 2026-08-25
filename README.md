@@ -1,5 +1,9 @@
 # Solar
 
+[![Release](https://img.shields.io/github/v/release/ZabLaboratory/Solar?logo=github)](https://github.com/ZabLaboratory/Solar/releases/latest)
+[![CI](https://github.com/ZabLaboratory/Solar/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ZabLaboratory/Solar/actions/workflows/ci.yml)
+[![Prism runtime release](https://img.shields.io/badge/Prism-local%20bundle-0f766e)](https://github.com/ZabLaboratory/Solar/releases/latest)
+
 Scene runtime bundle for the Zablab broadcast platform.
 
 Solar takes a render bundle (HTTP) plus a live state stream
@@ -37,11 +41,10 @@ The complete typed surface lives in `src/types/index.ts`.
 
 ## Status
 
-Scaffold phase (2026-05-02). The `mount()` function validates options
-and returns a typed handle ; transport, state, render and overlay
-layers ship in subsequent commits. See
-`../docs/roadmap/chantier-solar.md` for the live status and
-`../docs/adr/{002,003}-*.md` for the binding contract.
+Solar v2 is the versioned scene runtime used by the local Prism preview,
+on-air surface and Pulsar CEF browser source. `mount()` owns the transport,
+state, render and overlay layers for those hosts; the same host bundle is
+also available to Orion's static serving path.
 
 ## Stack
 
@@ -85,6 +88,15 @@ emits **two** artefacts (ADR 001) :
 A breaking change to the render-bundle format bumps the major and
 ships a migration helper in Orion's compiler. Compatibility within
 a major is contractual.
+
+## Release and local cache
+
+Every `vX.Y.Z` tag publishes `solar-runtime-manifest.json` alongside the
+versioned `solar-vX.Y.Z.tgz` bundle. Prism checks that manifest after login,
+downloads and verifies the digest when needed, then stores the immutable
+bundle in its local Solar cache. A suffix tag such as `v2.0.0b` is accepted
+for a proof release without changing the base package version. The render
+path does not download Solar during a scene switch.
 
 ## License
 
