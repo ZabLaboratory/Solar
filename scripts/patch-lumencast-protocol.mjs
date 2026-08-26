@@ -8,8 +8,15 @@ const targets = [
   join(packageRoot, "src", "host-allow.ts"),
   join(packageRoot, "dist", "host-allow.js"),
 ];
-const current = "const MAX_URL_LEN = 8192;";
-const patched = "const MAX_URL_LEN = 262144;";
+const supportedCurrentLimits = [
+  "const MAX_URL_LEN = 8192;",
+  "const MAX_URL_LEN = 262144;",
+];
+// Prism resolves authenticated Canvas images to bounded inline raster URLs.
+// A full-HD authored PNG legitimately exceeds the old 256 KiB thumbnail cap
+// once base64 encoded (Launch is ~4.9 MiB). Keep the no-network data:image
+// contract, but give production scene artwork a still-bounded 16 MiB ceiling.
+const patched = "const MAX_URL_LEN = 16777216;";
 
 for (const path of targets) {
   let source;
@@ -18,7 +25,8 @@ for (const path of targets) {
   } catch (error) {
     throw new Error(`@lumencast/protocol target missing: ${path}`, { cause: error });
   }
-  if (source.includes(current)) {
+  const current = supportedCurrentLimits.find((value) => source.includes(value));
+  if (current !== undefined) {
     await writeFile(path, source.replace(current, patched));
     continue;
   }
@@ -26,7 +34,7 @@ for (const path of targets) {
   throw new Error(`unsupported @lumencast/protocol host-allow contract: ${path}`);
 }
 
-console.log("[solar] @lumencast/protocol local render image limit=262144");
+console.log("[solar] @lumencast/protocol local render image limit=16777216");
 
 const runtimeRoot = join(root, "node_modules", "@lumencast", "runtime");
 const runtimeSource = join(runtimeRoot, "src", "mount.ts");

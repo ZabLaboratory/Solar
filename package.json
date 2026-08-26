@@ -1,6 +1,6 @@
 {
   "name": "@zablab/solar",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Solar — scene runtime bundle for the Zablab broadcast platform (Pulsar CEF + Prism webview + editor preview)",
   "type": "module",
   "private": true,
