@@ -18,6 +18,7 @@ vi.mock("@lumencast/runtime", () => {
 });
 
 const CAPTURE_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
+const DEFAULT_SCREEN_GLOBAL = "__ZAB_CAPTURE_DEFAULT_SCREEN__";
 
 function baseOptions(): MountOptions {
   return {
@@ -49,6 +50,7 @@ function resolver(): (
 afterEach(() => {
   vi.unstubAllGlobals();
   delete (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[DEFAULT_SCREEN_GLOBAL];
   mountRuntime.mockClear();
 });
 
@@ -85,6 +87,25 @@ describe("Solar's default capture-device resolver", () => {
     expect(getUserMedia).toHaveBeenCalledWith({ video: true });
     expect(stop).toHaveBeenCalledTimes(1);
     expect(enumerateDevices).toHaveBeenCalledTimes(1);
+  });
+
+  it("uses Prism's machine-local default screen mapping for an unbound screen ref", async () => {
+    vi.stubGlobal("navigator", {
+      mediaDevices: {
+        getUserMedia: vi.fn(async () => ({ getTracks: () => [] })),
+        enumerateDevices: vi.fn(async () => []),
+      },
+    });
+    (globalThis as Record<string, unknown>)[DEFAULT_SCREEN_GLOBAL] = {
+      captureSourceId: "screen:0:0",
+    };
+
+    const mount = await loadMount();
+    mount(baseOptions());
+
+    expect(await resolver()("screen-ref", "media.screen")).toEqual({
+      captureSourceId: "screen:0:0",
+    });
   });
 
   it("returns a placeholder when enumerateDevices is unavailable", async () => {

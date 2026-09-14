@@ -62,6 +62,7 @@ import type {
 // onto a physical Electron media device. The name is shared verbatim with
 // Prism's `injectBootstrap` (scene-server.ts) — change it in BOTH places.
 const ZAB_CAPTURE_DEVICES_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
+const ZAB_CAPTURE_DEFAULT_SCREEN_GLOBAL = "__ZAB_CAPTURE_DEFAULT_SCREEN__";
 
 // One host-injected entry: a PORTABLE label + the picker-origin deviceId (NOT
 // reusable here) for cams, or an origin-independent captureSourceId for screens.
@@ -105,9 +106,13 @@ function originLabelMap(): Promise<Record<string, string>> {
 }
 
 // Default resolver (ADR 004 §A1.3, async per 2026-06-27 amendment). A declared
-// deviceRef with no resolvable device → `null` → PLACEHOLDER (the runtime no
-// longer falls back to the host default cam). The runtime AWAITS this, so there
-// is no race against a late global mutation.
+// deviceRef with no resolvable device → `null`. The runtime remains fail-closed
+// for cameras, apps, and windows; media.screen alone may use the host's explicit
+// machine-local display mapping, which Prism resolves before serving the page.
+// If that mapping is unavailable, return null and keep the declared screen
+// fail-closed: a cold scene must never open a native display picker or bind an
+// arbitrary surface. The runtime AWAITS this, so there is no race against a
+// late global mutation.
 const captureDeviceResolver: ResolveCaptureDevice = async (
   deviceRef,
   sourceKind,
@@ -118,9 +123,11 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
     }
   )[ZAB_CAPTURE_DEVICES_GLOBAL];
   const entry = map?.[deviceRef];
-  if (entry === undefined) {
-    return null;
-  }
+  const defaultScreen = (
+    globalThis as {
+      [ZAB_CAPTURE_DEFAULT_SCREEN_GLOBAL]?: ZabCaptureEntry | null;
+    }
+  )[ZAB_CAPTURE_DEFAULT_SCREEN_GLOBAL];
   // Screen/window/app: a desktopCapturer source id is origin-independent →
   // verbatim. `media.app` (RFC-0001 Amendment 3) resolves the SAME shape —
   // Prism's page-global injection re-resolves it fresh (against the
@@ -132,9 +139,15 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
     sourceKind === "media.window" ||
     sourceKind === "media.app"
   ) {
-    return entry.captureSourceId !== undefined && entry.captureSourceId !== ""
-      ? { captureSourceId: entry.captureSourceId }
+    const captureSourceId =
+      entry?.captureSourceId ??
+      (sourceKind === "media.screen" ? defaultScreen?.captureSourceId : undefined);
+    return captureSourceId !== undefined && captureSourceId !== ""
+      ? { captureSourceId }
       : null;
+  }
+  if (entry === undefined) {
+    return null;
   }
   // Cam/mic: re-resolve the PORTABLE label against this origin's devices. No
   // label / no match → null → PLACEHOLDER, never the wrong default cam.
