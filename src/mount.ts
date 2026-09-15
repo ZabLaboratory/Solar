@@ -48,6 +48,12 @@ import {
   createRenderAssetWebSocket,
   readRenderAssetEndpoint,
 } from "./internal/render-asset-wire";
+import {
+  createEditablePreviewWebSocket,
+  editablePreviewFastPathEnabled,
+  installEditablePreviewSideband,
+  readEditablePreviewSidebandUrl,
+} from "./internal/editable-preview-fast-path";
 import type {
   MountOptions,
   ResolveCaptureDevice,
@@ -82,7 +88,8 @@ let originLabelMapPromise: Promise<Record<string, string>> | null = null;
 function originLabelMap(): Promise<Record<string, string>> {
   if (originLabelMapPromise !== null) return originLabelMapPromise;
   originLabelMapPromise = (async () => {
-    const md = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+    const md =
+      typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
     if (md?.enumerateDevices === undefined) return {};
     try {
       if (md.getUserMedia !== undefined) {
@@ -141,7 +148,9 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
   ) {
     const captureSourceId =
       entry?.captureSourceId ??
-      (sourceKind === "media.screen" ? defaultScreen?.captureSourceId : undefined);
+      (sourceKind === "media.screen"
+        ? defaultScreen?.captureSourceId
+        : undefined);
     return captureSourceId !== undefined && captureSourceId !== ""
       ? { captureSourceId }
       : null;
@@ -191,8 +200,11 @@ export function mount(options: MountOptions): SolarHandle {
   //     `leaves.slots` → re-key `x-zab.meet-peer` nodes by `slotRef`). The legacy
   //     `__ZAB_LSDP_PEER_VIEWER__` global (#29) still arms it synchronously for
   //     back-compat.
-  const { injection: peerViewerInjection, slotBindings, fromLsdp } =
-    readPeerViewerInjection();
+  const {
+    injection: peerViewerInjection,
+    slotBindings,
+    fromLsdp,
+  } = readPeerViewerInjection();
   const disablePeerViewer =
     (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: unknown })
       .__ZAB_DISABLE_PEER_VIEWER__ === true;
@@ -272,15 +284,20 @@ export function mount(options: MountOptions): SolarHandle {
     renderAssetEndpoint === null
       ? undefined
       : createRenderAssetWebSocket(renderAssetEndpoint);
+  const editableSidebandUrl = readEditablePreviewSidebandUrl();
+  const webSocketImpl =
+    editablePreviewFastPathEnabled() && editableSidebandUrl === null
+      ? createEditablePreviewWebSocket(
+          renderAssetWebSocket ?? globalThis.WebSocket,
+        )
+      : renderAssetWebSocket;
 
   const runtimeOptions: RuntimeMountOptions = {
     target: options.target,
     serverUrl: options.orionUrl,
     token: options.token,
     mode: options.mode,
-    ...(renderAssetWebSocket !== undefined
-      ? { webSocketImpl: renderAssetWebSocket }
-      : {}),
+    ...(webSocketImpl !== undefined ? { webSocketImpl } : {}),
     // Orion lives behind ZabGate (`/orion/api/v1`) and serves the bundle at
     // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
     // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
@@ -296,10 +313,16 @@ export function mount(options: MountOptions): SolarHandle {
       ? { preloadRoster: options.preloadRoster }
       : {}),
     ...(options.onStatus
-      ? { onStatus: (status: LumencastStatus): void => options.onStatus?.(toSolarStatus(status)) }
+      ? {
+          onStatus: (status: LumencastStatus): void =>
+            options.onStatus?.(toSolarStatus(status)),
+        }
       : {}),
     ...(options.onError
-      ? { onError: (err: LumencastError): void => options.onError?.(toSolarError(err)) }
+      ? {
+          onError: (err: LumencastError): void =>
+            options.onError?.(toSolarError(err)),
+        }
       : {}),
     // ACQUIRE device mapping : a host-supplied resolver wins ; otherwise the
     // default reads the Prism-injected page global. Either way the runtime
@@ -321,7 +344,9 @@ export function mount(options: MountOptions): SolarHandle {
     // verbatim; ABSENT from the runtime options when the host omits it, so muted
     // stays the byte-identical default for every non-opt-in consumer. Only the
     // served host bundle sets it, and only for the diffused/recorded modes.
-    ...(options.liveAudio !== undefined ? { liveAudio: options.liveAudio } : {}),
+    ...(options.liveAudio !== undefined
+      ? { liveAudio: options.liveAudio }
+      : {}),
     // ADR 013 Prism §3.1 (issue #41) — a one-shot render-tree transform the
     // runtime applies ONCE per loaded bundle (the atlas z-band split, wired
     // from `?atlas=` by the host entries). Forwarded verbatim; ABSENT from the
@@ -333,12 +358,17 @@ export function mount(options: MountOptions): SolarHandle {
   };
 
   const handle = mountRuntime(runtimeOptions);
+  const teardownEditableSideband =
+    editableSidebandUrl === null
+      ? () => undefined
+      : installEditablePreviewSideband(editableSidebandUrl);
   const teardownLiveVideoAutoplay = installLiveVideoAutoplay(
     options.liveAudio === true,
   );
 
   return {
     disconnect: () => {
+      teardownEditableSideband();
       teardownLiveVideoAutoplay();
       // Tear the viewer down with the scene : leave the room and drop the peer
       // connections (the viewer owns them) so a webview reload doesn't leak a
