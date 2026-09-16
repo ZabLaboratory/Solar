@@ -27,7 +27,9 @@ import "./styles/fonts.css";
 
 const params = new URLSearchParams(window.location.search);
 if (params.get("disable_peer_viewer") === "1") {
-  (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: boolean }).__ZAB_DISABLE_PEER_VIEWER__ = true;
+  (
+    globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: boolean }
+  ).__ZAB_DISABLE_PEER_VIEWER__ = true;
 }
 const orionUrl =
   params.get("orion") ?? `wss://${location.host}/orion/api/v1/show/stream`;
@@ -41,12 +43,7 @@ const resolveBundleUrl =
   bundleBase === null
     ? undefined
     : (sceneId: string, sceneVersion: string): string =>
-        localBundleUrl(
-          bundleBase,
-          window.location.href,
-          sceneId,
-          sceneVersion,
-        );
+        localBundleUrl(bundleBase, window.location.href, sceneId, sceneVersion);
 const modeParam = params.get("mode") ?? "broadcast";
 const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   modeParam as SolarMode,
@@ -55,6 +52,10 @@ const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   : "broadcast";
 const scene = params.get("scene") ?? undefined;
 const testSession = params.get("session") ?? undefined;
+// Prism's editable preview marks its Solar return with this query parameter.
+// Program/on-air hosts never carry it, so their animation scheduler remains
+// byte-for-byte unchanged.
+const realtimeDeltas = params.get("editable_fast") === "1";
 
 const target = document.getElementById("scene");
 if (!(target instanceof HTMLElement)) {
@@ -80,6 +81,7 @@ mount({
   liveAudio: mode === "broadcast" || mode === "test",
   ...(mode === "test" && scene ? { scene } : {}),
   ...(mode === "test" && testSession ? { testSession } : {}),
+  ...(realtimeDeltas ? { realtimeDeltas: true } : {}),
   // ADR 013 Prism §3.1 (issue #41) — `?atlas=` opts into the texture-atlas
   // z-band render. Absent/malformed → no `transformRoot` key → verbatim render.
   ...atlasMountOptions(window.location.search),

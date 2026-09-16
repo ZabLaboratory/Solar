@@ -347,6 +347,9 @@ export function mount(options: MountOptions): SolarHandle {
     ...(options.liveAudio !== undefined
       ? { liveAudio: options.liveAudio }
       : {}),
+    ...(options.realtimeDeltas !== undefined
+      ? { realtimeDeltas: options.realtimeDeltas }
+      : {}),
     // ADR 013 Prism §3.1 (issue #41) — a one-shot render-tree transform the
     // runtime applies ONCE per loaded bundle (the atlas z-band split, wired
     // from `?atlas=` by the host entries). Forwarded verbatim; ABSENT from the
