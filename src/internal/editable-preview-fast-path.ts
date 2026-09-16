@@ -233,6 +233,7 @@ export class EditablePreviewDeltaGate {
 export function applyEditableTranslatePatch(
   patch: EditableTranslatePatch,
   root: ParentNode = document,
+  priority: "" | "important" = "",
 ): boolean {
   let applied = false;
   for (const node of root.querySelectorAll<HTMLElement>(
@@ -244,9 +245,12 @@ export function applyEditableTranslatePatch(
       continue;
     }
     const transform = `translate3d(${patch.x}px, ${patch.y}px, 0px)`;
-    if (node.style.transform !== transform) {
+    if (
+      node.style.getPropertyValue("transform") !== transform ||
+      node.style.getPropertyPriority("transform") !== priority
+    ) {
       node.style.willChange = "transform";
-      node.style.transform = transform;
+      node.style.setProperty("transform", transform, priority);
     }
     applied = true;
   }
@@ -277,9 +281,10 @@ function sizedElements(node: HTMLElement): HTMLElement[] {
 export function applyEditableFastPatch(
   patch: EditableFastPatch,
   root: ParentNode = document,
+  priority: "" | "important" = "",
 ): boolean {
   if (patch.property === "translate") {
-    return applyEditableTranslatePatch(patch, root);
+    return applyEditableTranslatePatch(patch, root, priority);
   }
   const node = editableNode(patch.componentId, root);
   if (!node) return false;
@@ -289,7 +294,9 @@ export function applyEditableFastPatch(
     case "height": {
       const cssValue = `${value}px`;
       for (const element of sizedElements(node)) {
-        element.style[patch.property] = cssValue;
+        if (priority)
+          element.style.setProperty(patch.property, cssValue, priority);
+        else element.style[patch.property] = cssValue;
         if (element instanceof SVGElement) {
           element.setAttribute(patch.property, String(value));
           if (patch.property === "width") {
@@ -310,16 +317,27 @@ export function applyEditableFastPatch(
       return true;
     }
     case "visible":
-      node.style.visibility = value ? "visible" : "hidden";
+      if (priority) {
+        node.style.setProperty(
+          "visibility",
+          value ? "visible" : "hidden",
+          priority,
+        );
+      } else {
+        node.style.visibility = value ? "visible" : "hidden";
+      }
       return true;
     case "opacity":
-      node.style.opacity = String(value);
+      if (priority) node.style.setProperty("opacity", String(value), priority);
+      else node.style.opacity = String(value);
       return true;
     case "rotation":
-      node.style.rotate = `${value}deg`;
+      if (priority) node.style.setProperty("rotate", `${value}deg`, priority);
+      else node.style.rotate = `${value}deg`;
       return true;
     case "zIndex":
-      node.style.zIndex = String(value);
+      if (priority) node.style.setProperty("z-index", String(value), priority);
+      else node.style.zIndex = String(value);
       return true;
     case "value": {
       const text = node.querySelector<HTMLElement>("span");
@@ -333,11 +351,22 @@ export function applyEditableFastPatch(
     case "lineHeight": {
       const text = node.querySelector<HTMLElement>("span");
       if (!text) return false;
-      if (patch.property === "fontSize") text.style.fontSize = `${value}px`;
-      else if (patch.property === "fontWeight")
-        text.style.fontWeight = String(value);
-      else if (patch.property === "colour") text.style.color = String(value);
-      else text.style.lineHeight = String(value);
+      if (patch.property === "fontSize") {
+        if (priority)
+          text.style.setProperty("font-size", `${value}px`, priority);
+        else text.style.fontSize = `${value}px`;
+      } else if (patch.property === "fontWeight") {
+        if (priority)
+          text.style.setProperty("font-weight", String(value), priority);
+        else text.style.fontWeight = String(value);
+      } else if (patch.property === "colour") {
+        if (priority) text.style.setProperty("color", String(value), priority);
+        else text.style.color = String(value);
+      } else if (priority) {
+        text.style.setProperty("line-height", String(value), priority);
+      } else {
+        text.style.lineHeight = String(value);
+      }
       return true;
     }
     case "src": {
@@ -362,11 +391,15 @@ export function applyEditableFastPatch(
     }
     case "radius":
       for (const element of sizedElements(node))
-        element.style.borderRadius = `${value}px`;
+        if (priority)
+          element.style.setProperty("border-radius", `${value}px`, priority);
+        else element.style.borderRadius = `${value}px`;
       return true;
     case "background":
       for (const element of sizedElements(node))
-        element.style.background = String(value);
+        if (priority)
+          element.style.setProperty("background", String(value), priority);
+        else element.style.background = String(value);
       return true;
   }
 }
@@ -453,7 +486,7 @@ export function installEditablePreviewSideband(
         convergence.delete(key);
         continue;
       }
-      applyEditableFastPatch(lease.patch, root);
+      applyEditableFastPatch(lease.patch, root, "important");
     }
     if (convergence.size > 0) {
       convergenceFrame = requestAnimationFrame(flushConvergence);
@@ -466,7 +499,7 @@ export function installEditablePreviewSideband(
       patch,
       expiresAt: performance.now() + convergenceLeaseMs,
     });
-    applyEditableFastPatch(patch, root);
+    applyEditableFastPatch(patch, root, "important");
     if (convergenceFrame === null) {
       convergenceFrame = requestAnimationFrame(flushConvergence);
     }
