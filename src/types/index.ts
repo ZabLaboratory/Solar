@@ -81,14 +81,21 @@ export interface MountOptions {
   preloadRoster?: readonly SolarSceneRosterEntry[];
   onError?: (err: SolarError) => void;
   onStatus?: (status: SolarStatus) => void;
+  /**
+   * Test-only escape hatch for Prism's local Solar diagnostics. The hidden
+   * `prism_e2e=1` window may acquire capture streams so the diagnostic can
+   * inspect the DOM; the real broadcast/on-air CEF leaves this unset and
+   * renders transparent placeholders for Pulsar's native capture layer.
+   */
+  captureInBrowser?: boolean;
   /** Host resolver for the `x-zab.capture` primitive's ACQUIRE mode (runtime
    *  ADR 004 §A1.3). Given the LOGICAL `(deviceRef, sourceKind)` from the
    *  bundle, return `{ deviceId }` to pin a physical device, or `null` for the
    *  host's default device. Forwarded verbatim to the runtime ; `deviceId`
    *  is only ever a live `getUserMedia` constraint, never enters the bundle
    *  or its content hash. Only consulted on a capture-capable host (the
-   *  Electron preview webview) ; ignored on-air (CEF/Pulsar render the
-   *  placeholder). */
+   *  Electron preview webview, or Prism's explicitly marked diagnostic
+   *  window) ; ignored on-air (CEF/Pulsar render the placeholder). */
   resolveCaptureDevice?: ResolveCaptureDevice;
   /** Un-mute the live `<video>` of `meet.peer` / `x-zab.meet-peer` guest peers
    *  so their WebRTC audio joins the page's audio output — and thus the on-air /

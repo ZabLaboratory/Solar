@@ -87,6 +87,24 @@ describe("slot-binding registry", () => {
     expect(reg.boundPeer("empty-slot")).toBeNull();
   });
 
+  it("resolves the three Canvas camera slots independently", () => {
+    const peers = fakePeerRegistry();
+    const streams = [streamFor("cam-0"), streamFor("cam-1"), streamFor("cam-2")];
+    ["fake-cam-1", "fake-cam-2", "fake-cam-3"].forEach((label, index) => {
+      peers.push(label, streams[index]!);
+    });
+
+    const reg = createSlotBindingRegistry(peers, {
+      "cam-slot-0": "fake-cam-1",
+      "cam-slot-1": "fake-cam-2",
+      "cam-slot-2": "fake-cam-3",
+    });
+
+    expect(reg.resolve("cam-slot-0")).toBe(streams[0]);
+    expect(reg.resolve("cam-slot-1")).toBe(streams[1]);
+    expect(reg.resolve("cam-slot-2")).toBe(streams[2]);
+  });
+
   it("renders the placeholder (null) for an unbound slot", () => {
     const reg = createSlotBindingRegistry(fakePeerRegistry());
     expect(reg.resolve("cam-unbound")).toBeNull();

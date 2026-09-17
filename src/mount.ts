@@ -324,10 +324,32 @@ export function mount(options: MountOptions): SolarHandle {
             options.onError?.(toSolarError(err)),
         }
       : {}),
-    // ACQUIRE device mapping : a host-supplied resolver wins ; otherwise the
-    // default reads the Prism-injected page global. Either way the runtime
-    // only uses the result as a live getUserMedia constraint.
-    resolveCaptureDevice: options.resolveCaptureDevice ?? captureDeviceResolver,
+    // The broadcast CEF is rendered into Pulsar's atlas. Native Pulsar owns
+    // the OBS Virtual Camera capture in that path; allowing Solar's browser
+    // context to call getUserMedia as well creates a second dshow consumer and
+    // can make the on-air camera flat/black. Return null so the runtime emits
+    // its transparent placeholder and the native `ZabCapture:*` item remains
+    // the sole camera consumer. Control/editor mounts keep the host resolver
+    // and therefore retain live local camera acquisition.
+    resolveCaptureDevice:
+      options.mode === "broadcast" && options.captureInBrowser !== true
+        ? async (deviceRef, sourceKind) => {
+            // Pulsar owns local camera inputs on the broadcast path, but
+            // desktop/window/app captures remain a supported Solar contract.
+            // Keep those IDs flowing through unchanged (the existing
+            // media.app/window resolver tests depend on this distinction).
+            if (
+              sourceKind === "media.camera" ||
+              sourceKind === "media.webcam"
+            ) {
+              return null;
+            }
+            return (options.resolveCaptureDevice ?? captureDeviceResolver)(
+              deviceRef,
+              sourceKind,
+            );
+          }
+        : (options.resolveCaptureDevice ?? captureDeviceResolver),
     // ADR 006 #4 — when a viewer is active, thread its peer-stream resolvers so
     // LIVE `media` nodes render the matching peer's MediaStream in `srcObject`.
     // On the antenne these are slotRef-aware (ADR Blue 009 §3.3).
