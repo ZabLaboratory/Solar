@@ -233,14 +233,20 @@ export class EditablePreviewDeltaGate {
 export function applyEditableTranslatePatch(
   patch: EditableTranslatePatch,
   root: ParentNode = document,
-  nodes?: readonly HTMLElement[],
   priority: "" | "important" = "",
 ): boolean {
   let applied = false;
-  for (const node of nodes ?? editableNodes(patch.componentId, root)) {
+  for (const node of root.querySelectorAll<HTMLElement>(
+    "[data-lumencast-bind-animate]",
+  )) {
+    if (
+      node.getAttribute("data-lumencast-bind-animate") !== patch.componentId
+    ) {
+      continue;
+    }
     const transform = `translate3d(${patch.x}px, ${patch.y}px, 0px)`;
     if (
-      node.style.transform !== transform ||
+      node.style.getPropertyValue("transform") !== transform ||
       node.style.getPropertyPriority("transform") !== priority
     ) {
       node.style.willChange = "transform";
@@ -255,53 +261,14 @@ function editableNode(
   componentId: string,
   root: ParentNode,
 ): HTMLElement | null {
-  return editableNodes(componentId, root)[0] ?? null;
-}
-
-function editableNodes(componentId: string, root: ParentNode): HTMLElement[] {
-  // The runtime emits one bind-animate wrapper per component. Querying that
-  // attribute directly avoids walking every animated node on every accepted
-  // patch; the previous full-list scan became visible while the convergence
-  // lease was active across compositor frames.
-  const escape = (
-    globalThis as { CSS?: { escape?: (value: string) => string } }
-  ).CSS?.escape;
-  if (escape) {
-    return Array.from(
-      root.querySelectorAll<HTMLElement>(
-        `[data-lumencast-bind-animate="${escape(componentId)}"]`,
-      ),
-    );
+  for (const node of root.querySelectorAll<HTMLElement>(
+    "[data-lumencast-bind-animate]",
+  )) {
+    if (node.getAttribute("data-lumencast-bind-animate") === componentId) {
+      return node;
+    }
   }
-  return Array.from(
-    root.querySelectorAll<HTMLElement>("[data-lumencast-bind-animate]"),
-  ).filter(
-    (node) => node.getAttribute("data-lumencast-bind-animate") === componentId,
-  );
-}
-
-type EditableNodeCache = Map<string, HTMLElement[]>;
-
-/** Keep accepted values pinned without repeating the selector walk on every
- * compositor turn. Empty results are intentionally not cached so a patch that
- * arrives just before the first React commit can still find its node later;
- * disconnected nodes are refreshed after a scene replacement. */
-function cachedEditableNodes(
-  componentId: string,
-  root: ParentNode,
-  cache: EditableNodeCache,
-): HTMLElement[] {
-  const cached = cache.get(componentId);
-  if (
-    cached !== undefined &&
-    cached.length > 0 &&
-    cached.every((node) => node.isConnected)
-  ) {
-    return cached;
-  }
-  const nodes = editableNodes(componentId, root);
-  if (nodes.length > 0) cache.set(componentId, nodes);
-  return nodes;
+  return null;
 }
 
 function sizedElements(node: HTMLElement): HTMLElement[] {
@@ -314,11 +281,10 @@ function sizedElements(node: HTMLElement): HTMLElement[] {
 export function applyEditableFastPatch(
   patch: EditableFastPatch,
   root: ParentNode = document,
-  nodes?: readonly HTMLElement[],
   priority: "" | "important" = "",
 ): boolean {
   if (patch.property === "translate") {
-    return applyEditableTranslatePatch(patch, root, nodes, priority);
+    return applyEditableTranslatePatch(patch, root, priority);
   }
   const node = editableNode(patch.componentId, root);
   if (!node) return false;
@@ -328,7 +294,9 @@ export function applyEditableFastPatch(
     case "height": {
       const cssValue = `${value}px`;
       for (const element of sizedElements(node)) {
-        element.style.setProperty(patch.property, cssValue, priority);
+        if (priority)
+          element.style.setProperty(patch.property, cssValue, priority);
+        else element.style[patch.property] = cssValue;
         if (element instanceof SVGElement) {
           element.setAttribute(patch.property, String(value));
           if (patch.property === "width") {
@@ -349,20 +317,27 @@ export function applyEditableFastPatch(
       return true;
     }
     case "visible":
-      node.style.setProperty(
-        "visibility",
-        value ? "visible" : "hidden",
-        priority,
-      );
+      if (priority) {
+        node.style.setProperty(
+          "visibility",
+          value ? "visible" : "hidden",
+          priority,
+        );
+      } else {
+        node.style.visibility = value ? "visible" : "hidden";
+      }
       return true;
     case "opacity":
-      node.style.setProperty("opacity", String(value), priority);
+      if (priority) node.style.setProperty("opacity", String(value), priority);
+      else node.style.opacity = String(value);
       return true;
     case "rotation":
-      node.style.setProperty("rotate", `${value}deg`, priority);
+      if (priority) node.style.setProperty("rotate", `${value}deg`, priority);
+      else node.style.rotate = `${value}deg`;
       return true;
     case "zIndex":
-      node.style.setProperty("z-index", String(value), priority);
+      if (priority) node.style.setProperty("z-index", String(value), priority);
+      else node.style.zIndex = String(value);
       return true;
     case "value": {
       const text = node.querySelector<HTMLElement>("span");
@@ -376,13 +351,22 @@ export function applyEditableFastPatch(
     case "lineHeight": {
       const text = node.querySelector<HTMLElement>("span");
       if (!text) return false;
-      if (patch.property === "fontSize")
-        text.style.setProperty("font-size", `${value}px`, priority);
-      else if (patch.property === "fontWeight")
-        text.style.setProperty("font-weight", String(value), priority);
-      else if (patch.property === "colour")
-        text.style.setProperty("color", String(value), priority);
-      else text.style.setProperty("line-height", String(value), priority);
+      if (patch.property === "fontSize") {
+        if (priority)
+          text.style.setProperty("font-size", `${value}px`, priority);
+        else text.style.fontSize = `${value}px`;
+      } else if (patch.property === "fontWeight") {
+        if (priority)
+          text.style.setProperty("font-weight", String(value), priority);
+        else text.style.fontWeight = String(value);
+      } else if (patch.property === "colour") {
+        if (priority) text.style.setProperty("color", String(value), priority);
+        else text.style.color = String(value);
+      } else if (priority) {
+        text.style.setProperty("line-height", String(value), priority);
+      } else {
+        text.style.lineHeight = String(value);
+      }
       return true;
     }
     case "src": {
@@ -407,77 +391,16 @@ export function applyEditableFastPatch(
     }
     case "radius":
       for (const element of sizedElements(node))
-        element.style.setProperty("border-radius", `${value}px`, priority);
+        if (priority)
+          element.style.setProperty("border-radius", `${value}px`, priority);
+        else element.style.borderRadius = `${value}px`;
       return true;
     case "background":
       for (const element of sizedElements(node))
-        element.style.setProperty("background", String(value), priority);
+        if (priority)
+          element.style.setProperty("background", String(value), priority);
+        else element.style.background = String(value);
       return true;
-  }
-}
-
-function clearEditableFastPriority(
-  patch: EditableFastPatch,
-  root: ParentNode,
-  nodes?: readonly HTMLElement[],
-): void {
-  const clear = (element: HTMLElement, property: string): void => {
-    if (element.style.getPropertyPriority(property) === "important") {
-      element.style.removeProperty(property);
-    }
-  };
-  if (patch.property === "translate") {
-    for (const node of nodes ?? editableNodes(patch.componentId, root)) {
-      clear(node, "transform");
-    }
-    return;
-  }
-  const node = editableNode(patch.componentId, root);
-  if (!node) return;
-  switch (patch.property) {
-    case "width":
-    case "height":
-      for (const element of sizedElements(node)) clear(element, patch.property);
-      return;
-    case "visible":
-      clear(node, "visibility");
-      return;
-    case "opacity":
-      clear(node, "opacity");
-      return;
-    case "rotation":
-      clear(node, "rotate");
-      return;
-    case "zIndex":
-      clear(node, "z-index");
-      return;
-    case "fontSize":
-    case "fontWeight":
-    case "colour":
-    case "lineHeight": {
-      const text = node.querySelector<HTMLElement>("span");
-      if (!text) return;
-      clear(
-        text,
-        patch.property === "fontSize"
-          ? "font-size"
-          : patch.property === "fontWeight"
-            ? "font-weight"
-            : patch.property === "colour"
-              ? "color"
-              : "line-height",
-      );
-      return;
-    }
-    case "radius":
-      for (const element of sizedElements(node))
-        clear(element, "border-radius");
-      return;
-    case "background":
-      for (const element of sizedElements(node)) clear(element, "background");
-      return;
-    default:
-      return;
   }
 }
 
@@ -540,8 +463,7 @@ export function installEditablePreviewSideband(
   let stopped = false;
   let socket: WebSocket | null = null;
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
-  let convergenceTimer: ReturnType<typeof setTimeout> | null = null;
-  const nodeCache: EditableNodeCache = new Map();
+  let convergenceFrame: number | null = null;
   let retryMs = 100;
   const convergence = new Map<
     string,
@@ -556,28 +478,18 @@ export function installEditablePreviewSideband(
   // paths carry the exact same accepted patch, and the lease expires even if
   // the regular consumer disconnects.
   const flushConvergence = (): void => {
-    convergenceTimer = null;
+    convergenceFrame = null;
     if (stopped) return;
     const now = performance.now();
     for (const [key, lease] of convergence) {
       if (lease.expiresAt <= now) {
-        const nodes =
-          lease.patch.property === "translate"
-            ? cachedEditableNodes(lease.patch.componentId, root, nodeCache)
-            : undefined;
-        clearEditableFastPriority(lease.patch, root, nodes);
         convergence.delete(key);
         continue;
       }
+      applyEditableFastPatch(lease.patch, root, "important");
     }
     if (convergence.size > 0) {
-      const nextExpiry = Math.min(
-        ...Array.from(convergence.values(), (lease) => lease.expiresAt),
-      );
-      convergenceTimer = setTimeout(
-        flushConvergence,
-        Math.max(0, nextExpiry - performance.now()),
-      );
+      convergenceFrame = requestAnimationFrame(flushConvergence);
     }
   };
 
@@ -587,16 +499,10 @@ export function installEditablePreviewSideband(
       patch,
       expiresAt: performance.now() + convergenceLeaseMs,
     });
-    const nodes =
-      patch.property === "translate"
-        ? cachedEditableNodes(patch.componentId, root, nodeCache)
-        : undefined;
-    applyEditableFastPatch(patch, root, nodes, "important");
-    if (convergenceTimer !== null) {
-      clearTimeout(convergenceTimer);
-      convergenceTimer = null;
+    applyEditableFastPatch(patch, root, "important");
+    if (convergenceFrame === null) {
+      convergenceFrame = requestAnimationFrame(flushConvergence);
     }
-    convergenceTimer = setTimeout(flushConvergence, convergenceLeaseMs);
   };
 
   const connect = (): void => {
@@ -623,16 +529,8 @@ export function installEditablePreviewSideband(
   return () => {
     stopped = true;
     if (retryTimer !== null) clearTimeout(retryTimer);
-    if (convergenceTimer !== null) clearTimeout(convergenceTimer);
-    for (const lease of convergence.values()) {
-      const nodes =
-        lease.patch.property === "translate"
-          ? cachedEditableNodes(lease.patch.componentId, root, nodeCache)
-          : undefined;
-      clearEditableFastPriority(lease.patch, root, nodes);
-    }
+    if (convergenceFrame !== null) cancelAnimationFrame(convergenceFrame);
     convergence.clear();
-    nodeCache.clear();
     socket?.close(1000, "solar teardown");
     socket = null;
   };

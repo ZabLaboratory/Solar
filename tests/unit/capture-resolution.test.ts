@@ -138,7 +138,7 @@ describe("Solar's default capture-device resolver", () => {
     };
 
     const mount = await loadMount();
-    mount(baseOptions({ mode: "control" }));
+    mount(baseOptions());
 
     expect(await resolver()("screen-ref", "media.screen")).toEqual({
       captureSourceId: "screen:0:0",

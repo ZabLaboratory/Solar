@@ -88,7 +88,8 @@ let originLabelMapPromise: Promise<Record<string, string>> | null = null;
 function originLabelMap(): Promise<Record<string, string>> {
   if (originLabelMapPromise !== null) return originLabelMapPromise;
   originLabelMapPromise = (async () => {
-    const md = typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
+    const md =
+      typeof navigator !== "undefined" ? navigator.mediaDevices : undefined;
     if (md?.enumerateDevices === undefined) return {};
     try {
       if (md.getUserMedia !== undefined) {
@@ -147,7 +148,9 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
   ) {
     const captureSourceId =
       entry?.captureSourceId ??
-      (sourceKind === "media.screen" ? defaultScreen?.captureSourceId : undefined);
+      (sourceKind === "media.screen"
+        ? defaultScreen?.captureSourceId
+        : undefined);
     return captureSourceId !== undefined && captureSourceId !== ""
       ? { captureSourceId }
       : null;
@@ -197,8 +200,11 @@ export function mount(options: MountOptions): SolarHandle {
   //     `leaves.slots` → re-key `x-zab.meet-peer` nodes by `slotRef`). The legacy
   //     `__ZAB_LSDP_PEER_VIEWER__` global (#29) still arms it synchronously for
   //     back-compat.
-  const { injection: peerViewerInjection, slotBindings, fromLsdp } =
-    readPeerViewerInjection();
+  const {
+    injection: peerViewerInjection,
+    slotBindings,
+    fromLsdp,
+  } = readPeerViewerInjection();
   const disablePeerViewer =
     (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: unknown })
       .__ZAB_DISABLE_PEER_VIEWER__ === true;
@@ -278,12 +284,6 @@ export function mount(options: MountOptions): SolarHandle {
     renderAssetEndpoint === null
       ? undefined
       : createRenderAssetWebSocket(renderAssetEndpoint);
-  // The editable Preview URL carries a loopback-only accepted-patch sideband.
-  // When it is absent, retain the normal render-asset WebSocket unchanged; a
-  // real broadcast/on-air host never receives this opt-in marker. When the
-  // sideband is unavailable, the sequence-gated LSDP wrapper remains a safe
-  // fallback and applies only validated editable leaves from the real Preview
-  // wire.
   const editableSidebandUrl = readEditablePreviewSidebandUrl();
   const webSocketImpl =
     editablePreviewFastPathEnabled() && editableSidebandUrl === null
@@ -297,9 +297,7 @@ export function mount(options: MountOptions): SolarHandle {
     serverUrl: options.orionUrl,
     token: options.token,
     mode: options.mode,
-    ...(webSocketImpl !== undefined
-      ? { webSocketImpl }
-      : {}),
+    ...(webSocketImpl !== undefined ? { webSocketImpl } : {}),
     // Orion lives behind ZabGate (`/orion/api/v1`) and serves the bundle at
     // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
     // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
@@ -315,10 +313,16 @@ export function mount(options: MountOptions): SolarHandle {
       ? { preloadRoster: options.preloadRoster }
       : {}),
     ...(options.onStatus
-      ? { onStatus: (status: LumencastStatus): void => options.onStatus?.(toSolarStatus(status)) }
+      ? {
+          onStatus: (status: LumencastStatus): void =>
+            options.onStatus?.(toSolarStatus(status)),
+        }
       : {}),
     ...(options.onError
-      ? { onError: (err: LumencastError): void => options.onError?.(toSolarError(err)) }
+      ? {
+          onError: (err: LumencastError): void =>
+            options.onError?.(toSolarError(err)),
+        }
       : {}),
     // The broadcast CEF is rendered into Pulsar's atlas. Native Pulsar owns
     // the OBS Virtual Camera capture in that path; allowing Solar's browser
@@ -362,9 +366,9 @@ export function mount(options: MountOptions): SolarHandle {
     // verbatim; ABSENT from the runtime options when the host omits it, so muted
     // stays the byte-identical default for every non-opt-in consumer. Only the
     // served host bundle sets it, and only for the diffused/recorded modes.
-    ...(options.liveAudio !== undefined ? { liveAudio: options.liveAudio } : {}),
-    // Preview-only fast retarget path. The host entry derives this from the
-    // explicit `editable_fast=1` URL marker; on-air callers never opt in.
+    ...(options.liveAudio !== undefined
+      ? { liveAudio: options.liveAudio }
+      : {}),
     ...(options.realtimeDeltas !== undefined
       ? { realtimeDeltas: options.realtimeDeltas }
       : {}),

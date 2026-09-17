@@ -27,7 +27,9 @@ import "./styles/fonts.css";
 
 const params = new URLSearchParams(window.location.search);
 if (params.get("disable_peer_viewer") === "1") {
-  (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: boolean }).__ZAB_DISABLE_PEER_VIEWER__ = true;
+  (
+    globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: boolean }
+  ).__ZAB_DISABLE_PEER_VIEWER__ = true;
 }
 const orionUrl =
   params.get("orion") ?? `wss://${location.host}/orion/api/v1/show/stream`;
@@ -41,12 +43,7 @@ const resolveBundleUrl =
   bundleBase === null
     ? undefined
     : (sceneId: string, sceneVersion: string): string =>
-        localBundleUrl(
-          bundleBase,
-          window.location.href,
-          sceneId,
-          sceneVersion,
-        );
+        localBundleUrl(bundleBase, window.location.href, sceneId, sceneVersion);
 const modeParam = params.get("mode") ?? "broadcast";
 const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   modeParam as SolarMode,
@@ -60,8 +57,8 @@ const testSession = params.get("session") ?? undefined;
 // marker, so its native `ZabCapture:*` layer remains the sole live consumer.
 const captureInBrowser = params.get("prism_e2e") === "1";
 // Prism's editable preview marks its Solar return with this query parameter.
-// The broadcast/on-air URL never carries it, so Pulsar's path keeps the
-// existing runtime scheduling and animation semantics byte-for-byte.
+// Program/on-air hosts never carry it, so their animation scheduler remains
+// byte-for-byte unchanged.
 const realtimeDeltas = params.get("editable_fast") === "1";
 
 const target = document.getElementById("scene");

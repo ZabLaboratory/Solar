@@ -74,19 +74,13 @@ export interface MountOptions {
   testSession?: string;
   /** Required when mode === "test" — the scene id that the test session
    *  cloned. Ignored otherwise. */
-	scene?: string;
-	/** Preload validated render bundles known by the host. The runtime also
-	 * consumes Orion's `scene_roster` frames, so this is an optional host-side
-	 * hint rather than a second scene lifecycle. */
-	preloadRoster?: readonly SolarSceneRosterEntry[];
-	onError?: (err: SolarError) => void;
+  scene?: string;
+  /** Preload validated render bundles known by the host. The runtime also
+   * consumes Orion's `scene_roster` frames, so this is an optional host-side
+   * hint rather than a second scene lifecycle. */
+  preloadRoster?: readonly SolarSceneRosterEntry[];
+  onError?: (err: SolarError) => void;
   onStatus?: (status: SolarStatus) => void;
-  /**
-   * Preview-only immediate retargets for editable scenes. The served host
-   * enables this only for `?editable_fast=1`; broadcast/on-air mounts omit it
-   * and retain the runtime's normal per-frame coalescing.
-   */
-  realtimeDeltas?: boolean;
   /**
    * Test-only escape hatch for Prism's local Solar diagnostics. The hidden
    * `prism_e2e=1` window may acquire capture streams so the diagnostic can
@@ -116,6 +110,10 @@ export interface MountOptions {
    *  elsewhere and un-muting the peer there causes audio feedback / echo. Only the
    *  `src/host-entry.tsx` served bundle opts in, and only for the diffused modes. */
   liveAudio?: boolean;
+  /** Preview-only render fast path. When true, accepted editable deltas
+   * retarget Lumencast motion values without waiting for the normal frame
+   * coalescer. The served broadcast/on-air host never sets this flag. */
+  realtimeDeltas?: boolean;
   /** One-shot render-tree transform applied by the runtime ONCE per loaded
    *  bundle, before the first render — not per delta (ADR 013 Prism §3.1,
    *  issue #41, runtime `@lumencast/runtime` ≥ 0.12.3). Solar forwards it
