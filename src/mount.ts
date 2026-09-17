@@ -48,6 +48,12 @@ import {
   createRenderAssetWebSocket,
   readRenderAssetEndpoint,
 } from "./internal/render-asset-wire";
+import {
+  createEditablePreviewWebSocket,
+  editablePreviewFastPathEnabled,
+  installEditablePreviewSideband,
+  readEditablePreviewSidebandUrl,
+} from "./internal/editable-preview-fast-path";
 import type {
   MountOptions,
   ResolveCaptureDevice,
@@ -272,14 +278,27 @@ export function mount(options: MountOptions): SolarHandle {
     renderAssetEndpoint === null
       ? undefined
       : createRenderAssetWebSocket(renderAssetEndpoint);
+  // The editable Preview URL carries a loopback-only accepted-patch sideband.
+  // When it is absent, retain the normal render-asset WebSocket unchanged; a
+  // real broadcast/on-air host never receives this opt-in marker. When the
+  // sideband is unavailable, the sequence-gated LSDP wrapper remains a safe
+  // fallback and applies only validated editable leaves from the real Preview
+  // wire.
+  const editableSidebandUrl = readEditablePreviewSidebandUrl();
+  const webSocketImpl =
+    editablePreviewFastPathEnabled() && editableSidebandUrl === null
+      ? createEditablePreviewWebSocket(
+          renderAssetWebSocket ?? globalThis.WebSocket,
+        )
+      : renderAssetWebSocket;
 
   const runtimeOptions: RuntimeMountOptions = {
     target: options.target,
     serverUrl: options.orionUrl,
     token: options.token,
     mode: options.mode,
-    ...(renderAssetWebSocket !== undefined
-      ? { webSocketImpl: renderAssetWebSocket }
+    ...(webSocketImpl !== undefined
+      ? { webSocketImpl }
       : {}),
     // Orion lives behind ZabGate (`/orion/api/v1`) and serves the bundle at
     // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
@@ -301,10 +320,32 @@ export function mount(options: MountOptions): SolarHandle {
     ...(options.onError
       ? { onError: (err: LumencastError): void => options.onError?.(toSolarError(err)) }
       : {}),
-    // ACQUIRE device mapping : a host-supplied resolver wins ; otherwise the
-    // default reads the Prism-injected page global. Either way the runtime
-    // only uses the result as a live getUserMedia constraint.
-    resolveCaptureDevice: options.resolveCaptureDevice ?? captureDeviceResolver,
+    // The broadcast CEF is rendered into Pulsar's atlas. Native Pulsar owns
+    // the OBS Virtual Camera capture in that path; allowing Solar's browser
+    // context to call getUserMedia as well creates a second dshow consumer and
+    // can make the on-air camera flat/black. Return null so the runtime emits
+    // its transparent placeholder and the native `ZabCapture:*` item remains
+    // the sole camera consumer. Control/editor mounts keep the host resolver
+    // and therefore retain live local camera acquisition.
+    resolveCaptureDevice:
+      options.mode === "broadcast" && options.captureInBrowser !== true
+        ? async (deviceRef, sourceKind) => {
+            // Pulsar owns local camera inputs on the broadcast path, but
+            // desktop/window/app captures remain a supported Solar contract.
+            // Keep those IDs flowing through unchanged (the existing
+            // media.app/window resolver tests depend on this distinction).
+            if (
+              sourceKind === "media.camera" ||
+              sourceKind === "media.webcam"
+            ) {
+              return null;
+            }
+            return (options.resolveCaptureDevice ?? captureDeviceResolver)(
+              deviceRef,
+              sourceKind,
+            );
+          }
+        : (options.resolveCaptureDevice ?? captureDeviceResolver),
     // ADR 006 #4 — when a viewer is active, thread its peer-stream resolvers so
     // LIVE `media` nodes render the matching peer's MediaStream in `srcObject`.
     // On the antenne these are slotRef-aware (ADR Blue 009 §3.3).
@@ -322,6 +363,11 @@ export function mount(options: MountOptions): SolarHandle {
     // stays the byte-identical default for every non-opt-in consumer. Only the
     // served host bundle sets it, and only for the diffused/recorded modes.
     ...(options.liveAudio !== undefined ? { liveAudio: options.liveAudio } : {}),
+    // Preview-only fast retarget path. The host entry derives this from the
+    // explicit `editable_fast=1` URL marker; on-air callers never opt in.
+    ...(options.realtimeDeltas !== undefined
+      ? { realtimeDeltas: options.realtimeDeltas }
+      : {}),
     // ADR 013 Prism §3.1 (issue #41) — a one-shot render-tree transform the
     // runtime applies ONCE per loaded bundle (the atlas z-band split, wired
     // from `?atlas=` by the host entries). Forwarded verbatim; ABSENT from the
@@ -333,12 +379,17 @@ export function mount(options: MountOptions): SolarHandle {
   };
 
   const handle = mountRuntime(runtimeOptions);
+  const teardownEditableSideband =
+    editableSidebandUrl === null
+      ? () => undefined
+      : installEditablePreviewSideband(editableSidebandUrl);
   const teardownLiveVideoAutoplay = installLiveVideoAutoplay(
     options.liveAudio === true,
   );
 
   return {
     disconnect: () => {
+      teardownEditableSideband();
       teardownLiveVideoAutoplay();
       // Tear the viewer down with the scene : leave the room and drop the peer
       // connections (the viewer owns them) so a webview reload doesn't leak a

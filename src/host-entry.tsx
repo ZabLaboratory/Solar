@@ -55,6 +55,14 @@ const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   : "broadcast";
 const scene = params.get("scene") ?? undefined;
 const testSession = params.get("session") ?? undefined;
+// Prism's hidden local diagnostic window is the only broadcast host allowed
+// to acquire a camera in-browser. The URL loaded by Pulsar never carries this
+// marker, so its native `ZabCapture:*` layer remains the sole live consumer.
+const captureInBrowser = params.get("prism_e2e") === "1";
+// Prism's editable preview marks its Solar return with this query parameter.
+// The broadcast/on-air URL never carries it, so Pulsar's path keeps the
+// existing runtime scheduling and animation semantics byte-for-byte.
+const realtimeDeltas = params.get("editable_fast") === "1";
 
 const target = document.getElementById("scene");
 if (!(target instanceof HTMLElement)) {
@@ -77,9 +85,16 @@ mount({
   // it stays muted. dev-entry.tsx never opts in for the same reason. Allowlist
   // (not `!== "control"`) so any future mode defaults to muted per the runtime's
   // opt-in DANGER contract.
-  liveAudio: mode === "broadcast" || mode === "test",
+  // An editable Preview has no Blue/Meet contract. Keep its browser page
+  // muted for peer audio so the CEF compositor does not spend a frame on an
+  // unused remote-audio graph; authored media.audio still follows its normal
+  // native/scene path. On-air and Blue-capable test hosts retain the existing
+  // unmuted broadcast behavior.
+  liveAudio: (mode === "broadcast" && !realtimeDeltas) || mode === "test",
   ...(mode === "test" && scene ? { scene } : {}),
   ...(mode === "test" && testSession ? { testSession } : {}),
+  ...(captureInBrowser ? { captureInBrowser: true } : {}),
+  ...(realtimeDeltas ? { realtimeDeltas: true } : {}),
   // ADR 013 Prism §3.1 (issue #41) — `?atlas=` opts into the texture-atlas
   // z-band render. Absent/malformed → no `transformRoot` key → verbatim render.
   ...atlasMountOptions(window.location.search),

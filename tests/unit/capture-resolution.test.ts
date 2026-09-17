@@ -20,12 +20,13 @@ vi.mock("@lumencast/runtime", () => {
 const CAPTURE_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
 const DEFAULT_SCREEN_GLOBAL = "__ZAB_CAPTURE_DEFAULT_SCREEN__";
 
-function baseOptions(): MountOptions {
+function baseOptions(overrides: Partial<MountOptions> = {}): MountOptions {
   return {
     target: document.createElement("div"),
     orionUrl: "wss://gate.example/orion/api/v1/show/stream",
     token: "fake-token",
     mode: "broadcast",
+    ...overrides,
   };
 }
 
@@ -55,6 +56,42 @@ afterEach(() => {
 });
 
 describe("Solar's default capture-device resolver", () => {
+  it("keeps the broadcast CEF on a placeholder so native Pulsar owns the camera", async () => {
+    const hostResolver = vi.fn(async () => ({ deviceId: "host-camera" }));
+    const mount = await loadMount();
+    mount(baseOptions({ resolveCaptureDevice: hostResolver }));
+
+    expect(await resolver()("camera", "media.camera")).toBeNull();
+    expect(hostResolver).not.toHaveBeenCalled();
+  });
+
+  it("retains host camera acquisition for control/editor mounts", async () => {
+    const hostResolver = vi.fn(async () => ({ deviceId: "host-camera" }));
+    const mount = await loadMount();
+    mount(baseOptions({ mode: "control", resolveCaptureDevice: hostResolver }));
+
+    expect(await resolver()("camera", "media.camera")).toEqual({
+      deviceId: "host-camera",
+    });
+    expect(hostResolver).toHaveBeenCalledWith("camera", "media.camera");
+  });
+
+  it("allows only Prism's marked diagnostic window to inspect broadcast captures", async () => {
+    const hostResolver = vi.fn(async () => ({ deviceId: "diagnostic-camera" }));
+    const mount = await loadMount();
+    mount(
+      baseOptions({
+        resolveCaptureDevice: hostResolver,
+        captureInBrowser: true,
+      }),
+    );
+
+    expect(await resolver()("camera", "media.camera")).toEqual({
+      deviceId: "diagnostic-camera",
+    });
+    expect(hostResolver).toHaveBeenCalledWith("camera", "media.camera");
+  });
+
   it("warms the origin, maps labels, caches the map, and passes capture IDs through", async () => {
     const stop = vi.fn();
     const getUserMedia = vi.fn(async () => ({ getTracks: () => [{ stop }] }));
@@ -73,7 +110,7 @@ describe("Solar's default capture-device resolver", () => {
     };
 
     const mount = await loadMount();
-    mount(baseOptions());
+    mount(baseOptions({ mode: "control" }));
     const resolve = resolver();
 
     expect(await resolve("camera", "media.camera")).toEqual({ deviceId: "local-camera" });
@@ -101,7 +138,7 @@ describe("Solar's default capture-device resolver", () => {
     };
 
     const mount = await loadMount();
-    mount(baseOptions());
+    mount(baseOptions({ mode: "control" }));
 
     expect(await resolver()("screen-ref", "media.screen")).toEqual({
       captureSourceId: "screen:0:0",
@@ -114,7 +151,7 @@ describe("Solar's default capture-device resolver", () => {
       camera: { label: "Local camera" },
     };
     const mount = await loadMount();
-    mount(baseOptions());
+    mount(baseOptions({ mode: "control" }));
 
     expect(await resolver()("camera", "media.camera")).toBeNull();
   });
@@ -135,7 +172,7 @@ describe("Solar's default capture-device resolver", () => {
       microphone: { label: "Local microphone" },
     };
     const mount = await loadMount();
-    mount(baseOptions());
+    mount(baseOptions({ mode: "control" }));
 
     expect(await resolver()("microphone", "media.microphone")).toEqual({
       deviceId: "local-microphone",
