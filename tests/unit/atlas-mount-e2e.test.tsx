@@ -13,7 +13,7 @@ import type { RenderNode } from "@lumencast/runtime";
 import { mount } from "../../src/mount";
 import { atlasMountOptions } from "../../src/internal/atlas-mount";
 
-const ORION_URL = "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp";
+const ORION_URL = "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp";
 const SCENE_ID = "scene-atlas";
 const SCENE_VERSION = "sha256:atlas-e2e";
 

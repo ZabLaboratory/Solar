@@ -9,6 +9,23 @@ const endpoint = {
 };
 
 describe("render asset wire hydration", () => {
+  it("does not block the scene snapshot on immutable literals already pinned in the local bundle", async () => {
+    const source = `https://zabgate.cyell.dev/canvas/api/v1/scene-assets/${"b".repeat(64)}/bytes`;
+    const frame = JSON.stringify({
+      type: "snapshot",
+      state: {
+        "__lit.image.background": source,
+        "__lit.media.intro": source,
+        title: "Incoming",
+      },
+    });
+    const fetchImpl = vi.fn<typeof fetch>();
+    expect(await rewriteRenderAssetFrame(frame, endpoint, fetchImpl)).toBe(
+      frame,
+    );
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
   it("replaces dynamic scene and champion image URLs with local data URLs", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async (input) => {
       expect(String(input)).toContain("local-render-asset-url");
@@ -17,8 +34,7 @@ describe("render asset wire hydration", () => {
         headers: { "content-type": "image/png" },
       });
     });
-    const sceneAsset =
-      `https://zabgate.cyell.dev/canvas/api/v1/scene-assets/${"a".repeat(64)}/bytes`;
+    const sceneAsset = `https://zabgate.cyell.dev/canvas/api/v1/scene-assets/${"a".repeat(64)}/bytes`;
     const frame = JSON.stringify({
       type: "snapshot",
       state: {
@@ -38,11 +54,12 @@ describe("render asset wire hydration", () => {
   });
 
   it("reuses the replacement map for later deltas", async () => {
-    const fetchImpl = vi.fn<typeof fetch>(async () =>
-      new Response(new Uint8Array([1, 2, 3]), {
-        status: 200,
-        headers: { "content-type": "image/png" },
-      }),
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(new Uint8Array([1, 2, 3]), {
+          status: 200,
+          headers: { "content-type": "image/png" },
+        }),
     );
     const url =
       "https://ddragon.leagueoflegends.com/cdn/16.16.1/img/champion/Aatrox.png";

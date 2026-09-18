@@ -172,7 +172,7 @@ describe("Solar preview consumes Orion's additive projection over LSDP/1.1", () 
     try {
       handle = mount({
         target,
-        orionUrl: "wss://gate.example/orion/api/v1/show/stream.lsdp",
+        orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp",
         token: "preview-token",
         mode: "test",
         scene: SNAPSHOT_FIXTURE.scene_id,
@@ -186,7 +186,7 @@ describe("Solar preview consumes Orion's additive projection over LSDP/1.1", () 
 
       expect(errors).toHaveLength(0);
       expect(FakeWebSocket.last?.url).toBe(
-        "wss://gate.example/orion/api/v1/show/stream.lsdp",
+        "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp",
       );
       expect(FakeWebSocket.last?.protocols).toEqual(["lsdp.v1.1", "lsdp.v1"]);
       expect(statuses).toContain("live");
@@ -257,7 +257,7 @@ describe("Solar preview consumes Orion's additive projection over LSDP/1.1", () 
     try {
       handle = mount({
         target,
-        orionUrl: "wss://gate.example/orion/api/v1/show/stream.lsdp",
+        orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp",
         token: "preview-token",
         mode: "test",
         scene: SNAPSHOT_FIXTURE.scene_id,

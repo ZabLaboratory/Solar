@@ -39,7 +39,9 @@ import { orionBundleUrl } from "./internal/orion-bundle-url";
 import { installLiveVideoAutoplay } from "./internal/live-video-autoplay";
 import {
   publisherOfferViewerInjection,
+  readPeerViewerChannel,
   readPeerViewerInjection,
+  ZAB_PEER_VIEWER_GLOBAL,
 } from "./peer-viewer/injection";
 import { createAntenneController } from "./peer-viewer/antenne-controller";
 import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
@@ -85,6 +87,24 @@ interface ZabCaptureEntry {
 // only exposes labels after a getUserMedia grant in THIS origin, so we warm one
 // up first (auto-granted in the preview webview), best-effort.
 let originLabelMapPromise: Promise<Record<string, string>> | null = null;
+
+/**
+ * The embedded Prism host and the standalone Antenne both use the same
+ * receive-only viewer glue, but only the embedded host is guaranteed to have
+ * the Meet publishers on the local network.  Keep the historical relay-only
+ * policy for a genuinely remote host while allowing local candidates for the
+ * loopback Orion runtime.  This is a WebRTC transport choice only; it does not
+ * alter the LSDP wire, scene graph, Pulsar, or lane ownership.
+ */
+function isLocalOrionUrl(orionUrl: string): boolean {
+  try {
+    const parsed = new URL(orionUrl);
+    return /^(127\.0\.0\.1|localhost|\[::1\]|::1)$/i.test(parsed.hostname);
+  } catch {
+    return false;
+  }
+}
+
 function originLabelMap(): Promise<Record<string, string>> {
   if (originLabelMapPromise !== null) return originLabelMapPromise;
   originLabelMapPromise = (async () => {
@@ -130,7 +150,7 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
     }
   )[ZAB_CAPTURE_DEVICES_GLOBAL];
   const entry = map?.[deviceRef];
-  const defaultScreen = (
+  let defaultScreen = (
     globalThis as {
       [ZAB_CAPTURE_DEFAULT_SCREEN_GLOBAL]?: ZabCaptureEntry | null;
     }
@@ -146,6 +166,19 @@ const captureDeviceResolver: ResolveCaptureDevice = async (
     sourceKind === "media.window" ||
     sourceKind === "media.app"
   ) {
+    if (
+      sourceKind === "media.screen" &&
+      !entry?.captureSourceId &&
+      !defaultScreen?.captureSourceId
+    ) {
+      const resolveDefault = (
+        globalThis as {
+          __ZAB_CAPTURE_RESOLVE_DEFAULT_SCREEN__?: () => Promise<ZabCaptureEntry | null>;
+        }
+      ).__ZAB_CAPTURE_RESOLVE_DEFAULT_SCREEN__;
+      if (typeof resolveDefault === "function")
+        defaultScreen = await resolveDefault();
+    }
     const captureSourceId =
       entry?.captureSourceId ??
       (sourceKind === "media.screen"
@@ -180,6 +213,7 @@ export function mount(options: MountOptions): SolarHandle {
   // validates too, but its messages say "Lumencast" — hosts assert on
   // "solar.mount:".
   validateOptions(options);
+  const localOrion = isLocalOrionUrl(options.orionUrl);
 
   // ADR 006 #3 / ADR Blue 009 §3.2–3.3 — bridge receive-only Meet peer streams
   // into the runtime's LIVE `media` / `x-zab.meet-peer` primitives. The viewer
@@ -187,10 +221,11 @@ export function mount(options: MountOptions): SolarHandle {
   // consumer (RC-ReadOnly : never mutates the scene ; RC-Geo enforced inside the
   // primitive — the stream fills the node's box). Two activation paths :
   //
-  //   PREVIEW (Prism) — the scene-server pins `__ZAB_PEER_VIEWER__` BEFORE mount.
-  //     Read synchronously, join every room, thread the viewer's RAW
-  //     `peer_label` resolvers. Frozen path — byte-identical to the prior wiring,
-  //     and the reserved-leaf hook is NOT registered (preview carries no
+  //   PRISM LOCAL SOLAR (Preview + local live browser_source) — the
+  //     scene-server pins `__ZAB_PEER_VIEWER__` BEFORE mount and may also expose
+  //     the loopback room-reconciliation channel. Read synchronously, join
+  //     every room, and apply channel snapshots to the already-mounted viewer.
+  //     The reserved-leaf hook is NOT registered (these pages carry no
   //     `__cam.*` projection).
   //
   //   ANTENNE (Pulsar CEF) — there is no Prism : the viewer creds + slot→peer
@@ -204,10 +239,23 @@ export function mount(options: MountOptions): SolarHandle {
     injection: peerViewerInjection,
     slotBindings,
     fromLsdp,
+    fromPrism,
   } = readPeerViewerInjection();
   const disablePeerViewer =
     (globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: unknown })
       .__ZAB_DISABLE_PEER_VIEWER__ === true;
+  // A local Prism browser_source is still a Prism-owned Solar document even
+  // when the vendored runtime has also exposed an LSDP reserved-leaf global.
+  // Prefer the same page-global/channel path as Preview in that case.  The
+  // previous `!fromLsdp` gate let a stale or auxiliary LSDP leaf divert the
+  // live document into the Antenne controller, so Preview received the rooms
+  // while the Program browser_source did not.  Remote/standalone hosts keep
+  // the Antenne branch exactly as before.
+  const peerViewerChannel = readPeerViewerChannel();
+  const usePrismLocalViewer =
+    (localOrion && (fromPrism || peerViewerChannel !== null)) ||
+    (!fromLsdp &&
+      (peerViewerInjection !== null || peerViewerChannel !== null));
   let resolvePeerStream: ResolvePeerStream;
   let subscribePeerStream: SubscribePeerStream;
   let onReservedLeaves: RuntimeMountOptions["onReservedLeaves"];
@@ -230,19 +278,22 @@ export function mount(options: MountOptions): SolarHandle {
       return () => undefined;
     };
     teardownPeerViewer = () => undefined;
-  } else if (peerViewerInjection !== null && !fromLsdp) {
-    // PREVIEW — join EVERY pinned room and thread the viewer's RAW resolvers
+  } else if (usePrismLocalViewer) {
+    // PRISM LOCAL SOLAR — join EVERY pinned room and thread the viewer's RAW resolvers
     // (first-connected-wins aggregation, `peer_label`-keyed). A `meet.peer` node
     // that mounts before its peer connects shows a stream-less box and re-renders
     // via `subscribePeerStream` on arrival. A join failure must not take the
     // scene down — surface it through `onError` and let the rest render.
     const peerViewer = createPeerViewerFromInjection(
-      publisherOfferViewerInjection(peerViewerInjection),
+      // Both Preview and the local Program browser_source run in Prism's
+      // loopback Electron host. Keep relay candidates when configured, but
+      // also allow a local host candidate so either return remains useful
+      // without a coturn process.
+      publisherOfferViewerInjection(peerViewerInjection ?? { rooms: [] }, {
+        iceTransportPolicy: "all",
+      }),
     );
     void peerViewer.join().catch(surfaceJoinError);
-    // A webview reload/close doesn't run `disconnect()` (the host owns that), so
-    // leave the mesh explicitly on unload — stops `solar-viewer` ghosts piling up.
-    window.addEventListener("beforeunload", () => peerViewer.leave());
     // Slot-aware on the PREVIEW too (parity with the antenne): wrap the raw
     // `peer_label`-keyed registry with the slot-binding so an `x-zab.meet-peer`
     // node keyed by a positional `@<n>` (auto-fill in arrival order) or a slotRef
@@ -251,10 +302,122 @@ export function mount(options: MountOptions): SolarHandle {
     // label → no peer → empty slot, even with the stream received (positional was
     // ANTENNE-only). The registry's `subscribeRoster` drives the re-resolve on a
     // peer connect/leave so a late arrival fills the slot.
-    const slots = createSlotBindingRegistry(peerViewer.registry);
+    // Prism pins the authored slot snapshot alongside the room credentials.
+    // Use it here instead of rebuilding camera identity from WebRTC arrival
+    // order. Arrival order is only the fallback for genuinely positional
+    // scenes; when `@0`/`@1`/`@2` are explicitly mapped, each React consumer
+    // subscribes to its exact peer before that peer's first track arrives.
+    // This also prevents three near-simultaneous joins from leaving one slot
+    // behind as a transparent placeholder while the registry already holds
+    // all three streams.
+    const slots = createSlotBindingRegistry(peerViewer.registry, slotBindings);
+    let currentSlotBindings: Record<string, string> = { ...slotBindings };
+    let channelSocket: WebSocket | null = null;
+    let channelRetry: ReturnType<typeof setTimeout> | null = null;
+    let channelStopped = false;
+    let stateUpdates = Promise.resolve();
+
+    const applyPeerViewerState = async (state: unknown): Promise<void> => {
+      if (typeof state !== "object" || state === null) return;
+      const candidate = state as { rooms?: unknown; slots?: unknown };
+      if (!Array.isArray(candidate.rooms)) return;
+      // Keep the diagnostic global truthful for the already-mounted page. The
+      // normaliser below still validates every room before it reaches Meet.
+      (globalThis as Record<string, unknown>)[ZAB_PEER_VIEWER_GLOBAL] = state;
+      const resolved = readPeerViewerInjection();
+      const rooms =
+        resolved.injection !== null && "rooms" in resolved.injection
+          ? resolved.injection.rooms
+          : [];
+      // The local multi-room runtime fingerprints credentials and performs an
+      // add-first receive-side handoff even when Meet keeps the same opaque
+      // room id. Do not call `leave()` here: that would tear down both local
+      // consumers before the replacement socket has delivered its first track.
+      // The runtime owns the actual replacement lifecycle.
+      await peerViewer.setRooms(rooms);
+      for (const slotRef of Object.keys(currentSlotBindings)) {
+        if (!(slotRef in resolved.slotBindings)) slots.assign(slotRef, null);
+      }
+      for (const [slotRef, peerLabel] of Object.entries(
+        resolved.slotBindings,
+      )) {
+        slots.assign(slotRef, peerLabel);
+      }
+      currentSlotBindings = { ...resolved.slotBindings };
+    };
+
+    const connectPeerViewerChannel = (): void => {
+      if (
+        channelStopped ||
+        peerViewerChannel === null ||
+        typeof globalThis.WebSocket !== "function"
+      )
+        return;
+      const socket = new globalThis.WebSocket(peerViewerChannel.url);
+      channelSocket = socket;
+      socket.addEventListener("message", (event) => {
+        try {
+          const frame = JSON.parse(String(event.data)) as {
+            type?: unknown;
+            state?: unknown;
+          };
+          if (frame.type !== "peer_viewer") return;
+          stateUpdates = stateUpdates
+            .then(() => applyPeerViewerState(frame.state))
+            .catch(surfaceJoinError);
+        } catch {
+          // Ignore malformed local control frames; the initial room snapshot
+          // remains active and the channel will continue to receive updates.
+        }
+      });
+      socket.addEventListener("close", () => {
+        if (channelSocket === socket) channelSocket = null;
+        if (channelStopped || channelRetry !== null) return;
+        channelRetry = setTimeout(() => {
+          channelRetry = null;
+          connectPeerViewerChannel();
+        }, 250);
+      });
+      socket.addEventListener("error", () => {
+        // The close event schedules the bounded reconnect. No error is allowed
+        // to surface into the render path or blank the scene.
+      });
+    };
+    connectPeerViewerChannel();
+
+    const e2eDiagnostics = (
+      globalThis as {
+        __PRISM_SOLAR_DIAG__?: {
+          peerRegistrySnapshot?: () => unknown;
+        };
+      }
+    ).__PRISM_SOLAR_DIAG__;
+    if (e2eDiagnostics !== undefined) {
+      e2eDiagnostics.peerRegistrySnapshot = () => ({
+        labels: peerViewer.registry.orderedLabels(),
+        slots: Object.fromEntries(
+          Object.keys(currentSlotBindings).map((key) => [
+            key,
+            { peer: slots.boundPeer(key), resolved: slots.resolve(key) !== null },
+          ]),
+        ),
+      });
+    }
     resolvePeerStream = (key) => slots.resolve(key);
     subscribePeerStream = (key, listener) => slots.subscribe(key, listener);
-    teardownPeerViewer = () => peerViewer.leave();
+    const onBeforeUnload = (): void => {
+      channelStopped = true;
+      if (channelRetry !== null) clearTimeout(channelRetry);
+      channelRetry = null;
+      channelSocket?.close();
+      channelSocket = null;
+      peerViewer.leave();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    teardownPeerViewer = () => {
+      window.removeEventListener("beforeunload", onBeforeUnload);
+      onBeforeUnload();
+    };
   } else {
     // ANTENNE — slot-aware controller threaded now, armed by the runtime hook
     // (and synchronously by a mount-time `__ZAB_LSDP_PEER_VIEWER__` global, #29).
@@ -262,7 +425,12 @@ export function mount(options: MountOptions): SolarHandle {
     // straight through, so this is a strict superset of the `meet.peer` path.
     const controller = createAntenneController({
       createViewer: (injection) =>
-        createPeerViewerFromInjection(publisherOfferViewerInjection(injection)),
+        createPeerViewerFromInjection(
+          publisherOfferViewerInjection(
+            injection,
+            localOrion ? { iceTransportPolicy: "all" } : {},
+          ),
+        ),
       onJoinError: surfaceJoinError,
     });
     if (peerViewerInjection !== null) {
@@ -297,12 +465,17 @@ export function mount(options: MountOptions): SolarHandle {
     serverUrl: options.orionUrl,
     token: options.token,
     mode: options.mode,
+    ...(options.sceneTransition !== undefined
+      ? { sceneTransition: options.sceneTransition }
+      : {}),
+    ...(options.onSceneCommit !== undefined
+      ? { onSceneCommit: options.onSceneCommit }
+      : {}),
     ...(webSocketImpl !== undefined ? { webSocketImpl } : {}),
-    // Orion lives behind ZabGate (`/orion/api/v1`) and serves the bundle at
-    // `/scenes/{id}/render-bundle?v={hash}`, not the runtime's default
-    // host-root LSDP layout. Derive the gateway-prefixed bundle URL from the
-    // WS `orionUrl` so the runtime fetches the right artefact (ADR 007 —
-    // adapter owns Orion's URL contract).
+    // The embedded local Orion runtime serves the bundle at
+    // `/orion/api/v1/scenes/{id}/render-bundle?v={hash}`, not the runtime's
+    // default host-root LSDP layout. Derive the local bundle URL from the WS
+    // `orionUrl` so the runtime fetches the right artefact.
     resolveBundleUrl:
       options.resolveBundleUrl ?? orionBundleUrl(options.orionUrl),
     ...(options.testSession !== undefined

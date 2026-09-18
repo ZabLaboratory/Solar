@@ -300,7 +300,7 @@ describe("Solar consumes the authenticated Orion #181 chat overlay", () => {
     try {
       handle = mount({
         target,
-        orionUrl: "wss://gate.example/orion/api/v1/show/stream.lsdp",
+        orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp",
         token: "preview-token",
         mode: "broadcast",
         onStatus: (status) => statuses.push(status),
@@ -384,7 +384,7 @@ describe("Solar consumes the authenticated Orion #181 chat overlay", () => {
     try {
       handle = mount({
         target,
-        orionUrl: "wss://gate.example/orion/api/v1/show/stream.lsdp",
+        orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp",
         token: "preview-token",
         mode: "broadcast",
         onError: (error) => errors.push(error),

@@ -181,7 +181,7 @@ describe("ADR 011 I7 — keyframe wrapper composites geometry + transform", () =
 
     const handle = mount({
       target,
-      orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+      orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
       token: "operator-token",
       mode: "broadcast",
     });
@@ -222,7 +222,7 @@ describe("ADR 011 I7 — keyframe wrapper composites geometry + transform", () =
 
     const handle = mount({
       target,
-      orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+      orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
       token: "operator-token",
       mode: "broadcast",
     });

@@ -72,13 +72,14 @@ import { mount } from "../../src/mount";
 import type { MountOptions } from "../../src/index";
 
 const PEER_GLOBAL = "__ZAB_PEER_VIEWER__";
+const CHANNEL_GLOBAL = "__ZAB_PEER_VIEWER_CHANNEL__";
 const LSDP_GLOBAL = "__ZAB_LSDP_PEER_VIEWER__";
 const CAPTURE_GLOBAL = "__ZAB_CAPTURE_DEVICES__";
 
 function baseOptions(over: Partial<MountOptions> = {}): MountOptions {
   return {
     target: document.createElement("div"),
-    orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+    orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
     token: "fake-token",
     mode: "broadcast",
     ...over,
@@ -97,12 +98,14 @@ function runtimeOptsOf(): Record<string, unknown> {
 afterEach(() => {
   vi.clearAllMocks();
   delete (globalThis as Record<string, unknown>)[PEER_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[CHANNEL_GLOBAL];
   delete (globalThis as Record<string, unknown>)[LSDP_GLOBAL];
   delete (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL];
 });
 
 beforeEach(() => {
   delete (globalThis as Record<string, unknown>)[PEER_GLOBAL];
+  delete (globalThis as Record<string, unknown>)[CHANNEL_GLOBAL];
   delete (globalThis as Record<string, unknown>)[LSDP_GLOBAL];
   delete (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL];
 });
@@ -218,6 +221,91 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(leave).toHaveBeenCalledTimes(1);
   });
 
+  it("delegates same-room credential rotation to the seamless runtime handoff", async () => {
+    class PreviewChannelSocket extends EventTarget {
+      static instance: PreviewChannelSocket | null = null;
+      readonly readyState = 1;
+
+      constructor(readonly url: string) {
+        super();
+        PreviewChannelSocket.instance = this;
+      }
+
+      close(): void {
+        this.dispatchEvent(new Event("close"));
+      }
+
+      push(value: unknown): void {
+        this.dispatchEvent(
+          new MessageEvent("message", { data: JSON.stringify(value) }),
+        );
+      }
+    }
+
+    const viewer = {
+      join,
+      leave: vi.fn(),
+      resolvePeerStream,
+      subscribePeerStream,
+      setRooms: vi.fn(() => Promise.resolve()),
+      registry: {
+        resolve: registryResolve,
+        orderedLabels: registryOrderedLabels,
+        subscribeRoster: vi.fn(() => () => undefined),
+        subscribe: vi.fn(() => () => undefined),
+        set: vi.fn(),
+        remove: vi.fn(),
+        clear: vi.fn(),
+      },
+    };
+    createPeerViewerFromInjection.mockReturnValueOnce(viewer);
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        {
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "stable-room",
+          token: "token-a",
+        },
+      ],
+    };
+    (globalThis as Record<string, unknown>)[CHANNEL_GLOBAL] = {
+      url: "ws://127.0.0.1:43123/preview/peer-viewer?token=local",
+    };
+    vi.stubGlobal(
+      "WebSocket",
+      PreviewChannelSocket as unknown as typeof WebSocket,
+    );
+
+    mount(baseOptions());
+    PreviewChannelSocket.instance?.push({
+      type: "peer_viewer",
+      state: {
+        rooms: [
+          {
+            signalingUrl: "wss://meet.example/ws",
+            roomId: "stable-room",
+            token: "token-b",
+          },
+        ],
+        slots: {},
+      },
+    });
+    await Promise.resolve();
+    await Promise.resolve();
+
+    // The runtime fingerprints room credentials and keeps the old generation
+    // alive until the replacement has delivered its first track. Calling
+    // leave() here would blank Preview and the local live browser_source.
+    expect(viewer.leave).not.toHaveBeenCalled();
+    expect(viewer.setRooms).toHaveBeenCalledWith([
+      {
+        signalingUrl: "wss://meet.example/ws",
+        roomId: "stable-room",
+        token: "token-b",
+      },
+    ]);
+  });
+
   it("wires preview subscriptions, token updates, and the unload teardown", () => {
     (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
       rooms: [
@@ -262,6 +350,33 @@ describe("peer-viewer glue (multi-room)", () => {
     expect(resolve("@0")).toBe(stream);
     expect(resolve("bob")).toBe(null);
     expect(registryResolve).toHaveBeenCalledWith("bob");
+  });
+
+  it("uses the pinned preview slot snapshot instead of WebRTC arrival order", () => {
+    const stream = {} as MediaStream;
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        { signalingUrl: "wss://meet.example/ws", roomId: "meet-a", token: "tok-a" },
+      ],
+      slots: {
+        "@0": "invite-1",
+        "@1": "invite-2",
+        "@2": "invite-3",
+      },
+    };
+    // No arrival roster is available yet. The scene slot must nevertheless be
+    // wired to its authored peer so the first remote-track notification reaches
+    // the correct LivePeerVideo consumer.
+    registryOrderedLabels.mockReturnValue([]);
+    registryResolve.mockImplementation((label: string) =>
+      label === "invite-3" ? stream : null,
+    );
+
+    mount(baseOptions());
+
+    const resolve = runtimeOptsOf().resolvePeerStream as (key: string) => unknown;
+    expect(resolve("@2")).toBe(stream);
+    expect(registryResolve).toHaveBeenCalledWith("invite-3");
   });
 
   it("surfaces a join failure through onError without throwing", async () => {
@@ -379,6 +494,49 @@ describe("peer-viewer glue — second LSDP source + slotRef re-keying (antenne)"
         { signalingUrl: "wss://meet.example/ws", roomId: "antenne-only", token: "a-tok" },
       ],
     });
+  });
+
+  it("keeps a local Orion document on the Prism path when LSDP also exists", () => {
+    (globalThis as Record<string, unknown>)[PEER_GLOBAL] = {
+      rooms: [
+        {
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "preview-room",
+          token: "preview-token",
+        },
+      ],
+    };
+    (globalThis as Record<string, unknown>)[LSDP_GLOBAL] = {
+      rooms: [
+        {
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "antenne-room",
+          token: "antenne-token",
+        },
+      ],
+      slots: { "cam-0": "alice" },
+    };
+
+    mount(baseOptions());
+
+    // A local Program browser_source must use the same Prism viewer/channel
+    // as Preview; a stale LSDP leaf must not divert it to the async Antenne
+    // controller and leave the live Meet tracks black.
+    expect(createPeerViewerFromInjection).toHaveBeenCalledWith({
+      rooms: [
+        {
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "preview-room",
+          token: "preview-token",
+        },
+        {
+          signalingUrl: "wss://meet.example/ws",
+          roomId: "antenne-room",
+          token: "antenne-token",
+        },
+      ],
+    });
+    expect(runtimeOptsOf().onReservedLeaves).toBeUndefined();
   });
 
   it("merges preview slot bindings and lets LSDP override the live slot", () => {

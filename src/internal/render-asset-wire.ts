@@ -4,8 +4,10 @@ export interface RenderAssetEndpoint {
   gatewayOrigin: string;
 }
 
-const SCENE_ASSET_PATH = /^\/canvas\/api\/v1\/scene-assets\/[0-9a-f]{64}\/bytes$/i;
-const DDRAGON_IMAGE_PATH = /^\/cdn\/[^/]+\/img\/(?:champion|item|spell|rune)\//i;
+const SCENE_ASSET_PATH =
+  /^\/canvas\/api\/v1\/scene-assets\/[0-9a-f]{64}\/bytes$/i;
+const DDRAGON_IMAGE_PATH =
+  /^\/cdn\/[^/]+\/img\/(?:champion|item|spell|rune)\//i;
 
 type RenderAssetEndpointGlobal = RenderAssetEndpoint;
 
@@ -38,7 +40,10 @@ function isHydratableImageUrl(value: string, gatewayOrigin: string): boolean {
     return false;
   }
   if (parsed.protocol !== "https:") return false;
-  if (parsed.origin === gateway.origin && SCENE_ASSET_PATH.test(parsed.pathname)) {
+  if (
+    parsed.origin === gateway.origin &&
+    SCENE_ASSET_PATH.test(parsed.pathname)
+  ) {
     return true;
   }
   return (
@@ -47,7 +52,11 @@ function isHydratableImageUrl(value: string, gatewayOrigin: string): boolean {
   );
 }
 
-function collectImageUrls(value: unknown, gatewayOrigin: string, out: Set<string>): void {
+function collectImageUrls(
+  value: unknown,
+  gatewayOrigin: string,
+  out: Set<string>,
+): void {
   if (typeof value === "string") {
     if (isHydratableImageUrl(value, gatewayOrigin)) out.add(value);
     return;
@@ -57,7 +66,13 @@ function collectImageUrls(value: unknown, gatewayOrigin: string, out: Set<string
     return;
   }
   if (!value || typeof value !== "object") return;
-  for (const item of Object.values(value as Record<string, unknown>)) {
+  for (const [path, item] of Object.entries(value as Record<string, unknown>)) {
+    // Prism's local bundle pins immutable image/media literals to hydrated
+    // props and removes those src bindings. Fetching their signed upstream
+    // URLs again here blocks the entire LSDP queue on multi-megabyte image
+    // conversion, although no rendered node consumes these literal leaves.
+    // Dynamic sources (chat/game data, operator inputs) still hydrate below.
+    if (/^__lit\.(?:image|media)\./.test(path)) continue;
     collectImageUrls(item, gatewayOrigin, out);
   }
 }
@@ -67,7 +82,8 @@ function replaceStrings(
   replacements: Map<string, string>,
 ): unknown {
   if (typeof value === "string") return replacements.get(value) ?? value;
-  if (Array.isArray(value)) return value.map((item) => replaceStrings(item, replacements));
+  if (Array.isArray(value))
+    return value.map((item) => replaceStrings(item, replacements));
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(
     Object.entries(value as Record<string, unknown>).map(([key, item]) => [
@@ -82,7 +98,9 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   let binary = "";
   const chunkSize = 0x8000;
   for (let offset = 0; offset < bytes.length; offset += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(offset, offset + chunkSize));
+    binary += String.fromCharCode(
+      ...bytes.subarray(offset, offset + chunkSize),
+    );
   }
   return btoa(binary);
 }
@@ -113,10 +131,17 @@ export async function rewriteRenderAssetFrame(
       request.searchParams.set("token", endpoint.token);
       request.searchParams.set("url", source);
       const response = await fetchImpl(request);
-      if (!response.ok) throw new Error(`local asset endpoint returned HTTP ${response.status}`);
+      if (!response.ok)
+        throw new Error(
+          `local asset endpoint returned HTTP ${response.status}`,
+        );
       const contentType =
-        response.headers.get("content-type")?.split(";", 1)[0]?.trim() || "image/png";
-      replacements.set(source, `data:${contentType};base64,${arrayBufferToBase64(await response.arrayBuffer())}`);
+        response.headers.get("content-type")?.split(";", 1)[0]?.trim() ||
+        "image/png";
+      replacements.set(
+        source,
+        `data:${contentType};base64,${arrayBufferToBase64(await response.arrayBuffer())}`,
+      );
     }),
   );
   return JSON.stringify(replaceStrings(frame, replacements));
@@ -128,7 +153,9 @@ export function createRenderAssetWebSocket(
 ): typeof WebSocket {
   class RenderAssetWebSocket extends NativeWebSocket {
     private readonly replacements = new Map<string, string>();
-    private messageHandler: ((this: WebSocket, event: MessageEvent) => unknown) | null = null;
+    private messageHandler:
+      | ((this: WebSocket, event: MessageEvent) => unknown)
+      | null = null;
     private messageQueue = Promise.resolve();
 
     constructor(url: string | URL, protocols?: string | string[]) {
@@ -145,10 +172,18 @@ export function createRenderAssetWebSocket(
                     this.replacements,
                   )
                 : event.data;
+            // Installed only by Prism's E2E host, never by production hosts.
+            const diagnostic = (globalThis as {
+              __PRISM_SOLAR_DIAG__?: {
+                frame?: (phase: string, data: unknown) => void;
+              };
+            }).__PRISM_SOLAR_DIAG__?.frame;
+            diagnostic?.("hydrated", data);
             this.messageHandler?.call(
               this,
               new MessageEvent("message", { data }),
             );
+            diagnostic?.("dispatched", data);
           })
           .catch((error: unknown) => {
             // A local cache miss must not tear down LSDP. The endpoint itself
@@ -164,7 +199,9 @@ export function createRenderAssetWebSocket(
       });
     }
 
-    override get onmessage(): ((this: WebSocket, event: MessageEvent) => unknown) | null {
+    override get onmessage():
+      | ((this: WebSocket, event: MessageEvent) => unknown)
+      | null {
       return this.messageHandler;
     }
 

@@ -15,7 +15,7 @@ import { mount } from "../../src/mount";
 import { resolveShowToken } from "../../src/internal/resolve-show-token";
 
 const SHOW_TOKEN = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzaG93In0.sig-_123";
-const ORION_URL = `wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp?token=${SHOW_TOKEN}`;
+const ORION_URL = `ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp?token=${SHOW_TOKEN}`;
 const SCENE_ID = "scene-finale";
 const SCENE_VERSION = "sha256:abc123";
 
@@ -126,7 +126,7 @@ describe("render-bundle fetch carries Authorization from the show-token", () => 
     document.body.appendChild(target);
 
     const noTokenUrl =
-      "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp";
+      "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp";
     const token = resolveShowToken(noTokenUrl, null);
     expect(token).toBe("");
 
