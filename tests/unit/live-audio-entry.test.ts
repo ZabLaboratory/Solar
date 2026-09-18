@@ -58,12 +58,12 @@ afterEach(() => {
 });
 
 describe("host-entry.tsx — served bundle opts into live guest audio", () => {
-  it("retains the original transition on the persistent local Preview wire", async () => {
+  it("uses an atomic transition on the persistent local Preview wire", async () => {
     stage(
-      `?orion=${encodeURIComponent("ws://127.0.0.1:4317/api/v1/show/preview.lsdp")}`,
+      `?orion=${encodeURIComponent("ws://127.0.0.1:4317/api/v1/show/preview.lsdp")}&editable_fast=1`,
     );
     await import("../../src/host-entry");
-    expect(lastOptions().sceneTransition).toBeUndefined();
+    expect(lastOptions().sceneTransition).toBe("cut");
     expect(lastOptions().onSceneCommit).toBeUndefined();
   });
   it("passes liveAudio: true on the on-air broadcast render", async () => {
