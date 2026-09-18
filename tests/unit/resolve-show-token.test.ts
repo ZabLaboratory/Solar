@@ -4,18 +4,18 @@ import { resolveShowToken } from "../../src/internal/resolve-show-token";
 describe("resolveShowToken()", () => {
   it("extracts the token embedded in the orionUrl query (Pulsar browser-source shape)", () => {
     const orionUrl =
-      "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp?token=SHOW123";
+      "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp?token=SHOW123";
     expect(resolveShowToken(orionUrl, null)).toBe("SHOW123");
   });
 
   it("prefers an explicit top-level token over the embedded one", () => {
     const orionUrl =
-      "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp?token=EMBEDDED";
+      "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp?token=EMBEDDED";
     expect(resolveShowToken(orionUrl, "EXPLICIT")).toBe("EXPLICIT");
   });
 
   it("returns '' when no token is present anywhere", () => {
-    const orionUrl = "wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp";
+    const orionUrl = "ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp";
     expect(resolveShowToken(orionUrl, null)).toBe("");
   });
 
@@ -29,7 +29,7 @@ describe("resolveShowToken()", () => {
 
   it("preserves token characters that URLSearchParams round-trips (JWT dots/dashes)", () => {
     const jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.aBc-_123";
-    const orionUrl = `wss://gate/orion/api/v1/show/stream.lsdp?token=${jwt}`;
+    const orionUrl = `ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp?token=${jwt}`;
     expect(resolveShowToken(orionUrl, null)).toBe(jwt);
   });
 });

@@ -18,7 +18,8 @@ import { mount } from "./mount";
 import { resolveShowToken } from "./internal/resolve-show-token";
 import { atlasMountOptions } from "./internal/atlas-mount";
 import { localBundleUrl } from "./internal/local-bundle-url";
-import type { SolarMode } from "./types";
+import { previewRenderRoster } from "./internal/preview-render-roster";
+import type { MountOptions, SolarMode } from "./types";
 // Self-hosted Geist / Geist Mono @font-face — Solar's served host/CEF/atlas
 // page owns its fonts (Prism's editor CSS never reaches it). Vite inlines the
 // woff2 as hashed, relatively-referenced assets under dist/host/ (base "./"),
@@ -31,8 +32,33 @@ if (params.get("disable_peer_viewer") === "1") {
     globalThis as { __ZAB_DISABLE_PEER_VIEWER__?: boolean }
   ).__ZAB_DISABLE_PEER_VIEWER__ = true;
 }
-const orionUrl =
-  params.get("orion") ?? `wss://${location.host}/orion/api/v1/show/stream`;
+// The served host is always mounted by Prism next to its embedded, loopback
+// Orion runtime.  There is deliberately no gateway/remote-Orion fallback:
+// callers must provide the authenticated local LSDP URL explicitly.
+const orionUrl = params.get("orion");
+if (!orionUrl) {
+  document.body.textContent = "Solar host: local Orion URL missing";
+  throw new Error("SOLAR_LOCAL_ORION_REQUIRED");
+}
+try {
+  const parsedOrionUrl = new URL(orionUrl);
+  const loopback = /^(127\.0\.0\.1|localhost|\[::1\]|::1)$/i.test(
+    parsedOrionUrl.hostname,
+  );
+  if (!loopback || !/^(ws|wss):$/i.test(parsedOrionUrl.protocol)) {
+    document.body.textContent = "Solar host: local Orion URL required";
+    throw new Error("SOLAR_LOCAL_ORION_REQUIRED");
+  }
+} catch (error) {
+  if (
+    error instanceof Error &&
+    error.message === "SOLAR_LOCAL_ORION_REQUIRED"
+  ) {
+    throw error;
+  }
+  document.body.textContent = "Solar host: local Orion URL required";
+  throw new Error("SOLAR_LOCAL_ORION_REQUIRED");
+}
 // The Pulsar browser source packs the show-token inside `orionUrl`'s query
 // (`…/show/stream.lsdp?token=<SHOW>`), not as a top-level `?token=`. Surface
 // it so the runtime can attach `Authorization: Bearer <token>` to the
@@ -67,10 +93,23 @@ if (!(target instanceof HTMLElement)) {
   throw new Error("solar host: #scene target missing");
 }
 
+const diagnostics = (
+  globalThis as {
+    __PRISM_SOLAR_DIAG__?: { commit?: MountOptions["onSceneCommit"] };
+  }
+).__PRISM_SOLAR_DIAG__;
+
 mount({
   target,
+  ...(typeof diagnostics?.commit === "function"
+    ? { onSceneCommit: diagnostics.commit }
+    : {}),
   orionUrl,
   ...(resolveBundleUrl !== undefined ? { resolveBundleUrl } : {}),
+  preloadRoster: previewRenderRoster(
+    (globalThis as { __ZAB_RENDER_ROSTER__?: unknown }).__ZAB_RENDER_ROSTER__,
+    realtimeDeltas,
+  ),
   token,
   mode,
   // This is the SERVED bundle — the flux réellement diffusé/enregistré (antenne

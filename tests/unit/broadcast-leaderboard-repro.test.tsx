@@ -133,7 +133,7 @@ function mountBroadcast(bundle: RenderBundle, target: HTMLElement) {
   vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
   return mount({
     target,
-    orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+    orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
     token: "show-token",
     mode: "broadcast",
   });

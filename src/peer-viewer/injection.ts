@@ -39,6 +39,11 @@ function tracePublisherOfferPolicy(message: string): void {
  *  verbatim with Prism's injection ; change it in BOTH places. */
 export const ZAB_PEER_VIEWER_GLOBAL = "__ZAB_PEER_VIEWER__";
 
+/** Loopback channel carrying a fresh room snapshot to an already mounted local
+ * Solar document. Prism uses it for both Preview and its local live
+ * browser_source; the Antenne path remains LSDP-driven. */
+export const ZAB_PEER_VIEWER_CHANNEL_GLOBAL = "__ZAB_PEER_VIEWER_CHANNEL__";
+
 /** ANTENNE source — pinned by the antenne host from Orion's LSDP bundle (ADR
  *  Blue 009 §3.2). Same `{ rooms, slots? }` shape ; viewer creds are short-TTL,
  *  receive-only (R1, gated by Bastion clearance of ADR 009 #6 / Orion #261). */
@@ -72,18 +77,56 @@ export interface ResolvedInjection {
    *  slot-aware re-keying path : preview-only stays byte-identical, the antenne
    *  path activates only once the LSDP creds are effectively present. */
   fromLsdp: boolean;
+  /** Whether the Prism page-global contributed usable creds. A local Orion
+   *  browser_source prefers this source even when the runtime also exposes an
+   *  auxiliary LSDP leaf, so both returns use the same receive-only mesh. */
+  fromPrism: boolean;
+}
+
+export interface PeerViewerChannel {
+  url: string;
+}
+
+/** Read the optional Prism local-Solar room-reconciliation channel. */
+export function readPeerViewerChannel(): PeerViewerChannel | null {
+  const value = (globalThis as Record<string, unknown>)[
+    ZAB_PEER_VIEWER_CHANNEL_GLOBAL
+  ];
+  if (typeof value !== "object" || value === null) return null;
+  const url = (value as { url?: unknown }).url;
+  if (typeof url !== "string" || url === "") return null;
+  try {
+    const parsed = new URL(url);
+    if (
+      parsed.protocol !== "ws:" ||
+      !["127.0.0.1", "localhost", "[::1]"].includes(parsed.hostname) ||
+      !parsed.pathname.endsWith("/preview/peer-viewer")
+    ) {
+      return null;
+    }
+    return { url: parsed.toString() };
+  } catch {
+    return null;
+  }
 }
 
 /**
- * The Prism publisher owns offer creation for the receive-only mesh. The
+ * The Prism publisher owns the offer for the receive-only mesh. The
  * vendored Lumencast viewer still installs a `negotiationneeded` offerer
  * handler, which creates glare as soon as it allocates its recvonly
  * transceivers. Keep the runtime untouched and inject a native-compatible
- * RTCPeerConnection subclass that suppresses only that viewer handler. All
- * other WebRTC events and methods retain the browser implementation.
+ * RTCPeerConnection subclass that suppresses only that viewer handler.
+ * Initial offers remain off the wire because the receive-only viewer must
+ * answer the publisher-owned offer. The runtime also has an explicit recovery
+ * path for a leg that already failed; that path creates a local offer itself.
+ * Such a recovery offer is allowed through so the publisher can answer it
+ * instead of leaving one camera leg in `have-local-offer` while the other
+ * Preview cameras continue to render. All other WebRTC events and methods
+ * retain the browser implementation.
  */
 export function publisherOfferViewerInjection(
   injection: PeerViewerInjection,
+  options: { iceTransportPolicy?: RTCIceTransportPolicy } = {},
 ): PeerViewerInjection {
   const NativePeerConnection = globalThis.RTCPeerConnection;
   const NativeWebSocket = globalThis.WebSocket;
@@ -94,11 +137,41 @@ export function publisherOfferViewerInjection(
     return injection;
   }
 
+  // The normal `negotiationneeded` path calls setLocalDescription() with no
+  // description and must stay blocked. The patched retry path explicitly calls
+  // createOffer() and then sends that offer as a last-resort recovery for a
+  // failed leg. Keep this marker per peer so the WebSocket wrapper can
+  // distinguish those two paths without changing the wire shape or the
+  // publisher-owned initial handshake.
+  const recoveryOfferPeers = new Set<RTCPeerConnection>();
+
   const PublisherOfferPeerConnection = function (
     configuration?: RTCConfiguration,
   ): RTCPeerConnection {
-    const pc = new NativePeerConnection(configuration);
+    const pc = new NativePeerConnection(
+      options.iceTransportPolicy === undefined
+        ? configuration
+        : {
+            ...(configuration ?? {}),
+            iceTransportPolicy: options.iceTransportPolicy,
+          },
+    );
     const nativeSetLocalDescription = pc.setLocalDescription.bind(pc);
+    const nativeCreateOffer = pc.createOffer.bind(pc) as (
+      ...args: unknown[]
+    ) => Promise<RTCSessionDescriptionInit>;
+    let explicitRecoveryOfferRequested = false;
+    Object.defineProperty(pc, "createOffer", {
+      configurable: true,
+      value: (...args: unknown[]): Promise<RTCSessionDescriptionInit> => {
+        explicitRecoveryOfferRequested = true;
+        const offer = nativeCreateOffer(...args);
+        return offer.catch((error: unknown) => {
+          explicitRecoveryOfferRequested = false;
+          throw error;
+        });
+      },
+    });
     Object.defineProperty(pc, "setLocalDescription", {
       configurable: true,
       value: (
@@ -106,6 +179,14 @@ export function publisherOfferViewerInjection(
         successCallback?: VoidFunction,
         failureCallback?: RTCPeerConnectionErrorCallback,
       ): Promise<void> => {
+        const explicitRecoveryOffer =
+          description?.type === "offer" && explicitRecoveryOfferRequested;
+        explicitRecoveryOfferRequested = false;
+        if (description?.type === "rollback") {
+          recoveryOfferPeers.delete(pc);
+        } else if (explicitRecoveryOffer) {
+          recoveryOfferPeers.add(pc);
+        }
         // MeetViewer calls setLocalDescription() from its negotiationneeded
         // offerer callback. A viewer must not create a local offer while stable;
         // it must wait for the publisher offer and answer that offer instead.
@@ -133,7 +214,14 @@ export function publisherOfferViewerInjection(
             failureCallback as RTCPeerConnectionErrorCallback,
           );
         }
-        return nativeSetLocalDescription(description);
+        const result = nativeSetLocalDescription(description);
+        if (explicitRecoveryOffer) {
+          return result.catch((error: unknown) => {
+            recoveryOfferPeers.delete(pc);
+            throw error;
+          });
+        }
+        return result;
       },
     });
     const nativeAddEventListener = pc.addEventListener.bind(pc);
@@ -148,6 +236,20 @@ export function publisherOfferViewerInjection(
         if (listener !== null) nativeAddEventListener(type, listener, options);
       },
     });
+    // Keep the diagnostic trail on the Solar page itself. This is gated by
+    // ``prism_e2e`` inside tracePublisherOfferPolicy and therefore has zero
+    // production cost, while making a missing Preview camera distinguishable
+    // from a black compositor: the latter still has a negotiated peer leg.
+    pc.addEventListener("track", (event) => {
+      const track = (event as RTCTrackEvent).track;
+      tracePublisherOfferPolicy(`pc-track kind=${track.kind}`);
+    });
+    pc.addEventListener("connectionstatechange", () => {
+      tracePublisherOfferPolicy(`pc-connection state=${pc.connectionState}`);
+    });
+    pc.addEventListener("iceconnectionstatechange", () => {
+      tracePublisherOfferPolicy(`pc-ice state=${pc.iceConnectionState}`);
+    });
     return pc;
   } as unknown as typeof RTCPeerConnection;
 
@@ -156,6 +258,57 @@ export function publisherOfferViewerInjection(
     protocols?: string | string[],
   ): WebSocket {
     const ws = new NativeWebSocket(url, protocols);
+    const roomFromUrl = (() => {
+      try {
+        return new URL(String(url)).searchParams.get("room") ?? "";
+      } catch {
+        return "";
+      }
+    })();
+    ws.addEventListener("message", (event) => {
+      try {
+        const message = JSON.parse(String(event.data)) as {
+          type?: string;
+          peer?: { name?: string; role?: string };
+          peers?: Array<{ name?: string; role?: string }>;
+          from?: string;
+          payload?: { kind?: string; description?: { type?: string } };
+          peerId?: string;
+          code?: string;
+          message?: string;
+        };
+        if (message.type === "joined") {
+          tracePublisherOfferPolicy(
+            `recv-joined room=${roomFromUrl} peers=${(message.peers ?? [])
+              .map((peer) => `${String(peer.name ?? "?")}:${String(peer.role ?? "?")}`)
+              .join(",")}`,
+          );
+        } else if (message.type === "peer-joined") {
+          tracePublisherOfferPolicy(
+            `recv-peer-joined name=${String(message.peer?.name ?? "?")} role=${String(message.peer?.role ?? "?")}`,
+          );
+        } else if (message.type === "peer-left") {
+          tracePublisherOfferPolicy(
+            `recv-peer-left id=${String(message.peerId ?? "?")}`,
+          );
+        } else if (message.type === "signal") {
+          tracePublisherOfferPolicy(
+            `recv-signal kind=${String(message.payload?.kind ?? "?")} type=${String(message.payload?.description?.type ?? "?")} from=${String(message.from ?? "?")}`,
+          );
+        } else if (message.type === "error") {
+          tracePublisherOfferPolicy(
+            `recv-error code=${String(message.code ?? "?")} message=${String(message.message ?? "?")}`,
+          );
+        }
+      } catch {
+        /* Non-JSON signaling frames are outside the Meet contract. */
+      }
+    });
+    ws.addEventListener("close", (event) => {
+      tracePublisherOfferPolicy(
+        `recv-close code=${String(event.code)} reason=${String(event.reason ?? "")}`,
+      );
+    });
     const nativeSend = ws.send.bind(ws);
     Object.defineProperty(ws, "send", {
       configurable: true,
@@ -172,12 +325,23 @@ export function publisherOfferViewerInjection(
               message.payload?.kind === "sdp" &&
               message.payload.description?.type === "offer"
             ) {
+              const recoveryPeer = recoveryOfferPeers.values().next().value as
+                | RTCPeerConnection
+                | undefined;
+              if (recoveryPeer !== undefined) {
+                recoveryOfferPeers.delete(recoveryPeer);
+                tracePublisherOfferPolicy(
+                  `forwarded-recovery-offer to=${String(message.to ?? "?")}`,
+                );
+                nativeSend(data);
+                return;
+              }
               tracePublisherOfferPolicy(
                 `blocked-offer to=${String(message.to ?? "?")}`,
               );
               return;
             }
-            if (message.type === "join") tracePublisherOfferPolicy("send-join");
+            if (message.type === "join") tracePublisherOfferPolicy(`send-join room=${roomFromUrl}`);
             if (message.type === "leave") tracePublisherOfferPolicy("send-leave");
             if (message.type === "signal") {
               tracePublisherOfferPolicy(
@@ -276,6 +440,7 @@ export function readPeerViewerInjection(): ResolvedInjection {
   }
 
   const lsdpRooms = roomsOf(lsdp);
+  const previewRooms = roomsOf(preview);
   const slotBindings = {
     ...slotsOf(preview),
     // LSDP is authoritative on-air state when both sources are present.
@@ -285,5 +450,6 @@ export function readPeerViewerInjection(): ResolvedInjection {
     injection: merged.length > 0 ? { rooms: merged } : null,
     slotBindings,
     fromLsdp: lsdpRooms.length > 0,
+    fromPrism: previewRooms.length > 0,
   };
 }
