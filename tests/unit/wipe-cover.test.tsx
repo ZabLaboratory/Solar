@@ -219,7 +219,7 @@ describe("wipe-cover overlay — leaf delta replays the animation (M9 path)", ()
 
     const handle = mount({
       target,
-      orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+      orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
       token: "operator-token",
       mode: "broadcast",
     });

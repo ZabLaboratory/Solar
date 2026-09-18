@@ -6,7 +6,7 @@ const baseOptions = (
   overrides: Partial<MountOptions> = {},
 ): MountOptions => ({
   target: document.createElement("div"),
-  orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+  orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
   token: "fake-token",
   mode: "broadcast",
   ...overrides,
@@ -24,6 +24,14 @@ describe("validateOptions()", () => {
     expect(() => validateOptions(baseOptions({ orionUrl: "" }))).toThrow(
       /orionUrl/,
     );
+  });
+
+  it("rejects a distant gateway Orion URL", () => {
+    expect(() =>
+      validateOptions(
+        baseOptions({ orionUrl: "wss://zabgate.cyell.dev/orion/api/v1/show/stream" }),
+      ),
+    ).toThrow(/embedded local Orion/);
   });
 
   it("rejects mode='test' without testSession", () => {

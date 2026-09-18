@@ -9,6 +9,20 @@ export function validateOptions(options: MountOptions): void {
   if (typeof options.orionUrl !== "string" || options.orionUrl.length === 0) {
     throw new TypeError("solar.mount: `orionUrl` must be a non-empty string");
   }
+  let parsedOrionUrl: URL;
+  try {
+    parsedOrionUrl = new URL(options.orionUrl);
+  } catch {
+    throw new TypeError("solar.mount: `orionUrl` must be an absolute URL");
+  }
+  const isLoopback = /^(127\.0\.0\.1|localhost|\[::1\]|::1)$/i.test(
+    parsedOrionUrl.hostname,
+  );
+  if (!isLoopback || !/^(ws|wss):$/i.test(parsedOrionUrl.protocol)) {
+    throw new TypeError(
+      "solar.mount: `orionUrl` must target the embedded local Orion runtime",
+    );
+  }
   if (options.mode === "test") {
     if (!options.testSession) {
       throw new TypeError(

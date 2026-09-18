@@ -5,8 +5,19 @@ import {
 import type { PeerViewerInjection } from "@lumencast/runtime";
 
 class FakePeerConnection extends EventTarget {
+  static configurations: RTCConfiguration[] = [];
   signalingState: RTCSignalingState = "stable";
+
+  constructor(configuration?: RTCConfiguration) {
+    super();
+    FakePeerConnection.configurations.push(configuration ?? {});
+  }
+
   setLocalDescription = vi.fn(() => Promise.resolve());
+
+  async createOffer(): Promise<RTCSessionDescriptionInit> {
+    return { type: "offer", sdp: "v=0" };
+  }
 }
 
 class FakeWebSocket extends EventTarget {
@@ -27,6 +38,7 @@ class FakeWebSocket extends EventTarget {
 afterEach(() => {
   vi.unstubAllGlobals();
   FakeWebSocket.sent = [];
+  FakePeerConnection.configurations = [];
 });
 
 describe("publisherOfferViewerInjection()", () => {
@@ -51,6 +63,7 @@ describe("publisherOfferViewerInjection()", () => {
     expect(globalThis.RTCPeerConnection).toBe(FakePeerConnection);
 
     const pc = new deps.RTCPeerConnection();
+    expect(FakePeerConnection.configurations[0]).toEqual({});
     const negotiation = vi.fn();
     pc.addEventListener("negotiationneeded", negotiation);
     pc.dispatchEvent(new Event("negotiationneeded"));
@@ -78,6 +91,58 @@ describe("publisherOfferViewerInjection()", () => {
     expect(JSON.parse(String(FakeWebSocket.sent[0]))).toMatchObject({
       type: "signal",
       payload: { kind: "sdp", description: { type: "answer" } },
+    });
+  });
+
+  it("forwards an explicit failed-leg recovery offer", async () => {
+    vi.stubGlobal("RTCPeerConnection", FakePeerConnection);
+    vi.stubGlobal("WebSocket", FakeWebSocket);
+
+    const injection = { rooms: [] } as unknown as PeerViewerInjection;
+    const wrapped = publisherOfferViewerInjection(injection);
+    const deps = (wrapped as PeerViewerInjection & {
+      deps: {
+        RTCPeerConnection: typeof RTCPeerConnection;
+        WebSocket: typeof WebSocket;
+      };
+    }).deps;
+    const pc = new deps.RTCPeerConnection();
+    const offer = await pc.createOffer();
+    await pc.setLocalDescription(offer);
+    const ws = new deps.WebSocket("wss://meet.example/ws");
+
+    ws.send(
+      JSON.stringify({
+        type: "signal",
+        to: "publisher",
+        payload: { kind: "sdp", description: offer },
+      }),
+    );
+
+    expect(FakeWebSocket.sent).toHaveLength(1);
+    expect(JSON.parse(String(FakeWebSocket.sent[0]))).toMatchObject({
+      type: "signal",
+      to: "publisher",
+      payload: { kind: "sdp", description: { type: "offer" } },
+    });
+  });
+
+  it("widens ICE only for the explicitly opted-in local Preview host", () => {
+    vi.stubGlobal("RTCPeerConnection", FakePeerConnection);
+    vi.stubGlobal("WebSocket", FakeWebSocket);
+
+    const injection = { rooms: [] } as unknown as PeerViewerInjection;
+    const wrapped = publisherOfferViewerInjection(injection, {
+      iceTransportPolicy: "all",
+    });
+    const deps = (wrapped as PeerViewerInjection & {
+      deps: { RTCPeerConnection: typeof RTCPeerConnection };
+    }).deps;
+
+    new deps.RTCPeerConnection({ iceServers: [{ urls: "turn:meet.example" }] });
+    expect(FakePeerConnection.configurations[0]).toMatchObject({
+      iceServers: [{ urls: "turn:meet.example" }],
+      iceTransportPolicy: "all",
     });
   });
 });

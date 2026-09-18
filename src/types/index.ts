@@ -57,15 +57,14 @@ export type SolarErrorCode =
 
 export interface MountOptions {
   target: HTMLElement;
-  /** WebSocket URL of the LSDP/1.1 server. In the Zab platform this is
-   *  Orion behind ZabGate (`wss://<gate>/orion/api/v1/show/stream.lsdp` for
-   *  live, or `.../scenes/{id}/test` for test mode). Maps to the runtime's
-   *  `serverUrl`, and is also the source from which `mount()` derives the
-   *  gateway-prefixed render-bundle URL (`resolveBundleUrl`). */
+  /** WebSocket URL of the LSDP/1.1 server. In the embedded Zab host this is
+   *  the loopback Orion runtime (`ws://127.0.0.1/...`). Remote gateway Orion
+   *  URLs are rejected by `mount()`. The value maps to the runtime's
+   *  `serverUrl` and is also the source from which `mount()` derives the
+   *  local render-bundle URL (`resolveBundleUrl`). */
   orionUrl: string;
-  /** Optional host-owned render-bundle resolver. This is used by embedded
-   * hosts such as Prism when the LSDP WebSocket remains remote but the
-   * content-addressed bundle is fetched through a same-origin local proxy. */
+  /** Optional host-owned render-bundle resolver for an embedded local scene
+   * server. */
   resolveBundleUrl?: (sceneId: string, sceneVersion: string) => string;
   token: SolarToken;
   mode: SolarMode;
@@ -76,11 +75,13 @@ export interface MountOptions {
    *  cloned. Ignored otherwise. */
   scene?: string;
   /** Preload validated render bundles known by the host. The runtime also
-   * consumes Orion's `scene_roster` frames, so this is an optional host-side
+   * consumes the local runtime's `scene_roster` frames, so this is an optional host-side
    * hint rather than a second scene lifecycle. */
   preloadRoster?: readonly SolarSceneRosterEntry[];
   onError?: (err: SolarError) => void;
   onStatus?: (status: SolarStatus) => void;
+  sceneTransition?: "crossfade" | "cut";
+  onSceneCommit?: (scene: { sceneId: string; sceneVersion: string }) => void;
   /**
    * Test-only escape hatch for Prism's local Solar diagnostics. The hidden
    * `prism_e2e=1` window may acquire capture streams so the diagnostic can

@@ -123,7 +123,7 @@ describe("Solar mount() over @lumencast/runtime", () => {
     const statuses: SolarStatus[] = [];
     const handle = mount({
       target,
-      orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+      orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
       token: "operator-token",
       mode: "broadcast",
       onStatus: (s) => statuses.push(s),
@@ -172,7 +172,7 @@ describe("Solar mount() over @lumencast/runtime", () => {
     vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
 
     const handle = mount({
-      target, orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+      target, orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
       token: "t", mode: "broadcast",
     });
     await waitFor(() => target.querySelector("img") !== null && target.textContent?.includes("FONT") === true);
@@ -197,7 +197,7 @@ describe("Solar mount() over @lumencast/runtime", () => {
     );
     vi.stubGlobal("WebSocket", FakeWebSocket as unknown as typeof WebSocket);
 
-    const orionUrl = "wss://gate.example/orion/api/v1/show/stream";
+    const orionUrl = "ws://127.0.0.1:4007/orion/api/v1/show/stream";
     const handle = mount({
       target,
       orionUrl,

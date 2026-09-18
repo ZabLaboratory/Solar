@@ -1,16 +1,16 @@
-// Derives Orion's render-bundle URL resolver from the Orion WS URL.
+// Derives the local Orion render-bundle URL resolver from the local WS URL.
 //
 // Since ADR 007 (Lumencast convergence), `@lumencast/runtime` owns the
 // bundle-fetch lifecycle but, by default, derives the bundle URL from a
 // host-root LSDP/1 layout (`https://<host>/lsdp/v1/scenes/{id}/bundle`).
-// In the Zab platform Orion lives behind ZabGate under the `/orion/api/v1`
-// prefix and serves the bundle at `/scenes/{id}/render-bundle?v={hash}`.
+// In the embedded Zab host Orion serves the bundle at
+// `/orion/api/v1/scenes/{id}/render-bundle?v={hash}`.
 // The runtime exposes `MountOptions.resolveBundleUrl` (runtime ≥ 0.5.0) so
 // the host can supply the correct URL.
 //
-// Knowing Orion's URL contract is precisely the job of the Zab-facing
-// adapter (ADR 007 — thin adapter), so this mapping lives here and stays
-// minimal: scheme upgrade, strip the WS suffix to recover the API root,
+// Knowing the local runtime URL contract is precisely the job of the
+// Zab-facing adapter, so this mapping stays minimal: scheme upgrade, strip
+// the WS suffix to recover the API root,
 // rebuild the bundle URL with a content-hash query.
 
 /** The live-show WS suffix Orion mounts under its API root. The bundle
@@ -22,7 +22,7 @@ const WS_SUFFIX = "/show/stream.lsdp";
  * derived from the Orion WS `serverUrl`.
  *
  * Mapping, given e.g.
- *   `wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp?token=…`
+ *   `ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp?token=…`
  *  - `wss`→`https`, `ws`→`http` (host & port unchanged);
  *  - drop the query/hash;
  *  - strip the WS suffix (`/show/stream.lsdp`) to get the API root

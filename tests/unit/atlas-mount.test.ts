@@ -89,7 +89,7 @@ describe("atlasMountOptions() — entry wiring", () => {
 describe("mount() forwards transformRoot to @lumencast/runtime", () => {
   const base: MountOptions = {
     target: document.createElement("div"),
-    orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+    orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
     token: "fake-token",
     mode: "broadcast",
   };

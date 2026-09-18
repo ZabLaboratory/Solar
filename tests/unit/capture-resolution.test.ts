@@ -23,7 +23,7 @@ const DEFAULT_SCREEN_GLOBAL = "__ZAB_CAPTURE_DEFAULT_SCREEN__";
 function baseOptions(overrides: Partial<MountOptions> = {}): MountOptions {
   return {
     target: document.createElement("div"),
-    orionUrl: "wss://gate.example/orion/api/v1/show/stream",
+    orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
     token: "fake-token",
     mode: "broadcast",
     ...overrides,
@@ -52,10 +52,34 @@ afterEach(() => {
   vi.unstubAllGlobals();
   delete (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL];
   delete (globalThis as Record<string, unknown>)[DEFAULT_SCREEN_GLOBAL];
+  delete (globalThis as Record<string, unknown>)
+    .__ZAB_CAPTURE_RESOLVE_DEFAULT_SCREEN__;
   mountRuntime.mockClear();
 });
 
 describe("Solar's default capture-device resolver", () => {
+  it("awaits a deferred default only for an unbound screen, never a camera/window or an explicit mapping", async () => {
+    const deferred = vi.fn(async () => ({ captureSourceId: "screen:lazy:0" }));
+    (
+      globalThis as Record<string, unknown>
+    ).__ZAB_CAPTURE_RESOLVE_DEFAULT_SCREEN__ = deferred;
+    (globalThis as Record<string, unknown>)[CAPTURE_GLOBAL] = {
+      pinned: { captureSourceId: "screen:pinned:0" },
+    };
+    const mount = await loadMount();
+    mount(baseOptions());
+    expect(deferred).not.toHaveBeenCalled();
+    expect(await resolver()("camera", "media.camera")).toBeNull();
+    expect(await resolver()("window", "media.window")).toBeNull();
+    expect(await resolver()("pinned", "media.screen")).toEqual({
+      captureSourceId: "screen:pinned:0",
+    });
+    expect(deferred).not.toHaveBeenCalled();
+    expect(await resolver()("default", "media.screen")).toEqual({
+      captureSourceId: "screen:lazy:0",
+    });
+    expect(deferred).toHaveBeenCalledTimes(1);
+  });
   it("keeps the broadcast CEF on a placeholder so native Pulsar owns the camera", async () => {
     const hostResolver = vi.fn(async () => ({ deviceId: "host-camera" }));
     const mount = await loadMount();
@@ -113,13 +137,21 @@ describe("Solar's default capture-device resolver", () => {
     mount(baseOptions({ mode: "control" }));
     const resolve = resolver();
 
-    expect(await resolve("camera", "media.camera")).toEqual({ deviceId: "local-camera" });
+    expect(await resolve("camera", "media.camera")).toEqual({
+      deviceId: "local-camera",
+    });
     expect(await resolve("missing", "media.microphone")).toBeNull();
     expect(await resolve("unlabeled", "media.camera")).toBeNull();
     expect(await resolve("unknown", "media.camera")).toBeNull();
-    expect(await resolve("screen", "media.screen")).toEqual({ captureSourceId: "desktop-screen" });
-    expect(await resolve("screen", "media.window")).toEqual({ captureSourceId: "desktop-screen" });
-    expect(await resolve("screen", "media.app")).toEqual({ captureSourceId: "desktop-screen" });
+    expect(await resolve("screen", "media.screen")).toEqual({
+      captureSourceId: "desktop-screen",
+    });
+    expect(await resolve("screen", "media.window")).toEqual({
+      captureSourceId: "desktop-screen",
+    });
+    expect(await resolve("screen", "media.app")).toEqual({
+      captureSourceId: "desktop-screen",
+    });
     expect(await resolve("missing", "media.camera")).toBeNull();
     expect(getUserMedia).toHaveBeenCalledWith({ video: true });
     expect(stop).toHaveBeenCalledTimes(1);

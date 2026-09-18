@@ -6,7 +6,7 @@
 //   index.html?orion=<orionUrl>&mode=broadcast
 // where <orionUrl> itself carries the show-token in its query string, used
 // for the WS upgrade :
-//   wss://zabgate.cyell.dev/orion/api/v1/show/stream.lsdp?token=<SHOW>
+//   ws://127.0.0.1:4007/orion/api/v1/show/stream.lsdp?token=<SHOW>
 // There is NO top-level `?token=` param. The host entries used to read
 // `params.get("token")` and got "" — so `mount({ token: "" })`, so the
 // runtime resolved an empty token, so the render-bundle GET went out with

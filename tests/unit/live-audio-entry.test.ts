@@ -30,7 +30,15 @@ vi.mock("../../src/mount", () => ({
 }));
 
 function stage(search: string): void {
-  window.history.replaceState({}, "", `/${search}`);
+  const normalized = search.startsWith("?")
+    ? search
+    : search
+      ? `?${search}`
+      : "";
+  const withLocalOrion = normalized.includes("orion=")
+    ? normalized
+    : `${normalized}${normalized ? "&" : "?"}orion=${encodeURIComponent("ws://127.0.0.1:4317/api/v1/show/stream.lsdp")}`;
+  window.history.replaceState({}, "", `/${withLocalOrion}`);
   document.body.innerHTML = '<div id="scene"></div>';
 }
 
@@ -50,10 +58,20 @@ afterEach(() => {
 });
 
 describe("host-entry.tsx — served bundle opts into live guest audio", () => {
+  it("retains the original transition on the persistent local Preview wire", async () => {
+    stage(
+      `?orion=${encodeURIComponent("ws://127.0.0.1:4317/api/v1/show/preview.lsdp")}`,
+    );
+    await import("../../src/host-entry");
+    expect(lastOptions().sceneTransition).toBeUndefined();
+    expect(lastOptions().onSceneCommit).toBeUndefined();
+  });
   it("passes liveAudio: true on the on-air broadcast render", async () => {
     stage("?mode=broadcast");
     await import("../../src/host-entry");
     expect(lastOptions().liveAudio).toBe(true);
+    expect(lastOptions().sceneTransition).toBeUndefined();
+    expect(lastOptions().onSceneCommit).toBeUndefined();
   });
 
   it("passes liveAudio: true on the REC/test render (recorded)", async () => {
@@ -75,12 +93,21 @@ describe("host-entry.tsx — served bundle opts into live guest audio", () => {
     await import("../../src/host-entry");
     const opts = lastOptions();
     expect(opts.mode).toBe("broadcast");
-    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const error = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
-    opts.onError?.({ code: "INTERNAL", message: "recoverable", recoverable: true });
+    opts.onError?.({
+      code: "INTERNAL",
+      message: "recoverable",
+      recoverable: true,
+    });
     opts.onError?.({ code: "INTERNAL", message: "fatal", recoverable: false });
 
-    expect(error).toHaveBeenNthCalledWith(1, "[solar] INTERNAL: recoverable (recoverable)");
+    expect(error).toHaveBeenNthCalledWith(
+      1,
+      "[solar] INTERNAL: recoverable (recoverable)",
+    );
     expect(error).toHaveBeenNthCalledWith(2, "[solar] INTERNAL: fatal (fatal)");
     error.mockRestore();
   });
@@ -92,9 +119,24 @@ describe("host-entry.tsx — served bundle opts into live guest audio", () => {
   });
 
   it("reports a missing scene target before mounting", async () => {
-    window.history.replaceState({}, "", "/");
+    window.history.replaceState(
+      {},
+      "",
+      `/?orion=${encodeURIComponent("ws://127.0.0.1:4317/api/v1/show/stream.lsdp")}`,
+    );
     document.body.innerHTML = "";
-    await expect(import("../../src/host-entry")).rejects.toThrow(/#scene target missing/);
+    await expect(import("../../src/host-entry")).rejects.toThrow(
+      /#scene target missing/,
+    );
+    expect(mountSpy).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the caller omits the local Orion URL", async () => {
+    window.history.replaceState({}, "", "/?mode=broadcast");
+    document.body.innerHTML = '<div id="scene"></div>';
+    await expect(import("../../src/host-entry")).rejects.toThrow(
+      /SOLAR_LOCAL_ORION_REQUIRED/,
+    );
     expect(mountSpy).not.toHaveBeenCalled();
   });
 });
@@ -120,13 +162,25 @@ describe("dev-entry.tsx — interactive editor stays muted by default", () => {
     await import("../../src/dev-entry");
     const opts = lastOptions();
     expect(opts.mode).toBe("broadcast");
-    const error = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    const error = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
-    opts.onError?.({ code: "INTERNAL", message: "recoverable", recoverable: true });
+    opts.onError?.({
+      code: "INTERNAL",
+      message: "recoverable",
+      recoverable: true,
+    });
     opts.onError?.({ code: "INTERNAL", message: "fatal", recoverable: false });
 
-    expect(error).toHaveBeenNthCalledWith(1, "[solar dev] INTERNAL: recoverable (recoverable)");
-    expect(error).toHaveBeenNthCalledWith(2, "[solar dev] INTERNAL: fatal (fatal)");
+    expect(error).toHaveBeenNthCalledWith(
+      1,
+      "[solar dev] INTERNAL: recoverable (recoverable)",
+    );
+    expect(error).toHaveBeenNthCalledWith(
+      2,
+      "[solar dev] INTERNAL: fatal (fatal)",
+    );
     error.mockRestore();
   });
 
@@ -139,7 +193,9 @@ describe("dev-entry.tsx — interactive editor stays muted by default", () => {
   it("reports a missing scene target before mounting", async () => {
     window.history.replaceState({}, "", "/");
     document.body.innerHTML = "";
-    await expect(import("../../src/dev-entry")).rejects.toThrow(/#scene target missing/);
+    await expect(import("../../src/dev-entry")).rejects.toThrow(
+      /#scene target missing/,
+    );
     expect(mountSpy).not.toHaveBeenCalled();
   });
 });
