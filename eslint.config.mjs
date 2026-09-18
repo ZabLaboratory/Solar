@@ -15,6 +15,9 @@ export default tseslint.config(
       // Agent worktrees / harness checkouts live untracked under .claude
       // and carry their own built dist — never Solar's lintable source.
       ".claude",
+      // Local validation worktrees are likewise independent checkouts. Their
+      // generated bundles must not be linted as Solar source.
+      ".worktrees",
     ],
   },
   js.configs.recommended,

@@ -112,6 +112,14 @@ mount({
   ),
   token,
   mode,
+  // Preview is the interactive return that Prism measures from the real
+  // compositor.  Keep its scene swap atomic so the old and new trees never
+  // coexist for the 400 ms default crossfade: that overlap is visible as a
+  // camera/decor double-render and makes a switch look slower than it is.
+  // `realtimeDeltas` is derived only from `?editable_fast=1`, which is never
+  // present on Program/on-air URLs, so the Program render and its transition
+  // contract remain unchanged.
+  ...(realtimeDeltas ? { sceneTransition: "cut" as const } : {}),
   // This is the SERVED bundle — the flux réellement diffusé/enregistré (antenne
   // prod via Orion, REC/test render via Prism's scene-server, Pulsar CEF atlas).
   // Un-mute guest-peer WebRTC audio so it reaches the on-air / recording mix

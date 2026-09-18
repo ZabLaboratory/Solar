@@ -476,7 +476,7 @@ async function patchRegistryPeerGeneration(path) {
 
   if (bundled) {
     source = source.replace(
-      /function ([A-Za-z_$][\w$]*)\(([A-Za-z_$][\w$]*), ([A-Za-z_$][\w$]*), ([A-Za-z_$][\w$]*)\) \{\n  \2\.on\("remote-track", \(([A-Za-z_$][\w$]*)\) => \{\n    const ([A-Za-z_$][\w$]*) = ([A-Za-z_$][\w$]*)\(\5\.peerName\);\n    \4\.acquire\(\6, \2\) && \3\.set\(\6, \5\.stream\);\n  \}\), \2\.on\("peer-left", \(([A-Za-z_$][\w$]*)\) => \{\n    const ([A-Za-z_$][\w$]*) = \7\(\8\.peerName\);\n    \4\.acquire\(\9, \2\) && \(\3\.remove\(\9\), \4\.release\(\9, \2\)\);\n  \}\);\n\}/,
+      /function ([A-Za-z_$][\w$]*)\(([A-Za-z_$][\w$]*), ([A-Za-z_$][\w$]*), ([A-Za-z_$][\w$]*)\) \{\n {2}\2\.on\("remote-track", \(([A-Za-z_$][\w$]*)\) => \{\n {4}const ([A-Za-z_$][\w$]*) = ([A-Za-z_$][\w$]*)\(\5\.peerName\);\n {4}\4\.acquire\(\6, \2\) && \3\.set\(\6, \5\.stream\);\n {2}\}\), \2\.on\("peer-left", \(([A-Za-z_$][\w$]*)\) => \{\n {4}const ([A-Za-z_$][\w$]*) = \7\(\8\.peerName\);\n {4}\4\.acquire\(\9, \2\) && \(\3\.remove\(\9\), \4\.release\(\9, \2\)\);\n {2}\}\);\n\}/,
       (_match, fn, viewer, registry, claim, trackEvent, trackKey, labelFn, leftEvent, leftKey) =>
         `function ${fn}(${viewer}, ${registry}, ${claim}) {\n` +
         `  const activePeerIds = /* @__PURE__ */ new Map();\n` +
@@ -1308,8 +1308,8 @@ async function patchCredentialHandoff(path) {
 `;
 
   const managementPattern = path.endsWith("webrtc/index.ts")
-    ? /  \/\/ roomId → \{ viewer, joined \}[\s\S]*?\r?\n  \}\r?\n(?=  for \(const room of options\.rooms\)\s+openRoom\(room\);)/
-    : /    \/\/ roomId → \{ viewer, joined \}[\s\S]*?\r?\n    \}\r?\n(?=    for \(const room of options\.rooms\)\s+openRoom\(room\);)/;
+    ? / {2}\/\/ roomId → \{ viewer, joined \}[\s\S]*?\r?\n {2}\}\r?\n(?= {2}for \(const room of options\.rooms\)\s+openRoom\(room\);)/
+    : / {4}\/\/ roomId → \{ viewer, joined \}[\s\S]*?\r?\n {4}\}\r?\n(?= {4}for \(const room of options\.rooms\)\s+openRoom\(room\);)/;
   source = source.replace(managementPattern, path.endsWith("webrtc/index.ts") ? tsManagement : jsManagement);
 
   const tsSetRooms = String.raw`    setRooms: async (rooms) => {
@@ -1417,8 +1417,8 @@ async function patchCredentialHandoff(path) {
     },
 `;
   const setRoomsPattern = path.endsWith("webrtc/index.ts")
-    ? /    setRooms: async \(rooms\) => \{[\s\S]*?\r?\n    \},\r?\n(?=    resolvePeerStream)/
-    : /    setRooms: async \(rooms\) => \{[\s\S]*?\r?\n    \},\r?\n(?=    resolvePeerStream)/;
+    ? / {4}setRooms: async \(rooms\) => \{[\s\S]*?\r?\n {4}\},\r?\n(?= {4}resolvePeerStream)/
+    : / {4}setRooms: async \(rooms\) => \{[\s\S]*?\r?\n {4}\},\r?\n(?= {4}resolvePeerStream)/;
   source = source.replace(setRoomsPattern, path.endsWith("webrtc/index.ts") ? tsSetRooms : jsSetRooms);
   if (source !== before) await writeFile(path, source);
 }
@@ -1551,8 +1551,8 @@ async function patchLivePeerVideo(path) {
   if (source.includes("const absenceTimer")) return;
   const bundled = path.endsWith("live-peer-video.js");
   const needle = bundled
-    ? /    const videoRef = useRef\(null\);[\s\S]*?    \}, \[peerLabel, resolvePeerStream, subscribePeerStream\]\);/
-    : /  const videoRef = useRef<HTMLVideoElement \| null>\(null\);[\s\S]*?  \}, \[peerLabel, resolvePeerStream, subscribePeerStream\]\);/;
+    ? / {4}const videoRef = useRef\(null\);[\s\S]*? {4}\}, \[peerLabel, resolvePeerStream, subscribePeerStream\]\);/
+    : / {2}const videoRef = useRef<HTMLVideoElement \| null>\(null\);[\s\S]*? {2}\}, \[peerLabel, resolvePeerStream, subscribePeerStream\]\);/;
   const replacement = bundled
     ? String.raw`    const videoRef = useRef(null);
     const [stream, setStream] = useState(null);
