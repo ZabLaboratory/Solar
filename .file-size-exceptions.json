@@ -1,0 +1,10 @@
+{
+  "package-lock.json": {
+    "max_lines": 7726,
+    "reason": "Generated dependency lockfile; preserve resolver output and integrity hashes verbatim."
+  },
+  "scripts/patch-lumencast-protocol.mjs": {
+    "max_lines": 1932,
+    "reason": "Ordered, idempotent compatibility patches to external generated Lumencast artifacts; preserve patch ordering and exact upstream text assertions."
+  }
+}
