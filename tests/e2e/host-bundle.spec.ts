@@ -49,6 +49,7 @@ const PREFIX = "/orion/static/solar/v0.2.1/";
 
 let server: Server;
 let baseUrl: string;
+let localOrionUrl: string;
 
 test.beforeAll(async () => {
   // Fail loudly if the bundle wasn't built — the smoke test is meaningless
@@ -86,7 +87,11 @@ test.beforeAll(async () => {
   if (addr === null || typeof addr === "string") {
     throw new Error("host smoke server: could not resolve listen port");
   }
-  baseUrl = `http://127.0.0.1:${addr.port}${PREFIX}`;
+  localOrionUrl = `ws://127.0.0.1:${addr.port}/show/smoke/stream.lsdp`;
+  // Local Orion is a required host contract. The static server deliberately
+  // does not implement LSDP: this smoke proves bootstrap and the connection
+  // attempt, not a runtime scene session.
+  baseUrl = `http://127.0.0.1:${addr.port}${PREFIX}?${new URLSearchParams({ orion: localOrionUrl })}`;
 });
 
 test.afterAll(async () => {
@@ -117,7 +122,11 @@ test("served host bundle loads with no import map and mount() runs", async ({
     pageErrors.push(err.message);
   });
 
+  const mountedSocket = page.waitForEvent("websocket", {
+    predicate: (socket) => socket.url() === localOrionUrl,
+  });
   await page.goto(baseUrl, { waitUntil: "load" });
+  await mountedSocket;
 
   // The bootstrap target exists and the host did NOT abort with its
   // "#scene target missing" guard.
@@ -133,9 +142,8 @@ test("served host bundle loads with no import map and mount() runs", async ({
   expect(entrySrc).toBeTruthy();
   expect(entrySrc!.startsWith("./")).toBe(true);
 
-  // Give the module a moment to execute mount() (it will then try, and
-  // fail, to open a WS to a non-existent Orion — that's fine).
-  await page.waitForTimeout(500);
+  // Opening the requested LSDP socket proves mount() ran; an arbitrary delay
+  // or the untouched bootstrap div alone would not prove execution.
 
   // The core B4 assertion: nothing failed to resolve as a module.
   expect(
@@ -148,13 +156,20 @@ test("served host bundle loads with no import map and mount() runs", async ({
   // The host must not have aborted on a missing #scene target, and no
   // import-time throw may escape.
   expect(
-    pageErrors.filter(
-      (m) =>
-        /#scene target missing/i.test(m) ||
-        /failed to resolve module specifier/i.test(m),
-    ),
+    pageErrors,
     `served bundle raised a fatal bootstrap/module error: ${pageErrors.join(" | ")}`,
   ).toEqual([]);
+});
+
+test("served host still rejects a missing local Orion URL", async ({
+  page,
+}) => {
+  const failure = page.waitForEvent("pageerror");
+  await page.goto(baseUrl.split("?")[0]!, { waitUntil: "load" });
+  expect((await failure).message).toContain("SOLAR_LOCAL_ORION_REQUIRED");
+  await expect(page.locator("body")).toHaveText(
+    "Solar host: local Orion URL missing",
+  );
 });
 
 // The Geist self-hosting fix (Prism's editor CSS never reaches Solar's own
