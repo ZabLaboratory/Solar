@@ -78,6 +78,10 @@ export interface MountOptions {
    * consumes the local runtime's `scene_roster` frames, so this is an optional host-side
    * hint rather than a second scene lifecycle. */
   preloadRoster?: readonly SolarSceneRosterEntry[];
+  /** Opt in to bounded, host-gated image decoding for rostered bundles.
+   * The runtime's `scene_roster` wire frame also triggers this path. Disabled
+   * by default so existing Preview and Program hosts keep their current cost. */
+  preloadRosterImages?: boolean;
   onError?: (err: SolarError) => void;
   onStatus?: (status: SolarStatus) => void;
   sceneTransition?: "crossfade" | "cut";

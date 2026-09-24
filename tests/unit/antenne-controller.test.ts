@@ -185,6 +185,39 @@ describe("antenne controller", () => {
     expect(ctl.resolvePeerStream("cam-1")).toBe(b);
   });
 
+  it("keeps unchanged slot subscribers quiet when another slot changes", () => {
+    const reg = fakeRegistry();
+    const alice = { id: "alice" } as unknown as MediaStream;
+    const bob = { id: "bob" } as unknown as MediaStream;
+    const carol = { id: "carol" } as unknown as MediaStream;
+    reg.set("alice", alice);
+    reg.set("bob", bob);
+    reg.set("carol", carol);
+    const ctl = createAntenneController({ createViewer: () => fakeViewer(reg) });
+    ctl.applyReservedLeaves({
+      viewer: viewerLeaf,
+      slots: { "cam-1": "alice", "cam-2": "bob" },
+    });
+    const first = vi.fn();
+    const second = vi.fn();
+    ctl.subscribePeerStream("cam-1", first);
+    ctl.subscribePeerStream("cam-2", second);
+    first.mockClear();
+    second.mockClear();
+
+    ctl.applyReservedLeaves({
+      viewer: viewerLeaf,
+      slots: { "cam-1": "alice", "cam-2": "carol" },
+    });
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledExactlyOnceWith(carol);
+
+    reg.set("alice", { id: "alice-new-track" } as unknown as MediaStream);
+    expect(first).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ id: "alice-new-track" }),
+    );
+  });
+
   it("reconciles the room set on a later emission instead of re-creating", () => {
     const reg = fakeRegistry();
     const viewer = fakeViewer(reg);

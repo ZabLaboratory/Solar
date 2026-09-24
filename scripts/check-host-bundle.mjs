@@ -27,7 +27,7 @@
  * leaked external.
  */
 
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
@@ -113,4 +113,42 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-console.log("check-host-bundle OK — zero bare specifiers in served bundle");
+// Solar patches Lumencast's readable modules at install time. A future Vite
+// resolution change must not silently switch the served host back to the
+// package's prebuilt/minified entry, where those patches may be absent.
+const mappedSources = new Set();
+for (const file of files) {
+  const mapFile = `${file}.map`;
+  if (!existsSync(mapFile)) {
+    throw new Error(
+      `check-host-bundle: missing source map for ${relative(root, file)}`,
+    );
+  }
+  const map = JSON.parse(readFileSync(mapFile, "utf8"));
+  for (const source of map.sources ?? [])
+    mappedSources.add(source.replaceAll("\\", "/"));
+}
+const runtimeSource = (suffix) =>
+  [...mappedSources].some((source) =>
+    source.endsWith(`/@lumencast/runtime/dist/${suffix}`),
+  );
+for (const required of [
+  "mount.js",
+  "webrtc/index.js",
+  "render/primitives/live-peer-video.js",
+]) {
+  if (!runtimeSource(required)) {
+    throw new Error(
+      `check-host-bundle: patched runtime module absent from served JS: ${required}`,
+    );
+  }
+}
+if (runtimeSource("lumencast.js")) {
+  throw new Error(
+    "check-host-bundle: prebuilt Lumencast entry replaced the patched modules",
+  );
+}
+
+console.log(
+  "check-host-bundle OK — zero bare specifiers; patched runtime modules bundled",
+);

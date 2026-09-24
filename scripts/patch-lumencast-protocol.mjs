@@ -52,6 +52,13 @@ async function patchRuntimeFile(path, needle, replacement) {
   }
   if (source.includes(replacement)) return "already-patched";
   if (
+    replacement.includes("webSocketImpl") &&
+    (source.includes("...(options.webSocketImpl !== undefined ? { webSocketImpl: options.webSocketImpl } : {})") ||
+      source.includes("...t.webSocketImpl !== void 0 ? { webSocketImpl: t.webSocketImpl } : {}"))
+  ) {
+    return "already-patched";
+  }
+  if (
     replacement.includes("const previousName = existing.info.name;") &&
     source.includes("const previousName = existing.info.name;") &&
     source.includes("existing.info.name = peer.name;") &&
@@ -109,7 +116,9 @@ async function patchPeerStreamRegistry(path) {
 
   if (source.includes("Re-publish the same object")) return;
   const needles = [
+    "      if (streams.get(peerLabel) === stream) return; // idempotent re-emit guard\n",
     "      if (streams.get(peerLabel) === stream) return;\n",
+    "            if (streams.get(peerLabel) === stream)\n                return; // idempotent re-emit guard\n",
     "        if (streams.get(peerLabel) === stream)\n            return;\n",
   ];
   const needle = needles.find((value) => source.includes(value));
@@ -542,7 +551,12 @@ async function patchViewerRecovery(path) {
   let source = await readFile(path, "utf8");
   const before = source;
   const bundled = /index-.*\.js$/.test(path);
-  if (source.includes("scheduleRemoteRetry")) return;
+  const recovered = bundled
+    ? source.includes("this.clearRemoteRetry(e.id)") &&
+      source.includes("this.scheduleRemoteRetry(r?.info ?? e)")
+    : source.includes("this.clearRemoteRetry(peer.id);") &&
+      source.includes("this.scheduleRemoteRetry(current?.info ?? peer);");
+  if (recovered && source.includes("retryTimers = ")) return;
 
   if (bundled) {
     source = source.replace(
@@ -599,7 +613,38 @@ async function patchViewerRecovery(path) {
     source = source.replace(helperNeedle, `${helper}${helperNeedle}`);
   }
 
-  if (!source.includes("scheduleRemoteRetry")) {
+  // Earlier patches reshape the connection-state handler before recovery runs.
+  // Patch and verify its terminal edge independently of the retry helper: a
+  // helper present without a call made clean installs pass but never redialed.
+  if (!bundled) {
+    if (!source.includes("this.clearRemoteRetry(peer.id);")) {
+      const connected = /(current\.stream\.getTracks\(\)\.length > 0\s*\) \{\s*)(this\.emit\("remote-track")/;
+      if (!connected.test(source)) {
+        throw new Error(`unsupported @lumencast/runtime connected recovery contract: ${path}`);
+      }
+      source = source.replace(connected, "$1this.clearRemoteRetry(peer.id);\n        $2");
+    }
+    if (!source.includes("this.scheduleRemoteRetry(current?.info ?? peer);")) {
+      const terminal = /(^[ \t]*)this\.remotes\.delete\(peer\.id\);\r?\n[ \t]*this\.emit\("peer-left", \{ peerId: peer\.id, peerName: peer\.name \}\);/m;
+      if (!terminal.test(source)) {
+        throw new Error(`unsupported @lumencast/runtime terminal recovery contract: ${path}`);
+      }
+      source = source.replace(
+        terminal,
+        (_match, indent) => [
+          `${indent}const current = this.remotes.get(peer.id);`,
+          `${indent}this.remotes.delete(peer.id);`,
+          `${indent}pc.close();`,
+          `${indent}this.emit("peer-left", { peerId: peer.id, peerName: current?.info.name ?? peer.name });`,
+          `${indent}this.scheduleRemoteRetry(current?.info ?? peer);`,
+        ].join("\n"),
+      );
+    }
+  }
+
+  if (!source.includes("scheduleRemoteRetry") ||
+      (!bundled && (!source.includes("this.clearRemoteRetry(peer.id);") ||
+        !source.includes("this.scheduleRemoteRetry(current?.info ?? peer);")))) {
     throw new Error(`unsupported @lumencast/runtime viewer recovery contract: ${path}`);
   }
   if (source !== before) await writeFile(path, source);
@@ -925,8 +970,9 @@ async function patchSeamlessRoomHandoff(path) {
   let source = await readFile(path, "utf8");
   const before = source;
   if (source.includes("preferredViewers") || source.includes("h.has(l)")) return;
+  const portablePath = path.replaceAll("\\", "/");
 
-  if (path.endsWith("webrtc/index.ts")) {
+  if (portablePath.endsWith("webrtc/index.ts")) {
     source = source
       .replace(
         "  const owners = new Map<string, MeetViewer>();\n",
@@ -971,7 +1017,7 @@ async function patchSeamlessRoomHandoff(path) {
         if (!next.has(roomId)) closeRoom(roomId);
       }`,
       );
-  } else if (path.endsWith("webrtc/index.js")) {
+  } else if (portablePath.endsWith("webrtc/index.js")) {
     source = source
       .replace(
         "    const owners = new Map();\n",
@@ -1070,45 +1116,63 @@ async function patchHandoffPeerLeave(path) {
 
   if (!bundled) {
     if (!source.includes("claim.preserve?.(key, viewer)")) {
-      const needle = [
-        '    const key = labelKey(e.peerName);',
-        '    if (',
-        '      activePeerIds.get(key) === e.peerId &&',
-        '      claim.acquire(key, viewer)',
-        '    ) {',
-      ].join("\n");
-      const replacement = [
-        '    const key = labelKey(e.peerName);',
-        '    if (',
-        '      activePeerIds.get(key) === e.peerId &&',
-        '      claim.preserve?.(key, viewer) === true',
-        '    ) {',
-        '      return;',
-        '    }',
-        '    if (',
-        '      activePeerIds.get(key) === e.peerId &&',
-        '      claim.acquire(key, viewer)',
-        '    ) {',
-      ].join("\n");
+      const readableJs = path.endsWith(".js");
+      const needle = readableJs
+        ? '        if (activePeerIds.get(key) === e.peerId && claim.acquire(key, viewer)) {'
+        : [
+            '    const key = labelKey(e.peerName);',
+            '    if (',
+            '      activePeerIds.get(key) === e.peerId &&',
+            '      claim.acquire(key, viewer)',
+            '    ) {',
+          ].join("\n");
+      const replacement = readableJs
+        ? [
+            '        if (activePeerIds.get(key) === e.peerId && claim.preserve?.(key, viewer) === true) return;',
+            needle,
+          ].join("\n")
+        : [
+            '    const key = labelKey(e.peerName);',
+            '    if (',
+            '      activePeerIds.get(key) === e.peerId &&',
+            '      claim.preserve?.(key, viewer) === true',
+            '    ) {',
+            '      return;',
+            '    }',
+            '    if (',
+            '      activePeerIds.get(key) === e.peerId &&',
+            '      claim.acquire(key, viewer)',
+            '    ) {',
+          ].join("\n");
       if (!source.includes(needle)) {
         throw new Error(`unsupported @lumencast/runtime peer handoff contract: ${path}`);
       }
       source = source.replace(needle, replacement);
     }
-    const claimNeedle = [
-      '    release: (label: string, viewer: MeetViewer): void => {',
-      '      if (owners.get(label) === viewer) owners.delete(label);',
-      '    },',
-    ].join("\n");
+    const readableJs = path.endsWith(".js");
+    const claimNeedle = readableJs
+      ? [
+          '        release: (label, viewer) => {',
+          '            if (owners.get(label) === viewer)',
+          '                owners.delete(label);',
+          '        },',
+        ].join("\n")
+      : [
+          '    release: (label: string, viewer: MeetViewer): void => {',
+          '      if (owners.get(label) === viewer) owners.delete(label);',
+          '    },',
+        ].join("\n");
     const claimReplacement = [
       claimNeedle,
-      '    preserve: (_label: string, viewer: MeetViewer): boolean =>',
-      '      [...preferredViewers].some((candidate) => candidate !== viewer),',
+      readableJs
+        ? '        preserve: (_label, viewer) => [...preferredViewers].some((candidate) => candidate !== viewer),'
+        : '    preserve: (_label: string, viewer: MeetViewer): boolean =>',
+      ...(readableJs ? [] : ['      [...preferredViewers].some((candidate) => candidate !== viewer),']),
     ].join("\n");
-    if (
-      source.includes(claimNeedle) &&
-      !source.includes("preserve: (_label: string")
-    ) {
+    if (!source.includes("preserve: (_label")) {
+      if (!source.includes(claimNeedle)) {
+        throw new Error(`unsupported @lumencast/runtime peer claim contract: ${path}`);
+      }
       source = source.replace(claimNeedle, claimReplacement);
     }
     if (source !== before) await writeFile(path, source);
@@ -1152,6 +1216,7 @@ async function patchCredentialHandoff(path) {
   const before = source;
   const bundled = /index-.*\.js$/.test(path);
   if (bundled) return;
+  const portablePath = path.replaceAll("\\", "/");
 
   const tsManagement = String.raw`  // roomId → { viewer, fingerprint }
   const meshes = new Map<string, { viewer: MeetViewer; fingerprint: string }>();
@@ -1171,6 +1236,8 @@ async function patchCredentialHandoff(path) {
     release: (label: string, viewer: MeetViewer): void => {
       if (owners.get(label) === viewer) owners.delete(label);
     },
+    preserve: (_label: string, viewer: MeetViewer): boolean =>
+      [...preferredViewers].some((candidate) => candidate !== viewer),
   };
 
   const roomFingerprint = (room: RoomOptions): string =>
@@ -1250,6 +1317,7 @@ async function patchCredentialHandoff(path) {
             if (owners.get(label) === viewer)
                 owners.delete(label);
         },
+        preserve: (_label, viewer) => [...preferredViewers].some((candidate) => candidate !== viewer),
     };
     const roomFingerprint = (room) => JSON.stringify([room.roomId, room.signalingUrl, room.token]);
     function createRoomMesh(room) {
@@ -1307,10 +1375,10 @@ async function patchCredentialHandoff(path) {
     }
 `;
 
-  const managementPattern = path.endsWith("webrtc/index.ts")
+  const managementPattern = portablePath.endsWith("webrtc/index.ts")
     ? / {2}\/\/ roomId → \{ viewer, joined \}[\s\S]*?\r?\n {2}\}\r?\n(?= {2}for \(const room of options\.rooms\)\s+openRoom\(room\);)/
     : / {4}\/\/ roomId → \{ viewer, joined \}[\s\S]*?\r?\n {4}\}\r?\n(?= {4}for \(const room of options\.rooms\)\s+openRoom\(room\);)/;
-  source = source.replace(managementPattern, path.endsWith("webrtc/index.ts") ? tsManagement : jsManagement);
+  source = source.replace(managementPattern, portablePath.endsWith("webrtc/index.ts") ? tsManagement : jsManagement);
 
   const tsSetRooms = String.raw`    setRooms: async (rooms) => {
       const next = new Set(rooms.map((r) => r.roomId));
@@ -1416,10 +1484,10 @@ async function patchCredentialHandoff(path) {
         }
     },
 `;
-  const setRoomsPattern = path.endsWith("webrtc/index.ts")
+  const setRoomsPattern = portablePath.endsWith("webrtc/index.ts")
     ? / {4}setRooms: async \(rooms\) => \{[\s\S]*?\r?\n {4}\},\r?\n(?= {4}resolvePeerStream)/
     : / {4}setRooms: async \(rooms\) => \{[\s\S]*?\r?\n {4}\},\r?\n(?= {4}resolvePeerStream)/;
-  source = source.replace(setRoomsPattern, path.endsWith("webrtc/index.ts") ? tsSetRooms : jsSetRooms);
+  source = source.replace(setRoomsPattern, portablePath.endsWith("webrtc/index.ts") ? tsSetRooms : jsSetRooms);
   if (source !== before) await writeFile(path, source);
 }
 
@@ -1434,7 +1502,8 @@ const bundledHandoff = String.raw`function se(t) {
     },
     release: (o, l) => {
       n.get(o) === l && n.delete(o);
-    }
+    },
+    preserve: (_label, viewer) => [...h].some((candidate) => candidate !== viewer)
   }, h = /* @__PURE__ */ new Set();
   const roomFingerprint = (o) => JSON.stringify([o.roomId, o.signalingUrl, o.token]);
   function createRoomMesh(o) {

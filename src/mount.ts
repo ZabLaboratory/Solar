@@ -485,6 +485,9 @@ export function mount(options: MountOptions): SolarHandle {
     ...(options.preloadRoster !== undefined && options.preloadRoster.length > 0
       ? { preloadRoster: options.preloadRoster }
       : {}),
+    ...(options.preloadRosterImages === true
+      ? { preloadRosterImages: true }
+      : {}),
     ...(options.onStatus
       ? {
           onStatus: (status: LumencastStatus): void =>

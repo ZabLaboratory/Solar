@@ -72,6 +72,20 @@ describe("host-entry.tsx — served bundle opts into live guest audio", () => {
     expect(lastOptions().liveAudio).toBe(true);
     expect(lastOptions().sceneTransition).toBeUndefined();
     expect(lastOptions().onSceneCommit).toBeUndefined();
+    expect("preloadRosterImages" in lastOptions()).toBe(false);
+  });
+
+  it("opts in to roster images only for an explicitly flagged Program host", async () => {
+    stage("?mode=broadcast&preload_roster_images=1");
+    await import("../../src/host-entry");
+    expect(lastOptions().preloadRosterImages).toBe(true);
+    expect(lastOptions().preloadRoster).toEqual([]);
+  });
+
+  it("does not opt the interactive Preview into image decoding", async () => {
+    stage("?mode=broadcast&editable_fast=1&preload_roster_images=1");
+    await import("../../src/host-entry");
+    expect("preloadRosterImages" in lastOptions()).toBe(false);
   });
 
   it("passes liveAudio: true on the REC/test render (recorded)", async () => {

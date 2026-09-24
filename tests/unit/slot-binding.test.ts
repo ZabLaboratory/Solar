@@ -140,6 +140,44 @@ describe("slot-binding registry", () => {
     expect(seen.at(-1)).toBe(camB);
   });
 
+  it("does not rewire unchanged slots in a full reserved-leaf snapshot", () => {
+    const peers = fakePeerRegistry();
+    const alice = streamFor("alice-cam");
+    const bob = streamFor("bob-cam");
+    const carol = streamFor("carol-cam");
+    peers.push("alice", alice);
+    peers.push("bob", bob);
+    peers.push("carol", carol);
+    const reg = createSlotBindingRegistry(peers, {
+      "cam-1": "alice",
+      "cam-2": "bob",
+    });
+    const first = vi.fn();
+    const second = vi.fn();
+    reg.subscribe("cam-1", first);
+    reg.subscribe("cam-2", second);
+    first.mockClear();
+    second.mockClear();
+
+    // A full projection follows one changed slot. Only that slot should emit.
+    reg.assign("cam-1", "alice");
+    reg.assign("cam-2", "carol");
+    expect(first).not.toHaveBeenCalled();
+    expect(second).toHaveBeenCalledExactlyOnceWith(carol);
+
+    // Suppressing the redundant rewire must not suppress a real track change.
+    peers.push("alice", streamFor("alice-reconnected"));
+    expect(first).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ id: "alice-reconnected" }),
+    );
+    first.mockClear();
+    reg.assign("cam-1", "");
+    expect(first).toHaveBeenCalledExactlyOnceWith(null);
+    first.mockClear();
+    reg.assign("cam-1", null);
+    expect(first).not.toHaveBeenCalled();
+  });
+
   it("follows the bound peer connecting after the slot is wired", () => {
     const peers = fakePeerRegistry();
     const reg = createSlotBindingRegistry(peers, { "cam-caster-1": "alice" });

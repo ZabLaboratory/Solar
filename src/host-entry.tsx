@@ -86,6 +86,12 @@ const captureInBrowser = params.get("prism_e2e") === "1";
 // Program/on-air hosts never carry it, so their animation scheduler remains
 // byte-for-byte unchanged.
 const realtimeDeltas = params.get("editable_fast") === "1";
+// Explicit Program-only rollout flag. Orion's `scene_roster` frame supplies
+// the identities; this does not enable Prism's Preview-only roster hint.
+const preloadRosterImages =
+  mode === "broadcast" &&
+  !realtimeDeltas &&
+  params.get("preload_roster_images") === "1";
 
 const target = document.getElementById("scene");
 if (!(target instanceof HTMLElement)) {
@@ -110,6 +116,7 @@ mount({
     (globalThis as { __ZAB_RENDER_ROSTER__?: unknown }).__ZAB_RENDER_ROSTER__,
     realtimeDeltas,
   ),
+  ...(preloadRosterImages ? { preloadRosterImages: true } : {}),
   token,
   mode,
   // Preview is the interactive return that Prism measures from the real
