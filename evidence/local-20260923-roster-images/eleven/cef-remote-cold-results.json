@@ -1,0 +1,42 @@
+{
+  "mode": "Pulsar CEF browser_source + OBS GetSourceScreenshot",
+  "source": "derived Blue fixture with three HTTPS Data Dragon images, cache-busted per Pulsar run",
+  "remoteImagePreloadMeasured": true,
+  "warm": false,
+  "beforeSwitchResources": 0,
+  "afterSwitchResources": 3,
+  "beforeSwitchDecodes": 0,
+  "afterSwitchDecodes": 0,
+  "failedDetachedDecodes": 0,
+  "msToImagesReady": 178,
+  "imageCount": 30,
+  "imageUrls": [
+    "https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Ahri.png?roster_probe=b3176cc986488ddb-2",
+    "https://ddragon.leagueoflegends.com/cdn/14.24.1/img/champion/Jinx.png?roster_probe=b3176cc986488ddb-1",
+    "https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Jinx_0.jpg?roster_probe=b3176cc986488ddb-0"
+  ],
+  "stage": {
+    "sha256": "33c2084e01607198565c3b1104e3918e15c702af8b54790958c06537f8a60342",
+    "bytes": 15971,
+    "width": 1920,
+    "height": 1080
+  },
+  "blue": {
+    "sha256": "403ca8a7137e1c39e2592d75a5b7047b70771dd0b70e6e7cec478db40c0277a9",
+    "bytes": 235192,
+    "width": 1920,
+    "height": 1080
+  },
+  "bundleRequests": [
+    {
+      "scene": "stage",
+      "version": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "status": 200
+    },
+    {
+      "scene": "canvas-chat-sponso",
+      "version": "sha256:e3e0306a22a09c1a98d68b3fd1ac435b1d90a4c337d15464d3c8e5d10490ffe4",
+      "status": 200
+    }
+  ]
+}

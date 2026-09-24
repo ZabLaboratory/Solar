@@ -23,6 +23,14 @@ import react from "@vitejs/plugin-react";
 // with NO import map) guard the invariant in CI.
 
 export default defineConfig({
+  resolve: {
+    alias: {
+      "@lumencast/runtime": resolve(
+        __dirname,
+        "node_modules/@lumencast/runtime/dist/index.js",
+      ),
+    },
+  },
   plugins: [react()],
   base: "./",
   build: {

@@ -9,6 +9,17 @@ import dts from "vite-plugin-dts";
 // the initial scaffold).
 
 export default defineConfig({
+  // Solar's postinstall validates/patches the readable runtime modules. Bundle
+  // from that same entry instead of a minified chunk whose symbols drift on
+  // every Lumencast rebuild.
+  resolve: {
+    alias: {
+      "@lumencast/runtime": resolve(
+        __dirname,
+        "node_modules/@lumencast/runtime/dist/index.js",
+      ),
+    },
+  },
   plugins: [
     react(),
     dts({

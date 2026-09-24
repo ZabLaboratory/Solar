@@ -1,0 +1,45 @@
+{
+  "fixtureSha256": "e862a652f6725b78e7937f22c885d73892da256a989686f348696f588a0b8110",
+  "assetPolicy": "three checksum-verified representative local images, not original Figma bytes",
+  "hostBundle": "Solar dist/host, self-contained CEF page with local Lumencast dist overlaid in disposable node_modules at build time",
+  "cold": {
+    "warm": false,
+    "beforeSwitchAssets": 0,
+    "afterSwitchAssets": 3,
+    "beforeSwitchBundleRequests": 1,
+    "afterSwitchBundleRequests": 0,
+    "detachedDecodes": {
+      "detachedDone": 0,
+      "detachedFailed": 0
+    },
+    "images": {
+      "count": 30,
+      "decoded": 30,
+      "failed": 0
+    },
+    "msToRender": 56,
+    "msToImagesReady": 77,
+    "screenshotSha256": "c600b648b5fd4d6cd0aec90f640d42bbdd7805b767212cb15a7f13b49b605825",
+    "errors": []
+  },
+  "warm": {
+    "warm": true,
+    "beforeSwitchAssets": 3,
+    "afterSwitchAssets": 0,
+    "beforeSwitchBundleRequests": 1,
+    "afterSwitchBundleRequests": 0,
+    "detachedDecodes": {
+      "detachedDone": 3,
+      "detachedFailed": 0
+    },
+    "images": {
+      "count": 30,
+      "decoded": 30,
+      "failed": 0
+    },
+    "msToRender": 37,
+    "msToImagesReady": 51,
+    "screenshotSha256": "c600b648b5fd4d6cd0aec90f640d42bbdd7805b767212cb15a7f13b49b605825",
+    "errors": []
+  }
+}

@@ -121,4 +121,11 @@ describe("mount() forwards transformRoot to @lumencast/runtime", () => {
     expect(out.id).toBe("atlas-root");
     expect((out.children ?? []).length).toBe(2);
   });
+
+  it("forwards image warming only after explicit opt-in", () => {
+    mount({ ...base });
+    expect("preloadRosterImages" in (mountSpy.mock.calls[0]![0] as object)).toBe(false);
+    mount({ ...base, preloadRosterImages: true });
+    expect(mountSpy.mock.calls[1]![0]).toMatchObject({ preloadRosterImages: true });
+  });
 });

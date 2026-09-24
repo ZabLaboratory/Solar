@@ -1,0 +1,23 @@
+{
+  "mode": "Pulsar CEF immutable generation wire: initial Blue snapshot, then one-entry roster",
+  "source": "derived Blue fixture with three HTTPS Data Dragon images, cache-busted per Pulsar run",
+  "warm": false,
+  "msFromSubscribeToImagesReady": 372,
+  "resources": 3,
+  "detachedDecodes": 0,
+  "failedDetachedDecodes": 0,
+  "imageCount": 30,
+  "blue": {
+    "sha256": "403ca8a7137e1c39e2592d75a5b7047b70771dd0b70e6e7cec478db40c0277a9",
+    "bytes": 235192,
+    "width": 1920,
+    "height": 1080
+  },
+  "bundleRequests": [
+    {
+      "scene": "canvas-chat-sponso",
+      "version": "sha256:337ac1e2e8052dcf346598c1a07d58d930d97f3b18e8a48301646e398148f12e",
+      "status": 200
+    }
+  ]
+}

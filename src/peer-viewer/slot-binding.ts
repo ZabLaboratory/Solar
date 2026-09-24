@@ -130,8 +130,10 @@ export function createSlotBindingRegistry(
 
   return {
     assign(slotRef, peerLabel): void {
-      if (peerLabel === null || peerLabel === "") bindings.delete(slotRef);
-      else bindings.set(slotRef, peerLabel);
+      const next = peerLabel === null || peerLabel === "" ? null : peerLabel;
+      if ((bindings.get(slotRef) ?? null) === next) return;
+      if (next === null) bindings.delete(slotRef);
+      else bindings.set(slotRef, next);
       // Only live slots need re-wiring ; dormant ones pick up the binding on
       // their next resolve/subscribe.
       if (listeners.has(slotRef)) wire(slotRef);

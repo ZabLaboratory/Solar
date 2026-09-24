@@ -104,9 +104,16 @@ describe("mount() applies the atlas transform end-to-end", () => {
     await Promise.resolve();
     expect(FakeWebSocket.instances).toHaveLength(1);
     FakeWebSocket.instances[0]!.pushSnapshot();
-    // Bundle fetch + render are async — wait for the tree to paint.
-    await vi.waitFor(() =>
-      expect(target.querySelectorAll("div").length).toBeGreaterThan(0),
+    // A loading shell also contains divs. Wait for authored scene paint,
+    // not merely for the host's first DOM element.
+    await vi.waitFor(
+      () =>
+        expect(
+          Array.from(target.querySelectorAll<HTMLElement>("div")).some(
+            (element) => element.style.width === "400px",
+          ),
+        ).toBe(true),
+      { timeout: 3_000 },
     );
     return target;
   }
