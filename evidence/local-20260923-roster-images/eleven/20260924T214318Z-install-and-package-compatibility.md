@@ -38,6 +38,22 @@ An experimental `npm install --package-lock=false` also upgraded 129 unrelated
 dependencies and made the wipe animation test fail. Restoring `npm ci` lockfile
 versions resolved that failure; all candidate numbers above use the locked set.
 
+## PR file-size gate follow-up
+
+The initial Solar PR #70 failed its `file-sizes` check because
+`scripts/patch-lumencast-protocol.mjs` had grown to 2,001 lines against its
+reviewed 1,932-line ceiling. The independent known-peer-roster patch was moved
+without behavioral changes into `scripts/patch-known-peer-roster.mjs`; the
+entrypoint is now 1,907 lines. `python scripts/check_file_sizes.py --self-test`
+and `python scripts/check_file_sizes.py` pass without raising the exception.
+
+After extraction, a fresh `npm ci --offline` against the published runtime
+passed postinstall twice (including an idempotence rerun), lint, typecheck,
+194/194 tests, build, bundle guard, and 3/3 served-host browser tests. The
+exact Lumencast tarball above was then reinstalled over locked Solar
+dependencies; postinstall, 194/194 tests, build, bundle guard, and 3/3 browser
+tests passed again. This follow-up does not change the earlier CEF result.
+
 ## Boundaries
 
 - `preloadRosterImages` stays off by default. The published 0.18.2 package
