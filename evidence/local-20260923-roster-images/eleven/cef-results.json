@@ -1,0 +1,29 @@
+{
+  "mode": "Pulsar CEF browser_source + OBS GetSourceScreenshot",
+  "source": "derived Blue fixture with three checksum-verified local images inlined as data URLs",
+  "remoteImagePreloadMeasured": false,
+  "stage": {
+    "sha256": "33c2084e01607198565c3b1104e3918e15c702af8b54790958c06537f8a60342",
+    "bytes": 15971,
+    "width": 1920,
+    "height": 1080
+  },
+  "blue": {
+    "sha256": "03fdaa5a7eae0df3090bd82bf589d3c600c573c110ec7bfc04fa7d2ca43596b9",
+    "bytes": 129029,
+    "width": 1920,
+    "height": 1080
+  },
+  "bundleRequests": [
+    {
+      "scene": "stage",
+      "version": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "status": 200
+    },
+    {
+      "scene": "canvas-chat-sponso",
+      "version": "sha256:9593783580c59578acaebef9583918065885b4dc43d4d3ed4ab53e5a8b4b4bb1",
+      "status": 200
+    }
+  ]
+}
