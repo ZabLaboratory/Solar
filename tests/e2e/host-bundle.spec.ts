@@ -21,7 +21,8 @@ import { createServer, type Server } from "node:http";
 import { readFile, stat } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page, type WebSocketRoute } from "@playwright/test";
+import { delta, encodeFrame, snapshot } from "@lumencast/protocol";
 
 const HOST_DIR = resolve(
   fileURLToPath(import.meta.url),
@@ -96,6 +97,159 @@ test.beforeAll(async () => {
 
 test.afterAll(async () => {
   await new Promise<void>((done) => server.close(() => done()));
+});
+
+test("editable image/text patches match a fresh render before and after convergence", async ({
+  page,
+}, testInfo) => {
+  // Real built Solar + packaged Lumencast + browser decode/fonts/paint. Only
+  // the Orion transport is stubbed. This does not launch a broadcast engine.
+  const origin = "https://assets.example.test";
+  const leaf = (id: string, key: string) =>
+    `__editable.${Buffer.from(id).toString("hex")}.${key}`;
+  const initial = {
+    [leaf("logo", "src")]: `${origin}/proof/image-a.svg`,
+    [leaf("logo", "translate")]: [20, 30],
+    [leaf("title", "value")]: "Avant le changement",
+    [leaf("title", "translate")]: [140, 35],
+  };
+  const final = {
+    ...initial,
+    [leaf("logo", "src")]: `${origin}/proof/image-b.svg`,
+    [leaf("logo", "translate")]: [40, 80],
+    [leaf("title", "value")]: "Images et texte prêts",
+  };
+  const bundle = {
+    scene_version: "sha256:editable-browser-proof",
+    assets: { allowedHosts: [new URL(origin).host] },
+    root: {
+      kind: "frame",
+      props: { width: 640, height: 240, background: "#182038" },
+      children: [
+        {
+          kind: "image",
+          id: "logo",
+          props: { width: 96, height: 96 },
+          bindings: { src: leaf("logo", "src") },
+          animateBindings: { "transform.translate": leaf("logo", "translate") },
+        },
+        {
+          kind: "text",
+          id: "title",
+          props: {
+            width: 450,
+            height: 60,
+            size: 24,
+            font: "Geist",
+            colour: "#ffffff",
+          },
+          bindings: { value: leaf("title", "value") },
+          animateBindings: {
+            "transform.translate": leaf("title", "translate"),
+          },
+        },
+      ],
+    },
+  };
+  async function load(target: Page, state: typeof initial) {
+    let runtimeSocket: WebSocketRoute | undefined;
+    let sidebandSocket: WebSocketRoute | undefined;
+    await target.setViewportSize({ width: 640, height: 240 });
+    await target.route("**/solar-bundle/scenes/**/render-bundle?*", (route) =>
+      route.fulfill({ json: bundle }),
+    );
+    await target.route("**/proof/image-*.svg", (route) =>
+      route.fulfill({
+        contentType: "image/svg+xml",
+        body: `<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96"><rect width="96" height="96" fill="${route.request().url().endsWith("image-b.svg") ? "#fa6839" : "#40cba0"}"/><circle cx="48" cy="48" r="24" fill="white"/></svg>`,
+      }),
+    );
+    await target.routeWebSocket(localOrionUrl, (socket) => {
+      runtimeSocket = socket;
+      socket.onMessage((data) => {
+        if (JSON.parse(String(data)).type === "subscribe")
+          socket.send(
+            encodeFrame(
+              snapshot({
+                seq: 1,
+                scene_id: "editable-browser-proof",
+                scene_version: bundle.scene_version,
+                state,
+              }),
+            ),
+          );
+      });
+    });
+    const sidebandUrl = localOrionUrl.replace(
+      "stream.lsdp",
+      "accepted-patches",
+    );
+    await target.routeWebSocket(sidebandUrl, (socket) => {
+      sidebandSocket = socket;
+    });
+    const url = new URL(baseUrl);
+    url.searchParams.set("bundle", "/solar-bundle");
+    url.searchParams.set("editable_fast", "1");
+    url.searchParams.set("editable_fast_url", sidebandUrl);
+    await target.goto(url.href);
+    await expect(target.locator("#scene")).toContainText(
+      state[leaf("title", "value")] as string,
+    );
+    await expect(target.locator("#scene img")).toHaveCount(1);
+    await target
+      .locator("#scene img")
+      .evaluateAll(async (images) =>
+        Promise.all(
+          images.map((image) => (image as HTMLImageElement).decode()),
+        ),
+      );
+    await target.evaluate(() => document.fonts.ready.then(() => undefined));
+    await expect
+      .poll(() => Boolean(runtimeSocket && sidebandSocket))
+      .toBe(true);
+    return { runtimeSocket: runtimeSocket!, sidebandSocket: sidebandSocket! };
+  }
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  const sockets = await load(page, initial);
+  const reference = await page.context().newPage();
+  try {
+    await load(reference, final);
+    const expected = await reference.screenshot({
+      path: testInfo.outputPath("fresh-final.png"),
+    });
+    const patches = Object.entries(final).map(([path, value]) => ({
+      path,
+      value,
+    }));
+    sockets.sidebandSocket.send(
+      JSON.stringify({ type: "accepted_patch", patches }),
+    );
+    sockets.runtimeSocket.send(encodeFrame(delta({ seq: 2, patches })));
+    await expect(page.locator("#scene")).toContainText("Images et texte prêts");
+    await expect(page.locator("#scene img")).toHaveAttribute(
+      "src",
+      final[leaf("logo", "src")] as string,
+    );
+    await page
+      .locator("#scene img")
+      .evaluate((image) => (image as HTMLImageElement).decode());
+    await expect
+      .poll(async () => (await page.screenshot()).equals(expected))
+      .toBe(true);
+    await page.screenshot({ path: testInfo.outputPath("patched-final.png") });
+    // A cache must not merely pin correct pixels temporarily: normal LSDP
+    // rendering must retain them after the bounded 1.25 s sideband lease.
+    await page.waitForTimeout(1300);
+    expect(
+      (
+        await page.screenshot({ path: testInfo.outputPath("after-lease.png") })
+      ).equals(expected),
+    ).toBe(true);
+    expect(errors).toEqual([]);
+  } finally {
+    await reference.close();
+  }
 });
 
 test("served host bundle loads with no import map and mount() runs", async ({
