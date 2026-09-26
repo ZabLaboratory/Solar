@@ -1,0 +1,351 @@
+{
+  "baselineRevision": "d8d28f723168d0949a990e8d00b779335f99aa4c",
+  "candidateHead": "d8d28f723168d0949a990e8d00b779335f99aa4c",
+  "sourceHashes": {
+    "baseline": "f9a7d1b8378c8b026f0c27077859a531e9809f59199aa8bfe8bd02357d422535",
+    "candidate": "0fd222f98da96ef2a825781dffbc9371f9716067eb9ec6ab9e64daf486576b03"
+  },
+  "browser": "153.0.8010.53",
+  "frames": 75,
+  "samples": 7,
+  "method": "Synthetic DOM with decoded images and SVG. Real sideband/MutationObserver; controlled RAF and WebSocket. CPU timings include microtasks, exclude layout/paint and network.",
+  "results": [
+    {
+      "wrappers": 100,
+      "patches": 4,
+      "baseline": {
+        "initialMs": 0.2999999523162842,
+        "frameMs": 4.900000095367432,
+        "totalMs": 5.100000023841858,
+        "msPerFrame": 0.06533333460489908,
+        "bindingQueries": [
+          304,
+          304,
+          304,
+          304,
+          304,
+          304,
+          304
+        ],
+        "totalMsSamples": [
+          5.100000023841858,
+          5.699999928474426,
+          6.099999904632568,
+          4.700000286102295,
+          5.100000023841858,
+          4.699999928474426,
+          4.600000023841858
+        ]
+      },
+      "candidate": {
+        "initialMs": 0.20000004768371582,
+        "frameMs": 0.6999999284744263,
+        "totalMs": 1.0999999046325684,
+        "msPerFrame": 0.009333332379659018,
+        "bindingQueries": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "totalMsSamples": [
+          1.0999999046325684,
+          0.7000000476837158,
+          1.2000000476837158,
+          1.1000001430511475,
+          0.6000000238418579,
+          0.5000001192092896,
+          1.100000023841858
+        ]
+      },
+      "identicalDom": true,
+      "identicalPng": true,
+      "pngSHA256": "608f9e36096636d7d672f04a0f16d226832be83f2339605f2f1b71a335b9203d",
+      "cpuReductionPercent": 78.43137451979986
+    },
+    {
+      "wrappers": 500,
+      "patches": 4,
+      "baseline": {
+        "initialMs": 0.5,
+        "frameMs": 20.299999952316284,
+        "totalMs": 20.799999952316284,
+        "msPerFrame": 0.2706666660308838,
+        "bindingQueries": [
+          304,
+          304,
+          304,
+          304,
+          304,
+          304,
+          304
+        ],
+        "totalMsSamples": [
+          20.799999952316284,
+          20,
+          20.5,
+          21.100000023841858,
+          26.299999952316284,
+          21.200000047683716,
+          20.199999928474426
+        ]
+      },
+      "candidate": {
+        "initialMs": 0.5,
+        "frameMs": 0.5000001192092896,
+        "totalMs": 1.2000001668930054,
+        "msPerFrame": 0.0066666682561238606,
+        "bindingQueries": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "totalMsSamples": [
+          1,
+          1.399999976158142,
+          0.9999998807907104,
+          1.2999999523162842,
+          0.8999999761581421,
+          1.2000001668930054,
+          1.4000000953674316
+        ]
+      },
+      "identicalDom": true,
+      "identicalPng": true,
+      "pngSHA256": "c60109e6837df0e9207c1aa621e8c656c860a0aee520f079881d30c293c84d39",
+      "cpuReductionPercent": 94.23076841517313
+    },
+    {
+      "wrappers": 1000,
+      "patches": 1,
+      "baseline": {
+        "initialMs": 0.3999999761581421,
+        "frameMs": 10.399999976158142,
+        "totalMs": 10.800000071525574,
+        "msPerFrame": 0.13866666634877522,
+        "bindingQueries": [
+          76,
+          76,
+          76,
+          76,
+          76,
+          76,
+          76
+        ],
+        "totalMsSamples": [
+          10.800000071525574,
+          10.899999976158142,
+          10,
+          9.899999976158142,
+          11,
+          10.899999976158142,
+          10.5
+        ]
+      },
+      "candidate": {
+        "initialMs": 0.6999999284744263,
+        "frameMs": 0.10000002384185791,
+        "totalMs": 0.7999999523162842,
+        "msPerFrame": 0.0013333336512247722,
+        "bindingQueries": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "totalMsSamples": [
+          0.9000000953674316,
+          1.2000000476837158,
+          0.7999999523162842,
+          0.49999988079071045,
+          0.7000000476837158,
+          1,
+          0.7000000476837158
+        ]
+      },
+      "identicalDom": true,
+      "identicalPng": true,
+      "pngSHA256": "c8343e9c282ae4d66861c8810b6c010b25eb247dc780f4ad98508266fb9389fe",
+      "cpuReductionPercent": 92.5925930831658
+    },
+    {
+      "wrappers": 1000,
+      "patches": 4,
+      "baseline": {
+        "initialMs": 1,
+        "frameMs": 42.700000047683716,
+        "totalMs": 43.89999997615814,
+        "msPerFrame": 0.5693333339691162,
+        "bindingQueries": [
+          304,
+          304,
+          304,
+          304,
+          304,
+          304,
+          304
+        ],
+        "totalMsSamples": [
+          46.00000011920929,
+          41.90000009536743,
+          49.799999833106995,
+          47.10000002384186,
+          43.89999997615814,
+          40.60000002384186,
+          38.89999997615814
+        ]
+      },
+      "candidate": {
+        "initialMs": 0.6999999284744263,
+        "frameMs": 0.5999999046325684,
+        "totalMs": 1.2999999523162842,
+        "msPerFrame": 0.007999998728434245,
+        "bindingQueries": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "totalMsSamples": [
+          1.1999999284744263,
+          1.2999999523162842,
+          1.3999998569488525,
+          1.5999999046325684,
+          1.2999999523162842,
+          1.1999999284744263,
+          1.2999999523162842
+        ]
+      },
+      "identicalDom": true,
+      "identicalPng": true,
+      "pngSHA256": "b6bce99b6e5e42625ab85ef5a150957488af61339e849a62ab92bea3fdd3b6a2",
+      "cpuReductionPercent": 97.038724480587
+    },
+    {
+      "wrappers": 1000,
+      "patches": 8,
+      "baseline": {
+        "initialMs": 1.899999976158142,
+        "frameMs": 89.50000011920929,
+        "totalMs": 91.40000009536743,
+        "msPerFrame": 1.1933333349227906,
+        "bindingQueries": [
+          608,
+          608,
+          608,
+          608,
+          608,
+          608,
+          608
+        ],
+        "totalMsSamples": [
+          89.39999997615814,
+          93.79999995231628,
+          85.10000002384186,
+          91.80000019073486,
+          86.60000002384186,
+          91.40000009536743,
+          92.79999995231628
+        ]
+      },
+      "candidate": {
+        "initialMs": 1,
+        "frameMs": 2.399999976158142,
+        "totalMs": 3.5,
+        "msPerFrame": 0.03199999968210856,
+        "bindingQueries": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "totalMsSamples": [
+          3.5999999046325684,
+          2.7000001668930054,
+          4,
+          3.5,
+          3.799999952316284,
+          3,
+          3.399999976158142
+        ]
+      },
+      "identicalDom": true,
+      "identicalPng": true,
+      "pngSHA256": "65846b9f97bb3e5e7792fd00e0c5a5499f5cadeab782bd9ceb76de24a3af29e0",
+      "cpuReductionPercent": 96.17067834097584
+    },
+    {
+      "wrappers": 1000,
+      "patches": 4,
+      "replaceEvery": 15,
+      "baseline": {
+        "initialMs": 0.9000000953674316,
+        "frameMs": 38.89999985694885,
+        "totalMs": 39.69999980926514,
+        "msPerFrame": 0.518666664759318,
+        "bindingQueries": [
+          304,
+          304,
+          304,
+          304,
+          304,
+          304,
+          304
+        ],
+        "totalMsSamples": [
+          43.19999980926514,
+          39.69999980926514,
+          39.10000002384186,
+          42.10000002384186,
+          41,
+          38.49999988079071,
+          38.799999952316284
+        ]
+      },
+      "candidate": {
+        "initialMs": 0.7000000476837158,
+        "frameMs": 1.8000001907348633,
+        "totalMs": 2.600000023841858,
+        "msPerFrame": 0.02400000254313151,
+        "bindingQueries": [
+          5,
+          5,
+          5,
+          5,
+          5,
+          5,
+          5
+        ],
+        "totalMsSamples": [
+          3.8000000715255737,
+          2.200000286102295,
+          2.600000023841858,
+          3.2000001668930054,
+          3.000000238418579,
+          2.1000001430511475,
+          2.4999998807907104
+        ]
+      },
+      "identicalDom": true,
+      "identicalPng": true,
+      "pngSHA256": "b6bce99b6e5e42625ab85ef5a150957488af61339e849a62ab92bea3fdd3b6a2",
+      "cpuReductionPercent": 93.450881520571
+    }
+  ]
+}

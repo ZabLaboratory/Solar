@@ -1,5 +1,6 @@
 import { applyEditableFastPatch } from "./dom";
 import { parseEditableFastPatch, type EditableFastPatch } from "./patch";
+import { EditablePatchTargets } from "./targets";
 
 export function editablePreviewFastPathEnabled(
   search = globalThis.location?.search ?? "",
@@ -62,10 +63,23 @@ export function installEditablePreviewSideband(
   let retryTimer: ReturnType<typeof setTimeout> | null = null;
   let convergenceFrame: number | null = null;
   let retryMs = 100;
+  let targets: EditablePatchTargets | undefined;
   const convergence = new Map<
     string,
     { patch: EditableFastPatch; expiresAt: number }
   >();
+
+  const applyConvergingPatch = (patch: EditableFastPatch): void => {
+    if (!targets && typeof MutationObserver !== "undefined") {
+      targets = new EditablePatchTargets(root);
+    }
+    applyEditableFastPatch(patch, root, "important", targets);
+  };
+
+  const releaseTargets = (): void => {
+    targets?.dispose();
+    targets = undefined;
+  };
 
   // Framer Motion owns the same inline styles as the regular LSDP consumer.
   // A Solar sideband write can therefore be overwritten on the following
@@ -83,10 +97,12 @@ export function installEditablePreviewSideband(
         convergence.delete(key);
         continue;
       }
-      applyEditableFastPatch(lease.patch, root, "important");
+      applyConvergingPatch(lease.patch);
     }
     if (convergence.size > 0) {
       convergenceFrame = requestAnimationFrame(flushConvergence);
+    } else {
+      releaseTargets();
     }
   };
 
@@ -96,7 +112,7 @@ export function installEditablePreviewSideband(
       patch,
       expiresAt: performance.now() + convergenceLeaseMs,
     });
-    applyEditableFastPatch(patch, root, "important");
+    applyConvergingPatch(patch);
     if (convergenceFrame === null) {
       convergenceFrame = requestAnimationFrame(flushConvergence);
     }
@@ -110,6 +126,7 @@ export function installEditablePreviewSideband(
       retryMs = 100;
     });
     next.addEventListener("message", (event) => {
+      if (stopped) return;
       for (const patch of parseAcceptedEditablePatches(event.data)) {
         pinAcceptedPatch(patch);
       }
@@ -128,6 +145,7 @@ export function installEditablePreviewSideband(
     if (retryTimer !== null) clearTimeout(retryTimer);
     if (convergenceFrame !== null) cancelAnimationFrame(convergenceFrame);
     convergence.clear();
+    releaseTargets();
     socket?.close(1000, "solar teardown");
     socket = null;
   };
