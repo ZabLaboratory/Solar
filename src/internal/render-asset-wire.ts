@@ -145,6 +145,10 @@ function replaceStrings(
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
+  const nativeToBase64 = (bytes as Uint8Array & { toBase64?: () => string })
+    .toBase64;
+  if (typeof nativeToBase64 === "function") return nativeToBase64.call(bytes);
+
   let binary = "";
   const chunkSize = 0x8000;
   for (let offset = 0; offset < bytes.length; offset += chunkSize) {
