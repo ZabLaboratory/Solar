@@ -161,6 +161,48 @@ describe("render asset wire hydration", () => {
     expect(fetchImpl).toHaveBeenCalledTimes(2);
   });
 
+  it("uses Uint8Array's native base64 encoder when the runtime provides it", async () => {
+    const previous = Object.getOwnPropertyDescriptor(
+      Uint8Array.prototype,
+      "toBase64",
+    );
+    const nativeEncoder = vi.fn(function (this: Uint8Array) {
+      let binary = "";
+      for (const byte of this) binary += String.fromCharCode(byte);
+      return btoa(binary);
+    });
+    Object.defineProperty(Uint8Array.prototype, "toBase64", {
+      configurable: true,
+      value: nativeEncoder,
+    });
+    try {
+      const source = `https://zabgate.cyell.dev/canvas/api/v1/scene-assets/${"c".repeat(64)}/bytes`;
+      const fetchImpl = vi.fn<typeof fetch>(
+        async () =>
+          new Response(new Uint8Array([137, 80, 78, 71]), {
+            status: 200,
+            headers: { "content-type": "image/png" },
+          }),
+      );
+      const rewritten = JSON.parse(
+        await rewriteRenderAssetFrame(
+          JSON.stringify({ state: { image: source } }),
+          endpoint,
+          fetchImpl,
+        ),
+      ) as { state: { image: string } };
+
+      expect(rewritten.state.image).toBe("data:image/png;base64,iVBORw==");
+      expect(nativeEncoder).toHaveBeenCalledTimes(1);
+    } finally {
+      if (previous) {
+        Object.defineProperty(Uint8Array.prototype, "toBase64", previous);
+      } else {
+        Reflect.deleteProperty(Uint8Array.prototype, "toBase64");
+      }
+    }
+  });
+
   it("hydrates distinct image URLs with one same-origin batch request", async () => {
     const batchEndpoint = {
       ...endpoint,
