@@ -74,7 +74,7 @@ describe("render asset wire hydration", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
-  it("scans ordinary state strings without reparsing each one as a URL", async () => {
+  it("scans ordinary state strings cheaply and validates a repeated image URL once", async () => {
     const NativeURL = globalThis.URL;
     let constructorCalls = 0;
     vi.stubGlobal(
@@ -95,21 +95,50 @@ describe("render asset wire hydration", () => {
         ]),
       );
       const replacements = new Map([[source, "data:image/png;base64,AQ=="]]);
+      const repeatedImages = Object.fromEntries(
+        Array.from({ length: 30 }, (_, index) => [`image${index}`, source]),
+      );
 
       const rewritten = await rewriteRenderAssetFrame(
-        JSON.stringify({ state: { ...state, image: source } }),
+        JSON.stringify({ state: { ...state, ...repeatedImages } }),
         endpoint,
         vi.fn<typeof fetch>(),
         replacements,
       );
 
       expect(JSON.parse(rewritten)).toMatchObject({
-        state: { image: "data:image/png;base64,AQ==" },
+        state: {
+          image0: "data:image/png;base64,AQ==",
+          image29: "data:image/png;base64,AQ==",
+        },
       });
       expect(constructorCalls).toBe(2);
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+
+  it("preserves JSON own properties while replacing cached images in place", async () => {
+    const source = distinctImageSources(1)[0]!;
+    const state = JSON.parse(
+      `{"__proto__":${JSON.stringify(source)}}`,
+    ) as Record<string, string>;
+    const replacements = new Map([[source, "data:image/png;base64,AQ=="]]);
+    const fetchImpl = vi.fn<typeof fetch>();
+
+    const rewritten = JSON.parse(
+      await rewriteRenderAssetFrame(
+        JSON.stringify({ state }),
+        endpoint,
+        fetchImpl,
+        replacements,
+      ),
+    ) as { state: Record<string, string> };
+
+    expect(Object.hasOwn(rewritten.state, "__proto__")).toBe(true);
+    expect(rewritten.state["__proto__"]).toBe("data:image/png;base64,AQ==");
+    expect(Object.getPrototypeOf(rewritten.state)).toBe(Object.prototype);
+    expect(fetchImpl).not.toHaveBeenCalled();
   });
 
   it("keeps accepting case-insensitive HTTPS URLs with leading URL whitespace", async () => {
