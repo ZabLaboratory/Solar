@@ -16,6 +16,7 @@ type RenderAssetEndpointGlobal = RenderAssetEndpoint;
 interface GatewayUrlCache {
   initialized: boolean;
   value: URL | null;
+  hydratableImageUrls: Map<string, boolean>;
 }
 
 export function readRenderAssetEndpoint(): RenderAssetEndpoint | null {
@@ -67,14 +68,20 @@ function isHydratableImageUrl(
   gatewayCache: GatewayUrlCache,
 ): boolean {
   if (!hasHttpsSchemeCandidate(value)) return false;
+  const cached = gatewayCache.hydratableImageUrls.get(value);
+  if (cached !== undefined) return cached;
 
   let parsed: URL;
   try {
     parsed = new URL(value);
   } catch {
+    gatewayCache.hydratableImageUrls.set(value, false);
     return false;
   }
-  if (parsed.protocol !== "https:") return false;
+  if (parsed.protocol !== "https:") {
+    gatewayCache.hydratableImageUrls.set(value, false);
+    return false;
+  }
 
   if (!gatewayCache.initialized) {
     gatewayCache.initialized = true;
@@ -85,18 +92,18 @@ function isHydratableImageUrl(
     }
   }
   const gateway = gatewayCache.value;
-  if (!gateway) return false;
-
-  if (
-    parsed.origin === gateway.origin &&
-    SCENE_ASSET_PATH.test(parsed.pathname)
-  ) {
-    return true;
+  if (!gateway) {
+    gatewayCache.hydratableImageUrls.set(value, false);
+    return false;
   }
-  return (
-    parsed.hostname === "ddragon.leagueoflegends.com" &&
-    DDRAGON_IMAGE_PATH.test(parsed.pathname)
-  );
+
+  const hydratable =
+    parsed.origin === gateway.origin &&
+    SCENE_ASSET_PATH.test(parsed.pathname) ||
+    (parsed.hostname === "ddragon.leagueoflegends.com" &&
+      DDRAGON_IMAGE_PATH.test(parsed.pathname));
+  gatewayCache.hydratableImageUrls.set(value, hydratable);
+  return hydratable;
 }
 
 function collectImageUrls(
@@ -128,20 +135,30 @@ function collectImageUrls(
   }
 }
 
-function replaceStrings(
+function replaceStringsInPlace(
   value: unknown,
   replacements: Map<string, string>,
 ): unknown {
   if (typeof value === "string") return replacements.get(value) ?? value;
-  if (Array.isArray(value))
-    return value.map((item) => replaceStrings(item, replacements));
+  if (Array.isArray(value)) {
+    for (let index = 0; index < value.length; index += 1) {
+      const previous = value[index];
+      const replacement = replaceStringsInPlace(previous, replacements);
+      if (replacement !== previous) value[index] = replacement;
+    }
+    return value;
+  }
   if (!value || typeof value !== "object") return value;
-  return Object.fromEntries(
-    Object.entries(value as Record<string, unknown>).map(([key, item]) => [
-      key,
-      replaceStrings(item, replacements),
-    ]),
-  );
+
+  // `frame` is freshly parsed for this message, so mutating it is safe and
+  // avoids allocating a second object tree just to replace image leaves.
+  const record = value as Record<string, unknown>;
+  for (const key of Object.keys(record)) {
+    const previous = record[key];
+    const replacement = replaceStringsInPlace(previous, replacements);
+    if (replacement !== previous) record[key] = replacement;
+  }
+  return value;
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
@@ -245,6 +262,7 @@ export async function rewriteRenderAssetFrame(
   collectImageUrls(frame, endpoint.gatewayOrigin, urls, {
     initialized: false,
     value: null,
+    hydratableImageUrls: new Map(),
   });
   if (urls.size === 0) return data;
 
@@ -299,7 +317,7 @@ export async function rewriteRenderAssetFrame(
   } else {
     await Promise.all(missing.map(hydrateOne));
   }
-  return JSON.stringify(replaceStrings(frame, replacements));
+  return JSON.stringify(replaceStringsInPlace(frame, replacements));
 }
 
 export function createRenderAssetWebSocket(
