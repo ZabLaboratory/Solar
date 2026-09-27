@@ -9,7 +9,15 @@ const SCENE_ASSET_PATH =
   /^\/canvas\/api\/v1\/scene-assets\/[0-9a-f]{64}\/bytes$/i;
 const DDRAGON_IMAGE_PATH =
   /^\/cdn\/[^/]+\/img\/(?:champion|item|spell|rune)\//i;
+const IMMUTABLE_RENDER_ASSET_LITERAL = /^__lit\.(?:image|media)\./;
 const MIN_BATCH_RENDER_ASSETS = 8;
+
+type ReplacementOwner = Record<string, unknown> | unknown[] | null;
+
+interface ReplacementSite {
+  owner: ReplacementOwner;
+  key: string | number | null;
+}
 
 type RenderAssetEndpointGlobal = RenderAssetEndpoint;
 
@@ -98,8 +106,8 @@ function isHydratableImageUrl(
   }
 
   const hydratable =
-    parsed.origin === gateway.origin &&
-    SCENE_ASSET_PATH.test(parsed.pathname) ||
+    (parsed.origin === gateway.origin &&
+      SCENE_ASSET_PATH.test(parsed.pathname)) ||
     (parsed.hostname === "ddragon.leagueoflegends.com" &&
       DDRAGON_IMAGE_PATH.test(parsed.pathname));
   gatewayCache.hydratableImageUrls.set(value, hydratable);
@@ -111,54 +119,95 @@ function collectImageUrls(
   gatewayOrigin: string,
   out: Set<string>,
   gatewayCache: GatewayUrlCache,
-): void {
-  if (typeof value === "string") {
-    if (isHydratableImageUrl(value, gatewayOrigin, gatewayCache))
-      out.add(value);
-    return;
-  }
-  if (Array.isArray(value)) {
-    for (const item of value) {
-      collectImageUrls(item, gatewayOrigin, out, gatewayCache);
-    }
-    return;
-  }
-  if (!value || typeof value !== "object") return;
-  for (const [path, item] of Object.entries(value as Record<string, unknown>)) {
-    // Prism's local bundle pins immutable image/media literals to hydrated
-    // props and removes those src bindings. Fetching their signed upstream
-    // URLs again here blocks the entire LSDP queue on multi-megabyte image
-    // conversion, although no rendered node consumes these literal leaves.
-    // Dynamic sources (chat/game data, operator inputs) still hydrate below.
-    if (/^__lit\.(?:image|media)\./.test(path)) continue;
-    collectImageUrls(item, gatewayOrigin, out, gatewayCache);
-  }
-}
-
-function replaceStringsInPlace(
-  value: unknown,
   replacements: Map<string, string>,
+  replacementSites: Map<string, ReplacementSite[]>,
+  allowHydration = true,
+  owner: ReplacementOwner = null,
+  key: string | number | null = null,
 ): unknown {
-  if (typeof value === "string") return replacements.get(value) ?? value;
+  if (typeof value === "string") {
+    const hydratable = allowHydration
+      ? isHydratableImageUrl(value, gatewayOrigin, gatewayCache)
+      : false;
+    if (allowHydration && hydratable) out.add(value);
+
+    const replacement = replacements.get(value);
+    if (replacement !== undefined) return replacement;
+
+    if (hydratable || (!allowHydration && hasHttpsSchemeCandidate(value))) {
+      const sites = replacementSites.get(value);
+      const site = { owner, key };
+      if (sites) sites.push(site);
+      else replacementSites.set(value, [site]);
+    }
+    return value;
+  }
   if (Array.isArray(value)) {
     for (let index = 0; index < value.length; index += 1) {
       const previous = value[index];
-      const replacement = replaceStringsInPlace(previous, replacements);
+      const replacement = collectImageUrls(
+        value[index],
+        gatewayOrigin,
+        out,
+        gatewayCache,
+        replacements,
+        replacementSites,
+        allowHydration,
+        value,
+        index,
+      );
       if (replacement !== previous) value[index] = replacement;
     }
     return value;
   }
   if (!value || typeof value !== "object") return value;
-
-  // `frame` is freshly parsed for this message, so mutating it is safe and
-  // avoids allocating a second object tree just to replace image leaves.
   const record = value as Record<string, unknown>;
-  for (const key of Object.keys(record)) {
-    const previous = record[key];
-    const replacement = replaceStringsInPlace(previous, replacements);
-    if (replacement !== previous) record[key] = replacement;
+  for (const path of Object.keys(record)) {
+    // Prism's local bundle pins immutable image/media literals to hydrated
+    // props and removes those src bindings. Fetching their signed upstream
+    // URLs again here blocks the entire LSDP queue on multi-megabyte image
+    // conversion, although no rendered node consumes these literal leaves.
+    // They are still visited so an existing replacement (or a source also
+    // consumed dynamically) keeps the previous frame-rewrite semantics.
+    const shouldHydrate =
+      allowHydration && !IMMUTABLE_RENDER_ASSET_LITERAL.test(path);
+    const previous = record[path];
+    const replacement = collectImageUrls(
+      previous,
+      gatewayOrigin,
+      out,
+      gatewayCache,
+      replacements,
+      replacementSites,
+      shouldHydrate,
+      record,
+      path,
+    );
+    if (replacement !== previous) Reflect.set(record, path, replacement);
   }
   return value;
+}
+
+function replaceCollectedStringsInPlace(
+  frame: unknown,
+  replacementSites: Map<string, ReplacementSite[]>,
+  replacements: Map<string, string>,
+): unknown {
+  for (const [source, sites] of replacementSites) {
+    const replacement = replacements.get(source);
+    if (replacement === undefined) continue;
+    for (const { owner, key } of sites) {
+      if (owner === null) {
+        frame = replacement;
+      } else if (Array.isArray(owner) && typeof key === "number") {
+        owner[key] = replacement;
+      } else if (typeof key === "string") {
+        // Reflect.set preserves JSON.parse's own `__proto__` data property.
+        Reflect.set(owner, key, replacement);
+      }
+    }
+  }
+  return frame;
 }
 
 function bytesToBase64(bytes: Uint8Array): string {
@@ -259,11 +308,19 @@ export async function rewriteRenderAssetFrame(
     return data;
   }
   const urls = new Set<string>();
-  collectImageUrls(frame, endpoint.gatewayOrigin, urls, {
-    initialized: false,
-    value: null,
-    hydratableImageUrls: new Map(),
-  });
+  const replacementSites = new Map<string, ReplacementSite[]>();
+  frame = collectImageUrls(
+    frame,
+    endpoint.gatewayOrigin,
+    urls,
+    {
+      initialized: false,
+      value: null,
+      hydratableImageUrls: new Map(),
+    },
+    replacements,
+    replacementSites,
+  );
   if (urls.size === 0) return data;
 
   const missing = [...urls].filter((source) => !replacements.has(source));
@@ -317,7 +374,11 @@ export async function rewriteRenderAssetFrame(
   } else {
     await Promise.all(missing.map(hydrateOne));
   }
-  return JSON.stringify(replaceStringsInPlace(frame, replacements));
+  // Collection applied cache hits in place and recorded only misses. Replace
+  // newly hydrated leaves without walking the whole frame a second time.
+  return JSON.stringify(
+    replaceCollectedStringsInPlace(frame, replacementSites, replacements),
+  );
 }
 
 export function createRenderAssetWebSocket(

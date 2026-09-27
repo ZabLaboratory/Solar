@@ -74,6 +74,63 @@ describe("render asset wire hydration", () => {
     expect(fetchImpl).not.toHaveBeenCalled();
   });
 
+  it("updates a pinned literal when the same source is also consumed dynamically", async () => {
+    const source = `https://zabgate.cyell.dev/canvas/api/v1/scene-assets/${"d".repeat(64)}/bytes`;
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(new Uint8Array([1]), {
+          status: 200,
+          headers: { "content-type": "image/png" },
+        }),
+    );
+
+    const rewritten = JSON.parse(
+      await rewriteRenderAssetFrame(
+        JSON.stringify({
+          state: {
+            "__lit.image.logo": source,
+            "scene.logo": source,
+          },
+        }),
+        endpoint,
+        fetchImpl,
+      ),
+    ) as { state: Record<string, string> };
+
+    expect(rewritten.state["__lit.image.logo"]).toBe(
+      "data:image/png;base64,AQ==",
+    );
+    expect(rewritten.state["scene.logo"]).toBe("data:image/png;base64,AQ==");
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps applying cached non-image replacements when another asset is hydrated", async () => {
+    const source = distinctImageSources(1)[0]!;
+    const replacements = new Map([["render-ready", "render-cached"]]);
+    const fetchImpl = vi.fn<typeof fetch>(
+      async () =>
+        new Response(new Uint8Array([1]), {
+          status: 200,
+          headers: { "content-type": "image/png" },
+        }),
+    );
+
+    const rewritten = JSON.parse(
+      await rewriteRenderAssetFrame(
+        JSON.stringify({
+          state: { status: "render-ready", image: source },
+        }),
+        endpoint,
+        fetchImpl,
+        replacements,
+      ),
+    ) as { state: Record<string, string> };
+
+    expect(rewritten.state.status).toBe("render-cached");
+    expect(rewritten.state.image).toBe("data:image/png;base64,AQ==");
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+  });
+
   it("scans ordinary state strings cheaply and validates a repeated image URL once", async () => {
     const NativeURL = globalThis.URL;
     let constructorCalls = 0;
