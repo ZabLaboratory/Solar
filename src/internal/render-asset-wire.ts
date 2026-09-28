@@ -323,56 +323,65 @@ export async function rewriteRenderAssetFrame(
   );
   if (urls.size === 0) return data;
 
-  const missing = [...urls].filter((source) => !replacements.has(source));
-  const hydrateOne = async (source: string): Promise<void> => {
-    const request = new URL(
-      endpoint.url,
-      globalThis.location?.href ?? "http://127.0.0.1/",
-    );
-    request.searchParams.set("token", endpoint.token);
-    request.searchParams.set("url", source);
-    const response = await fetchImpl(request);
-    if (!response.ok)
-      throw new Error(`local asset endpoint returned HTTP ${response.status}`);
-    const contentType =
-      response.headers.get("content-type")?.split(";", 1)[0]?.trim() ||
-      "image/png";
-    replacements.set(
-      source,
-      `data:${contentType};base64,${bytesToBase64(new Uint8Array(await response.arrayBuffer()))}`,
-    );
-  };
-  const batchUrl =
-    missing.length >= MIN_BATCH_RENDER_ASSETS ? localBatchUrl(endpoint) : null;
-  // Tiny fan-outs do not amortize the batch envelope and decoding work. Keep
-  // their existing parallel GET path; larger image sets benefit from one POST.
-  if (batchUrl && missing.length >= MIN_BATCH_RENDER_ASSETS) {
-    try {
-      const response = await fetchImpl(batchUrl, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ sources: missing }),
-      });
+  const missing: string[] = [];
+  for (const source of urls) {
+    if (!replacements.has(source)) missing.push(source);
+  }
+  if (missing.length > 0) {
+    const hydrateOne = async (source: string): Promise<void> => {
+      const request = new URL(
+        endpoint.url,
+        globalThis.location?.href ?? "http://127.0.0.1/",
+      );
+      request.searchParams.set("token", endpoint.token);
+      request.searchParams.set("url", source);
+      const response = await fetchImpl(request);
       if (!response.ok)
         throw new Error(
-          `local asset batch endpoint returned HTTP ${response.status}`,
+          `local asset endpoint returned HTTP ${response.status}`,
         );
-      const assets = decodeLocalRenderAssetBatch(
-        await response.arrayBuffer(),
-        missing.length,
+      const contentType =
+        response.headers.get("content-type")?.split(";", 1)[0]?.trim() ||
+        "image/png";
+      replacements.set(
+        source,
+        `data:${contentType};base64,${bytesToBase64(new Uint8Array(await response.arrayBuffer()))}`,
       );
-      for (const [index, source] of missing.entries()) {
-        const asset = assets[index]!;
-        replacements.set(
-          source,
-          `data:${asset.contentType};base64,${bytesToBase64(asset.body)}`,
+    };
+    const batchUrl =
+      missing.length >= MIN_BATCH_RENDER_ASSETS
+        ? localBatchUrl(endpoint)
+        : null;
+    // Tiny fan-outs do not amortize the batch envelope and decoding work. Keep
+    // their existing parallel GET path; larger image sets benefit from one POST.
+    if (batchUrl && missing.length >= MIN_BATCH_RENDER_ASSETS) {
+      try {
+        const response = await fetchImpl(batchUrl, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ sources: missing }),
+        });
+        if (!response.ok)
+          throw new Error(
+            `local asset batch endpoint returned HTTP ${response.status}`,
+          );
+        const assets = decodeLocalRenderAssetBatch(
+          await response.arrayBuffer(),
+          missing.length,
         );
+        for (const [index, source] of missing.entries()) {
+          const asset = assets[index]!;
+          replacements.set(
+            source,
+            `data:${asset.contentType};base64,${bytesToBase64(asset.body)}`,
+          );
+        }
+      } catch {
+        await Promise.all(missing.map(hydrateOne));
       }
-    } catch {
+    } else {
       await Promise.all(missing.map(hydrateOne));
     }
-  } else {
-    await Promise.all(missing.map(hydrateOne));
   }
   // Collection applied cache hits in place and recorded only misses. Replace
   // newly hydrated leaves without walking the whole frame a second time.
