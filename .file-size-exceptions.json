@@ -6,5 +6,13 @@
   "scripts/patch-lumencast-protocol.mjs": {
     "max_lines": 1932,
     "reason": "Ordered, idempotent compatibility patches to external generated Lumencast artifacts; preserve patch ordering and exact upstream text assertions."
+  },
+  "vendor/lumencast-runtime/index-DYoYgjoZ.js": {
+    "max_lines": 1610,
+    "reason": "Temporary generated Lumencast 0.18.4 chunk pinned by SHA-256; splitting or rewriting it would invalidate the reviewed runtime bundle. Remove with the npm pin."
+  },
+  "vendor/lumencast-runtime/tree-AMqu7A5c.js": {
+    "max_lines": 3979,
+    "reason": "Temporary generated Lumencast 0.18.4 render chunk pinned by SHA-256; splitting or rewriting it would invalidate the reviewed runtime bundle. Remove with the npm pin."
   }
 }

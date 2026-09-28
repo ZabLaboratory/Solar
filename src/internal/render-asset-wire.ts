@@ -11,6 +11,94 @@ const DDRAGON_IMAGE_PATH =
   /^\/cdn\/[^/]+\/img\/(?:champion|item|spell|rune)\//i;
 const IMMUTABLE_RENDER_ASSET_LITERAL = /^__lit\.(?:image|media)\./;
 const MIN_BATCH_RENDER_ASSETS = 8;
+const MAX_HOST_ASSET_BYTES = 128 * 1024 * 1024;
+const RASTER_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "image/gif",
+  "image/avif",
+]);
+
+function hasRasterSignature(mime: string, bytes: Uint8Array): boolean {
+  if (mime === "image/png")
+    return (
+      bytes.length >= 8 &&
+      [137, 80, 78, 71, 13, 10, 26, 10].every(
+        (value, index) => bytes[index] === value,
+      )
+    );
+  if (mime === "image/jpeg")
+    return (
+      bytes.length >= 3 &&
+      bytes[0] === 0xff &&
+      bytes[1] === 0xd8 &&
+      bytes[2] === 0xff
+    );
+  if (mime === "image/webp")
+    return (
+      bytes.length >= 12 &&
+      new TextDecoder().decode(bytes.subarray(0, 4)) === "RIFF" &&
+      new TextDecoder().decode(bytes.subarray(8, 12)) === "WEBP"
+    );
+  if (mime === "image/gif")
+    return (
+      bytes.length >= 6 &&
+      ["GIF87a", "GIF89a"].includes(
+        new TextDecoder().decode(bytes.subarray(0, 6)),
+      )
+    );
+  if (mime === "image/avif")
+    return (
+      bytes.length >= 12 &&
+      new TextDecoder().decode(bytes.subarray(4, 8)) === "ftyp" &&
+      ["avif", "avis"].includes(new TextDecoder().decode(bytes.subarray(8, 12)))
+    );
+  return false;
+}
+
+/** The runtime sees only exact blob URLs minted by this host instance. The
+ * original HTTPS source has already passed the local endpoint's allowlist. */
+export function createLocalRenderAssetRegistry() {
+  const urls = new Set<string>();
+  let retainedBytes = 0;
+  return {
+    register(contentType: string, body: Uint8Array): string | null {
+      const mime = contentType.toLowerCase();
+      if (
+        !RASTER_TYPES.has(mime) ||
+        !hasRasterSignature(mime, body) ||
+        retainedBytes + body.byteLength > MAX_HOST_ASSET_BYTES ||
+        typeof URL.createObjectURL !== "function"
+      ) {
+        return null;
+      }
+      let url: string;
+      try {
+        url = URL.createObjectURL(
+          new Blob([Uint8Array.from(body)], { type: mime }),
+        );
+      } catch {
+        return null;
+      }
+      urls.add(url);
+      retainedBytes += body.byteLength;
+      return url;
+    },
+    isHostAssetUrl(url: string): boolean {
+      return urls.has(url);
+    },
+    dispose(): void {
+      for (const url of urls) URL.revokeObjectURL(url);
+      urls.clear();
+      retainedBytes = 0;
+    },
+  };
+}
+
+export type LocalRenderAssetRegistry = ReturnType<
+  typeof createLocalRenderAssetRegistry
+>;
 
 type ReplacementOwner = Record<string, unknown> | unknown[] | null;
 
@@ -300,6 +388,7 @@ export async function rewriteRenderAssetFrame(
   endpoint: RenderAssetEndpoint,
   fetchImpl: typeof fetch = fetch,
   replacements = new Map<string, string>(),
+  registry?: LocalRenderAssetRegistry,
 ): Promise<string> {
   let frame: unknown;
   try {
@@ -343,9 +432,11 @@ export async function rewriteRenderAssetFrame(
       const contentType =
         response.headers.get("content-type")?.split(";", 1)[0]?.trim() ||
         "image/png";
+      const body = new Uint8Array(await response.arrayBuffer());
       replacements.set(
         source,
-        `data:${contentType};base64,${bytesToBase64(new Uint8Array(await response.arrayBuffer()))}`,
+        registry?.register(contentType, body) ??
+          `data:${contentType};base64,${bytesToBase64(body)}`,
       );
     };
     const batchUrl =
@@ -373,7 +464,8 @@ export async function rewriteRenderAssetFrame(
           const asset = assets[index]!;
           replacements.set(
             source,
-            `data:${asset.contentType};base64,${bytesToBase64(asset.body)}`,
+            registry?.register(asset.contentType, asset.body) ??
+              `data:${asset.contentType};base64,${bytesToBase64(asset.body)}`,
           );
         }
       } catch {
@@ -393,6 +485,7 @@ export async function rewriteRenderAssetFrame(
 export function createRenderAssetWebSocket(
   endpoint: RenderAssetEndpoint,
   NativeWebSocket: typeof WebSocket = globalThis.WebSocket,
+  registry?: LocalRenderAssetRegistry,
 ): typeof WebSocket {
   class RenderAssetWebSocket extends NativeWebSocket {
     private readonly replacements = new Map<string, string>();
@@ -413,6 +506,7 @@ export function createRenderAssetWebSocket(
                     endpoint,
                     fetch,
                     this.replacements,
+                    registry,
                   )
                 : event.data;
             // Installed only by Prism's E2E host, never by production hosts.

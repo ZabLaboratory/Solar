@@ -28,7 +28,8 @@
  */
 
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative, resolve } from "node:path";
+import { createHash } from "node:crypto";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
 const HOST_DIR = resolve(root, "dist", "host");
@@ -113,10 +114,8 @@ if (violations.length > 0) {
   process.exit(1);
 }
 
-// Solar patches Lumencast's readable modules at install time. A future Vite
-// resolution change must not silently switch the served host back to the
-// package's prebuilt/minified entry, where those patches may be absent.
-const mappedSources = new Set();
+// The served host must contain the selected runtime, not the older npm package
+// left installed for declarations and other compatibility paths.
 for (const file of files) {
   const mapFile = `${file}.map`;
   if (!existsSync(mapFile)) {
@@ -124,31 +123,62 @@ for (const file of files) {
       `check-host-bundle: missing source map for ${relative(root, file)}`,
     );
   }
-  const map = JSON.parse(readFileSync(mapFile, "utf8"));
-  for (const source of map.sources ?? [])
-    mappedSources.add(source.replaceAll("\\", "/"));
 }
-const runtimeSource = (suffix) =>
-  [...mappedSources].some((source) =>
-    source.endsWith(`/@lumencast/runtime/dist/${suffix}`),
-  );
-for (const required of [
-  "mount.js",
-  "webrtc/index.js",
-  "render/primitives/live-peer-video.js",
-]) {
-  if (!runtimeSource(required)) {
-    throw new Error(
-      `check-host-bundle: patched runtime module absent from served JS: ${required}`,
+const vendorDir = resolve(root, "vendor", "lumencast-runtime");
+const runtimeEntry =
+  process.env.LUMENCAST_RUNTIME_ENTRY ?? join(vendorDir, "lumencast.js");
+const runtimeDist = dirname(resolve(runtimeEntry));
+const candidateMapped = files.some((file) => {
+  const map = JSON.parse(readFileSync(`${file}.map`, "utf8"));
+  return (map.sources ?? []).some((source) => {
+    const absolute = resolve(dirname(`${file}.map`), source);
+    return (
+      absolute.startsWith(runtimeDist + sep) &&
+      /^index-.*\.js$/.test(basename(absolute))
     );
-  }
-}
-if (runtimeSource("lumencast.js")) {
+  });
+});
+const hasCapability = files.some((file) =>
+  readFileSync(file, "utf8").includes("supportsHostAssetUrls"),
+);
+if (!candidateMapped || !hasCapability) {
   throw new Error(
-    "check-host-bundle: prebuilt Lumencast entry replaced the patched modules",
+    "check-host-bundle: pinned runtime source/capability absent from served JS",
   );
 }
 
+if (!process.env.LUMENCAST_RUNTIME_ENTRY) {
+  const manifest = JSON.parse(
+    readFileSync(join(vendorDir, "manifest.json"), "utf8"),
+  );
+  if (
+    !/^[0-9a-f]{40}$/.test(manifest.sourceCommit) ||
+    !/^[0-9a-f]{40}$/.test(manifest.sourceTree)
+  ) {
+    throw new Error("check-host-bundle: invalid pinned runtime provenance");
+  }
+  const actualFiles = readdirSync(vendorDir)
+    .filter((name) => name.endsWith(".js") || name.endsWith(".js.map"))
+    .sort();
+  const expectedFiles = Object.keys(manifest.files ?? {}).sort();
+  if (
+    actualFiles.length === 0 ||
+    JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)
+  ) {
+    throw new Error("check-host-bundle: pinned runtime file inventory drift");
+  }
+  for (const name of expectedFiles) {
+    const digest = createHash("sha256")
+      .update(readFileSync(join(vendorDir, name)))
+      .digest("hex");
+    if (digest !== manifest.files[name]) {
+      throw new Error(
+        `check-host-bundle: pinned runtime digest drift: ${name}`,
+      );
+    }
+  }
+}
+
 console.log(
-  "check-host-bundle OK — zero bare specifiers; patched runtime modules bundled",
+  "check-host-bundle OK — zero bare specifiers; pinned host-asset runtime bundled",
 );

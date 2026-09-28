@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { rewriteRenderAssetFrame } from "../../src/internal/render-asset-wire";
+import {
+  createLocalRenderAssetRegistry,
+  rewriteRenderAssetFrame,
+} from "../../src/internal/render-asset-wire";
 
 const endpoint = {
   url: "http://127.0.0.1:4567/local-render-asset-url",
@@ -57,6 +60,39 @@ function frameWithSources(sources: string[]): string {
 }
 
 describe("render asset wire hydration", () => {
+  it("registers only raster bytes as exact host-owned URLs and revokes them on teardown", () => {
+    const create = vi
+      .spyOn(URL, "createObjectURL")
+      .mockReturnValue("blob:http://localhost/raster-1");
+    const revoke = vi
+      .spyOn(URL, "revokeObjectURL")
+      .mockImplementation(() => undefined);
+    try {
+      const registry = createLocalRenderAssetRegistry();
+      const owned = registry.register(
+        "image/png",
+        new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]),
+      );
+      expect(owned).toBe("blob:http://localhost/raster-1");
+      expect(registry.isHostAssetUrl(owned!)).toBe(true);
+      expect(registry.isHostAssetUrl("blob:http://localhost/other")).toBe(
+        false,
+      );
+      expect(
+        registry.register("image/svg+xml", new Uint8Array([60, 115, 118, 103])),
+      ).toBeNull();
+      expect(
+        registry.register("image/png", new Uint8Array([60, 115, 118, 103])),
+      ).toBeNull();
+      expect(create).toHaveBeenCalledTimes(1);
+      registry.dispose();
+      expect(revoke).toHaveBeenCalledWith(owned);
+      expect(registry.isHostAssetUrl(owned!)).toBe(false);
+    } finally {
+      create.mockRestore();
+      revoke.mockRestore();
+    }
+  });
   it("does not block the scene snapshot on immutable literals already pinned in the local bundle", async () => {
     const source = `https://zabgate.cyell.dev/canvas/api/v1/scene-assets/${"b".repeat(64)}/bytes`;
     const frame = JSON.stringify({

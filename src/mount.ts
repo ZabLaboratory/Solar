@@ -48,6 +48,7 @@ import { createSlotBindingRegistry } from "./peer-viewer/slot-binding";
 import { validateOptions } from "./internal/validate-options";
 import {
   createRenderAssetWebSocket,
+  createLocalRenderAssetRegistry,
   readRenderAssetEndpoint,
 } from "./internal/render-asset-wire";
 import {
@@ -254,8 +255,7 @@ export function mount(options: MountOptions): SolarHandle {
   const peerViewerChannel = readPeerViewerChannel();
   const usePrismLocalViewer =
     (localOrion && (fromPrism || peerViewerChannel !== null)) ||
-    (!fromLsdp &&
-      (peerViewerInjection !== null || peerViewerChannel !== null));
+    (!fromLsdp && (peerViewerInjection !== null || peerViewerChannel !== null));
   let resolvePeerStream: ResolvePeerStream;
   let subscribePeerStream: SubscribePeerStream;
   let onReservedLeaves: RuntimeMountOptions["onReservedLeaves"];
@@ -398,7 +398,10 @@ export function mount(options: MountOptions): SolarHandle {
         slots: Object.fromEntries(
           Object.keys(currentSlotBindings).map((key) => [
             key,
-            { peer: slots.boundPeer(key), resolved: slots.resolve(key) !== null },
+            {
+              peer: slots.boundPeer(key),
+              resolved: slots.resolve(key) !== null,
+            },
           ]),
         ),
       });
@@ -448,10 +451,23 @@ export function mount(options: MountOptions): SolarHandle {
   }
 
   const renderAssetEndpoint = readRenderAssetEndpoint();
+  // An older Lumencast release rejects blob: at the render gate. Keep its
+  // existing data: hydration unless both sides advertise this capability.
+  const supportsHostAssetUrls =
+    (mountRuntime as typeof mountRuntime & { supportsHostAssetUrls?: boolean })
+      .supportsHostAssetUrls === true;
+  const localAssetRegistry =
+    renderAssetEndpoint !== null && supportsHostAssetUrls
+      ? createLocalRenderAssetRegistry()
+      : null;
   const renderAssetWebSocket =
     renderAssetEndpoint === null
       ? undefined
-      : createRenderAssetWebSocket(renderAssetEndpoint);
+      : createRenderAssetWebSocket(
+          renderAssetEndpoint,
+          globalThis.WebSocket,
+          localAssetRegistry ?? undefined,
+        );
   const editableSidebandUrl = readEditablePreviewSidebandUrl();
   const webSocketImpl =
     editablePreviewFastPathEnabled() && editableSidebandUrl === null
@@ -464,6 +480,9 @@ export function mount(options: MountOptions): SolarHandle {
     target: options.target,
     serverUrl: options.orionUrl,
     token: options.token,
+    ...(localAssetRegistry !== null
+      ? { isHostAssetUrl: localAssetRegistry.isHostAssetUrl }
+      : {}),
     mode: options.mode,
     ...(options.sceneTransition !== undefined
       ? { sceneTransition: options.sceneTransition }
@@ -576,6 +595,7 @@ export function mount(options: MountOptions): SolarHandle {
       // ghost peer into the mesh.
       teardownPeerViewer();
       handle.disconnect();
+      localAssetRegistry?.dispose();
     },
     setToken: (token) => handle.setToken(token),
   };

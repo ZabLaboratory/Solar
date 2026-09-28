@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   file-sizes:
-    runs-on: [self-hosted, vps-ovh]
+    runs-on: ubuntu-latest
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     timeout-minutes: 5
     steps:
