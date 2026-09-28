@@ -27,7 +27,8 @@ export default defineConfig({
     alias: {
       "@lumencast/runtime": resolve(
         __dirname,
-        "node_modules/@lumencast/runtime/dist/index.js",
+        process.env.LUMENCAST_RUNTIME_ENTRY ??
+          "vendor/lumencast-runtime/lumencast.js",
       ),
     },
   },

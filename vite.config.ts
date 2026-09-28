@@ -9,20 +9,23 @@ import dts from "vite-plugin-dts";
 // the initial scaffold).
 
 export default defineConfig({
-  // Solar's postinstall validates/patches the readable runtime modules. Bundle
-  // from that same entry instead of a minified chunk whose symbols drift on
-  // every Lumencast rebuild.
+  // The npm publish gate is temporarily unavailable. Bundle the reviewed,
+  // commit-pinned Lumencast runtime until the same revision is on npm.
   resolve: {
     alias: {
       "@lumencast/runtime": resolve(
         __dirname,
-        "node_modules/@lumencast/runtime/dist/index.js",
+        process.env.LUMENCAST_RUNTIME_ENTRY ??
+          "vendor/lumencast-runtime/lumencast.js",
       ),
     },
   },
   plugins: [
     react(),
     dts({
+      // The pinned runtime is a JavaScript bundle. Keep declarations resolved
+      // from the installed package until the matching npm release exists.
+      aliasesExclude: ["@lumencast/runtime"],
       entryRoot: "src",
       include: ["src/**/*.ts", "src/**/*.tsx"],
       exclude: [

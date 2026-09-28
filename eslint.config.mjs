@@ -12,6 +12,11 @@ export default tseslint.config(
       "node_modules",
       "playwright-report",
       "test-results",
+      // Local profiling captures contain generated/minified host bundles,
+      // not Solar source files. Keep the full source lint intact.
+      "evidence",
+      // Reviewed, generated Lumencast chunks are integrity-checked at build.
+      "vendor/lumencast-runtime",
       // Agent worktrees / harness checkouts live untracked under .claude
       // and carry their own built dist — never Solar's lintable source.
       ".claude",
