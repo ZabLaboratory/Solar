@@ -1,17 +1,15 @@
 import { resolve } from "node:path";
 import { defineConfig } from "vitest/config";
-import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   resolve: {
     alias: {
       "@lumencast/runtime": resolve(
         __dirname,
-        "node_modules/@lumencast/runtime/src/index.ts",
+        "node_modules/@lumencast/runtime/dist/webrtc/index.js",
       ),
     },
   },
-  plugins: [react()],
   test: {
     environment: "happy-dom",
     include: ["tests/unit/**/*.test.ts", "tests/unit/**/*.test.tsx"],

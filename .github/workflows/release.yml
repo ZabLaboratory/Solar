@@ -25,10 +25,8 @@ permissions:
 jobs:
   build-and-release:
     name: Build and publish bundle tarball
-    # Org Actions billing is frozen → the whole org runs on the self-hosted
-    # vps-ovh pool, not ubuntu-latest (see zab-ci-self-hosted-runner-substrate).
-    # Runners are EPHEMERAL/JIT (spawned per job), so setup-node's npm cache
-    # never hits — omitted on purpose (same rationale as Orion ci.yml).
+    # The release uses the configured vps-ovh self-hosted runner pool.
+    # Native binary paths below must be provisioned on that runner.
     runs-on: [self-hosted, vps-ovh]
     timeout-minutes: 15
     steps:
@@ -39,19 +37,24 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run check:architecture
+      - run: npm run test:architecture
+      - run: npm run check:native-client
       - run: npm test
       - run: npm run build
       - run: npm run check:bundle
-
-      - name: Install Playwright Chromium
-        # Browser binary only, NO --with-deps: the JIT job container mounts its
-        # rootfs `nosuid`, so sudo cannot elevate at job time ("effective uid is
-        # not 0 … nosuid") — --with-deps' internal `sudo apt-get` fails there even
-        # though NOPASSWD sudo is baked. Chromium's OS libs (libnspr4/libnss3/
-        # libasound2 …) are instead pre-baked into the org runner image
-        # zab-org-runner:pg — see Orion docs/runbooks/ci-runner-pg-image.md.
-        run: npx playwright install chromium chromium-headless-shell
-      - run: npm run test:e2e
+      # Platform builds are an input to Solar's release, never compiled on the
+      # operator's machine at application startup. Missing binaries fail closed.
+      - name: Package unchanged native receiver binaries
+        env:
+          LSDP_WINDOWS_BINARY: ${{ vars.SOLAR_LSDP_WINDOWS_BINARY }}
+          LSDP_LINUX_BINARY: ${{ vars.SOLAR_LSDP_LINUX_BINARY }}
+        run: |
+          test -f "$LSDP_WINDOWS_BINARY"
+          test -f "$LSDP_LINUX_BINARY"
+          npm run package:native -- --binary "$LSDP_WINDOWS_BINARY" --platform win32-x64 --revision e695e14f9f664f430ffc2e0e75d083fab88abc7f
+          npm run package:native -- --binary "$LSDP_LINUX_BINARY" --platform linux-x64 --revision e695e14f9f664f430ffc2e0e75d083fab88abc7f
+          npm run check:native-package -- win32-x64 linux-x64
 
       - name: Resolve version from tag
         id: version
@@ -75,6 +78,7 @@ jobs:
         # are a contract with Orion deploy.yml — see header).
         run: |
           mkdir -p release
+          npm run check:layout
           tar -czf "release/solar-${GITHUB_REF_NAME}.tgz" -C dist .
           node scripts/create-runtime-manifest.mjs \
             "release/solar-${GITHUB_REF_NAME}.tgz" \

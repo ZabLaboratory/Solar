@@ -9,9 +9,10 @@ raising a ceiling requires an explicit review of that file's justification. Hist
 design snapshots, generated lockfiles, exhaustive contract catalogues, coherent regression
 scenarios and stateful lifecycle roots are distinguished from new modules.
 
-Prism's broadcast engine is an explicit exception: preserve atomic lane transactions.
-Stateful UI closures retained in this pass must not change callback/hook ownership simply
-to reduce file length. Their exception is not permission to add unrelated features there.
+Solar's renderer has one owner per native, presentation, media, animation and source
+boundary. Do not change callback/track ownership merely to reduce file length.
+Build output and the isolated proof Python environment are generated dependencies,
+ignored under build/ rather than admitted as product source exceptions.
 
 Run `python scripts/check_file_sizes.py`; CI runs the same guard and its self-tests.
 The guard examines tracked and unignored new files. Binary assets and generated E2E/evidence

@@ -1,0 +1,105 @@
+[
+  {
+    "name": "portable-0",
+    "value": null,
+    "hash": "tree-sha256:1b16b1df538ba12dc3f97edbb85caa7050d46c148134290feba80f8236c83db9"
+  },
+  {
+    "name": "portable-1",
+    "value": false,
+    "hash": "tree-sha256:252f10c83610ebca1a059c0bae8255eba2f95be4d1d7bcfa89d7248a82d9f111"
+  },
+  {
+    "name": "portable-2",
+    "value": true,
+    "hash": "tree-sha256:e3b98a4da31a127d4bde6e43033f66ba274cab0eb7eb1c70ec41402bf6273dd8"
+  },
+  {
+    "name": "portable-3",
+    "value": 0,
+    "hash": "tree-sha256:0ad52e338662c923b15fd45a73c6e97336efccf28a7aef9449443cc6dd7415fb"
+  },
+  {
+    "name": "portable-4",
+    "value": 0,
+    "hash": "tree-sha256:0ad52e338662c923b15fd45a73c6e97336efccf28a7aef9449443cc6dd7415fb"
+  },
+  {
+    "name": "portable-5",
+    "value": 1,
+    "hash": "tree-sha256:8b53639f152c8fc6ef30802fde462ba0be9cf085f7580dc69efd72e002abbb35"
+  },
+  {
+    "name": "portable-6",
+    "value": 1e-7,
+    "hash": "tree-sha256:834315a4897984d78a0fbb908f6b7638134def98aa4e3ac08d692c3425052b74"
+  },
+  {
+    "name": "portable-7",
+    "value": 0.000001,
+    "hash": "tree-sha256:51d372720c2341b88db5f72c7dbe2af85ce36b197beef4e8499e4e32ec0bed6c"
+  },
+  {
+    "name": "portable-8",
+    "value": 9007199254740991,
+    "hash": "tree-sha256:333a7f5e070f68ffb3124de095352cb863593463d06156ee5cd42a2f06a45c23"
+  },
+  {
+    "name": "portable-9",
+    "value": -9007199254740991,
+    "hash": "tree-sha256:eb28d55bb9ef6237fe841355427a7d9ae976d5ec29bad47e33bbd999f7bb95a4"
+  },
+  {
+    "name": "portable-10",
+    "value": "é漢字😀",
+    "hash": "tree-sha256:bfd96b793e32c3562d34955c02a2e6fc86f62f8ca7ae822d027c660ed00fdf52"
+  },
+  {
+    "name": "portable-11",
+    "value": [],
+    "hash": "tree-sha256:50edc262344620ebd2c9cabf9297150b2175819f0e9ac19b0bb104e61072cba3"
+  },
+  {
+    "name": "portable-12",
+    "value": {},
+    "hash": "tree-sha256:fb57a7d8c0a660d2623eea75135401654695c1f32852f6583dcbdfccfef10376"
+  },
+  {
+    "name": "portable-13",
+    "value": [
+      null,
+      true,
+      1,
+      {
+        "x": "y"
+      }
+    ],
+    "hash": "tree-sha256:45cc4f0943cdbf69af2598249f4df902570bf3ce526518ffc2fed1625dba0265"
+  },
+  {
+    "name": "portable-14",
+    "value": {
+      "a": 1,
+      "b": 2
+    },
+    "hash": "tree-sha256:34a3215d9d37610ff7868f8bcddd6f99235d887b5386b9d41f4930a0f77f0685"
+  },
+  {
+    "name": "portable-15",
+    "value": {
+      "😀": 1,
+      "": 2,
+      "a/b": 3,
+      "~": null
+    },
+    "hash": "tree-sha256:750c355dc6044722e19fc1a4f61b787512f38476ec54ede27782537a2f3dc64b"
+  },
+  {
+    "name": "portable-16",
+    "value": {
+      "__proto__": 1,
+      "constructor": 2
+    },
+    "hash": "tree-sha256:de734ef1e872216275fcddad1a5329556eada9ee2d15310c47006468644a5c59"
+  }
+]

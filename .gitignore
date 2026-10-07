@@ -11,7 +11,10 @@ Thumbs.db
 .idea
 
 # Build caches
+/build/
 *.tsbuildinfo
+__pycache__/
+*.py[cod]
 
 # Test artefacts
 coverage

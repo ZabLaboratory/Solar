@@ -1,18 +1,19 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "jsx": "react-jsx",
-
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -20,22 +21,27 @@
     "skipLibCheck": true,
     "verbatimModuleSyntax": true,
     "useDefineForClassFields": true,
-
     "composite": true,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "outDir": "./dist/types",
     "rootDir": "./src",
-
-    "types": ["vite/client"]
+    "types": [
+      "vite/client",
+      "node"
+    ],
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "dist",
     "node_modules",
     "tests/**/*",
-    "src/dev-entry.tsx",
-    "src/host-entry.tsx"
+    "src/dev-entry.ts",
+    "src/host-entry.ts"
   ]
 }

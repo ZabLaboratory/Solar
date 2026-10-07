@@ -1,104 +1,117 @@
 # Solar
 
-[![Release](https://img.shields.io/github/v/release/ZabLaboratory/Solar?logo=github)](https://github.com/ZabLaboratory/Solar/releases/latest)
-[![CI](https://github.com/ZabLaboratory/Solar/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/ZabLaboratory/Solar/actions/workflows/ci.yml)
-[![Prism runtime release](https://img.shields.io/badge/Prism-local%20bundle-0f766e)](https://github.com/ZabLaboratory/Solar/releases/latest)
+Solar is the LSDP scene client and Vision renderer for Zab broadcast hosts.
+Orion sends the authoritative scene id, `scene_version` and live leaf state;
+Solar fetches that exact published LSMLZ revision from ZabCanvas and mounts it
+in Vision. Scene changes use the next authoritative LSDP snapshot. Solar does
+not request or render compiled scene bundles.
 
-Scene runtime bundle for the Zablab broadcast platform.
-
-Solar takes a render bundle (HTTP) plus a live state stream
-(WebSocket from Orion v2) and produces the broadcast-quality DOM that
-Pulsar's CEF browser source captures, that Prism's live control
-panel displays, and that the editor preview iframe renders for
-authoring.
-
-## Hosts
-
-| Host                      | Mode        | What's visible                           |
-| ------------------------- | ----------- | ---------------------------------------- |
-| Pulsar CEF browser source | `broadcast` | The composed scene only — no UI          |
-| Prism live control panel  | `control`   | Scene + operator overlay                 |
-| Editor preview iframe     | `test`      | Scene + adapter mocker + state inspector |
+Vision owns LSML/LSMLZ parsing, retained scene state, assets and GPU rendering.
+Solar owns the LSDP connection, pinned source acquisition, local capture and
+receive-only peer streams, and camera texture updates. Blue declaration and
+validation pins arrive with the ZabCanvas source manifest; Blue execution stays
+on its validated server path and its LSML mutations arrive through LSDP.
 
 ## Public API
 
 ```ts
-import { mount } from "@zablab/solar";
+import { createCanvasSceneSourceProvider, mount } from "@zablab/solar";
 
 const handle = mount({
   target: document.getElementById("scene")!,
-  orionUrl: "wss://<gate>/orion/api/v1/show/stream",
+  nativeLSDP: { url: "ws://127.0.0.1:4007/lsdp", resource: "solar/program" },
   token: showToken,
   mode: "broadcast",
+  sceneSourceProvider: createCanvasSceneSourceProvider({
+    apiUrl: "https://zabgate.cyell.dev/canvas/api/v1",
+    token: canvasToken,
+  }),
 });
 
-// later
-handle.setToken(rotatedToken);
+handle.setToken(rotatedShowToken);
 handle.disconnect();
 ```
 
-The complete typed surface lives in `src/types/index.ts`.
+The source provider requests by scene id, pins every fetch to the LSDP
+`scene_version`, verifies response identity and hashes, and carries the
+revision's Blue manifest beside the LSMLZ bytes. `createCachedSceneSourceProvider`
+and `FileSceneSourceStore` now preserve verified immutable sources/assets/Blue
+closure through that same boundary. The served browser host synchronizes the
+Canvas catalogue at startup into a credential-partitioned IndexedDB store,
+with quota/LRU eviction and exact offline reads.
+See [source cache](docs/development/source-cache.md).
 
-## Status
+Native Lumencast LSDP supplies the complete live LSML document. The mount
+requires `nativeLSDP: { url, resource, selector? }`; the standalone host accepts
+`/host.html?lsdp=<encoded-ws-url>&resource=scene`. `selector` pins one entry in
+`solar/generations` or `solar/sessions`; unrelated entries never retarget the
+renderer. Solar uses the byte-pinned Lumencast browser client and
+`LSDP-TCP/2.0-draft2`; it reads a fragmented resource snapshot, subscribes at its
+Merkle hash, and applies atomic `lsdp.apply/1` notifications. See
+[native local development](docs/development/native-lsdp.md) for the Rust server
+launcher and mutation endpoint.
 
-Solar v2 is the versioned scene runtime used by the local Prism preview,
-on-air surface and Pulsar CEF browser source. `mount()` owns the transport,
-state, render and overlay layers for those hosts; the same host bundle is
-also available to Orion's static serving path.
+The `@zablab/solar/server` entry runs in a Node 22+/Electron-main host. It owns
+the packaged Rust receiver, injects declared Solar/Orion resources and waits for
+real protocol readiness. The browser entry never creates a process. Full LSML
+is delivered to the existing native `state` route, where Rust computes the diff;
+explicit operations use atomic application transactions. The application host owns one shared instance and supplies TCP to Orion and
+WebSocket to Solar; wiring the installed Prism lifecycle remains its integration task.
 
-## Stack
+## Host configuration
 
-- TypeScript 5.7 strict
-- React 19
-- Tailwind 4
-- Vite 6 (library mode → ESM bundle + CSS + types)
-- `@preact/signals-react` for fine-grained reactivity
-- Framer Motion 12 for tween / spring transitions
-- Vitest (unit) + Playwright (E2E against mock-orion)
+The served host gets its scene identity only from LSDP. A trusted embedding host
+sets `globalThis.__SOLAR_CONFIG__ = { nativeLSDP, canvasApiUrl, canvasToken }` before
+loading Solar. The default Canvas API is ZabGate's `/canvas/api/v1`; if no
+Canvas-specific token is configured, Solar reuses the show token. Every mode
+uses the same Vision scene path. Test sessions subscribe to `solar/sessions`
+with the actual Orion API session ID as selector; closing that entry clears
+the renderer. Program and Preview use separate role-stable resources.
 
-## Setup local
+Vision's presenter module and WASM engine are served from `public/vision/` and
+copied into `dist/host/vision/` only by the host build. The library build disables
+Vite's public-directory copy. `npm run check:layout` rejects duplicate Vision
+assets, missing or changed copies, and every collision when the host is promoted
+to the installed runtime root. It runs at build completion, in `check:bundle`,
+before npm packing and immediately before release archive creation.
+The four engine/host files are SHA-256 pinned in public/vision/vision-assets.json.
+Regenerate those checked-in
+assets from the configured `lumencast-vision` source after changing its Rust or
+presenter code, then run `npm run check:bundle`.
+
+## Development and checks
 
 ```bash
 npm ci
-npm run dev          # Vite dev server (HMR while iterating on src/)
-npm run lint         # ESLint, --max-warnings 0
-npm run typecheck    # tsc --noEmit
-npm test             # Vitest unit tests
-npm run build        # Dual build: dist/solar.{js,css}+types (library, for
-                     #   Prism) AND dist/host/** (self-contained, for the
-                     #   CEF / Orion static serve). See ADR 001.
-npm run test:e2e     # Playwright served-bundle smoke test (no import map)
+npm run dev
+npm run lint
+npm run typecheck
+npm run check:architecture
+npm test
+npm run build
+npm run check:bundle
 ```
 
-## Distribution
+`npm run build` emits the public ESM API and a self-contained host page for
+Orion static serving and Pulsar CEF. The peer-viewer compatibility dependency
+is bundled from its WebRTC-only entry; its compiled-bundle renderer is not used.
 
-Solar publishes as `@zablab/solar` to a private registry once one
-exists. In the interim, consumers vendor a built artefact keyed by
-version. The two consumers have opposite bundling needs, so the build
-emits **two** artefacts (ADR 001) :
+Unit checks cover native snapshots/mutations, exact scene revision acquisition,
+Vision activation, Blue manifest identity and camera/peer texture updates.
+They do not prove authenticated production access, physical camera behavior,
+Pulsar composition or deployment. Cache storage and exact offline reads are
+implemented, including browser startup synchronization and bounded storage.
+Prism integration remains outside this scope.
 
-- **Orion static serve → Pulsar CEF.** Serves `dist/host/**` at
-  `/orion/static/solar/v{N.N.N}/...` — a **self-contained** bundle with
-  every runtime dep inlined (no bare specifiers; the CEF has no bundler
-  and no import map). This is the `index.html` the browser source loads.
-- **Prism webview.** Vendors the **library** entry (`dist/solar.js`,
-  externals) into `Prism/resources/solar/v{N.N.N}/...`; Prism re-bundles
-  and supplies React / Framer from its own tree.
+- [Qualification native, CEF et paquet installé](docs/runbooks/qualification.md)
+- [Maturité locale et preuves](docs/development/maturity.md)
 
-A breaking change to the render-bundle format bumps the major and
-ships a migration helper in Orion's compiler. Compatibility within
-a major is contractual.
+- [Architecture and current code index](docs/development/architecture.md)
+- [Code, symbols and consumers](docs/development/code-map.md)
+- [Maintenance and qualification tools](scripts/README.md)
 
-## Release and local cache
-
-Every `vX.Y.Z` tag publishes `solar-runtime-manifest.json` alongside the
-versioned `solar-vX.Y.Z.tgz` bundle. Prism checks that manifest after login,
-downloads and verifies the digest when needed, then stores the immutable
-bundle in its local Solar cache. A suffix tag such as `v2.0.0b` is accepted
-for a proof release without changing the base package version. The render
-path does not download Solar during a scene switch.
-
-## License
-
-Proprietary — Zablab platform. See workspace governance under
-`../docs/rules/`.
+`npm run code:map` refreshes the derived index; `npm run code:check` rejects drift.
+`npm run code:read -- <path-or-symbol>` and `npm run code:find -- <query>` inspect
+the current source graph. `npm run check:architecture` also verifies active local
+documentation and named commands. Historical ADRs and evidence describe their own
+candidate, not the current runtime.

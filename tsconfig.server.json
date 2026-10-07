@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.lib.json",
+  "compilerOptions": {
+    "composite": false,
+    "incremental": false,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/server/types"
+  },
+  "include": ["src/server/**/*.ts"]
+}

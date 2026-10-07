@@ -11,13 +11,7 @@
         margin: 0;
         padding: 0;
         height: 100%;
-        /* Transparent so Pulsar CEF (OSR) composites the host as a true
-           alpha overlay: native capture sources anchored BEHIND the
-           browser_source (x-zab.capture placeholder is transparent) show
-           through. A #000 here is opaque and hides them (black on-air).
-           On-air the OBS canvas behind is black, so opaque scenes look
-           identical; in the Prism preview the scene-server SOLAR_FIT_SHIM
-           forces its own background, so preview is unaffected. */
+        /* Preserve alpha from Vision output for transparent scene pixels. */
         background: transparent;
       }
       #scene {
@@ -30,14 +24,11 @@
   </head>
   <body>
     <!--
-      Host / standalone bundle entry (ADR 001 dual-build). Vite's host
-      target (vite.config.host.ts) rewrites this module reference to a
-      hashed, self-contained, relatively-imported JS chunk under
-      dist/host/ — zero bare specifiers. The transparent 100vh #scene
-      mirrors broadcast hosts' expectation (Pulsar CEF composites it as a
-      transparent overlay over the operator's native video sources).
+      Standalone LSDP/Vision host entry. Vite rewrites this module reference
+      to a self-contained relative JS chunk and copies Vision's static runtime
+      assets beside it. The transparent root preserves Vision alpha.
     -->
     <div id="scene" data-testid="solar-scene-root"></div>
-    <script type="module" src="/src/host-entry.tsx"></script>
+    <script type="module" src="/src/host-entry.ts"></script>
   </body>
 </html>

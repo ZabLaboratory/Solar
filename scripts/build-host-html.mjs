@@ -1,29 +1,17 @@
 #!/usr/bin/env node
 /**
- * Reconciles the host build's emitted HTML into the served contract
- * (ADR 001 §3.3) — runs as the third step of `npm run build`, after the
- * library build and the host build (`vite build --config vite.config.host.ts`).
+ * Reconciles the standalone Vision host HTML after its Vite build.
  *
- * The host Vite target (app mode, no externals) emits a self-contained
- * bundle under `dist/host/`: a hashed JS chunk that inlines every runtime
- * dep (react / react-dom / @preact/signals-react / framer-motion) and an
- * HTML file that imports it via a RELATIVE module URL (`./assets/host-*.js`).
+ * The host Vite target emits a self-contained bundle under `dist/host/`
+ * and an HTML file that imports it via a relative module URL.
  * Because Vite names the HTML after its input (`host.html`), this step:
  *
- *   1. renames `dist/host/host.html` → `dist/host/index.html` so the served
- *      contract stays `/static/solar/v{N}/index.html` (D3, unchanged shape);
- *   2. stamps the real package version into `<meta name="generator">`
- *      (resolution criterion 5: generator reflects 0.2.1);
- *   3. asserts the served HTML's entry script is a relative `./` URL — a
- *      cheap guard so the served form can never regress to a bare/absolute
- *      module specifier the CEF can't resolve (D1). The deep
- *      anti-bare-specifier scan of the JS lives in
- *      scripts/check-host-bundle.mjs (CI gate).
+ *   1. renames `host.html` to the served `index.html`;
+ *   2. stamps the package version into the generator meta;
+ *   3. verifies the entry script remains relative for CEF.
  *
- * This is intentionally a thin reconcile, not a hand-rolled bootstrap: the
- * bootstrap now lives in src/host-entry.tsx and is compiled into the
- * hashed chunk, so there is no inlined `import "./solar.js"` to keep in
- * sync with the build's filenames (R3 mitigation).
+ * The bootstrap lives in src/host-entry.ts and is compiled into the host
+ * chunk, so no renderer entry is hand-maintained here.
  */
 
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";

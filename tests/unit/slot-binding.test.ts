@@ -4,11 +4,11 @@
 // and the bare-`peer_label` pass-through (preview non-regression).
 
 import { describe, expect, it, vi } from "vitest";
-import type { PeerStreamListener, PeerStreamRegistry } from "@lumencast/runtime";
-import {
-  CAM_SLOTS_PREFIX,
-  createSlotBindingRegistry,
-} from "../../src/peer-viewer/slot-binding";
+import type {
+  PeerStreamListener,
+  PeerStreamRegistry,
+} from "@lumencast/runtime";
+import { createSlotBindingRegistry } from "../../src/peer-viewer/slot-binding";
 
 /** A fake `peer_label`-keyed registry : streams are plain sentinels (no real
  *  MediaStream needed). `set`/`remove` push to subscribers, mirroring the
@@ -56,7 +56,8 @@ function fakePeerRegistry(): PeerStreamRegistry & {
   };
 }
 
-const streamFor = (id: string): MediaStream => ({ id }) as unknown as MediaStream;
+const streamFor = (id: string): MediaStream =>
+  ({ id }) as unknown as MediaStream;
 
 describe("slot-binding registry", () => {
   it("resolves slotRef → peer_label → track from a simulated LSDP delta", () => {
@@ -89,7 +90,11 @@ describe("slot-binding registry", () => {
 
   it("resolves the three Canvas camera slots independently", () => {
     const peers = fakePeerRegistry();
-    const streams = [streamFor("cam-0"), streamFor("cam-1"), streamFor("cam-2")];
+    const streams = [
+      streamFor("cam-0"),
+      streamFor("cam-1"),
+      streamFor("cam-2"),
+    ];
     ["fake-cam-1", "fake-cam-2", "fake-cam-3"].forEach((label, index) => {
       peers.push(label, streams[index]!);
     });
@@ -258,10 +263,6 @@ describe("slot-binding registry", () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
-  it("exposes the LSDP leaf prefix Orion emits", () => {
-    expect(CAM_SLOTS_PREFIX).toBe("__cam.slots.");
-  });
-
   /* ---- positional `@<n>` resolution (ADR Blue 009 axe 1, positional) ---- */
 
   it("resolves a positional `@<n>` key to the n-th peer in arrival order", () => {
@@ -287,6 +288,20 @@ describe("slot-binding registry", () => {
     const a = streamFor("cam-a");
     peers.push("alice", a); // first peer connects mid-show
     expect(seen.at(-1)).toBe(a);
+  });
+
+  it("keeps an explicit positional release empty across roster changes", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    const a = streamFor("cam-a");
+    peers.push("alice", a);
+    reg.assign("@0", "alice");
+    reg.assign("@0", null);
+    expect(reg.resolve("@0")).toBeNull();
+    peers.push("bob", streamFor("cam-b"));
+    expect(reg.resolve("@0")).toBeNull();
+    reg.assign("@0", "alice");
+    expect(reg.resolve("@0")).toBe(a);
   });
 
   it("shifts positions up when an earlier peer leaves (slot 0 re-keys)", () => {
