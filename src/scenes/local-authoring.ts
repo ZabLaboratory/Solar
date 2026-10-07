@@ -32,7 +32,8 @@ export function createLocalAuthoringSourceProvider(
       });
       if (response.status === 404) return null;
       if (!response.ok) throw new SceneSourceError("SOURCE_REQUEST_FAILED");
-      const maximum = 4 * 1024 * 1024;
+      // Matches Orion's bounded envelope, including base64 explicit fonts.
+      const maximum = 16 * 1024 * 1024;
       if (Number(response.headers.get("content-length") ?? 0) > maximum)
         throw new SceneSourceError("SOURCE_RESOURCE_LIMIT");
       const data = new Uint8Array(await response.arrayBuffer());
