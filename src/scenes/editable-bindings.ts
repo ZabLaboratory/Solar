@@ -30,7 +30,14 @@ export function prepareNativeComposition(
     else bands.push([]);
   }
   replaceCaptures(root);
-  if (bands.length === 1) return;
+  // Pulsar still owns the full browser atlas, but trailing capture-only bands
+  // have no Vision pixels. Keep inner gaps for z-order; omit empty tail surfaces
+  // so the GPU/front-canvas copy does not grow with capture-only overlays.
+  while (bands.length > 1 && bands.at(-1)!.length === 0) bands.pop();
+  if (bands.length === 1) {
+    root.children = bands[0];
+    return;
+  }
   document.layout = {
     kind: "frame",
     size: { w: viewport.width, h: viewport.height * bands.length },

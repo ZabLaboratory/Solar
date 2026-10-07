@@ -108,3 +108,47 @@ it("keeps Pulsar native captures between distinct transparent Vision bands", asy
   expect(below).not.toHaveProperty("id");
   expect(above).not.toHaveProperty("id");
 });
+
+it("omits empty trailing capture bands while retaining inner z-order gaps", async () => {
+  const { prepareNativeComposition } =
+    await import("../../src/scenes/editable-bindings");
+  const document = {
+    scene_id: "tail",
+    scene_version: "base",
+    layout: {
+      kind: "frame",
+      size: { w: 1920, h: 1080 },
+      children: [
+        { kind: "shape", id: "bottom" },
+        { kind: "x-zab.capture", id: "a" },
+        { kind: "x-zab.capture", id: "b" },
+      ],
+    },
+  };
+  prepareNativeComposition(document, { width: 1920, height: 1080 });
+  expect(document.layout.size.h).toBe(1080);
+  expect(document.layout.children.map((node) => node.id)).toEqual(["bottom"]);
+  const middle = {
+    scene_id: "middle",
+    scene_version: "base",
+    layout: {
+      kind: "frame",
+      size: { w: 1920, h: 1080 },
+      children: [
+        { kind: "shape", id: "bottom" },
+        { kind: "x-zab.capture", id: "a" },
+        { kind: "x-zab.capture", id: "b" },
+        { kind: "text", id: "top" },
+        { kind: "x-zab.capture", id: "tail" },
+      ],
+    },
+  };
+  prepareNativeComposition(middle, { width: 1920, height: 1080 });
+  expect(middle.layout.size.h).toBe(3240);
+  const bands = middle.layout.children as unknown as Array<{
+    position: { y: number };
+    children: Array<{ children: unknown[] }>;
+  }>;
+  expect(bands[1]!.children[0]!.children).toEqual([]);
+  expect(bands[2]!.position.y).toBe(2160);
+});

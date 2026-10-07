@@ -59,3 +59,7 @@ their pixels; Meet peer nodes retain their Solar rendering. Root background pain
 appears only in the first band. The presentation surface has fixed pixel
 dimensions, independent of a stale warm CEF viewport, and native scene items
 compose each band with the captures in authored paint order.
+
+Capture-only trailing bands stay transparent in the browser without allocating
+Vision GPU/front-canvas pixels for them. Inner empty bands retain their offsets
+so capture/overlay paint order remains exact. The atlas contract test covers both.
