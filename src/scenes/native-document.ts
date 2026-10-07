@@ -5,7 +5,10 @@ import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import type { SceneRenderDelivery } from "./types";
 import { prepareAnimationBindings } from "../engine/animations";
-import { prepareEditableBindings } from "./editable-bindings";
+import {
+  prepareEditableBindings,
+  prepareNativeComposition,
+} from "./editable-bindings";
 
 export type LSMLDocument = Record<string, unknown> & {
   scene_id: string;
@@ -290,6 +293,7 @@ export class NativeSceneAssets {
   async renderPackage(
     document: LSMLDocument,
     signal?: AbortSignal,
+    nativeComposition?: { width: number; height: number },
   ): Promise<{
     data: Uint8Array;
     sceneVersion: string;
@@ -299,7 +303,8 @@ export class NativeSceneAssets {
     imageAssets: Record<string, string>;
     imageValues: Record<string, unknown>;
     animationBindings: Record<string, string>;
-    geometryBindings: string[];
+    geometryBindings: Record<string, [string, string]>;
+    surface?: { width: number; height: number };
   }> {
     if (
       document.scene_id !== this.origin.sceneId ||
@@ -322,6 +327,7 @@ export class NativeSceneAssets {
     );
     const animationBindings = prepareAnimationBindings(variant);
     const geometryBindings = prepareEditableBindings(variant);
+    if (nativeComposition) prepareNativeComposition(variant, nativeComposition);
     const textBindings = prepareTextBindings(variant);
     const imageBindings = await this.prepareImageBindings(
       variant,
@@ -347,6 +353,14 @@ export class NativeSceneAssets {
       ),
       animationBindings,
       geometryBindings,
+      ...(nativeComposition
+        ? {
+            surface: {
+              width: nativeComposition.width,
+              height: (variant.layout as { size: { h: number } }).size.h,
+            },
+          }
+        : {}),
     };
   }
 }

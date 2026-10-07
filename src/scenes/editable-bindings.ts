@@ -1,8 +1,78 @@
 import type { LSMLDocument } from "./native-document";
 
+/** Pulsar owns local capture pixels; Vision supplies transparent z-order bands. */
+export function prepareNativeComposition(
+  document: LSMLDocument,
+  viewport: { width: number; height: number },
+): void {
+  const root = document.layout as Record<string, unknown>;
+  const children = Array.isArray(root.children) ? root.children : [];
+  const bands: unknown[][] = [[]];
+  const replaceCaptures = (value: unknown): void => {
+    if (!value || typeof value !== "object") return;
+    if (Array.isArray(value)) {
+      value.forEach(replaceCaptures);
+      return;
+    }
+    const node = value as Record<string, unknown>;
+    if (node.kind === "x-zab.capture") {
+      node.kind = "frame";
+      node.size ??= { w: 0, h: 0 };
+      delete node["x-zab.deviceRef"];
+      delete node["x-zab.sourceKind"];
+    }
+    if (Array.isArray(node.children)) node.children.forEach(replaceCaptures);
+  };
+  for (const child of children) {
+    const capture =
+      (child as Record<string, unknown>)?.kind === "x-zab.capture";
+    if (!capture) bands.at(-1)!.push(child);
+    else bands.push([]);
+  }
+  replaceCaptures(root);
+  if (bands.length === 1) return;
+  document.layout = {
+    kind: "frame",
+    size: { w: viewport.width, h: viewport.height * bands.length },
+    children: bands.map((children, index) => {
+      const layer: Record<string, unknown> = { ...root, children };
+      delete layer.id;
+      if (index > 0) {
+        for (const key of [
+          "fill",
+          "fills",
+          "background",
+          "stroke",
+          "strokes",
+          "shadow",
+          "blur",
+          "glass",
+          "noise",
+        ])
+          delete layer[key];
+        layer.bind = {
+          ...(layer.bind as Record<string, string>),
+          fill: undefined,
+        };
+        delete (layer.bind as Record<string, unknown>).fill;
+      }
+      return {
+        kind: "frame",
+        position: { x: 0, y: viewport.height * index },
+        size: { w: viewport.width, h: viewport.height },
+        clipsContent: true,
+        children: [layer],
+      };
+    }),
+  };
+}
+
 /** Runtime-only projection of the former DOM wrapper vocabulary to Vision LSML. */
-export function prepareEditableBindings(document: LSMLDocument): string[] {
-  const geometry = new Set<string>();
+export function prepareEditableBindings(
+  document: LSMLDocument,
+): Record<string, [string, string]> {
+  const positions: Record<string, [string, string]> = {};
+  let index = 0;
   const visit = (value: unknown): void => {
     if (!value || typeof value !== "object" || Array.isArray(value)) return;
     const node = value as Record<string, unknown>;
@@ -13,18 +83,21 @@ export function prepareEditableBindings(document: LSMLDocument): string[] {
     const defaults = document.defaults ?? {};
     const translate = animate?.["transform.translate"];
     if (translate) {
-      geometry.add(translate);
       const position = defaults[translate];
-      if (Array.isArray(position) && position.length === 2)
-        node.position = { x: position[0], y: position[1] };
+      const aliases: [string, string] = positions[translate] ?? [
+        `__solar.geometry.n${index}.x`,
+        `__solar.geometry.n${index++}.y`,
+      ];
+      positions[translate] = aliases;
+      document.defaults ??= {};
+      document.defaults[aliases[0]] = Array.isArray(position) ? position[0] : 0;
+      document.defaults[aliases[1]] = Array.isArray(position) ? position[1] : 0;
+      bind["position.x"] = aliases[0];
+      bind["position.y"] = aliases[1];
     }
     for (const [property, path] of Object.entries(universal ?? {})) {
       if (property === "width" || property === "height") {
-        geometry.add(path);
-        node.size = {
-          ...(node.size as object | undefined),
-          [property === "width" ? "w" : "h"]: defaults[path],
-        };
+        bind[property === "width" ? "size.w" : "size.h"] = path;
       } else if (["visible", "opacity", "rotation"].includes(property))
         bind[property] = path;
     }
@@ -63,5 +136,5 @@ export function prepareEditableBindings(document: LSMLDocument): string[] {
     visit(node.template);
   };
   visit(document.layout);
-  return [...geometry];
+  return positions;
 }

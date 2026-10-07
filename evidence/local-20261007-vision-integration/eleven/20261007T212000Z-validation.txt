@@ -1,0 +1,5 @@
+Source-only integration candidate.
+Solar: typecheck PASS; 196 tests / 28 files PASS; lint PASS; code map 37 files PASS; production build/layout/asset pins PASS.
+Vision engine source: 02714c2; native LSDP source: e695e14f9f664f430ffc2e0e75d083fab88abc7f.
+Changes: native geometry/style binding projection, licensed host/private font admission, native capture atlas with fixed pixel surface, cold subscriber prewarm compatible abort, obsolete-media retirement guard.
+Limits: isolated frame performance is not actual CEF/Program proof; Prism Preview validation continues.

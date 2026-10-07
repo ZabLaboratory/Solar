@@ -27,8 +27,8 @@ storage shared by both physical lanes, partitioned by API/embedding credential
 digest, with 64 entries/512 MiB and eviction. `startup.ts` warms at most 64 scenes
 from Canvas' bounded paginated catalog and keeps pinned reads available offline.
 The served host wires that path when it has a Canvas credential and IndexedDB.
-Partial/unpublished entries do not block a verified online scene. Prism startup
-is unchanged in this scope.
+Partial/unpublished entries do not block a verified online scene. Prism prewarms its physical Preview renderer before admitting the initial
+native scene intent, so the first admission has a render subscriber.
 See `docs/development/source-cache.md` and the cache/store test suites.
 
 Tests in `tests/unit/scene-source.test.ts` cover descriptor acquisition,
@@ -45,6 +45,17 @@ lookup; authentication, integrity and transport failures remain visible. Native
 RAM defaults are applied to a newly addressed Vision package, preserving the base.
 
 `editable-bindings.ts` projects legacy editor translate/size wrappers into Vision
-geometry on that private clone. Geometry patches rebuild the package; scalar
-text and shape style bindings keep the live delta path. Published source bytes
-and their content address remain immutable. Font bytes come from the archive.
+scalar `position.x/y` and `size.w/h` bindings on that private clone. Position
+arrays project to two private scalar aliases; move, resize, text and shape style
+patches use Vision's retained arena and the live delta path. Published source bytes
+and their content address remain immutable. Font bytes come from scene assets,
+licensed host faces, and the trusted authenticated loopback Prism font registry.
+Host font acquisition verifies hashes, caches verified bytes, and completes
+before scene admission. Mutations reuse the admitted font set.
+
+The trusted `nativeComposition` option projects a private pixel atlas matching
+Prism capture bands. Local capture nodes become empty frames because Pulsar owns
+their pixels; Meet peer nodes retain their Solar rendering. Root background paint
+appears only in the first band. The presentation surface has fixed pixel
+dimensions, independent of a stale warm CEF viewport, and native scene items
+compose each band with the captures in authored paint order.

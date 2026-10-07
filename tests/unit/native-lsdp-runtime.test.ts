@@ -573,6 +573,30 @@ describe("native Solar subscriber", () => {
 });
 
 describe("coordinated physical lane presentation", () => {
+  it("restores a fresh subscriber after an aborted Prism request", async () => {
+    vi.clearAllMocks();
+    const requestId =
+      "prepare-preview:8cbef8cd-ed05-42ca-af9c-7e2762e860b8:4c067e0d-c80d-4119-8cc3-4947d01e082b";
+    const ready = await setup(
+      {
+        ...document,
+        "x-solar-transition": {
+          request_id: requestId,
+          phase: "abort",
+        },
+      },
+      undefined,
+      "solar/preview",
+    );
+    expect(mocks.mount).toHaveBeenCalledOnce();
+    expect(mocks.activate).toHaveBeenCalledOnce();
+    expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+      request_id: requestId,
+      phase: "aborted",
+      scene_id: document.scene_id,
+    });
+    ready.runtime.disconnect();
+  });
   async function staged() {
     const initial = structuredClone(document);
     const ready = await setup(initial, undefined, "solar/program");

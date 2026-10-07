@@ -30,6 +30,36 @@ const COMPLETED_REQUESTS = new Set([
   "resize-unchanged",
 ]);
 
+// Published LSML may name the shared editor families without embedding them.
+// Admit the licensed host faces once, alongside any scene-owned font assets.
+const hostFonts = [
+  "geist-latin.woff2",
+  "geist-mono-latin.woff2",
+  "figtree-variable.ttf",
+  "alex-brush-400.woff2",
+  "ibm-plex-mono-400.woff2",
+  "ibm-plex-mono-500.woff2",
+  "ibm-plex-mono-600.woff2",
+  "space-grotesk-400.woff2",
+  "space-grotesk-500.woff2",
+  "space-grotesk-600.woff2",
+  "space-grotesk-700.woff2",
+];
+let hostFontBytes: Promise<Uint8Array[]> | null = null;
+function loadHostFonts(): Promise<Uint8Array[]> {
+  hostFontBytes ??= Promise.all(
+    hostFonts.map(async (path) => {
+      const response = await fetch(new URL(`fonts/${path}`, document.baseURI));
+      if (!response.ok) throw new Error(`Solar host font unavailable: ${path}`);
+      return new Uint8Array(await response.arrayBuffer());
+    }),
+  ).catch((error) => {
+    hostFontBytes = null;
+    throw error;
+  });
+  return hostFontBytes;
+}
+
 interface PresenterEvent {
   data: VisionPresenterMessage;
 }
@@ -79,7 +109,9 @@ export interface VisionRenderPackage {
   imageAssets?: Record<string, string>;
   imageValues?: Record<string, unknown>;
   animationBindings?: Record<string, string>;
-  geometryBindings?: string[];
+  geometryBindings?: Record<string, [string, string]>;
+  hostFonts?: Uint8Array[];
+  surface?: { width: number; height: number };
 }
 
 /** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
@@ -124,8 +156,12 @@ export async function mountVisionScene(
   let presenter: VisionPresenter | null = null;
   let sequence = 0;
   let disposed = false;
-  let width = Math.max(1, target.clientWidth || 1920);
-  let height = Math.max(1, target.clientHeight || 1080);
+  let width =
+    renderPackage?.surface?.width ?? Math.max(1, target.clientWidth || 1920);
+  let height =
+    renderPackage?.surface?.height ?? Math.max(1, target.clientHeight || 1080);
+  if (renderPackage?.surface)
+    Object.assign(layer.style, { width: `${width}px`, height: `${height}px` });
   let mediaSources: readonly VisionLiveMediaSource[] = [];
   let resizeObserver: ResizeObserver | null = null;
   let removeWindowResize: (() => void) | null = null;
@@ -222,9 +258,23 @@ export async function mountVisionScene(
             },
           );
         }
-        if (String(input) === "/fonts") return Response.json([]);
-        if (String(input).startsWith("/fonts/"))
-          return new Response(null, { status: 404 });
+        if (String(input) === "/fonts")
+          return Response.json(
+            [...hostFonts, ...(renderPackage?.hostFonts ?? [])].map(
+              (_, i) => `/fonts/${i}`,
+            ),
+          );
+        if (String(input).startsWith("/fonts/")) {
+          const index = Number(String(input).slice(7));
+          const bytes = Number.isInteger(index)
+            ? [...(await loadHostFonts()), ...(renderPackage?.hostFonts ?? [])][
+                index
+              ]
+            : undefined;
+          return bytes
+            ? new Response(new Uint8Array(bytes))
+            : new Response(null, { status: 404 });
+        }
         return fetch(input, init);
       },
       loadWasm: async () =>
@@ -261,6 +311,21 @@ export async function mountVisionScene(
         filterState(state),
         renderPackage?.textBindings ?? {},
       );
+      for (const [path, aliases] of Object.entries(
+        renderPackage?.geometryBindings ?? {},
+      )) {
+        if (Object.hasOwn(state, path)) {
+          const value = state[path];
+          if (
+            !Array.isArray(value) ||
+            value.length !== 2 ||
+            value.some((v) => typeof v !== "number" || !Number.isFinite(v))
+          )
+            throw new Error(`Invalid editable position: ${path}`);
+          result[aliases[0]] = value[0];
+          result[aliases[1]] = value[1];
+        }
+      }
       for (const [alias, path] of Object.entries(
         renderPackage?.animationBindings ?? {},
       )) {
@@ -315,7 +380,9 @@ export async function mountVisionScene(
       height = boundedHeight;
       void requestFrame({ type: "resize", width, height }).catch(onError);
     };
-    if (typeof ResizeObserver === "function") {
+    if (renderPackage?.surface) {
+      // Pulsar samples fixed pixel bands; a stale browser viewport must not stretch them.
+    } else if (typeof ResizeObserver === "function") {
       resizeObserver = new ResizeObserver((entries) => {
         const entry = entries.at(-1);
         if (entry)
@@ -329,7 +396,8 @@ export async function mountVisionScene(
       removeWindowResize = () =>
         window.removeEventListener("resize", onWindowResize);
     }
-    updateSize(target.clientWidth, target.clientHeight);
+    if (!renderPackage?.surface)
+      updateSize(target.clientWidth, target.clientHeight);
     return {
       sceneId: delivery.sceneId,
       sceneVersion: renderPackage?.sceneVersion ?? delivery.sceneVersion,
@@ -337,9 +405,6 @@ export async function mountVisionScene(
         return mediaSources;
       },
       canApplyPatch: (patch) =>
-        !(renderPackage?.geometryBindings ?? []).some((path) =>
-          Object.hasOwn(patch, path),
-        ) &&
         Object.keys(renderPackage?.imageBindings ?? {}).every((path) => {
           const value = patch[path];
           return (
@@ -374,10 +439,14 @@ export async function mountVisionScene(
         return frameQueue!.addMedia(frames);
       },
       clearMedia: (paths) => {
-        if (paths.length === 0) return Promise.resolve();
+        // A reused media controller can retire paths from the previous scene.
+        // Only textures owned by this accepted scene can be cleared in its engine.
+        const owned = new Set(mediaSources.map((source) => source.path));
+        const current = paths.filter((path) => owned.has(path));
+        if (current.length === 0) return Promise.resolve();
         return frameQueue!
           .flush()
-          .then(() => requestFrame({ type: "media-clear", paths }));
+          .then(() => requestFrame({ type: "media-clear", paths: current }));
       },
       flush: () =>
         termination ?? frameQueue!.flush().then(() => presenter?.flush()),

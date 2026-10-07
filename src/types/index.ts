@@ -38,6 +38,10 @@ export interface SolarError {
 }
 
 export interface MountOptions {
+  /** Trusted native compositor viewport; local capture pixels remain host-owned. */
+  nativeComposition?: { width: number; height: number };
+  /** Trusted host-supplied font bytes; source identity and assets stay pinned. */
+  fontAssetsProvider?: (signal: AbortSignal) => Promise<Uint8Array[]>;
   target: HTMLElement;
   /** Native Lumencast LSDP resource containing the complete LSML document. */
   nativeLSDP: NativeLSDPOptions;

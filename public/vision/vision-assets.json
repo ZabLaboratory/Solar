@@ -1,8 +1,8 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "934b74735eb1dc9660344c4893d0e552338a6d62",
-  "source_state": "qualified source published and merged in Lumencast/lumencast-vision PR #1; exact engine asset hashes remain authoritative",
+  "base_revision": "4feaca8822400de4a201a8768334578918d9d949",
+  "source_state": "Candidate with retained scalar geometry bindings; built from isolated Vision worktree on merged source, not activated upstream.",
   "files": {
     "ui/mainpresenter.mjs": {
       "sha256": "92cd1fdc5ab30b90630f0cda648144c877f4dc86ec6dc102634eb8be5dd65be8",
@@ -13,26 +13,22 @@
       "bytes": 1977
     },
     "pkg/lumencast_vision_web.js": {
-      "sha256": "023a296c795d6df3df9ed7106a3769bd27719886fc62c3bfeb1c5d9b700bf27e",
-      "bytes": 142709
+      "bytes": 142709,
+      "sha256": "1bbccc8f25069be588b1a940ea88d1bd305b20243b45728f9ffb6b42cf3d5185"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "49228be6d5755dcb5a2f5db839b0381586f0b6caac962e774c03cb6e64d9c372",
-      "bytes": 10204892
+      "bytes": 10207230,
+      "sha256": "b97407d1a4d48a21f3db18a16d427dc1dedd0ca44f80cad18d3c9aedb50d9452"
     }
   },
   "source_provenance": {
-    "source_diff": "evidence/local-20261005-render-cadence/eleven/20261005T164950Z-source.diff",
-    "branch": "eleven/local-20261004-solar-surface-parity",
-    "source_diff_sha256": "3969fe798e76491783eb9ff884e96d0bd63acf1d7e4662a48200fe3c99026367",
-    "untracked_sources": {
-      "crates/vision-gpu-scene/src/text_mesh_cache.rs": "f8816c014ca1ec95b28354c3dd9125e3be6d4f6ee86cd990b49980e6eb059c9a",
-      "crates/vision-gpu/src/renderer/composition_cache.rs": "51966fea2ff605b18ea5a7a87d52c97e68462b8150650882352019de437d0925"
-    },
     "repository": "Lumencast/lumencast-vision",
-    "commit": "f86fa436d3065402d23bbf06de8e309e8e954ea3",
-    "archive_manifest": "D:/Documents/Zab/Artifacts/backups/2026-10-05/vision-merge/preservation.json"
+    "engine_commit": "02714c2fd1a0fd4753a1d56409307a0f2551cce8",
+    "engine_base": "4feaca8822400de4a201a8768334578918d9d949",
+    "engine_branch": "eleven/local-20261007-geometry-bindings",
+    "host_ui_commit": "f86fa436d3065402d23bbf06de8e309e8e954ea3",
+    "engine_evidence": "evidence/local-20261007-geometry-bindings/eleven/20261007T203900Z-validation.txt"
   },
-  "source_revision": "f86fa436d3065402d23bbf06de8e309e8e954ea3",
+  "source_revision": "02714c2fd1a0fd4753a1d56409307a0f2551cce8",
   "merged_revision": "4feaca8822400de4a201a8768334578918d9d949"
 }

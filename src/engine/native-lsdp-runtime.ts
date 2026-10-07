@@ -630,7 +630,12 @@ export class NativeLsdpRuntime {
         throw new Error("Native resource source identity mismatch.");
       assets = new NativeSceneAssets(origin);
     }
-    const renderPackage = await assets.renderPackage(document, signal);
+    const renderPackage = await assets.renderPackage(
+      document,
+      signal,
+      this.options.nativeComposition,
+    );
+    const hostFonts = await this.options.fontAssetsProvider?.(signal);
     check();
     let scene: VisionSceneHandle | null = null;
     scene = await mountVisionScene(
@@ -642,7 +647,7 @@ export class NativeLsdpRuntime {
           this.current.media.update(scene.mediaSources);
       },
       (error) => this.report(error),
-      renderPackage,
+      { ...renderPackage, hostFonts },
     );
     try {
       check();
@@ -695,7 +700,7 @@ export class NativeLsdpRuntime {
       return false;
     }
     if (
-      !/^[a-zA-Z0-9_-]{1,128}$/.test(transition.request_id) ||
+      !/^[a-zA-Z0-9_:-]{1,128}$/.test(transition.request_id) ||
       !["prepare", "commit", "finalize", "abort"].includes(transition.phase)
     )
       throw new Error("SOLAR_TRANSITION_INVALID");
@@ -777,6 +782,15 @@ export class NativeLsdpRuntime {
         const pending = this.presentation;
         if (pending && pending.id !== transition.request_id)
           throw new Error("SOLAR_TRANSITION_ID_MISMATCH");
+        // A subscriber joining after compensation receives the restored source
+        // with abort metadata. Present that source before confirming recovery.
+        if (!pending && !this.hasSnapshot) {
+          const restored = this.selectedDocument(state);
+          if (restored) {
+            await this.render(restored, check, signal);
+            this.document = restored;
+          }
+        }
         if (pending) {
           await this.current?.media.pause();
           await this.current?.scene.flush?.();

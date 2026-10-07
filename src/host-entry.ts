@@ -14,9 +14,11 @@ import { mount } from "./mount";
 import type { SolarMode } from "./types";
 
 interface SolarHostConfig {
+  nativeComposition?: { width: number; height: number };
   canvasApiUrl?: string;
   canvasToken?: string;
   localAuthoringSourceUrl?: string;
+  fontAssetsUrl?: string;
   nativeLSDP?: { url: string; resource: string; selector?: string };
 }
 
@@ -47,6 +49,64 @@ try {
 const token = config?.nativeLSDP ? "" : (params.get("token") ?? "");
 const canvasApiUrl = config?.canvasApiUrl ?? DEFAULT_CANVAS_API;
 const canvasToken = config?.canvasToken ?? params.get("canvas_token") ?? token;
+const fontCache = new Map<string, Uint8Array>();
+async function localFonts(signal: AbortSignal): Promise<Uint8Array[]> {
+  const url = new URL(config!.fontAssetsUrl!);
+  if (
+    !/^(127\.0\.0\.1|localhost|\[::1\])$/i.test(url.hostname) ||
+    !/^https?:$/.test(url.protocol)
+  )
+    throw new Error("SOLAR_FONT_HOST_REQUIRED");
+  const headers = { Authorization: `Bearer ${canvasToken}` };
+  const response = await fetch(url, {
+    headers,
+    signal,
+    cache: "no-store",
+    redirect: "error",
+  });
+  if (!response.ok) throw new Error("SOLAR_FONT_MANIFEST_UNAVAILABLE");
+  const hashes: unknown = await response.json();
+  if (
+    !Array.isArray(hashes) ||
+    hashes.length > 64 ||
+    hashes.some(
+      (hash) => typeof hash !== "string" || !/^[a-f0-9]{64}$/.test(hash),
+    )
+  )
+    throw new Error("SOLAR_FONT_MANIFEST_INVALID");
+  for (const key of fontCache.keys())
+    if (!hashes.includes(key)) fontCache.delete(key);
+  const fonts: Uint8Array[] = [];
+  let size = 0;
+  for (const hash of hashes) {
+    let bytes = fontCache.get(hash);
+    if (!bytes) {
+      const asset = await fetch(`${url.href}/${hash}`, {
+        headers,
+        signal,
+        redirect: "error",
+      });
+      if (
+        !asset.ok ||
+        Number(asset.headers.get("content-length")) > 8 * 1024 * 1024
+      )
+        throw new Error("SOLAR_FONT_ASSET_UNAVAILABLE");
+      bytes = new Uint8Array(await asset.arrayBuffer());
+      const digest = Array.from(
+        new Uint8Array(
+          await crypto.subtle.digest("SHA-256", new Uint8Array(bytes)),
+        ),
+        (v) => v.toString(16).padStart(2, "0"),
+      ).join("");
+      if (digest !== hash) throw new Error("SOLAR_FONT_ASSET_INTEGRITY");
+    }
+    size += bytes.byteLength;
+    if (size > 8 * 1024 * 1024) throw new Error("SOLAR_FONT_RESOURCE_LIMIT");
+    fontCache.set(hash, bytes);
+    fonts.push(bytes);
+  }
+  return fonts;
+}
 const modeParam = params.get("mode") ?? "broadcast";
 const mode: SolarMode = (["broadcast", "control", "test"] as const).includes(
   modeParam as SolarMode,
@@ -92,6 +152,7 @@ if (cache) {
     });
 }
 mount({
+  nativeComposition: config?.nativeComposition,
   target,
   nativeLSDP: {
     url: nativeUrl,
@@ -110,6 +171,7 @@ mount({
         canvasToken,
       )
     : undefined,
+  fontAssetsProvider: config?.fontAssetsUrl ? localFonts : undefined,
   liveAudio: mode === "broadcast" || mode === "test",
   onError: (error) => {
     console.error(
