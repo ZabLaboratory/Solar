@@ -35,3 +35,16 @@ Tests in `tests/unit/scene-source.test.ts` cover descriptor acquisition,
 LSML/LSMLZ delivery, authentication forwarding, version pinning, content hashes,
 manifest digest and mismatch rejection, untrusted destinations, request errors
 and response-size limits.
+
+The trusted Prism host can opt into `local-authoring.ts` for Preview and editable
+generations. It reads only a loopback endpoint, verifies the original LSML content
+address and each embedded asset hash, and produces an ephemeral revision-zero
+`LocalSceneSourceDelivery`. It has no Blue manifest or offline/publication claim,
+and never enters the published cache. Only HTTP 404 permits a published-source
+lookup; authentication, integrity and transport failures remain visible. Native
+RAM defaults are applied to a newly addressed Vision package, preserving the base.
+
+`editable-bindings.ts` projects legacy editor translate/size wrappers into Vision
+geometry on that private clone. Geometry patches rebuild the package; scalar
+text and shape style bindings keep the live delta path. Published source bytes
+and their content address remain immutable. Font bytes come from the archive.

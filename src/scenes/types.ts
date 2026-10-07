@@ -48,6 +48,29 @@ export interface SceneSourceDelivery {
   blueManifest: SceneBlueManifest;
 }
 
+/** Ephemeral local authoring base. It carries no publication/Blue readiness claim. */
+export interface LocalSceneSourceDelivery {
+  provenance: "local-authoring";
+  sceneId: string;
+  revision: 0;
+  sceneVersion: string;
+  sourceDigest: string;
+  format: "lsml";
+  data: Uint8Array;
+  assets: ReadonlyMap<string, Uint8Array>;
+}
+
+export type SceneRenderDelivery =
+  | SceneSourceDelivery
+  | LocalSceneSourceDelivery;
+
+export interface LocalSceneSourceProvider {
+  get(
+    sceneId: string,
+    options: SceneSourceRequest,
+  ): Promise<LocalSceneSourceDelivery | null>;
+}
+
 export type SceneSourceErrorCode =
   | "SOURCE_REQUEST_FAILED"
   | "SOURCE_DESCRIPTOR_INVALID"

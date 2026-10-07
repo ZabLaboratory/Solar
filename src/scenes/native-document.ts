@@ -3,8 +3,9 @@ import type { Operation } from "fast-json-patch";
 import { strToU8, unzipSync, zipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
-import type { SceneSourceDelivery } from "./types";
+import type { SceneRenderDelivery } from "./types";
 import { prepareAnimationBindings } from "../engine/animations";
+import { prepareEditableBindings } from "./editable-bindings";
 
 export type LSMLDocument = Record<string, unknown> & {
   scene_id: string;
@@ -131,15 +132,16 @@ export class NativeSceneAssets {
   private readonly remote = new Map<string, Promise<string>>();
   private readonly imageAssets: Record<string, string> = Object.create(null);
   constructor(
-    readonly origin: SceneSourceDelivery,
+    readonly origin: SceneRenderDelivery,
     private readonly fetchResource: typeof fetch = globalThis.fetch.bind(
       globalThis,
     ),
   ) {
     if (
-      origin.sceneId !== origin.blueManifest.scene_id ||
-      origin.sceneVersion !== origin.blueManifest.scene_version ||
-      origin.revision !== origin.blueManifest.scene_revision
+      !("provenance" in origin) &&
+      (origin.sceneId !== origin.blueManifest.scene_id ||
+        origin.sceneVersion !== origin.blueManifest.scene_version ||
+        origin.revision !== origin.blueManifest.scene_revision)
     ) {
       throw new Error("Native source Blue manifest identity mismatch.");
     }
@@ -164,6 +166,25 @@ export class NativeSceneAssets {
     signal?: AbortSignal,
   ): Promise<unknown> {
     if (value == null || value === "") return EMPTY_IMAGE_PATH;
+    if (typeof value === "string" && value.startsWith("data:")) {
+      const match =
+        /^data:image\/(png|jpeg|webp|gif|svg\+xml|avif);base64,([A-Za-z0-9+/=]+)$/.exec(
+          value,
+        );
+      if (!match?.[2] || match[2].length > 12 * 1024 * 1024)
+        throw new Error("Scene inline image is invalid or too large.");
+      const bytes = Uint8Array.from(atob(match[2]), (char) =>
+        char.charCodeAt(0),
+      );
+      if (!bytes.length || bytes.length > 8 * 1024 * 1024)
+        throw new Error("Scene inline image exceeds 8 MiB.");
+      const extension =
+        match[1] === "svg+xml" ? "svg" : match[1] === "jpeg" ? "jpg" : match[1];
+      const path = `assets/solar-${bytesToHex(sha256(bytes))}.${extension}`;
+      this.files[path] = bytes;
+      this.imageAssets[value] = path;
+      return path;
+    }
     if (typeof value !== "string" || !/^https?:\/\//.test(value)) return value;
     const url = new URL(value);
     const hosts =
@@ -278,6 +299,7 @@ export class NativeSceneAssets {
     imageAssets: Record<string, string>;
     imageValues: Record<string, unknown>;
     animationBindings: Record<string, string>;
+    geometryBindings: string[];
   }> {
     if (
       document.scene_id !== this.origin.sceneId ||
@@ -299,6 +321,7 @@ export class NativeSceneAssets {
       ),
     );
     const animationBindings = prepareAnimationBindings(variant);
+    const geometryBindings = prepareEditableBindings(variant);
     const textBindings = prepareTextBindings(variant);
     const imageBindings = await this.prepareImageBindings(
       variant,
@@ -323,6 +346,7 @@ export class NativeSceneAssets {
         ]),
       ),
       animationBindings,
+      geometryBindings,
     };
   }
 }

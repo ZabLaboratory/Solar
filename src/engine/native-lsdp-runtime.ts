@@ -607,10 +607,21 @@ export class NativeLsdpRuntime {
       assets.origin.sceneId !== document.scene_id ||
       assets.origin.sceneVersion !== document.scene_version
     ) {
-      const origin = await this.options.sceneSourceProvider.get(
+      const request = {
+        format: "lsmlz" as const,
+        sceneVersion: document.scene_version,
+        signal,
+      };
+      const local = await this.options.localSceneSourceProvider?.get(
         document.scene_id,
-        { format: "lsmlz", sceneVersion: document.scene_version, signal },
+        request,
       );
+      const origin =
+        local ??
+        (await this.options.sceneSourceProvider.get(
+          document.scene_id,
+          request,
+        ));
       check();
       if (
         origin.sceneId !== document.scene_id ||

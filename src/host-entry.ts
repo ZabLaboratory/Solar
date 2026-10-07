@@ -1,6 +1,7 @@
 // Production bootstrap for the single LSDP-to-Vision renderer.
 
 import { createCanvasSceneSourceProvider } from "./scenes/canvas";
+import { createLocalAuthoringSourceProvider } from "./scenes/local-authoring";
 import {
   BrowserSceneSourceStore,
   sceneCacheNamespace,
@@ -15,6 +16,7 @@ import type { SolarMode } from "./types";
 interface SolarHostConfig {
   canvasApiUrl?: string;
   canvasToken?: string;
+  localAuthoringSourceUrl?: string;
   nativeLSDP?: { url: string; resource: string; selector?: string };
 }
 
@@ -102,6 +104,12 @@ mount({
   sceneSourceProvider: cache
     ? createStartupSceneSourceProvider(upstream, cache)
     : upstream,
+  localSceneSourceProvider: config?.localAuthoringSourceUrl
+    ? createLocalAuthoringSourceProvider(
+        config.localAuthoringSourceUrl,
+        canvasToken,
+      )
+    : undefined,
   liveAudio: mode === "broadcast" || mode === "test",
   onError: (error) => {
     console.error(

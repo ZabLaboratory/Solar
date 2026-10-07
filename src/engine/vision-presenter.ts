@@ -1,4 +1,4 @@
-import type { SceneSourceDelivery } from "../scenes/types";
+import type { SceneRenderDelivery } from "../scenes/types";
 import { visionImageValue, visionTextPatch } from "../scenes/native-document";
 import { CanvasPresentation } from "./canvas-presentation";
 import { VisionFrames } from "./vision-frames";
@@ -79,12 +79,13 @@ export interface VisionRenderPackage {
   imageAssets?: Record<string, string>;
   imageValues?: Record<string, unknown>;
   animationBindings?: Record<string, string>;
+  geometryBindings?: string[];
 }
 
 /** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
 export async function mountVisionScene(
   target: HTMLElement,
-  delivery: SceneSourceDelivery,
+  delivery: SceneRenderDelivery,
   initialState: Record<string, unknown>,
   onMediaSources: (sources: readonly VisionLiveMediaSource[]) => void,
   onError: (error: unknown) => void,
@@ -336,6 +337,9 @@ export async function mountVisionScene(
         return mediaSources;
       },
       canApplyPatch: (patch) =>
+        !(renderPackage?.geometryBindings ?? []).some((path) =>
+          Object.hasOwn(patch, path),
+        ) &&
         Object.keys(renderPackage?.imageBindings ?? {}).every((path) => {
           const value = patch[path];
           return (

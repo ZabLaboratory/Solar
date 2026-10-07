@@ -1,4 +1,7 @@
-import type { SceneSourceProvider } from "../scenes/types";
+import type {
+  SceneSourceProvider,
+  LocalSceneSourceProvider,
+} from "../scenes/types";
 
 export type SolarMode = "broadcast" | "control" | "test";
 export type SolarStatus = "disconnected" | "connecting" | "live";
@@ -40,6 +43,8 @@ export interface MountOptions {
   nativeLSDP: NativeLSDPOptions;
   /** Fetches exact published LSML/LSMLZ revisions from ZabCanvas. */
   sceneSourceProvider: SceneSourceProvider;
+  /** Trusted local authoring only; never saved in the published/offline cache. */
+  localSceneSourceProvider?: LocalSceneSourceProvider;
   token: SolarToken;
   mode: SolarMode;
   onError?: (error: SolarError) => void;
