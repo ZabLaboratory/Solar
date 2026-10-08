@@ -1,184 +1,73 @@
-#!/usr/bin/env node
-/**
- * Anti-bare-specifier gate for the served host bundle — ADR 001 §6.2,
- * the core guard against the B4 regression.
- *
- * The Pulsar CEF (and Orion's static serve) load `dist/host/index.html`
- * in a bare browser: no bundler, no `<script type="importmap">`. Any ESM
- * import that survives in the served JS with a non-relative, non-absolute
- * specifier (`react`, `react-dom/client`, `@preact/signals-react`,
- * `@preact/signals-react/runtime`, `framer-motion`, `motion*`,
- * `react/jsx-runtime`, …) throws "Failed to resolve module specifier" and
- * mount() never runs → black frame. This script scans every emitted JS
- * chunk under dist/host/ and FAILS CI on any bare specifier.
- *
- * Run after the host build (third-party of `npm run build`). Exits
- * non-zero on any violation — wired into CI as a gate.
- *
- * We match real ESM module-specifier positions only, not arbitrary
- * `from"…"` substrings inside string literals:
- *   - `import … from "<spec>"`            (static import, with bindings)
- *   - `import "<spec>"`                   (side-effect import)
- *   - `export … from "<spec>"`            (re-export)
- *   - `import("<spec>")`                  (static-analysable dynamic import)
- * A specifier is "bare" when it does not start with `.` (relative),
- * `/` (root-absolute), or a URL scheme (`http:`, `https:`, `data:`,
- * `blob:`). Bundled output uses relative chunk URLs; anything bare is a
- * leaked external.
- */
-
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
-import { createHash } from "node:crypto";
-import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { relative, resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "..");
-const HOST_DIR = resolve(root, "dist", "host");
+const hostDir = resolve(root, "dist/host");
+if (!existsSync(hostDir)) throw new Error("Solar host build is missing.");
 
-/** Recursively collect every .js file under dir. */
 function jsFiles(dir) {
-  const out = [];
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) out.push(...jsFiles(full));
-    else if (name.endsWith(".js")) out.push(full);
-  }
-  return out;
+  return readdirSync(dir).flatMap((name) => {
+    const file = resolve(dir, name);
+    return statSync(file).isDirectory() ? jsFiles(file) : file.endsWith(".js") ? [file] : [];
+  });
 }
 
-// Module-specifier positions in real ESM statements. Capture group 1 is
-// the specifier. Quotes may be `"` or `'`.
-const PATTERNS = [
-  // import ... from "spec"   /   export ... from "spec"
+const files = jsFiles(hostDir);
+if (files.length === 0) throw new Error("Solar host build contains no JavaScript.");
+
+const patterns = [
   /(?:^|[;\n}{)\s])(?:import|export)\b[^()'";]*?\bfrom\s*["']([^"']+)["']/g,
-  // side-effect import "spec"  (import directly followed by the string)
   /(?:^|[;\n}{)\s])import\s*["']([^"']+)["']/g,
-  // dynamic import("spec")
   /\bimport\s*\(\s*["']([^"']+)["']\s*\)/g,
 ];
-
-function isRelativeOrAbsolute(spec) {
-  return (
-    spec.startsWith("./") ||
-    spec.startsWith("../") ||
-    spec.startsWith("/") ||
-    /^[a-z][a-z0-9+.-]*:/i.test(spec) // http:, https:, data:, blob:, …
-  );
-}
-
-if (!statSync(HOST_DIR, { throwIfNoEntry: false })) {
-  console.error(
-    `check-host-bundle: ${HOST_DIR} does not exist — run the host build first`,
-  );
-  process.exit(1);
-}
-
-const files = jsFiles(HOST_DIR);
-if (files.length === 0) {
-  console.error(`check-host-bundle: no .js chunks under ${HOST_DIR}`);
-  process.exit(1);
-}
-
 const violations = [];
+const sourceMaps = [];
 for (const file of files) {
-  const src = readFileSync(file, "utf8");
-  const seen = new Set();
-  for (const pattern of PATTERNS) {
+  const source = readFileSync(file, "utf8");
+  for (const pattern of patterns) {
     pattern.lastIndex = 0;
-    let match;
-    while ((match = pattern.exec(src)) !== null) {
-      const spec = match[1];
-      if (!isRelativeOrAbsolute(spec) && !seen.has(spec)) {
-        seen.add(spec);
-        violations.push({ file: relative(root, file), spec });
-      }
+    for (let match; (match = pattern.exec(source)) !== null;) {
+      const specifier = match[1];
+      if (
+        !specifier.startsWith("./") &&
+        !specifier.startsWith("../") &&
+        !specifier.startsWith("/") &&
+        !/^[a-z][a-z0-9+.-]*:/i.test(specifier)
+      ) violations.push(`${relative(root, file)}: ${specifier}`);
     }
+  }
+  const vendoredVisionAsset = relative(hostDir, file).split(/[\\/]/, 1)[0] === "vision";
+  if (!vendoredVisionAsset) {
+    const mapPath = `${file}.map`;
+    if (!existsSync(mapPath)) throw new Error(`Missing source map: ${relative(root, mapPath)}`);
+    sourceMaps.push(JSON.parse(readFileSync(mapPath, "utf8")));
   }
 }
 
-console.log(
-  `check-host-bundle: scanned ${files.length} JS chunk(s) under dist/host/`,
+const sources = sourceMaps.flatMap((map) => map.sources ?? []).map(String);
+const removedRendererSources = sources.filter((source) =>
+  /current-runtime|lsdp-vision-runtime|resolve-show-token|\/atlas\/|\/overlay\/|render-asset-wire|editable-preview|node_modules\/(react|react-dom|framer-motion|@preact\/signals)/i.test(source),
 );
-
+if (removedRendererSources.length > 0) {
+  throw new Error(`Legacy renderer code remains in Solar host: ${removedRendererSources.join(", ")}`);
+}
+if (!sources.some((source) => /vision-presenter\.ts/.test(source))) {
+  throw new Error("Vision presenter adapter is absent from Solar host output.");
+}
+if (!sources.some((source) => /native-lsdp-runtime\.ts/.test(source)) || !sources.some((source) => /lsdp-native-browser.*browser\.js/.test(source))) {
+  throw new Error("Native LSDP browser transport is absent from Solar host output.");
+}
+if (!sources.some((source) => /dist[\\/]webrtc[\\/]index\.js/.test(source))) {
+  throw new Error("Receive-only peer viewer is absent from Solar host output.");
+}
+const nonPeerRuntimeSources = sources.filter((source) =>
+  /@lumencast[\\/]runtime[\\/]/i.test(source) && !/dist[\\/]webrtc[\\/]/i.test(source),
+);
+if (nonPeerRuntimeSources.length > 0) {
+  throw new Error(`Non-WebRTC Lumencast runtime code remains in Solar host: ${nonPeerRuntimeSources.join(", ")}`);
+}
 if (violations.length > 0) {
-  console.error(
-    `\ncheck-host-bundle FAILED — ${violations.length} bare ESM specifier(s) ` +
-      `survive in the served host bundle (the CEF cannot resolve these):`,
-  );
-  for (const v of violations) {
-    console.error(`  - ${v.file}: import of bare specifier "${v.spec}"`);
-  }
-  console.error(
-    `\nThe host target must inline all runtime deps (no rollup externals). ` +
-      `See ADR 001 — this is the B4 regression guard.`,
-  );
-  process.exit(1);
+  throw new Error(`Bare ESM specifiers remain in Solar host output: ${violations.join(", ")}`);
 }
 
-// The served host must contain the selected runtime, not the older npm package
-// left installed for declarations and other compatibility paths.
-for (const file of files) {
-  const mapFile = `${file}.map`;
-  if (!existsSync(mapFile)) {
-    throw new Error(
-      `check-host-bundle: missing source map for ${relative(root, file)}`,
-    );
-  }
-}
-const vendorDir = resolve(root, "vendor", "lumencast-runtime");
-const runtimeEntry =
-  process.env.LUMENCAST_RUNTIME_ENTRY ?? join(vendorDir, "lumencast.js");
-const runtimeDist = dirname(resolve(runtimeEntry));
-const candidateMapped = files.some((file) => {
-  const map = JSON.parse(readFileSync(`${file}.map`, "utf8"));
-  return (map.sources ?? []).some((source) => {
-    const absolute = resolve(dirname(`${file}.map`), source);
-    return (
-      absolute.startsWith(runtimeDist + sep) &&
-      /^index-.*\.js$/.test(basename(absolute))
-    );
-  });
-});
-const hasCapability = files.some((file) =>
-  readFileSync(file, "utf8").includes("supportsHostAssetUrls"),
-);
-if (!candidateMapped || !hasCapability) {
-  throw new Error(
-    "check-host-bundle: pinned runtime source/capability absent from served JS",
-  );
-}
-
-if (!process.env.LUMENCAST_RUNTIME_ENTRY) {
-  const manifest = JSON.parse(
-    readFileSync(join(vendorDir, "manifest.json"), "utf8"),
-  );
-  if (
-    !/^[0-9a-f]{40}$/.test(manifest.sourceCommit) ||
-    !/^[0-9a-f]{40}$/.test(manifest.sourceTree)
-  ) {
-    throw new Error("check-host-bundle: invalid pinned runtime provenance");
-  }
-  const actualFiles = readdirSync(vendorDir)
-    .filter((name) => name.endsWith(".js") || name.endsWith(".js.map"))
-    .sort();
-  const expectedFiles = Object.keys(manifest.files ?? {}).sort();
-  if (
-    actualFiles.length === 0 ||
-    JSON.stringify(actualFiles) !== JSON.stringify(expectedFiles)
-  ) {
-    throw new Error("check-host-bundle: pinned runtime file inventory drift");
-  }
-  for (const name of expectedFiles) {
-    const digest = createHash("sha256")
-      .update(readFileSync(join(vendorDir, name)))
-      .digest("hex");
-    if (digest !== manifest.files[name]) {
-      throw new Error(
-        `check-host-bundle: pinned runtime digest drift: ${name}`,
-      );
-    }
-  }
-}
-
-console.log(
-  "check-host-bundle OK — zero bare specifiers; pinned host-asset runtime bundled",
-);
+console.log(`Solar host verified: ${files.length} self-contained JavaScript chunk(s), Vision renderer and peer camera support present.`);

@@ -1,154 +1,86 @@
-# Runbook — Release Solar et consommation par Orion
+# Solar release and deployment contract
 
-**Restauré par** : PR Solar #27 (`879510d`) — branche `keeper/solar-release-pipeline`  
-**Date** : 2026-06-24  
-**Scope** : flux release Solar → GitHub Release → déploiement Orion VPS
+Owner: Solar packaging; Orion and the application own installation/activation. Source of
+truth: `.github/workflows/release.yml`, `package.json`, `scripts/check-runtime-layout.mjs`,
+`scripts/create-runtime-manifest.mjs` and `scripts/check-native-package.mjs`.
+This runbook describes the current candidate. It does not claim a release was published,
+a runner provisioned, Linux qualified or the installed Prism application migrated.
 
----
+## Build and qualify
 
-## Contexte et dette
+The workflow triggers on `v*.*.*` tags and uses the configured `[self-hosted, vps-ovh]` runner
+with Node 22. It performs npm installation, lint, type checks, architecture checks, native
+client pins, tests, build and bundle checks. The package version must match the tag.
 
-PR Solar #26 (`7fd68de`) avait supprimé `release.yml` et `ci.yml` en basculant sur
-des hot-pushes manuels de `dist/` vers le VPS. Conséquences :
-
-- v0.2.10 et v0.2.11 ont été installées manuellement sur le VPS sans GitHub Release.
-- **Une fresh-box est irreconstruisible** : aucune source versionnée pour récupérer ces tarballs.
-- Le contrat d'asset (`solar-<tag>.tgz`, layout plat de `dist/`) attendu par
-  `Orion deploy.yml` n'était plus alimenté.
-
-PR #27 restaure le mécanisme de release automatisé. La dette résiduelle est listée
-en fin de document.
-
----
-
-## Flux release → deploy
-
-### 1. Déclencheur : tag semver sur Solar
-
-Un push de tag `v*.*.*` sur le repo Solar déclenche `release.yml`
-(branche `keeper/solar-release-pipeline`, à merger sur `main`).
-
-### 2. Build sur les runners self-hosted
-
-Le job tourne sur `[self-hosted, vps-ovh]` — le billing GitHub Actions est gelé
-sur l'organisation, les runners ubuntu-latest ne sont pas disponibles.
-
-Séquence du job :
-
-1. `npm ci` (pas de cache npm — les runners JIT sont éphémères, le cache ne serait
-   jamais réutilisé, cf. note Orion `setup-go cache disabled`)
-2. `lint` → `typecheck` → `vitest` → `build` → `check:bundle`
-3. Playwright Chromium installé sans `--with-deps` (runner non-root nosuid,
-   les dépendances OS sont bakées dans l'image du pool)
-4. `test:e2e`
-5. Vérification que `package.json version` correspond au tag (échoue le job si dérive)
-6. Pack : `tar -czf release/solar-<tag>.tgz -C dist .` — pack plat de `dist/`
-7. Publication en GitHub Release via `softprops/action-gh-release@v2`
-   (notes de release auto-générées)
-
-### 3. Asset publié
-
-Nom : `solar-<tag>.tgz`  
-URL de download (publique, sans token) :
-```
-https://github.com/ZabLaboratory/Solar/releases/download/<tag>/solar-<tag>.tgz
+```powershell
+npm.cmd ci
+npm.cmd run check:architecture
+npm.cmd run test:architecture
+npm.cmd run lint
+npm.cmd run typecheck
+npm.cmd test
+npm.cmd run build
+npm.cmd run check:bundle
 ```
 
-Layout de l'archive : contenu de `dist/` à la racine du tgz (pack plat,
-`tar -C dist .`). **Ce layout est un contrat avec Orion `deploy.yml` — ne pas modifier
-sans aligner simultanément le step d'extraction Orion.**
+Postinstall patches only the receive-only WebRTC modules needed by Solar; its scripts and
+helpers must ship in the npm tarball. Dependency resolution supports hoisted installations.
+Unit checks do not replace the [native/installed/CEF qualification](qualification.md).
 
-### 4. Consommation par Orion (deploy.yml)
+`npm run build` clears dist. Package unchanged native binaries **after** building:
 
-Le job « Install Solar bundles » de `Orion deploy.yml` tourne après le rsync du code.
-Variable d'environnement `SOLAR_VERSIONS` (ex. `"v0.2.8 v0.2.9"`) liste les versions
-à installer.
-
-Pour chaque version :
-
-1. SSH vers VPS, `mkdir -p $APP_PATH/solar/<version>`
-2. Si `.installed` présent → skip (idempotent)
-3. `curl -fsSL --retry 3` vers l'URL de release Solar (anonyme, repo public)
-4. `tar -xzf` dans `$APP_PATH/solar/<version>/`
-5. `touch .installed` (marqueur de succès — un download partiel laisse la version
-   sans marqueur, le prochain deploy retente)
-
-Le rsync Orion exclut `solar/` via `--exclude 'solar'` : les versions installées
-survivent aux re-deploys sans être écrasées.
-
-### 5. Service par Orion
-
-Orion monte `$APP_PATH/solar/` (alias `ORION_SOLAR_ROOT`, défaut `/var/lib/orion/solar`)
-en volume read-only dans le container (`docker-compose.prod.yml`).
-
-L'handler Go `internal/api/static.go` sert les fichiers sous :
-```
-GET /static/solar/v{N.N.N}/<fichier>
-```
-Via ZabGate : `GET /orion/static/solar/<version>/index.html`
-
-Consommateurs :
-- **Pulsar CEF** (browser-source antenne) : pointe vers `host/index.html?orion=...&mode=broadcast`
-- **Prism** : vendor les bundles Solar dans `resources/solar/v{N.N.N}/`
-
-Health-check de présence d'une version (suit la redirection 301 → `./`) :
-```bash
-curl -fsSL -o /dev/null -w '%{http_code}\n' \
-  https://zabgate.cyell.dev/orion/static/solar/<version>/index.html
-# attendu : 200
+```powershell
+npm.cmd run package:native -- --binary <lsdpd.exe> --platform win32-x64 --revision <native-sha>
+npm.cmd run package:native -- --binary <lsdpd> --platform linux-x64 --revision <same-native-sha>
+npm.cmd run check:native-package -- win32-x64 linux-x64
 ```
 
----
+The release workflow takes `SOLAR_LSDP_WINDOWS_BINARY` and `SOLAR_LSDP_LINUX_BINARY` runner
+variables. Missing files fail assembly. The manifest pins platform binary digests and source
+revision; the installed application requires no Cargo, source checkout or esbuild.
 
-## Procédure de cut (publier une nouvelle version Solar)
+## Artifacts and layout
 
-1. Bumper `version` dans `package.json` (ex. `0.2.12`).
-2. Commit `release: vX.Y.Z`, push sur `main` (ou merger la PR).
-3. Tagger : `git tag vX.Y.Z && git push origin vX.Y.Z`.
-4. `release.yml` se déclenche sur le tag. Vérifier que le job passe sur
-   l'interface Actions (runner `vps-ovh`).
-5. Vérifier la GitHub Release créée + présence de l'asset `solar-vX.Y.Z.tgz`.
-6. **Aligner Orion** : PR sur `Orion deploy.yml` pour ajouter `vX.Y.Z` à `SOLAR_VERSIONS`.
-   Merger → le deploy Orion installe la version.
-7. Health-check via gateway (commande ci-dessus).
-8. Pointer Pulsar browser-source vers la nouvelle version si roll-forward.
+- npm package: ESM/browser API `dist/solar.js`, declarations, workers, Node server entry,
+  host/Vision assets and the required postinstall files. `prepack` checks the combined layout.
+- release: `solar-<tag>.tgz`, flat `dist/` contents, plus `solar-runtime-manifest.json`.
+  Both Windows/Linux native binaries are mandatory for this release manifest.
+- standalone browser page: `host/index.html`; assets resolve relative to the page.
+  An installed host may promote the host directory into its runtime root only after the
+  collision/digest check. Flat dist packaging does not itself perform that promotion.
+- server: `server/index.mjs`, declarations, `native/manifest.json` and platform binaries.
 
----
+The runtime layout guard rejects missing or duplicated Vision assets, changed bytes and
+collisions between host promotion and library/server files. Its tests cover adversarial
+layouts. The release runs this guard immediately before archive creation.
+
+The archive name, flat dist layout, manifest schema and Orion static version route are
+integration contracts. Changing them requires corresponding consumer work. The archive
+contains application JavaScript and a native receiver; it is not a compiled scene bundle.
+
+## Publish, install and activate
+
+For an explicitly authorized release: update package/lock version, qualify the exact
+candidate, commit with the configured signature, and create a **signed** `vX.Y.Z` tag.
+Push the tag only when publication is authorized. The workflow publishes the release assets.
+Verify the release archive/manifest hashes separately from CI completion.
+
+Orion's deployment or the installed application then downloads and verifies the selected
+release, installs it into its versioned runtime directory and activates that exact version.
+The configured static route is `/static/solar/<tag>/host/index.html` for the flat archive;
+a host-promoted installation serves its own root page. Confirm the consumer's actual layout
+and URL before use. Supply the local native WebSocket/resource (and exact selector for
+collections), plus the trusted Canvas config; old `?orion=...&scene=...` URLs are obsolete.
+
+The Node/Electron application owns the shared reception host, readiness, TCP/WS distribution,
+recovery, credentials, logout and shutdown. Completing this Solar package does not wire the
+installed Prism application's lifecycle. Deployment/activation and a real cold-start/CEF
+smoke test are separate completion states.
 
 ## Rollback
 
-Le mécanisme de release Solar ne modifie aucun état sur le VPS seul : le
-marqueur `.installed` et le répertoire de version ne sont écrits que par
-`Orion deploy.yml`.
-
-Pour revenir à une version précédente :
-1. Pointer le browser-source Pulsar vers la version précédente (ex. `v0.2.9`) —
-   les versions installées coexistent sur le VPS, switch instantané sans redeploy Orion.
-2. Retirer la version cible de `SOLAR_VERSIONS` dans `Orion deploy.yml` si
-   on veut éviter qu'elle soit réinstallée (optionnel, le `.installed` l'idempotentise).
-
-Il n'y a pas de rollback de la GitHub Release elle-même (l'asset restera
-accessible) — révoquer un tag Solar n'a aucun effet sur le VPS déjà installé.
-
----
-
-## Dette résiduelle
-
-| Poste | État | Porteur |
-|---|---|---|
-| `SOLAR_VERSIONS` Orion (`"v0.2.8 v0.2.9"`) non aligné sur les versions disponibles (`v0.2.10`, `v0.2.11`) | En cours | Keeper |
-| `ci.yml` Solar non restauré (gate PR optionnelle) | Différé (pas bloquant pour la release) | — |
-| Premier cut viewer WebRTC (#3/#4) | En attente validation porteur + RC-Q | — |
-
----
-
-## Invariants du contrat d'asset (ne pas casser)
-
-- Nom de l'asset : `solar-<tag>.tgz` (tag incluant le `v`, ex. `solar-v0.2.12.tgz`)
-- Layout : pack plat de `dist/` (`tar -C dist .`) — `index.html` à la racine du tgz
-- URL : `releases/download/<tag>/solar-<tag>.tgz` — download anonyme (repo public)
-- Destination VPS : `$ORION_SOLAR_ROOT/<tag>/` (ex. `/var/lib/orion/solar/v0.2.12/`)
-- Route Orion : `GET /static/solar/<tag>/*` → `ORION_SOLAR_ROOT/<tag>/*`
-
-Toute modification de l'un de ces points nécessite une PR simultanée sur
-Solar `release.yml` ET Orion `deploy.yml`.
+Keep the previous verified runtime installed. Stop the owned receiver and switch the browser,
+server and package to the same previous version; restart from admitted immutable source and
+selection. Do not carry incompatible RAM mutations or mix native manifests across versions.
+A signed source revert follows a reviewed PR. Deleting a release tag does not roll back an
+already installed runtime, and a successful download does not prove activation.

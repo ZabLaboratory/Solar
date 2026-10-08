@@ -1,0 +1,466 @@
+{
+  "candidate": "canonical-once, private verified font snapshots, direct LSML/assets admission",
+  "hostHash": "51abd8395dffea605647158a440b0ae4482af21af21a761f7e94854aad91a1ed",
+  "visionPins": {
+    "ui/mainpresenter.mjs": {
+      "bytes": 26702,
+      "sha256": "88de7073b8538a12998139bc499866a06eb03925ff523f7683fb2f721aab3eae"
+    },
+    "ui/fonts.mjs": {
+      "bytes": 1977,
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+    },
+    "pkg/lumencast_vision_web.js": {
+      "bytes": 148483,
+      "sha256": "f9f61fbf53fee481cf5c26179d853bf34eb94c0fb5cb4c8d386264638c31297a"
+    },
+    "pkg/lumencast_vision_web_bg.wasm": {
+      "bytes": 10253842,
+      "sha256": "7626634a8ad14231ee9f7a50b0aaacca999d9f78d30cb4e171f798b3aa2a3796"
+    }
+  },
+  "nativeHash": "7bd059c56b0daa56b3da24f0ccdb3b6a888709feff9618cd3b8cd2a045bdce60",
+  "switches": {
+    "canevas-chat-sponso": {
+      "total": {
+        "count": 9,
+        "mean": 187.01111112700568,
+        "median": 185.90000009536743,
+        "p95": 210.70000004768372,
+        "max": 210.70000004768372,
+        "sum": 1683.1000001430511
+      },
+      "stages": {
+        "worker-delivery": {
+          "count": 9,
+          "mean": 2.9777723683251276,
+          "median": 2.60009765625,
+          "p95": 4.299902439117432,
+          "max": 4.299902439117432,
+          "sum": 26.799951314926147
+        },
+        "worker-verify": {
+          "count": 9,
+          "mean": 17.922222269905937,
+          "median": 18.09999990463257,
+          "p95": 22.799999952316284,
+          "max": 22.799999952316284,
+          "sum": 161.30000042915344
+        },
+        "classify": {
+          "count": 9,
+          "mean": 0.011111127005683051,
+          "median": 0,
+          "p95": 0.10000014305114746,
+          "max": 0.10000014305114746,
+          "sum": 0.10000014305114746
+        },
+        "source": {
+          "count": 9,
+          "mean": 23.255555550257366,
+          "median": 22,
+          "p95": 35.40000009536743,
+          "max": 35.40000009536743,
+          "sum": 209.29999995231628
+        },
+        "package": {
+          "count": 9,
+          "mean": 12.677777767181396,
+          "median": 12.5,
+          "p95": 14.799999952316284,
+          "max": 14.799999952316284,
+          "sum": 114.09999990463257
+        },
+        "fonts": {
+          "count": 9,
+          "mean": 19.188888920678032,
+          "median": 18.90000009536743,
+          "p95": 23.699999809265137,
+          "max": 23.699999809265137,
+          "sum": 172.7000002861023
+        },
+        "vision": {
+          "count": 9,
+          "mean": 76.01111110051473,
+          "median": 76.79999995231628,
+          "p95": 90.30000019073486,
+          "max": 90.30000019073486,
+          "sum": 684.0999999046326
+        },
+        "images": {
+          "count": 9,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "sum": 0
+        }
+      },
+      "presenter": {
+        "sceneLoadMs": {
+          "count": 9,
+          "mean": 32.388888888888886,
+          "median": 30.700000047683716,
+          "p95": 39.60000014305115,
+          "max": 39.60000014305115,
+          "sum": 291.5
+        },
+        "assetDecodeUploadMs": {
+          "count": 9,
+          "mean": 17.18888889418708,
+          "median": 16.700000047683716,
+          "p95": 31.300000190734863,
+          "max": 31.300000190734863,
+          "sum": 154.70000004768372
+        },
+        "gpuSubmitCallMs": {
+          "count": 9,
+          "mean": 23.77777777777778,
+          "median": 25,
+          "p95": 27.59999990463257,
+          "max": 27.59999990463257,
+          "sum": 214
+        },
+        "mainThreadReceiptMs": {
+          "count": 9,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "textPreparation": {
+          "count": 9,
+          "mean": 0.7666666666666668,
+          "median": 0.8,
+          "p95": 1.2,
+          "max": 1.2,
+          "sum": 6.900000000000001
+        }
+      }
+    },
+    "Editable scene": {
+      "total": {
+        "count": 10,
+        "mean": 61.77000002861023,
+        "median": 61.09999990463257,
+        "p95": 84.29999995231628,
+        "max": 84.29999995231628,
+        "sum": 617.7000002861023
+      },
+      "stages": {
+        "worker-delivery": {
+          "count": 10,
+          "mean": 0.8200146436691285,
+          "median": 0.89990234375,
+          "p95": 1.2000489234924316,
+          "max": 1.2000489234924316,
+          "sum": 8.200146436691284
+        },
+        "worker-verify": {
+          "count": 10,
+          "mean": 19.500000023841856,
+          "median": 18,
+          "p95": 35.700000047683716,
+          "max": 35.700000047683716,
+          "sum": 195.00000023841858
+        },
+        "classify": {
+          "count": 10,
+          "mean": 0.019999980926513672,
+          "median": 0,
+          "p95": 0.09999990463256836,
+          "max": 0.09999990463256836,
+          "sum": 0.19999980926513672
+        },
+        "source": {
+          "count": 10,
+          "mean": 1.1700000047683716,
+          "median": 1.1000001430511475,
+          "p95": 2.700000047683716,
+          "max": 2.700000047683716,
+          "sum": 11.700000047683716
+        },
+        "package": {
+          "count": 10,
+          "mean": 1.459999966621399,
+          "median": 1.5,
+          "p95": 2.5,
+          "max": 2.5,
+          "sum": 14.59999966621399
+        },
+        "fonts": {
+          "count": 10,
+          "mean": 6.789999961853027,
+          "median": 6.599999904632568,
+          "p95": 8.399999856948853,
+          "max": 8.399999856948853,
+          "sum": 67.89999961853027
+        },
+        "vision": {
+          "count": 10,
+          "mean": 15.799999976158142,
+          "median": 16,
+          "p95": 23,
+          "max": 23,
+          "sum": 157.99999976158142
+        },
+        "images": {
+          "count": 10,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "sum": 0
+        }
+      },
+      "presenter": {
+        "sceneLoadMs": {
+          "count": 10,
+          "mean": 10.230000042915345,
+          "median": 10.700000047683716,
+          "p95": 13.100000143051147,
+          "max": 13.100000143051147,
+          "sum": 102.30000042915344
+        },
+        "assetDecodeUploadMs": {
+          "count": 10,
+          "mean": 0.020000004768371583,
+          "median": 0,
+          "p95": 0.10000014305114746,
+          "max": 0.10000014305114746,
+          "sum": 0.20000004768371582
+        },
+        "gpuSubmitCallMs": {
+          "count": 10,
+          "mean": 4.489999985694885,
+          "median": 5,
+          "p95": 8,
+          "max": 8,
+          "sum": 44.89999985694885
+        },
+        "mainThreadReceiptMs": {
+          "count": 10,
+          "mean": 0,
+          "median": 0,
+          "p95": 0,
+          "max": 0,
+          "sum": 0
+        },
+        "textPreparation": {
+          "count": 10,
+          "mean": 1.57,
+          "median": 1.4,
+          "p95": 2.1,
+          "max": 2.1,
+          "sum": 15.700000000000001
+        }
+      }
+    }
+  },
+  "firstStandardSwitchMs": 422.2999999523163,
+  "mutation": {
+    "name": "persistent-paced-130",
+    "count": 390,
+    "distinctFrames": 390,
+    "elapsedMs": 2995.899999856949,
+    "rate": 130.17790981628963,
+    "endToFrame": {
+      "count": 390,
+      "mean": 3.0746153874275013,
+      "median": 2.8000001907348633,
+      "p95": 4.5,
+      "max": 25.399999856948853,
+      "sum": 1199.1000010967255
+    },
+    "verifiedReceptionToFrame": {
+      "count": 390,
+      "mean": 1.2892307672745142,
+      "median": 1.2000000476837158,
+      "p95": 2,
+      "max": 4,
+      "sum": 502.79999923706055
+    },
+    "stages": {
+      "worker-verify": {
+        "count": 390,
+        "mean": 0.23384615519107915,
+        "median": 0.20000004768371582,
+        "p95": 0.40000009536743164,
+        "max": 1.1000001430511475,
+        "sum": 91.20000052452087
+      },
+      "worker-delivery": {
+        "count": 390,
+        "mean": 0.544711578809298,
+        "median": 0.400146484375,
+        "p95": 0.9000489711761475,
+        "max": 17.10019540786743,
+        "sum": 212.43751573562622
+      },
+      "classify": {
+        "count": 390,
+        "mean": 0.020769227468050443,
+        "median": 0,
+        "p95": 0.10000014305114746,
+        "max": 0.19999980926513672,
+        "sum": 8.099998712539673
+      },
+      "images": {
+        "count": 390,
+        "mean": 0.010769231502826397,
+        "median": 0,
+        "p95": 0.09999990463256836,
+        "max": 0.10000014305114746,
+        "sum": 4.200000286102295
+      }
+    },
+    "diagnostics": {
+      "main:json-stringify": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "main:json-parse": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "main:text-encode": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "main:text-decode": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "main:canvas-copy": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "main:response-json": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "worker:text-decode": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "worker:json-parse": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "worker:text-encode": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "worker:json-stringify": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      },
+      "worker:worker-postMessage": {
+        "count": 0,
+        "totalMs": 0,
+        "perMutationMs": 0,
+        "maxInput": 0
+      }
+    },
+    "vision": {
+      "engineApplyCallMs": {
+        "count": 390,
+        "mean": 0.3174358930343237,
+        "median": 0.2999999523162842,
+        "p95": 0.5,
+        "max": 0.9000000953674316,
+        "sum": 123.79999828338623
+      },
+      "gpuSubmitCallMs": {
+        "count": 390,
+        "mean": 0.6341025707049247,
+        "median": 0.5999999046325684,
+        "p95": 1,
+        "max": 1.3000001907348633,
+        "sum": 247.30000257492065
+      }
+    }
+  },
+  "httpImageProof": {
+    "elapsedMs": 118.40000009536743,
+    "detail": {
+      "transactionId": "a4715db14c2afdaf2f44e8c35830db4f",
+      "target": "scene",
+      "sequence": 14,
+      "stateHash": "tree-sha256:977b5af77b92a3d7d93aae546e1352a60dd0f4859ee7e36e114da426e169e85b",
+      "render": "patch",
+      "presentation": {
+        "throughSequence": 14,
+        "stateHash": "tree-sha256:977b5af77b92a3d7d93aae546e1352a60dd0f4859ee7e36e114da426e169e85b",
+        "mutationCount": 1
+      }
+    },
+    "writer": {
+      "receipt": {
+        "level": "applied",
+        "target": "scene",
+        "transactionId": "a4715db14c2afdaf2f44e8c35830db4f"
+      },
+      "value": "http://127.0.0.1:55555/proof-image.png"
+    },
+    "changedPixels": 4095,
+    "loadsBefore": 10,
+    "loadsAfter": 10,
+    "enginePointerBefore": 6464496,
+    "enginePointerAfter": 6464496,
+    "engineCreations": 1
+  },
+  "references": [
+    "evidence\\local-20261008-full-profile-switch\\eleven\\20261008T122322Z-analysis.json",
+    "evidence\\local-20261008-full-profile-mutation\\eleven\\20261008T122352Z-analysis.json",
+    "evidence\\local-20261008-http-image-lsdp\\eleven\\20261008T122437Z-report.json"
+  ],
+  "validation": {
+    "solarTests": 225,
+    "solarFiles": 31,
+    "rustAssetsTests": 10,
+    "rustRuntimeTests": 9,
+    "rustRuntimeIgnored": 1,
+    "presenterTests": 14,
+    "gpuTestsAfterRejection": 19,
+    "typecheck": "PASS",
+    "build": "PASS",
+    "productLint": "PASS excluding ad hoc .cache scripts",
+    "unfilteredLint": "FAIL 1598 ad hoc cache script diagnostics",
+    "architecture": "PASS",
+    "bundlePins": "PASS"
+  },
+  "remaining": [
+    "Rust scene admission/layout/graph and image decode/upload and GPU cold composition",
+    "typed internal Vision patch/metadata interface still JSON",
+    "whole verified LSML state still cloned worker -> main per notification"
+  ],
+  "rejected": "fixed source-over GPU candidate changed exact pixels; removed; source GPU files restored",
+  "workspaceGuard": {
+    "decision": "block",
+    "reason": "invalid new evidence path in concurrent Pulsar worktree",
+    "path": "D:/Documents/Zab/Pulsar/.worktrees/eleven-local-20261008-webm-transition/evidence/local-20261008-webm-transition/eleven/session.json",
+    "action": "preserved foreign active work; local product validations remain green; global closure blocked"
+  }
+}

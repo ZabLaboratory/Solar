@@ -20,22 +20,20 @@
 // Pure logic, no DOM and no WebRTC : it consumes the runtime's `PeerStreamRegistry`
 // and is exercised against a simulated LSDP delta in the unit tests.
 
-import type { PeerStreamListener, PeerStreamRegistry } from "@lumencast/runtime";
-
-/** LSDP leaf prefix Orion emits for slot→peer assignments (ADR Blue 009 §3.3).
- *  One scalar leaf per bound slot : `__cam.slots.<slotRef>` = "<peer_label>".
- *  Exported so a future runtime that surfaces LSDP leaves to the host can route
- *  these deltas into `assign()` without re-deriving the wire name. */
-export const CAM_SLOTS_PREFIX = "__cam.slots.";
+import type {
+  PeerStreamListener,
+  PeerStreamRegistry,
+} from "@lumencast/runtime";
 
 /** Positional slot key (ADR Blue 009 axe 1, positional variant). A node whose
  *  `slotRef` is `@<n>` (n ≥ 0) fills with the n-th peer IN ARRIVAL ORDER : `@0`
  *  = first peer connected, `@1` = second, … It carries NO authored peer identity
- *  and NO LSDP `__cam.slots.*` binding — it resolves purely against the runtime's
+ *  and NO LSDP `__cam.slots.*` binding — it resolves against the runtime's
  *  arrival-ordered roster (`PeerStreamRegistry.orderedLabels()`), and re-keys
  *  REACTIVELY when a peer connects or leaves (a departure shifts every later
  *  position up by one). Distinct from an authored `slotRef` (LSDP-assigned) and
- *  from a bare `peer_label` (verbatim pass-through). */
+ *  from a bare `peer_label` (verbatim pass-through). An explicit assignment or
+ *  release overrides this fallback for the registry's lifetime. */
 const POSITIONAL_KEY = /^@(\d+)$/;
 
 const positionOf = (key: string): number | null => {
@@ -70,9 +68,11 @@ export function createSlotBindingRegistry(
   peers: PeerStreamRegistry,
   initial?: SlotBindings,
 ): SlotBindingRegistry {
-  // slotRef → peer_label. Only ASSIGNED slots are present ; an unbound slot is
-  // absent (resolves through as a bare key → no peer → placeholder).
-  const bindings = new Map<string, string>();
+  // slotRef → peer_label or explicit release tombstone. An untouched key uses
+  // positional/bare-peer compatibility; a released key stays empty.
+  // Explicit release remains authoritative even when the slot uses a legacy
+  // positional name (@0). Deleting it would silently rebind the first peer.
+  const bindings = new Map<string, string | null>();
   if (initial !== undefined) {
     for (const [slotRef, peerLabel] of Object.entries(initial)) {
       if (peerLabel !== "") bindings.set(slotRef, peerLabel);
@@ -93,8 +93,7 @@ export function createSlotBindingRegistry(
   // the key verbatim (bare peer_label). `null` = nothing to resolve (a positional
   // key past the end of the roster) → placeholder.
   const peerLabelOf = (key: string): string | null => {
-    const bound = bindings.get(key);
-    if (bound !== undefined) return bound;
+    if (bindings.has(key)) return bindings.get(key) ?? null;
     const pos = positionOf(key);
     if (pos !== null) return peers.orderedLabels()[pos] ?? null;
     return key;
@@ -124,16 +123,18 @@ export function createSlotBindingRegistry(
       peerUnsub.delete(key);
       notify(key); // no peer to subscribe to → emit the placeholder
     } else {
-      peerUnsub.set(key, peers.subscribe(label, () => notify(key)));
+      peerUnsub.set(
+        key,
+        peers.subscribe(label, () => notify(key)),
+      );
     }
   };
 
   return {
     assign(slotRef, peerLabel): void {
       const next = peerLabel === null || peerLabel === "" ? null : peerLabel;
-      if ((bindings.get(slotRef) ?? null) === next) return;
-      if (next === null) bindings.delete(slotRef);
-      else bindings.set(slotRef, next);
+      if (bindings.has(slotRef) && bindings.get(slotRef) === next) return;
+      bindings.set(slotRef, next);
       // Only live slots need re-wiring ; dormant ones pick up the binding on
       // their next resolve/subscribe.
       if (listeners.has(slotRef)) wire(slotRef);

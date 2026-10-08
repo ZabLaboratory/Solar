@@ -2,17 +2,35 @@ import { describe, expect, it } from "vitest";
 import { validateOptions } from "../../src/internal/validate-options";
 import type { MountOptions, SolarHandle } from "../../src/index";
 
-const baseOptions = (
-  overrides: Partial<MountOptions> = {},
-): MountOptions => ({
+const baseOptions = (overrides: Partial<MountOptions> = {}): MountOptions => ({
   target: document.createElement("div"),
-  orionUrl: "ws://127.0.0.1:4007/orion/api/v1/show/stream",
+  nativeLSDP: { url:"ws://127.0.0.1:4520/lsdp",resource:"scene" },
+  sceneSourceProvider: {
+    get: async () => {
+      throw new Error("not called");
+    },
+  },
   token: "fake-token",
   mode: "broadcast",
   ...overrides,
 });
 
 describe("validateOptions()", () => {
+  it("accepts a native LSML resource without an Orion test session", () => {
+    expect(() =>
+      validateOptions(
+        baseOptions({
+          nativeLSDP: { url: "ws://127.0.0.1:4520/lsdp", resource: "scene" },
+          mode: "test",
+        }),
+      ),
+    ).not.toThrow();
+  });
+  it("rejects missing, distant or invalid native selections", () => {
+    expect(() => validateOptions(baseOptions({nativeLSDP:undefined} as never))).toThrow(/nativeLSDP/);
+    expect(() => validateOptions(baseOptions({nativeLSDP:{url:"ws://example.com/lsdp",resource:"scene"}}))).toThrow(/local native/);
+    expect(() => validateOptions(baseOptions({nativeLSDP:{url:"ws://127.0.0.1:4520/lsdp",resource:"solar/generations",selector:"__proto__"}}))).toThrow(/selector/);
+  });
   it("rejects a non-HTMLElement target", () => {
     expect(() =>
       // @ts-expect-error — intentionally wrong type for the runtime check.
@@ -20,42 +38,10 @@ describe("validateOptions()", () => {
     ).toThrow(/HTMLElement/);
   });
 
-  it("rejects an empty orionUrl", () => {
-    expect(() => validateOptions(baseOptions({ orionUrl: "" }))).toThrow(
-      /orionUrl/,
-    );
-  });
-
-  it("rejects a distant gateway Orion URL", () => {
+  it("requires a scene source provider", () => {
     expect(() =>
-      validateOptions(
-        baseOptions({ orionUrl: "wss://zabgate.cyell.dev/orion/api/v1/show/stream" }),
-      ),
-    ).toThrow(/embedded local Orion/);
-  });
-
-  it("rejects mode='test' without testSession", () => {
-    expect(() =>
-      validateOptions(baseOptions({ mode: "test", scene: "scene-42" })),
-    ).toThrow(/testSession/);
-  });
-
-  it("rejects mode='test' without scene", () => {
-    expect(() =>
-      validateOptions(baseOptions({ mode: "test", testSession: "uuid-1" })),
-    ).toThrow(/scene/);
-  });
-
-  it("accepts mode='test' with both testSession and scene", () => {
-    expect(() =>
-      validateOptions(
-        baseOptions({
-          mode: "test",
-          testSession: "uuid-1",
-          scene: "scene-42",
-        }),
-      ),
-    ).not.toThrow();
+      validateOptions(baseOptions({ sceneSourceProvider: undefined } as never)),
+    ).toThrow(/sceneSourceProvider/);
   });
 
   it("accepts a typed token provider", () => {

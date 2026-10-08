@@ -14,13 +14,9 @@
 // (`__cam.slots.*`, §3.3) as an optional `slots` map, used to re-key
 // `x-zab.meet-peer` nodes by `slotRef` (see `slot-binding.ts`).
 //
-// >>> Chaining debt (signalled to Eleven) : the LSDP-sourced global is populated
-//     by the antenne host from Orion's LSDP bundle. That carrier is delivered by
-//     Orion #261 (viewer creds on the LSDP) + a Lumencast runtime that exposes
-//     LSDP leaves / renders `x-zab.meet-peer`. With the currently vendored
-//     runtime (v0.9.0) the global is simply ABSENT on-air → the antenne path is
-//     inert and only the preview source is live. Solar reads it defensively so
-//     it activates the day the carrier ships, with no further Solar change.
+// NativeLsdpRuntime projects __cam.viewer / __cam.slots.* from each accepted
+// snapshot/mutation into the receive-only controller. Page globals remain a
+// compatibility source for actual embedded Prism consumers, not the scene engine.
 
 import type { MultiRoomPeerViewerOptions, PeerViewerInjection } from "@lumencast/runtime";
 

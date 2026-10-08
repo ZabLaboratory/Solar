@@ -17,6 +17,17 @@ if (!/^v\d+\.\d+\.\d+[A-Za-z0-9.-]*$/.test(tag)) {
 }
 
 const archive = readFileSync(archivePath);
+// A browser-only archive cannot satisfy the installed reception contract.
+// The release assembly must package platform binaries after the browser build.
+const native = JSON.parse(readFileSync("dist/native/manifest.json", "utf8"));
+if (
+  native.schema !== "solar.native-server.v1" ||
+  !native.binaries?.["win32-x64"] ||
+  !native.binaries?.["linux-x64"]
+)
+  throw new Error(
+    "Solar release requires native Windows/Linux receiver binaries.",
+  );
 const artifactSha256 = createHash("sha256").update(archive).digest("hex");
 const manifest = {
   schema_version: "solar.runtime.manifest.v1",
@@ -26,6 +37,11 @@ const manifest = {
   protocol_version: "solar.host.v1",
   artifact_url: `https://github.com/${repository}/releases/download/${tag}/solar-${tag}.tgz`,
   artifact_sha256: artifactSha256,
+  native_server: {
+    wire: native.wire,
+    source_revision: native.source_revision,
+    platforms: Object.keys(native.binaries),
+  },
 };
 
 writeFileSync(outputPath, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

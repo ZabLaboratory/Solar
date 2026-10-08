@@ -1,28 +1,10 @@
-// Public types exported from @zablab/solar.
-//
-// Stable surface — changes here are breaking changes for Prism, Pulsar
-// CEF wrappers, and any future host. Match ADR 003 § 2.
-//
-// Since ADR 007 (Lumencast convergence), Solar is a thin adapter over
-// `@lumencast/runtime` : the rendering, transport (LSDP/1.1) and state
-// layers are the runtime's, not Solar's. These types are the Zab-facing
-// projection of the runtime's public contract — kept byte-stable so the
-// three hosts (Pulsar CEF / Prism webview / editor preview) need no
-// change. The field name `orionUrl` is preserved (vs the runtime's
-// `serverUrl`) because hosts pass it ; `mount()` maps it across.
-
-import type { RenderNode } from "@lumencast/runtime";
-
-/** Content-addressed bundle identity advertised by Orion for client-side
- * preloading. Kept structurally compatible with Lumencast's protocol type so
- * Solar remains a thin adapter and does not own a second wire schema. */
-export interface SolarSceneRosterEntry {
-  scene_id: string;
-  scene_version: string;
-}
+import type { VerifiedFont } from "../scenes/verified-font";
+import type {
+  SceneSourceProvider,
+  SceneImageAssetsProvider,
+} from "../scenes/types";
 
 export type SolarMode = "broadcast" | "control" | "test";
-
 export type SolarStatus = "disconnected" | "connecting" | "live";
 
 export interface SolarTokenProvider {
@@ -31,16 +13,6 @@ export interface SolarTokenProvider {
 
 export type SolarToken = string | SolarTokenProvider;
 
-export interface SolarError {
-  code: SolarErrorCode;
-  message: string;
-  recoverable: boolean;
-}
-
-// The LSDP/1.1 closed error taxonomy (LSDP-1.md §3.4) plus the two
-// bundle-fetch / capability codes the runtime raises. This is byte-equal
-// to `@lumencast/protocol`'s `ErrorCode` union — the adapter forwards a
-// `LumencastError` straight through with no lossy mapping.
 export type SolarErrorCode =
   | "AUTH_DENIED"
   | "SCENE_NOT_FOUND"
@@ -52,92 +24,52 @@ export type SolarErrorCode =
   | "INVALID_VALUE"
   | "TEST_SESSION_EXPIRED"
   | "INTERNAL"
-  | "BUNDLE_FETCH_FAILED"
-  | "BUNDLE_INCOMPATIBLE";
+  | "SOURCE_REQUEST_FAILED"
+  | "SOURCE_DESCRIPTOR_INVALID"
+  | "SOURCE_RESOURCE_LIMIT"
+  | "SOURCE_INTEGRITY_FAILED"
+  | "VISION_INIT_FAILED"
+  | "VISION_PATCH_FAILED"
+  | "CAMERA_CAPTURE_FAILED";
 
-export interface MountOptions {
-  target: HTMLElement;
-  /** WebSocket URL of the LSDP/1.1 server. In the embedded Zab host this is
-   *  the loopback Orion runtime (`ws://127.0.0.1/...`). Remote gateway Orion
-   *  URLs are rejected by `mount()`. The value maps to the runtime's
-   *  `serverUrl` and is also the source from which `mount()` derives the
-   *  local render-bundle URL (`resolveBundleUrl`). */
-  orionUrl: string;
-  /** Optional host-owned render-bundle resolver for an embedded local scene
-   * server. */
-  resolveBundleUrl?: (sceneId: string, sceneVersion: string) => string;
-  token: SolarToken;
-  mode: SolarMode;
-  /** Required when mode === "test" — the test session UUID handed back by
-   *  the server's test-session endpoint. Ignored otherwise. */
-  testSession?: string;
-  /** Required when mode === "test" — the scene id that the test session
-   *  cloned. Ignored otherwise. */
-  scene?: string;
-  /** Preload validated render bundles known by the host. The runtime also
-   * consumes the local runtime's `scene_roster` frames, so this is an optional host-side
-   * hint rather than a second scene lifecycle. */
-  preloadRoster?: readonly SolarSceneRosterEntry[];
-  /** Opt in to bounded, host-gated image decoding for rostered bundles.
-   * The runtime's `scene_roster` wire frame also triggers this path. Disabled
-   * by default so existing Preview and Program hosts keep their current cost. */
-  preloadRosterImages?: boolean;
-  onError?: (err: SolarError) => void;
-  onStatus?: (status: SolarStatus) => void;
-  sceneTransition?: "crossfade" | "cut";
-  onSceneCommit?: (scene: { sceneId: string; sceneVersion: string }) => void;
-  /**
-   * Test-only escape hatch for Prism's local Solar diagnostics. The hidden
-   * `prism_e2e=1` window may acquire capture streams so the diagnostic can
-   * inspect the DOM; the real broadcast/on-air CEF leaves this unset and
-   * renders transparent placeholders for Pulsar's native capture layer.
-   */
-  captureInBrowser?: boolean;
-  /** Host resolver for the `x-zab.capture` primitive's ACQUIRE mode (runtime
-   *  ADR 004 §A1.3). Given the LOGICAL `(deviceRef, sourceKind)` from the
-   *  bundle, return `{ deviceId }` to pin a physical device, or `null` for the
-   *  host's default device. Forwarded verbatim to the runtime ; `deviceId`
-   *  is only ever a live `getUserMedia` constraint, never enters the bundle
-   *  or its content hash. Only consulted on a capture-capable host (the
-   *  Electron preview webview, or Prism's explicitly marked diagnostic
-   *  window) ; ignored on-air (CEF/Pulsar render the placeholder). */
-  resolveCaptureDevice?: ResolveCaptureDevice;
-  /** Un-mute the live `<video>` of `meet.peer` / `x-zab.meet-peer` guest peers
-   *  so their WebRTC audio joins the page's audio output — and thus the on-air /
-   *  recording mix a Pulsar/OBS `browser_source` captures. Forwarded verbatim to
-   *  the runtime's `liveAudio`. Muted by default (omitted / `false`) so every
-   *  consumer that does not opt in keeps today's behaviour.
-   *
-   *  DANGER — set this ONLY on a host that KNOWS it is the flux réellement
-   *  diffusé/enregistré (antenne prod, REC/test render, Pulsar CEF atlas). NEVER
-   *  set it on an interactive operator host (the Prism editor preview, or Solar's
-   *  interactive `control` mode) : the operator may have the same ZabCam room open
-   *  elsewhere and un-muting the peer there causes audio feedback / echo. Only the
-   *  `src/host-entry.tsx` served bundle opts in, and only for the diffused modes. */
-  liveAudio?: boolean;
-  /** Preview-only render fast path. When true, accepted editable deltas
-   * retarget Lumencast motion values without waiting for the normal frame
-   * coalescer. The served broadcast/on-air host never sets this flag. */
-  realtimeDeltas?: boolean;
-  /** One-shot render-tree transform applied by the runtime ONCE per loaded
-   *  bundle, before the first render — not per delta (ADR 013 Prism §3.1,
-   *  issue #41, runtime `@lumencast/runtime` ≥ 0.12.3). Solar forwards it
-   *  verbatim to the runtime's `transformRoot`. Its sole in-tree use is the
-   *  atlas z-band split (`buildAtlasRoot`), wired from the `?atlas=` URL param
-   *  by the host entries. MUST NOT re-key any leaf `id` / state path (the
-   *  runtime addresses leaves by path — see the runtime hook's invariant).
-   *  Omit it and `mount()` renders the fetched bundle verbatim (strict
-   *  non-regression). */
-  transformRoot?: (root: RenderNode) => RenderNode;
+export interface SolarError {
+  code: SolarErrorCode;
+  message: string;
+  recoverable: boolean;
 }
 
-/** `(deviceRef, sourceKind) → { deviceId | captureSourceId } | null`, sync OR
- *  async — see {@link MountOptions.resolveCaptureDevice}. Structurally
- *  identical to the runtime's `ResolveCaptureDevice` ; re-declared here so the
- *  Zab-facing surface owns its own contract. MAY return a Promise: physical
- *  getUserMedia ids are salted per origin/partition, so the host re-resolves a
- *  portable key (label) against THIS context's devices — an async step. `null`
- *  → no device bound → PLACEHOLDER (never the host default camera). */
+export interface MountOptions {
+  /** Trusted native compositor viewport; local capture pixels remain host-owned. */
+  nativeComposition?: { width: number; height: number };
+  /** Trusted host-supplied font bytes; source identity and assets stay pinned. */
+  fontAssetsProvider?: (
+    signal: AbortSignal,
+  ) => Promise<Array<Uint8Array | VerifiedFont>>;
+  installationFonts?: () => AsyncIterable<Uint8Array[]>;
+  /** Optional trusted local image authority; LSML's original host allowlist still applies. */
+  sceneImageAssetsProvider?: SceneImageAssetsProvider;
+  target: HTMLElement;
+  /** Native Lumencast LSDP resource containing the complete LSML document. */
+  nativeLSDP: NativeLSDPOptions;
+  /** Fetches exact published LSML/LSMLZ revisions from ZabCanvas. */
+  sceneSourceProvider: SceneSourceProvider;
+  token: SolarToken;
+  mode: SolarMode;
+  onError?: (error: SolarError) => void;
+  onStatus?: (status: SolarStatus) => void;
+  /** Unmute receive-only peer audio in the on-air/recording page mix. */
+  liveAudio?: boolean;
+  /** Maps validated local LSML device references to host-owned capture IDs. */
+  resolveCaptureDevice?: ResolveCaptureDevice;
+}
+
+export interface NativeLSDPOptions {
+  url: string;
+  resource: string;
+  /** Exact entry of a native generation/session collection, never a role fallback. */
+  selector?: string;
+}
+
 export type ResolveCaptureDevice = (
   deviceRef: string,
   sourceKind: string,
@@ -147,8 +79,6 @@ export type ResolveCaptureDevice = (
   | Promise<{ deviceId?: string; captureSourceId?: string } | null>;
 
 export interface SolarHandle {
-  /** Tear down the WS, unmount the React tree, release timers. Idempotent. */
   disconnect: () => void;
-  /** Swap the auth token without reconnecting (operator token rotation). */
   setToken: (token: SolarToken) => void;
 }

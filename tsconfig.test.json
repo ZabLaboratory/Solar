@@ -4,7 +4,6 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "jsx": "react-jsx",
 
     "strict": true,
     "noUncheckedIndexedAccess": true,
@@ -31,11 +30,9 @@
   },
   "include": [
     "tests/**/*.ts",
-    "tests/**/*.tsx",
     "src/**/*.ts",
-    "src/**/*.tsx",
-    "src/dev-entry.tsx",
-    "src/host-entry.tsx"
+    "src/dev-entry.ts",
+    "src/host-entry.ts"
   ],
   "exclude": ["dist", "node_modules"],
   "references": [{ "path": "./tsconfig.lib.json" }]

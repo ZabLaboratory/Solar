@@ -1,0 +1,19 @@
+# Generated output, installed dependencies and independent worktrees.
+node_modules/
+dist/
+build/
+coverage/
+test-results/
+playwright-report/
+.worktrees/
+.claude/
+
+# Historical proofs are immutable; derived maps have their own generator.
+evidence/
+docs/development/code-map.md
+package-lock.json
+
+# These upstream runtime bytes are qualified and SHA-256 pinned.
+public/vision/pkg/
+public/vision/ui/
+vendor/lsdp-native-browser/
