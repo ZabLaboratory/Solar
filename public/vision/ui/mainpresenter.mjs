@@ -31,6 +31,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
   let lastSequence = -1;
   let queue = Promise.resolve();
   let hasSubmittedFrame = false;
+  let sceneLoaded = false;
   let disposed = false;
   let generation = 0;
   let context = null;
@@ -42,6 +43,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
   let fontBytes = null;
   let lastAppliedSequence = -1;
   let pendingRestore = false;
+  const uploadedAssets = new Set();
 
   // State mutations stay in Rust while its GPU projection is unavailable.
   // There is no replay journal and no scene parse on the recovery path.
@@ -68,14 +70,16 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
         await engine.restore_html_canvas(canvas, size.width, size.height);
         ensureActive(ticket);
         if (epoch !== restoreEpoch || context?.isContextLost?.()) throw new Error("GPU context was lost again during restoration.");
-        await registerRequiredImages(engine, { Blob: BlobType, createImageBitmap: createBitmap }, () => {
+        if (sceneLoaded) await registerRequiredImages(engine, { Blob: BlobType, createImageBitmap: createBitmap }, () => {
           ensureActive(ticket);
           if (epoch !== restoreEpoch || context?.isContextLost?.()) throw new Error("GPU context was lost again during image restoration.");
         });
+        uploadedAssets.clear();
+        if (sceneLoaded) for (const path of parseJson(engine.required_images_json(), "required_images_json()")) uploadedAssets.add(path);
         ensureActive(ticket);
         if (epoch !== restoreEpoch || context?.isContextLost?.()) throw new Error("GPU context was lost again during image restoration.");
         contextLost = false;
-        await submit(Math.max(0, lastAppliedSequence), size, {}, ticket);
+        if (sceneLoaded) await submit(Math.max(0, lastAppliedSequence), size, {}, ticket);
       } else {
         contextLost = false;
         await initialize(initialRequest, {}, ticket);
@@ -143,7 +147,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     }
 
     const ticket = generation;
-    if (request.type === "init") initialRequest = request;
+    if (request.type === "init" || request.type === "init-empty") initialRequest = request;
     queue = queue.then(() => handle(request, receipt, ticket)).catch((error) => {
       postError(request.seq, error?.phase ?? request.type, error, error?.timing ?? receipt);
     });
@@ -151,12 +155,36 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
 
   async function handle(request, receipt, ticket) {
     ensureActive(ticket);
-    if (request.type === "init") {
+    if (request.type === "init" || request.type === "init-empty") {
       await initialize(request, receipt, ticket);
       return;
     }
 
     if (!engine) throw withContext(new Error("The Rust GPU engine is not ready."), request.type, receipt);
+
+    if (request.type === "preload-fonts") {
+      if (!Array.isArray(request.fonts) || request.fonts.some(f => !(f instanceof Uint8Array))) throw new Error("Font preload requires byte arrays.");
+      if (typeof engine.preload_fonts !== "function") throw new Error("Rust engine does not support font preloading.");
+      const info = parseJsonRecord(await engine.preload_fonts(request.fonts), "preload_fonts()");
+      ensureActive(ticket);
+      emit({type: "fonts-ready", seq: request.seq, fontRegistry: info});
+      return;
+    }
+
+    if (request.type === "clear-scene") {
+      if (typeof engine.clear_scene !== "function") throw new Error("Rust engine cannot release its scene.");
+      engine.clear_scene();
+      sceneLoaded = false;
+      uploadedAssets.clear();
+      hasSubmittedFrame = false;
+      emit({ type: "scene-cleared", seq: request.seq });
+      return;
+    }
+
+    if (request.type === "load") {
+      await loadScene(request, receipt, ticket);
+      return;
+    }
 
     if (request.type === "resize") {
       await resize(request, receipt, ticket);
@@ -206,12 +234,12 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       presenterInfo: { name: "HTMLCanvas · WebGL2", desynchronized: true },
     });
 
-    if (!packageBytes) {
+    if (request.type !== "init-empty" && !packageBytes) {
       const sceneResponse = await fetchRequired("/scene", "Scene package", fetchResource);
       ensureActive(ticket);
       packageBytes = new Uint8Array(await sceneResponse.arrayBuffer());
     }
-    if (!fontBytes) fontBytes = await fetchFonts(fetchResource);
+    if (request.type !== "init-empty" && !fontBytes) fontBytes = await fetchFonts(fetchResource);
     ensureActive(ticket);
 
     const wasm = await loadWasm();
@@ -223,6 +251,16 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     ensureActive(ticket);
 
     const initialSize = checkedSize(request.width, request.height);
+    if (request.type === "init-empty") {
+      if (typeof wasm.VisionGpuEngine.create_empty_html_canvas !== "function") throw new Error("Rust engine cannot initialize independently of a scene.");
+      const candidate = await wasm.VisionGpuEngine.create_empty_html_canvas(canvas, initialSize.width, initialSize.height);
+      if (!isActive(ticket)) { candidate?.free?.(); throw STOPPED; }
+      engine = candidate;
+      validateEngine(engine);
+      latestSize = initialSize;
+      emit({ type: "engine-ready", seq: request.seq });
+      return;
+    }
     const sceneByteLength = packageBytes.byteLength;
     const candidate = await fontFactory(wasm.VisionGpuEngine, "create_html_canvas", fontBytes)(
       packageBytes,
@@ -239,6 +277,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     packageBytes = null;
     fontBytes = null;
     lastAppliedSequence = request.seq;
+    sceneLoaded = true;
 
     const info = readEngineInfo(engine);
     const assetStartedAt = clock.now();
@@ -266,6 +305,41 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     }
   }
 
+  async function loadScene(request, receipt, ticket) {
+    if (!(request.packageBytes instanceof Uint8Array) || !Array.isArray(request.fonts)
+        || request.fonts.some(font => !(font instanceof Uint8Array))) {
+      throw new Error("Scene load requires fresh package bytes and explicit fonts.");
+    }
+    if (contextLost || context?.isContextLost?.()) throw new Error("GPU context unavailable during scene load.");
+    if (typeof engine.load_scene !== "function") throw new Error("Rust engine does not support persistent scene loading.");
+    const startedAt = clock.now();
+    if (request.assets !== undefined) {
+      if (!Array.isArray(request.assets) || request.assets.some(asset =>
+          typeof asset.path !== "string" || !(asset.bytes instanceof Uint8Array))
+          || request.fonts.length !== 0 || typeof engine.load_scene_parts !== "function") {
+        throw new Error("Scene parts require bounded assets and an admitted font bank.");
+      }
+      await engine.load_scene_parts(request.packageBytes,
+        request.assets.map(asset => asset.path), request.assets.map(asset => asset.bytes));
+    } else {
+      await engine.load_scene(request.packageBytes, request.fonts);
+    }
+    sceneLoaded = true;
+    ensureActive(ticket);
+    hasSubmittedFrame = false;
+    uploadedAssets.clear();
+    const sceneLoadMs = elapsedSince(startedAt);
+    const assetStartedAt = clock.now();
+    await registerRequiredImages(engine, { Blob: BlobType, createImageBitmap: createBitmap }, () => ensureActive(ticket));
+    const info = readEngineInfo(engine);
+    latestSize = authoredSurfaceSize(info);
+    lastAppliedSequence = request.seq;
+    const timing = { ...receipt, sceneLoadMs, assetDecodeUploadMs: elapsedSince(assetStartedAt) };
+    emit({ type: "ready", seq: request.seq, info, mediaSources: readMediaSources(engine),
+      width: latestSize.width, height: latestSize.height, sceneBytes: request.packageBytes.byteLength, timing });
+    await submit(request.seq, latestSize, timing, ticket);
+  }
+
   async function registerRequiredImages(candidate, { Blob: BlobClass, createImageBitmap: decodeBitmap }, checkContext = () => {}) {
     if (typeof BlobClass !== "function" || typeof decodeBitmap !== "function") {
       throw new Error("This browser cannot decode the scene's required image assets.");
@@ -276,20 +350,58 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       throw new Error("The Rust engine returned an invalid required image path list.");
     }
 
-    for (const path of new Set(paths)) {
+    const unique = [...new Set(paths)];
+    const decoded = await Promise.allSettled(unique.map(async (path) => {
       checkContext();
       const encoded = candidate.asset_bytes(path);
       if (!(encoded instanceof Uint8Array)) throw new Error(`Image asset ${path} was not returned as Uint8Array.`);
-
       const bitmap = await decodeBitmap(new BlobClass([encoded]), IMAGE_BITMAP_OPTIONS);
       if (!bitmap || typeof bitmap.close !== "function") throw new Error(`Image asset ${path} did not decode to an ImageBitmap.`);
-      try {
+      return { path, bitmap };
+    }));
+    try {
+      const failed = decoded.find(result => result.status === "rejected");
+      if (failed) throw failed.reason;
+      for (const result of decoded) {
+        const { path, bitmap } = result.value;
         checkContext();
         await candidate.register_image(path, bitmap);
         checkContext();
-      } finally {
-        bitmap.close();
+        uploadedAssets.add(path);
       }
+    } finally {
+      for (const result of decoded) if (result.status === "fulfilled") result.value.bitmap.close();
+    }
+  }
+
+  async function registerPatchImages(images, ticket) {
+    if (images === undefined) return;
+    if (!Array.isArray(images) || images.length > 128 || images.some(image =>
+      !image || typeof image.path !== "string" || !(image.bytes instanceof Uint8Array)
+      || image.bytes.length === 0 || image.bytes.length > 8 * 1024 * 1024)) {
+      throw new Error("Invalid bounded image asset patch.");
+    }
+    const unique = new Map(images.filter(image => !uploadedAssets.has(image.path)).map(image => [image.path, image]));
+    if (unique.size === 0) return;
+    if (typeof engine.register_image_asset !== "function") throw new Error("Rust GPU engine does not support retained image admission.");
+    const decoded = await Promise.allSettled([...unique.values()].map(async image => {
+      ensureActive(ticket);
+      const bitmap = await createBitmap(new BlobType([image.bytes]), IMAGE_BITMAP_OPTIONS);
+      if (!bitmap || typeof bitmap.close !== "function") throw new Error(`Image asset ${image.path} did not decode to an ImageBitmap.`);
+      return { ...image, bitmap };
+    }));
+    try {
+      const failed = decoded.find(result => result.status === "rejected");
+      if (failed) throw failed.reason;
+      for (const result of decoded) {
+        ensureActive(ticket);
+        if (contextLost || context?.isContextLost?.()) throw new Error("GPU context unavailable during image admission.");
+        const { path, bytes, bitmap } = result.value;
+        await engine.register_image_asset(path, bytes, bitmap);
+        uploadedAssets.add(path);
+      }
+    } finally {
+      for (const result of decoded) if (result.status === "fulfilled") result.value.bitmap.close();
     }
   }
 
@@ -316,6 +428,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     const applyStartedAt = clock.now();
     let rawMetadata;
     try {
+      await registerPatchImages(request.images, ticket);
       rawMetadata = await engine.apply_patch(request.patchJson);
       ensureActive(ticket);
     } catch (error) {
@@ -378,11 +491,14 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       throw withContext(new Error("A live media clear must contain valid image paths."), "media-clear", receipt);
     }
     try {
+      let changed = false;
       for (const path of new Set(request.paths)) {
-        await engine.clear_live_image(path);
+        // Rust knows whether this active texture actually held live pixels.
+        // Legacy engines return void; keep their conservative render behavior.
+        changed = (await engine.clear_live_image(path)) !== false || changed;
         ensureActive(ticket);
       }
-      if (latestSize) await submit(request.seq, latestSize, receipt, ticket);
+      if (changed && latestSize) await submit(request.seq, latestSize, receipt, ticket);
       lastAppliedSequence = request.seq;
       emit({ type: "media-cleared", seq: request.seq, paths: [...new Set(request.paths)], timing: receipt });
     } catch (error) {

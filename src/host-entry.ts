@@ -1,15 +1,12 @@
+import { VerifiedFont } from "./scenes/verified-font";
+import { installationFontBatches } from "./scenes/installation-fonts";
 // Production bootstrap for the single LSDP-to-Vision renderer.
 
 import { createCanvasSceneSourceProvider } from "./scenes/canvas";
-import { createLocalAuthoringSourceProvider } from "./scenes/local-authoring";
 import {
-  BrowserSceneSourceStore,
-  sceneCacheNamespace,
-} from "./scenes/browser-store";
-import {
-  createStartupSceneSourceProvider,
-  synchronizeSceneSources,
-} from "./scenes/startup";
+  createLocalImageAssetsProvider,
+  type LocalRenderAssetEndpoint,
+} from "./scenes/local-images";
 import { mount } from "./mount";
 import type { SolarMode } from "./types";
 
@@ -17,8 +14,8 @@ interface SolarHostConfig {
   nativeComposition?: { width: number; height: number };
   canvasApiUrl?: string;
   canvasToken?: string;
-  localAuthoringSourceUrl?: string;
   fontAssetsUrl?: string;
+  installationFontCatalog?: { url: string; token: string };
   nativeLSDP?: { url: string; resource: string; selector?: string };
 }
 
@@ -49,8 +46,8 @@ try {
 const token = config?.nativeLSDP ? "" : (params.get("token") ?? "");
 const canvasApiUrl = config?.canvasApiUrl ?? DEFAULT_CANVAS_API;
 const canvasToken = config?.canvasToken ?? params.get("canvas_token") ?? token;
-const fontCache = new Map<string, Uint8Array>();
-async function localFonts(signal: AbortSignal): Promise<Uint8Array[]> {
+const fontCache = new Map<string, VerifiedFont>();
+async function localFonts(signal: AbortSignal): Promise<VerifiedFont[]> {
   const url = new URL(config!.fontAssetsUrl!);
   if (
     !/^(127\.0\.0\.1|localhost|\[::1\])$/i.test(url.hostname) ||
@@ -76,7 +73,7 @@ async function localFonts(signal: AbortSignal): Promise<Uint8Array[]> {
     throw new Error("SOLAR_FONT_MANIFEST_INVALID");
   for (const key of fontCache.keys())
     if (!hashes.includes(key)) fontCache.delete(key);
-  const fonts: Uint8Array[] = [];
+  const fonts: VerifiedFont[] = [];
   let size = 0;
   for (const hash of hashes) {
     let bytes = fontCache.get(hash);
@@ -91,14 +88,10 @@ async function localFonts(signal: AbortSignal): Promise<Uint8Array[]> {
         Number(asset.headers.get("content-length")) > 8 * 1024 * 1024
       )
         throw new Error("SOLAR_FONT_ASSET_UNAVAILABLE");
-      bytes = new Uint8Array(await asset.arrayBuffer());
-      const digest = Array.from(
-        new Uint8Array(
-          await crypto.subtle.digest("SHA-256", new Uint8Array(bytes)),
-        ),
-        (v) => v.toString(16).padStart(2, "0"),
-      ).join("");
-      if (digest !== hash) throw new Error("SOLAR_FONT_ASSET_INTEGRITY");
+      bytes = await VerifiedFont.admit(
+        new Uint8Array(await asset.arrayBuffer()),
+        hash,
+      );
     }
     size += bytes.byteLength;
     if (size > 8 * 1024 * 1024) throw new Error("SOLAR_FONT_RESOURCE_LIMIT");
@@ -121,37 +114,10 @@ if (!(target instanceof HTMLElement)) {
 
 const canvasOptions = { apiUrl: canvasApiUrl, token: canvasToken };
 const upstream = createCanvasSceneSourceProvider(canvasOptions);
-const cache =
-  canvasToken && typeof indexedDB !== "undefined"
-    ? new BrowserSceneSourceStore(
-        sceneCacheNamespace(canvasApiUrl, canvasToken),
-      )
-    : null;
-const lifetime = new AbortController();
-window.addEventListener(
-  "pagehide",
-  () => {
-    lifetime.abort();
-    void cache?.close();
-  },
-  { once: true },
-);
-if (cache) {
-  document.documentElement.dataset.solarCache = "synchronizing";
-  void synchronizeSceneSources(canvasOptions, upstream, cache, lifetime.signal)
-    .then((report) => {
-      document.documentElement.dataset.solarCache =
-        report.failures.length || report.truncated ? "partial" : "ready";
-      document.documentElement.dataset.solarCachedScenes = String(
-        report.cached,
-      );
-    })
-    .catch(() => {
-      if (!lifetime.signal.aborted)
-        document.documentElement.dataset.solarCache = "offline";
-    });
-}
 mount({
+  sceneImageAssetsProvider: globalThis.__ZAB_RENDER_ASSET_ENDPOINT__
+    ? createLocalImageAssetsProvider(globalThis.__ZAB_RENDER_ASSET_ENDPOINT__)
+    : undefined,
   nativeComposition: config?.nativeComposition,
   target,
   nativeLSDP: {
@@ -162,16 +128,11 @@ mount({
   },
   token,
   mode,
-  sceneSourceProvider: cache
-    ? createStartupSceneSourceProvider(upstream, cache)
-    : upstream,
-  localSceneSourceProvider: config?.localAuthoringSourceUrl
-    ? createLocalAuthoringSourceProvider(
-        config.localAuthoringSourceUrl,
-        canvasToken,
-      )
-    : undefined,
+  sceneSourceProvider: upstream,
   fontAssetsProvider: config?.fontAssetsUrl ? localFonts : undefined,
+  installationFonts: config?.installationFontCatalog
+    ? () => installationFontBatches(config.installationFontCatalog!)
+    : undefined,
   liveAudio: mode === "broadcast" || mode === "test",
   onError: (error) => {
     console.error(
@@ -185,6 +146,7 @@ mount({
 });
 
 declare global {
+  var __ZAB_RENDER_ASSET_ENDPOINT__: LocalRenderAssetEndpoint | undefined;
   // Set by the trusted embedding host before this module loads. Scene identity
   // always comes from LSDP snapshots; this config contains source API access only.
   var __SOLAR_CONFIG__: SolarHostConfig | undefined;

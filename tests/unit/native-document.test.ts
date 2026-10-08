@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
 import { bundleAddress } from "@lumencast/canonical";
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
-import { nativeTreeHash } from "../../src/internal/native-tree";
+import {
+  nativeTreeHash,
+  validateNativeJSON,
+} from "../../src/internal/native-tree";
 import { NativeState } from "../../src/internal/native-state";
 import { requireLSML } from "../../src/scenes/native-document";
 import {
@@ -29,6 +32,27 @@ const document = {
 };
 
 describe("native Merkle hash compatibility", () => {
+  it("validates producer JSON without a hash and retains portable limits", () => {
+    for (const { value } of vectors)
+      expect(() => validateNativeJSON(value)).not.toThrow();
+    for (const value of [
+      undefined,
+      { x: undefined },
+      { x: NaN },
+      { x: Infinity },
+      { x: 9007199254740992 },
+      { x: "\ud800" },
+      { x: 1n },
+      { x: () => 1 },
+    ])
+      expect(() => validateNativeJSON(value)).toThrow();
+    let deep: unknown = null;
+    for (let i = 0; i < 129; i++) deep = [deep];
+    expect(() => validateNativeJSON(deep)).toThrow("JSON_LIMIT");
+    const cycle: Record<string, unknown> = {};
+    cycle.self = cycle;
+    expect(() => validateNativeJSON(cycle)).toThrow();
+  });
   it.each(vectors)("matches upstream vector $name", ({ value, hash }) => {
     expect(nativeTreeHash(value)).toBe(hash);
   });
@@ -43,6 +67,105 @@ describe("native Merkle hash compatibility", () => {
 });
 
 describe("native LSML mutation and runtime package", () => {
+  it("separates fonts only for persistent runtime transfer and keeps source packaging intact", async () => {
+    const font = new Uint8Array([1, 2, 3]);
+    const origin: SceneSourceDelivery = {
+      sceneId: document.scene_id,
+      sceneVersion: document.scene_version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(document)),
+      assets: new Map([["assets/font.ttf", font]]),
+      sourceDigest: "sha256:" + "0".repeat(64),
+      blueManifest: nativeManifest(document.scene_id, document.scene_version),
+    };
+    const assets = new NativeSceneAssets(origin);
+    const runtime = await assets.renderPackage(
+      document,
+      undefined,
+      undefined,
+      true,
+    );
+    expect(unzipSync(runtime.data)["assets/font.ttf"]).toBeUndefined();
+    expect(runtime.hostFonts?.map((face) => face.copy())).toEqual([font]);
+    font.fill(9);
+    const rebuilt = await assets.renderPackage(
+      document,
+      undefined,
+      undefined,
+      true,
+    );
+    expect(rebuilt.hostFonts?.[0]).toBe(runtime.hostFonts?.[0]);
+    expect(rebuilt.hostFonts?.[0]?.copy()).toEqual(new Uint8Array([1, 2, 3]));
+    font.set([1, 2, 3]);
+    expect(
+      unzipSync((await assets.renderPackage(document)).data)["assets/font.ttf"],
+    ).toEqual(font);
+    expect(origin.assets.get("assets/font.ttf")).toEqual(font);
+    const corrupted = {
+      ...origin,
+      assets: new Map([[`assets/${"a".repeat(64)}.ttf`, font]]),
+    };
+    await expect(
+      new NativeSceneAssets(corrupted).renderPackage(
+        document,
+        undefined,
+        undefined,
+        true,
+      ),
+    ).rejects.toThrow("Scene font content address mismatch");
+  });
+  it("direct transfer matches archive LSML/assets and preserves HTTP image mutation aliases", async () => {
+    const scene = {
+      ...document,
+      assets: { allowedHosts: ["images.example"] },
+      defaults: { logo: "https://images.example/first.png" },
+      layout: { kind: "image", bind: { src: "logo" } },
+    };
+    const origin: SceneSourceDelivery = {
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(scene)),
+      assets: new Map(),
+      sourceDigest: version,
+      blueManifest: nativeManifest(scene.scene_id, version),
+    };
+    const fetchImage = vi.fn(
+      async (url: RequestInfo | URL) =>
+        new Response(new Uint8Array([String(url).includes("first") ? 1 : 2]), {
+          headers: { "content-type": "image/png" },
+        }),
+    );
+    const assets = new NativeSceneAssets(origin, fetchImage as typeof fetch);
+    const archive = unzipSync(
+      (await assets.renderPackage(scene, undefined, undefined, true)).data,
+    );
+    const direct = await assets.renderPackage(
+      scene,
+      undefined,
+      undefined,
+      true,
+      true,
+    );
+    expect(direct.data).toEqual(archive["scene.lsml"]);
+    delete archive["scene.lsml"];
+    expect(
+      Object.fromEntries(
+        direct.assets!.map((asset) => [asset.path, asset.bytes]),
+      ),
+    ).toEqual(archive);
+    const patch = await assets.prepareImagePatch(
+      { logo: "https://images.example/second.png" },
+      direct.imageBindings,
+      scene,
+    );
+    expect(patch.values.logo).not.toBe(direct.imageValues.logo);
+    expect(patch.assets[0]!.bytes).toEqual(new Uint8Array([2]));
+    expect(fetchImage).toHaveBeenCalledTimes(2);
+    expect(scene.defaults.logo).toBe("https://images.example/first.png");
+  });
   it("keeps positional camera authority out of Vision defaults without changing the native document", async () => {
     const scene = {
       ...document,
@@ -105,6 +228,20 @@ describe("native LSML mutation and runtime package", () => {
     expect(variant.layout.bind.src).toBe(alias);
     await assets.renderPackage(scene);
     expect(fetchImage).toHaveBeenCalledOnce();
+    const patch = await assets.prepareImagePatch(
+      { champion: scene.defaults.champion },
+      rendered.imageBindings,
+      scene,
+    );
+    expect(patch.values).toEqual({ champion: path });
+    expect(patch.assets).toEqual([{ path, bytes: image }]);
+    await expect(
+      assets.prepareImagePatch(
+        { champion: "assets/missing.png" },
+        rendered.imageBindings,
+        scene,
+      ),
+    ).rejects.toThrow("unavailable");
     expect(fetchImage).toHaveBeenCalledWith(scene.defaults.champion, {
       credentials: "omit",
       signal: undefined,
@@ -117,6 +254,105 @@ describe("native LSML mutation and runtime package", () => {
     ).rejects.toThrow("host is not allowed");
     expect(fetchImage).toHaveBeenCalledOnce();
     expect(scene).toEqual(before);
+  });
+  it("starts independent image requests together and deduplicates repeated bindings", async () => {
+    const scene = {
+      ...document,
+      assets: { allowedHosts: ["images.example"] },
+      defaults: {
+        first: "https://images.example/first.png",
+        second: "https://images.example/second.png",
+      },
+      layout: {
+        kind: "stack",
+        children: [
+          { kind: "image", bind: { src: "first" } },
+          { kind: "image", bind: { src: "second" } },
+          { kind: "image", bind: { src: "first" } },
+        ],
+      },
+    };
+    const before = structuredClone(scene);
+    const origin: SceneSourceDelivery = {
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      sourceDigest: version,
+      revision: 1,
+      data: strToU8(JSON.stringify(scene)),
+      format: "lsml",
+      assets: new Map(),
+      blueManifest: nativeManifest(scene.scene_id, version),
+    };
+    const pending: Array<(value: Response) => void> = [];
+    const fetchImage = vi.fn(
+      () => new Promise<Response>((resolve) => pending.push(resolve)),
+    );
+    const assets = new NativeSceneAssets(origin, fetchImage as typeof fetch);
+    const preparing = assets.renderPackage(scene);
+    // The sequential implementation starts only one request and cannot satisfy
+    // this barrier until the first response is released.
+    expect(fetchImage).toHaveBeenCalledTimes(2);
+    pending.forEach((resolve, index) =>
+      resolve(
+        new Response(new Uint8Array([index + 1]), {
+          headers: { "content-type": "image/png" },
+        }),
+      ),
+    );
+    const result = await preparing;
+    const variant = JSON.parse(
+      strFromU8(unzipSync(result.data)["scene.lsml"]!),
+    );
+    expect(variant.layout.children[0].bind.src).toBe(
+      variant.layout.children[2].bind.src,
+    );
+    expect(variant.layout.children[0].bind.src).not.toBe(
+      variant.layout.children[1].bind.src,
+    );
+    await assets.renderPackage(scene);
+    expect(fetchImage).toHaveBeenCalledTimes(2);
+    expect(scene).toEqual(before);
+  });
+  it("uses trusted host bytes only after the LSML host policy and preserves URL deduplication", async () => {
+    const scene = {
+      ...document,
+      assets: { allowedHosts: ["images.example"] },
+      defaults: { logo: "https://images.example/logo.png" },
+      layout: { kind: "image", bind: { src: "logo" } },
+    };
+    const origin: SceneSourceDelivery = {
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      sourceDigest: version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(scene)),
+      assets: new Map(),
+      blueManifest: nativeManifest(scene.scene_id, version),
+    };
+    const bytes = new Uint8Array([1, 2, 3]);
+    const get = vi.fn(async () => ({ data: bytes, contentType: "image/png" }));
+    const fetchImage = vi.fn();
+    const assets = new NativeSceneAssets(origin, fetchImage, { get });
+    const rendered = await assets.renderPackage(scene);
+    await assets.prepareImagePatch(
+      { logo: scene.defaults.logo },
+      rendered.imageBindings,
+      scene,
+    );
+    expect(get).toHaveBeenCalledOnce();
+    expect(fetchImage).not.toHaveBeenCalled();
+    expect(
+      unzipSync(rendered.data)[rendered.imageAssets[scene.defaults.logo]!],
+    ).toEqual(bytes);
+    await expect(
+      assets.renderPackage({
+        ...scene,
+        defaults: { logo: "https://forbidden.example/logo.png" },
+      }),
+    ).rejects.toThrow("host is not allowed");
+    expect(get).toHaveBeenCalledOnce();
+    expect(scene.defaults.logo).toBe("https://images.example/logo.png");
   });
   it("renders numeric scores as text without changing their numeric layout use or source", async () => {
     const scene = {

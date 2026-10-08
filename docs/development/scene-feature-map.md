@@ -6,9 +6,10 @@ does not resolve or compile a RenderBundle.
 
 | Capability | Owner | Consumers / checks |
 | --- | --- | --- |
+| Producer-independent mutation reception, application and presentation; no producer projection in events | `src/engine/native-lsdp-runtime.ts`, `src/engine/frame-patches.ts` | `tests/unit/native-lsdp-runtime.test.ts`: no producer feedback/read, separate reception and completed-frame observations |
 | Renderer phase acknowledgement and retained compensation frame | `src/engine/control-feedback.ts`, `src/engine/native-lsdp-runtime.ts` | phase lifecycle and fragmented read tests; real Orion/two-CEF proof |
 | Startup catalog synchronization and partitioned bounded browser cache | `src/scenes/startup.ts`, `src/scenes/browser-store.ts`, `src/host-entry.ts` | `tests/unit/startup-cache.test.ts`; offline/pagination/conflict/eviction |
-| Same-port child recovery from parent RAM and watcher reconnection | `src/server/native-server.ts` | `scripts/test-reception-recovery.mjs`; forced child death and immutable archive |
+| Same-port child recovery with empty scenes, producer republication and explicit watcher reconnection | `src/server/native-server.ts` | `scripts/test-reception-recovery.mjs`; no automatic mirror, forced child death and immutable archive |
 | Public mount lifecycle and required source provider | `src/mount.ts`, `src/types/index.ts` | `tests/unit/mount.test.ts` |
 | Canvas scene lookup, version pinning, source/assets and Blue manifest verification | `src/scenes/canvas.ts`, `src/scenes/types.ts` | `tests/unit/scene-source.test.ts`; `scripts/prove-authenticated-canvas.mjs` |
 | Native binary WebSocket snapshots, exact selectors, source fetch and distinct reception/presentation receipts | `src/engine/native-lsdp-runtime.ts`, `vendor/lsdp-native-browser/` | `tests/unit/native-lsdp-runtime.test.ts`; `scripts/test-native-lsdp.mjs` |

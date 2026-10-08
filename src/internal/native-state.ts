@@ -27,9 +27,8 @@ export class NativeState {
     private readonly hasher: NativeTreeHasher,
   ) {}
 
-  static from(value: unknown): NativeState {
-    const owned = portable(value),
-      hasher = new NativeTreeHasher();
+  static from(value: unknown, hasher = new NativeTreeHasher()): NativeState {
+    const owned = portable(value);
     return new NativeState(owned, hasher.hash(owned), hasher);
   }
 

@@ -28,12 +28,12 @@ const provider = createCachedSceneSourceProvider(canvasProvider,
 const scene = await provider.get(sceneId, { sceneVersion, format: "lsmlz" });
 ```
 
-Le host Solar synchronise au lancement le catalogue Canvas (mine=true, pagination
-50), borné à 64 scènes et une réponse catalogue de 512 KiB. Une entrée non publiée
-ou incomplète reste un échec partiel visible dans le dataset solarCache ; la scène
-active peut continuer via le fournisseur en ligne. Seules les révisions exactes
-avec fermeture Blue complète sont conservées. Un hit vérifié fonctionne sans
-réseau ; une capsule corrompue échoue sans substitution silencieuse.
+Le host Solar utilise directement le fournisseur Canvas, sans synchronisation du
+catalogue au lancement, sans préchargement et sans store IndexedDB. Un changement
+de scène effectue une nouvelle acquisition de source ; seules les sources et
+ressources de la scène active restent disponibles pour ses mutations continues.
+Les adaptateurs de stockage exportés ci-dessous restent des surfaces existantes à
+retirer avec leurs consommateurs ; ils ne sont plus raccordés au host Solar.
 
 BrowserSceneSourceStore partage une transaction IndexedDB entre les deux lanes,
 avec partition SHA-256(API, credential), 64 entrées et 512 MiB, éviction par accès.

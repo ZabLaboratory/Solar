@@ -27,6 +27,7 @@ const server = new SolarReceptionServer({
 let peer, close;
 try {
   const first = await server.start();
+  assert.equal(server.peers.size, 0, "no automatic resource mirror");
   close = await server.watch(
     "orion/state",
     (state) => states.push(state),
@@ -36,7 +37,7 @@ try {
   peer = new BrowserLSDP(first.websocketUrl);
   await peer.ready;
   const desired = structuredClone(original);
-  desired.defaults.recovery_probe = "RAM only";
+  desired.defaults.recovery_probe = "producer-owned selection";
   await peer.transaction({
     kind: "route",
     id: "f".repeat(32),
@@ -59,19 +60,29 @@ try {
     }
   };
   await wait(() => states.some((s) => s.revision === 2));
-  // Host-side watcher checkpoints the accepted external state in RAM.
-  await new Promise((yes) => setTimeout(yes, 50));
+  assert.equal(server.peers.size, 1, "only the explicitly requested watch");
   process.kill(first.pid);
   await wait(() => events.some((e) => e.state === "ready"));
   const recovered = await server.start();
   assert.notEqual(recovered.pid, first.pid);
   assert.equal(recovered.address, first.address);
   assert.equal(recovered.websocketUrl, first.websocketUrl);
-  assert.deepEqual((await server.read("solar/program")).state, desired);
+  assert.equal((await server.read("solar/program")).state, null);
   assert.deepEqual((await server.read("orion/state")).state, {
     selection: "program",
-    revision: 2,
+    revision: 0,
   });
+  peer.close();
+  peer = new BrowserLSDP(recovered.websocketUrl);
+  await peer.ready;
+  await peer.transaction({
+    kind: "route",
+    id: "d".repeat(32),
+    port: "solar/program",
+    type: "solar.lsml/1",
+    payload: desired,
+  });
+  assert.deepEqual((await server.read("solar/program")).state, desired);
   await server.apply("orion/state", [
     { op: "replace", path: "/revision", value: 3 },
   ]);
@@ -88,7 +99,10 @@ try {
     JSON.stringify({
       result: "PASS",
       checks: [
-        "external-writer RAM checkpoint",
+        "no automatic resource mirror",
+        "lost scene restarts empty",
+        "producer republishes active selection",
+        "control state resets to declared seed",
         "forced process death",
         "same TCP/WS endpoints",
         "automatic watch reconnect",

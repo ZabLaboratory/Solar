@@ -41,6 +41,12 @@ manifest integrity, transport state and execution/presentation receipts; it does
 whether a Blue's business result is true. Application startup, capability provisioning,
 credential renewal and durable per-account storage policy remain host responsibilities.
 
+Mutation application and rendering start at the native LSDP reception boundary.
+Solar verifies/applies received state and Vision presents it without reading
+producer control state or awaiting Orion. Mutation events carry native identity
+and presentation progress, without producer projections. Explicit scene-selection
+coordination is separate from this contract.
+
 [The generated code map](code-map.md) covers each source file, symbols, imports/dependencies,
 product consumers, nearest owner and direct tests. Query the live graph with
 `npm run code:read -- <path-or-symbol>` / `npm run code:find -- <query>`; regenerate with

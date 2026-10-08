@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { NativeWorkerClient } from "../../src/engine/native-worker-client";
+import {
+  NativeWorkerClient,
+  verifiedNativeWorkerState,
+} from "../../src/engine/native-worker-client";
+import type { IncomingContext } from "../../vendor/lsdp-native-browser/src/browser.js";
 
 interface Message {
   type: string;
@@ -7,6 +11,7 @@ interface Message {
   value?: unknown;
   metadata?: { profile: string; target: string };
   error?: { code: string; message: string };
+  verifiedState?: { value: unknown; stateHash: string };
 }
 class WorkerStub {
   static instances: WorkerStub[] = [];
@@ -52,6 +57,46 @@ const incoming = (id: number, profile = "lsdp.state.subscription/1") => ({
 });
 
 describe("isolated native transport lifecycle", () => {
+  it("certifies only private worker deliveries for the duration of their callback", async () => {
+    let receivedContext!: IncomingContext;
+    const state = {
+      value: { defaults: { title: "verified" } },
+      stateHash: `tree-sha256:${"1".repeat(64)}`,
+    };
+    const seen = vi.fn(async (_value: unknown, context: IncomingContext) => {
+      receivedContext = context;
+      expect(verifiedNativeWorkerState(context)).toEqual(state);
+      expect(
+        verifiedNativeWorkerState({
+          ...context,
+          verifiedState: state,
+        } as IncomingContext),
+      ).toBeUndefined();
+      return { level: "applied", stateHash: state.stateHash };
+    });
+    const { client, worker } = start(seen);
+    worker.receive({ type: "ready" });
+    worker.receive({ ...incoming(1), verifiedState: state });
+    await vi.waitFor(() => expect(worker.messages.at(-1)?.type).toBe("result"));
+    expect(seen).toHaveBeenCalledOnce();
+    expect(verifiedNativeWorkerState(receivedContext)).toBeUndefined();
+    client.close();
+  });
+  it("rejects a malformed private certificate before invoking the render consumer", async () => {
+    const seen = vi.fn();
+    const { client, worker } = start(seen);
+    worker.receive({ type: "ready" });
+    worker.receive({
+      ...incoming(1),
+      verifiedState: { value: {}, stateHash: "unchecked" },
+    });
+    await vi.waitFor(() => expect(worker.messages.at(-1)?.type).toBe("result"));
+    expect(worker.messages.at(-1)?.error?.message).toContain(
+      "Invalid verified",
+    );
+    expect(seen).not.toHaveBeenCalled();
+    client.close();
+  });
   it("rejects readiness if closed before the worker connects", async () => {
     const { client, worker } = start();
     client.close();

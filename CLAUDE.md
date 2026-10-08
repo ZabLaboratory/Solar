@@ -2,10 +2,14 @@
 
 ## Current runtime
 
-Solar is the host-side LSDP client for the Zablab broadcast platform. Orion
+Solar is the host-side LSDP client for the Zablab broadcast platform. Native LSDP
 provides authoritative scene identity and mutable leaf state. Solar requests
 the exact scene revision by identifier from ZabCanvas and presents its LSMLZ
 archive with Lumencast Vision.
+Received mutations are applied by Solar and rendered by Vision independently
+of their producer. No Orion query or producer feedback is required, and local
+mutation observations contain no producer projection. Explicit scene-selection
+coordination has its own contract.
 The required `nativeLSDP: { url, resource, selector? }` reads a complete LSML resource
 from the actual Lumencast Rust server through its draft2 WebSocket binding.
 Solar keeps the original source/assets and Blue manifest pinned, applies flat
@@ -35,7 +39,7 @@ retains this manifest beside the active source and in verified immutable
 scene/Blue cache capsules. Blue execution remains server-owned; its scene changes arrive
 through LSDP mutations. Solar does not run Blue locally.
 
-The online provider fetches scenes from ZabCanvas. The optional cached provider retains only immutable exact revisions and complete offline Blue manifests; FileSceneSourceStore publishes capsules once and refuses conflicting bytes. The served browser host synchronizes at startup with bounded quota/LRU eviction in credential-partitioned IndexedDB. Node consumers supply an account-specific directory and retention policy. See docs/development/source-cache.md.
+The online provider fetches scenes from ZabCanvas. The optional cached provider retains only immutable exact revisions and complete offline Blue manifests; FileSceneSourceStore publishes capsules once and refuses conflicting bytes. The served browser host uses direct acquisition and does not synchronize the catalog or use IndexedDB. Local source synchronization belongs to the application launcher. Node consumers supply an account-specific directory and retention policy. See docs/development/source-cache.md.
 Do not remove the Blue manifest from `SceneSourceDelivery`: LSML alone does not
 describe every validated Blue dependency needed for offline preparation.
 

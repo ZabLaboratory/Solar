@@ -1,9 +1,10 @@
-import { bundleAddress, canonicalize } from "@lumencast/canonical";
+import { canonicalRender } from "./canonical-render";
+import { VerifiedFont } from "./verified-font";
 import type { Operation } from "fast-json-patch";
-import { strToU8, unzipSync, zipSync } from "fflate";
+import { unzipSync, zipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
-import type { SceneRenderDelivery } from "./types";
+import type { SceneRenderDelivery, SceneImageAssetsProvider } from "./types";
 import { prepareAnimationBindings } from "../engine/animations";
 import {
   prepareEditableBindings,
@@ -133,12 +134,22 @@ function prepareTextBindings(variant: LSMLDocument): Record<string, string> {
 export class NativeSceneAssets {
   private readonly files: Record<string, Uint8Array>;
   private readonly remote = new Map<string, Promise<string>>();
+  private readonly fonts = new Map<string, Promise<VerifiedFont>>();
   private readonly imageAssets: Record<string, string> = Object.create(null);
+
+  get byteLength(): number {
+    return Object.values(this.files).reduce(
+      (total, bytes) => total + bytes.byteLength,
+      0,
+    );
+  }
   constructor(
     readonly origin: SceneRenderDelivery,
     private readonly fetchResource: typeof fetch = globalThis.fetch.bind(
       globalThis,
     ),
+    private readonly hostImages?: SceneImageAssetsProvider,
+    private readonly onImages?: (started: number) => void,
   ) {
     if (
       !("provenance" in origin) &&
@@ -151,7 +162,12 @@ export class NativeSceneAssets {
     this.files =
       origin.format === "lsmlz"
         ? unzipSync(origin.data)
-        : Object.fromEntries(origin.assets);
+        : Object.fromEntries(
+            [...origin.assets].map(([path, bytes]) => [
+              path,
+              new Uint8Array(bytes),
+            ]),
+          );
     delete this.files["scene.lsml"];
     if (
       this.files[EMPTY_IMAGE_PATH] &&
@@ -200,21 +216,28 @@ export class NativeSceneAssets {
     if (this.remote.size >= 128)
       throw new Error("Scene remote image cache limit reached.");
     const run = (async () => {
-      const response = await this.fetchResource(url.href, {
-        credentials: "omit",
-        signal,
-      });
-      if (!response.ok)
+      const hosted = this.hostImages
+        ? await this.hostImages.get(url.href, { signal })
+        : null;
+      const response = hosted
+        ? null
+        : await this.fetchResource(url.href, {
+            credentials: "omit",
+            signal,
+          });
+      if (response && !response.ok)
         throw new Error(
           `Scene image fetch failed (${response.status}): ${url.hostname}`,
         );
-      const finalURL = new URL(response.url || url.href);
+      const finalURL = new URL(response?.url || url.href);
       if (
         !hosts.includes(finalURL.hostname) ||
         !["http:", "https:"].includes(finalURL.protocol)
       )
         throw new Error("Scene image redirect host is not allowed.");
-      const type = response.headers.get("content-type")?.split(";")[0];
+      const type =
+        hosted?.contentType ??
+        response!.headers.get("content-type")?.split(";")[0];
       const extensions: Record<string, string> = {
         "image/png": "png",
         "image/jpeg": "jpg",
@@ -228,9 +251,10 @@ export class NativeSceneAssets {
           "Scene image response has an unsupported content type.",
         );
       const maximum = 8 * 1024 * 1024;
-      if (Number(response.headers.get("content-length") ?? 0) > maximum)
+      if (Number(response?.headers.get("content-length") ?? 0) > maximum)
         throw new Error("Scene image exceeds 8 MiB.");
-      const bytes = new Uint8Array(await response.arrayBuffer());
+      const bytes =
+        hosted?.data ?? new Uint8Array(await response!.arrayBuffer());
       if (!bytes.length || bytes.length > maximum)
         throw new Error("Scene image exceeds the accepted byte limits.");
       const path = `assets/solar-${bytesToHex(sha256(bytes))}.${extensions[type]}`;
@@ -255,9 +279,10 @@ export class NativeSceneAssets {
     const bindings: Record<string, string> = Object.create(null);
     const defaults = variant.defaults ?? {};
     let sequence = 0;
-    const visit = async (value: unknown): Promise<void> => {
+    const pending: Promise<void>[] = [];
+    const visit = (value: unknown): void => {
       if (Array.isArray(value)) {
-        for (const child of value) await visit(child);
+        value.forEach(visit);
         return;
       }
       if (!value || typeof value !== "object") return;
@@ -272,38 +297,80 @@ export class NativeSceneAssets {
               alias = `__solar.image.${sequence++}`;
             } while (Object.hasOwn(defaults, alias));
             bindings[path] = alias;
-            defaults[alias] = await this.imagePath(
-              defaults[path],
-              document,
-              signal,
+            const imageAlias = alias;
+            pending.push(
+              this.imagePath(defaults[path], document, signal).then((asset) => {
+                defaults[imageAlias] = asset;
+              }),
             );
           }
           bind!.src = alias;
         } else if (typeof node.src === "string") {
-          node.src = await this.imagePath(node.src, document, signal);
+          pending.push(
+            this.imagePath(node.src, document, signal).then((asset) => {
+              node.src = asset;
+            }),
+          );
         }
       }
-      for (const child of Object.values(node)) await visit(child);
+      Object.values(node).forEach(visit);
     };
-    await visit(variant.layout);
+    visit(variant.layout);
+    await Promise.all(pending);
     variant.defaults = defaults;
     return bindings;
+  }
+
+  /** Resolve changed image leaves before one retained Vision state submission. */
+  async prepareImagePatch(
+    patch: Record<string, unknown>,
+    bindings: Record<string, string>,
+    document: LSMLDocument,
+    signal?: AbortSignal,
+  ): Promise<{
+    values: Record<string, unknown>;
+    assets: Array<{ path: string; bytes: Uint8Array }>;
+  }> {
+    const started = performance.now();
+    const values: Record<string, unknown> = {};
+    const files = new Map<string, Uint8Array>();
+    await Promise.all(
+      Object.entries(bindings)
+        .filter(([path]) => Object.hasOwn(patch, path))
+        .map(async ([path]) => {
+          const resolved = await this.imagePath(patch[path], document, signal);
+          if (typeof resolved !== "string" || !this.files[resolved])
+            throw new Error(`Scene image asset is unavailable: ${path}`);
+          values[path] = resolved;
+          files.set(resolved, this.files[resolved]!);
+        }),
+    );
+    this.onImages?.(started);
+    return {
+      values,
+      assets: [...files].map(([path, bytes]) => ({ path, bytes })),
+    };
   }
 
   async renderPackage(
     document: LSMLDocument,
     signal?: AbortSignal,
     nativeComposition?: { width: number; height: number },
+    separateFonts = false,
+    directParts = false,
   ): Promise<{
     data: Uint8Array;
+    assets?: Array<{ path: string; bytes: Uint8Array }>;
     sceneVersion: string;
     lsmlDefaults: true;
+    initialDefaults: Record<string, unknown>;
     textBindings: Record<string, string>;
     imageBindings: Record<string, string>;
     imageAssets: Record<string, string>;
     imageValues: Record<string, unknown>;
     animationBindings: Record<string, string>;
     geometryBindings: Record<string, [string, string]>;
+    hostFonts?: VerifiedFont[];
     surface?: { width: number; height: number };
   }> {
     if (
@@ -316,7 +383,9 @@ export class NativeSceneAssets {
     }
     // Native resource identity stays pinned to its origin. Vision requires the
     // content address of the edited render variant; compute it on this clone.
-    const variant = structuredClone(document);
+    const rendering = { ...document };
+    delete rendering["x-solar-authoring"];
+    const variant = structuredClone(rendering);
     // Camera credentials and slot names belong to the host, not Vision's
     // variable grammar. Positional refs such as @0 remain valid slot keys;
     // forwarding __cam.slots.@0 as a render default makes Vision reject LSML.
@@ -334,14 +403,51 @@ export class NativeSceneAssets {
       document,
       signal,
     );
-    variant.scene_version = await bundleAddress(variant);
+    const canonical = await canonicalRender(variant);
+    variant.scene_version = canonical.sceneVersion;
+    // Runtime-only transfer: source/import/export files stay intact. Fonts are
+    // admitted to the persistent engine bank before this fresh scene is loaded.
+    const fonts: VerifiedFont[] = [];
+    const files = { ...this.files };
+    const fontEntries = await Promise.all(
+      Object.entries(this.files).map(async ([path, source]) => {
+        // Other paths remain in the archive, where Vision's package validator
+        // owns path admission. Preserve its SHA-1/SHA-256 address checks here.
+        const match =
+          /^assets\/([a-zA-Z0-9_-]+)\.(ttf|otf|ttc|woff|woff2)$/.exec(path);
+        if (!separateFonts || !match) return null;
+        const address = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(match[1]!)
+          ? match[1]
+          : undefined;
+        let prepared = this.fonts.get(path);
+        if (!prepared) {
+          prepared = VerifiedFont.admit(source, address);
+          this.fonts.set(path, prepared);
+        }
+        const font = await prepared;
+        return { path, font };
+      }),
+    );
+    for (const entry of fontEntries) {
+      if (!entry) continue;
+      fonts.push(entry.font);
+      delete files[entry.path];
+    }
     return {
-      data: zipSync(
-        { ...this.files, "scene.lsml": strToU8(canonicalize(variant)) },
-        { level: 0 },
-      ),
+      data: directParts
+        ? canonical.data
+        : zipSync({ ...files, "scene.lsml": canonical.data }, { level: 0 }),
+      ...(directParts
+        ? {
+            assets: Object.entries(files).map(([path, bytes]) => ({
+              path,
+              bytes,
+            })),
+          }
+        : {}),
       sceneVersion: variant.scene_version,
       lsmlDefaults: true,
+      initialDefaults: { ...variant.defaults },
       textBindings,
       imageBindings,
       imageAssets: { ...this.imageAssets },
@@ -353,6 +459,7 @@ export class NativeSceneAssets {
       ),
       animationBindings,
       geometryBindings,
+      ...(separateFonts ? { hostFonts: fonts } : {}),
       ...(nativeComposition
         ? {
             surface: {

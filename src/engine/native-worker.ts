@@ -1,5 +1,6 @@
 import { BrowserLSDP } from "../../vendor/lsdp-native-browser/src/browser.js";
 import { NativeState } from "../internal/native-state";
+import { NativeTreeHasher } from "../internal/native-tree";
 import { workerDigest } from "../internal/native-digest";
 import {
   nativeChange,
@@ -12,6 +13,9 @@ const scope = globalThis as unknown as {
   postMessage: (value: unknown) => void;
 };
 workerDigest(crypto.subtle);
+// Snapshot catch-up retains verified immutable subtrees on this one resource.
+// Every new snapshot still validates JSON and checks whole-resource budgets.
+const hasher = new NativeTreeHasher();
 let peer: BrowserLSDP,
   state: NativeState | null = null,
   sequence: number | null = null,
@@ -53,13 +57,14 @@ scope.onmessage = ({ data }) => {
         value: unknown,
         context: import("../../vendor/lsdp-native-browser/src/browser.js").IncomingContext,
       ) => {
+        const verificationStarted = performance.now();
         const id = ++serial;
         const event = value as NativeChange;
         let scalar = false;
         if (context.metadata.target !== data.resource)
           throw new Error("Unexpected native resource.");
         if (context.metadata.profile === "lsdp.state.read/1") {
-          state = NativeState.from(value);
+          state = NativeState.from(value, hasher);
           sequence = null;
         } else if (
           context.metadata.profile === "lsdp.state.subscription/1" &&
@@ -90,6 +95,18 @@ scope.onmessage = ({ data }) => {
           id,
           value,
           metadata: context.metadata,
+          // Verification (portable JSON, limits, sequence and Merkle hashes)
+          // happened above. Structured clone owns a separate rendering copy.
+          ...(event?.kind !== "resync" && state
+            ? {
+                verifiedState: {
+                  value: state.value,
+                  stateHash: state.stateHash,
+                },
+              }
+            : {}),
+          verificationMs: performance.now() - verificationStarted,
+          sentAt: performance.timeOrigin + performance.now(),
         });
         if (scalar) {
           // Application is verified in this isolated LSML thread; no pixel claim.

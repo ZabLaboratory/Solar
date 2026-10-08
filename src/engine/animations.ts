@@ -119,6 +119,9 @@ export function hasGeometry(frame: AnimationFrame): boolean {
 /** Geometry channels use the existing source-preserving Vision scene swap. */
 export function animationDocument(document: LSMLDocument, frames: readonly AnimationFrame[]): LSMLDocument {
   const variant = structuredClone(document);
+  // The package preparer owns private bindings. Adding them before an empty
+  // animation snapshot changes the retention key of an otherwise identical source.
+  if (frames.length === 0) return variant;
   prepareAnimationBindings(variant);
   for (const frame of frames) {
     for (const property of ["opacity", "rotation", "blur"]) if (frame.values[property] !== undefined)

@@ -51,6 +51,8 @@ export interface SceneSourceDelivery {
 /** Ephemeral local authoring base. It carries no publication/Blue readiness claim. */
 export interface LocalSceneSourceDelivery {
   provenance: "local-authoring";
+  /** Required encoded font digests already admitted by the installation/host bank. */
+  fontDigests: readonly string[];
   sceneId: string;
   revision: 0;
   sceneVersion: string;
@@ -64,11 +66,15 @@ export type SceneRenderDelivery =
   | SceneSourceDelivery
   | LocalSceneSourceDelivery;
 
-export interface LocalSceneSourceProvider {
+/** Trusted host-admitted image bytes; null leaves acquisition with Solar's remote policy. */
+export interface SceneImageAssetsProvider {
   get(
-    sceneId: string,
-    options: SceneSourceRequest,
-  ): Promise<LocalSceneSourceDelivery | null>;
+    url: string,
+    options: { signal?: AbortSignal },
+  ): Promise<{
+    data: Uint8Array;
+    contentType: string;
+  } | null>;
 }
 
 export type SceneSourceErrorCode =

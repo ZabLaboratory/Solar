@@ -1,6 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { NativeState } from "../../src/internal/native-state";
-import { nativeTreeHash } from "../../src/internal/native-tree";
+import {
+  nativeTreeHash,
+  NativeTreeHasher,
+} from "../../src/internal/native-tree";
 import rawVectors from "../../vendor/lsdp-native-browser/tree-vectors.json?raw";
 
 const vectors = JSON.parse(rawVectors) as Array<{
@@ -10,6 +13,29 @@ const vectors = JSON.parse(rawVectors) as Array<{
 }>;
 
 describe("immutable native state and incremental integrity", () => {
+  it("reuses snapshot digests without trusting altered or nonportable input", () => {
+    const hasher = new NativeTreeHasher();
+    const snapshot = {
+      layout: {
+        nodes: Array.from({ length: 100 }, (_, id) => ({
+          id,
+          text: "snapshot",
+        })),
+      },
+      defaults: { title: "old" },
+    };
+    const first = NativeState.from(snapshot, hasher);
+    const second = NativeState.from(structuredClone(snapshot), hasher);
+    expect(second.stateHash).toBe(first.stateHash);
+    snapshot.layout.nodes[0]!.text = "new";
+    const changed = NativeState.from(snapshot, hasher);
+    expect(changed.stateHash).toBe(nativeTreeHash(snapshot));
+    expect(changed.stateHash).not.toBe(first.stateHash);
+    expect(() =>
+      NativeState.from({ ...snapshot, invalid: 9007199254740992 }, hasher),
+    ).toThrow();
+    expect(first.value).not.toEqual(snapshot);
+  });
   it.each(vectors)(
     "retains the normative hash for $name",
     ({ value, hash }) => {
@@ -63,6 +89,42 @@ describe("immutable native state and incremental integrity", () => {
     expect(state.stateHash).toBe(nativeTreeHash(null));
   });
 
+  it("keeps normative integrity across copied LSML, changed leaves and subtree cache eviction", () => {
+    const source = {
+      defaults: { count: 0 },
+      layout: {
+        children: Array.from({ length: 80 }, (_, id) => ({
+          id,
+          text: "fixed content",
+          size: { w: 300, h: 60 },
+        })),
+      },
+    };
+    let state = NativeState.from(source);
+    for (let index = 0; index < 40; index++) {
+      const copied = structuredClone(source);
+      copied.defaults.count = index;
+      copied.layout.children[index % 80]!.text = "variant " + index;
+      state = state.patch([{ op: "replace", path: "", value: copied }]);
+      expect(state.stateHash).toBe(nativeTreeHash(copied));
+      state = state.patch([
+        { op: "replace", path: "/defaults/count", value: index + 1 },
+      ]);
+      expect(state.stateHash).toBe(
+        nativeTreeHash(structuredClone(state.value)),
+      );
+    }
+    state = state.patch([{ op: "replace", path: "", value: source }]);
+    state = state.patch([
+      { op: "replace", path: "", value: structuredClone(source) },
+    ]);
+    state = state.patch([
+      { op: "replace", path: "/layout/children/0/size/w", value: 800 },
+    ]);
+    expect(state.stateHash).toBe(nativeTreeHash(structuredClone(state.value)));
+    expect(source.layout.children[0]!.size.w).toBe(300);
+  });
+
   it("preserves full normative hashes while changing branches in a large defaults map", () => {
     const defaults = Object.fromEntries(
       Array.from({ length: 164 }, (_, index) => ["key" + index, index]),
@@ -78,6 +140,33 @@ describe("immutable native state and incremental integrity", () => {
       ]);
       expect(state.stateHash).toBe(nativeTreeHash(state.value));
     }
+  });
+
+  it("hashes path copies without serializing the unchanged LSML subtree", () => {
+    const before = NativeState.from({
+      defaults: { value: 0 },
+      layout: { description: "unchanged".repeat(2048) },
+    });
+    const serialized: unknown[] = [];
+    const original = JSON.stringify;
+    const spy = vi.spyOn(JSON, "stringify").mockImplementation((...args) => {
+      serialized.push(args[0]);
+      return original(...args);
+    });
+    let after: NativeState;
+    try {
+      after = before.patch([
+        { op: "replace", path: "/defaults/value", value: 1 },
+      ]);
+      expect(serialized).not.toContain(after.value);
+      expect(serialized).not.toContain(before.value);
+      expect(serialized).not.toContain(
+        (after.value as { layout: unknown }).layout,
+      );
+    } finally {
+      spy.mockRestore();
+    }
+    expect(after!.stateHash).toBe(nativeTreeHash(after!.value));
   });
 
   it("owns input values and prevents caller writes from invalidating cached hashes", () => {

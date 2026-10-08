@@ -41,6 +41,12 @@ interface TreeDigest {
 export class NativeTreeHasher {
   private readonly cache = new WeakMap<object, TreeDigest>();
   private readonly origins = new WeakMap<object, object>();
+  // Absolute native assignments may resend identical immutable LSML subtrees.
+  // Exact portable bytes reuse a previously verified normative digest; incoming
+  // JSON validation and the final whole-resource node/depth checks still run.
+  private readonly serialized = new WeakMap<object, string>();
+  private readonly content = new Map<string, TreeDigest>();
+  private contentBytes = 0;
 
   copied(copy: object, original: object): void {
     this.origins.set(copy, original);
@@ -68,6 +74,21 @@ export class NativeTreeHasher {
     const object = value as object;
     const cached = this.cache.get(object);
     if (cached) return cached;
+    // Path copies already have a verified origin for incremental hashing.
+    // Serializing their full subtree for content lookup defeats that boundary.
+    if (Object.isFrozen(object) && !this.origins.has(object)) {
+      const text = JSON.stringify(value);
+      if (text.length >= 1024 && text.length <= 512 * 1024) {
+        this.serialized.set(object, text);
+        const previous = this.content.get(text);
+        if (previous) {
+          this.content.delete(text);
+          this.content.set(text, previous);
+          this.cache.set(object, previous);
+          return previous;
+        }
+      }
+    }
     if (Array.isArray(value)) {
       const children = value.map((child) => this.digest(child));
       return this.remember(object, {
@@ -220,6 +241,16 @@ export class NativeTreeHasher {
 
   private remember(value: object, result: TreeDigest): TreeDigest {
     this.cache.set(value, result);
+    const text = this.serialized.get(value);
+    if (text && !this.content.has(text)) {
+      this.content.set(text, result);
+      this.contentBytes += text.length * 2;
+      while (this.content.size > 128 || this.contentBytes > 4 * 1024 * 1024) {
+        const oldest = this.content.keys().next().value!;
+        this.content.delete(oldest);
+        this.contentBytes -= oldest.length * 2;
+      }
+    }
     return result;
   }
 }
@@ -229,4 +260,23 @@ export function nativeTreeHash(value: unknown): string {
   // Use the native client's portable JSON validation and depth/node limits.
   strictJSON(JSON.stringify(value));
   return new NativeTreeHasher().hash(value);
+}
+
+/** Validate the producer boundary without computing a discarded Merkle tree.
+ * The native receiver owns the normative hash of the accepted transaction.
+ */
+export function validateNativeJSON(value: unknown): void {
+  strictJSON(
+    JSON.stringify(value, (_key, child: unknown) => {
+      if (
+        child === undefined ||
+        typeof child === "bigint" ||
+        typeof child === "function" ||
+        typeof child === "symbol" ||
+        (typeof child === "number" && !Number.isFinite(child))
+      )
+        throw new Error("INVALID_JSON");
+      return child;
+    }),
+  );
 }

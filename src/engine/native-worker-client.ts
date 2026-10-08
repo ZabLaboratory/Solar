@@ -4,6 +4,17 @@ import {
 } from "../../vendor/lsdp-native-browser/src/browser.js";
 
 type Options = NonNullable<ConstructorParameters<typeof BrowserLSDP>[1]>;
+interface VerifiedWorkerState {
+  readonly value: unknown;
+  readonly stateHash: string;
+}
+// Only this client's private Worker channel can certify a delivery. A field
+// supplied by the network or a caller's lookalike context cannot bypass hashing.
+const verifiedStates = new WeakMap<IncomingContext, VerifiedWorkerState>();
+export const verifiedNativeWorkerState = (
+  context: IncomingContext,
+): VerifiedWorkerState | undefined => verifiedStates.get(context);
+
 /** Same consumer boundary; network/application work does not wait on CEF drawing. */
 export class NativeWorkerClient {
   readonly ready: Promise<void>;
@@ -66,12 +77,48 @@ export class NativeWorkerClient {
         this.deliveries.set(data.id, delivery);
         const deliver = async () => {
           if (this.abort.signal.aborted) return;
+          const received = performance.now();
+          if (
+            Number.isFinite(data.verificationMs) &&
+            Number.isFinite(data.sentAt)
+          ) {
+            if (performance.getEntriesByName("solar:native-stage").length >= 64)
+              performance.clearMeasures("solar:native-stage");
+            performance.measure("solar:native-stage", {
+              start: received,
+              duration: Math.max(0, data.verificationMs ?? 0),
+              detail: {
+                stage: "worker-verify",
+                resource,
+                phase:
+                  data.metadata.profile === "lsdp.state.read/1"
+                    ? "snapshot"
+                    : "change",
+              },
+            });
+            performance.measure("solar:native-stage", {
+              start: Math.min(
+                received,
+                Math.max(0, data.sentAt - performance.timeOrigin),
+              ),
+              end: received,
+              detail: { stage: "worker-delivery", resource },
+            });
+          }
           const context: IncomingContext = {
             metadata: data.metadata,
             signal: AbortSignal.any([this.abort.signal, delivery.signal]),
           };
           try {
             context.signal.throwIfAborted();
+            if (data.verifiedState) {
+              if (
+                data.metadata.target !== resource ||
+                !/^tree-sha256:[a-f0-9]{64}$/.test(data.verifiedState.stateHash)
+              )
+                throw new Error("Invalid verified worker delivery.");
+              verifiedStates.set(context, data.verifiedState);
+            }
             const value = await options?.onTransaction?.(data.value, context);
             context.signal.throwIfAborted();
             this.worker.postMessage({ type: "result", id: data.id, value });
@@ -89,6 +136,7 @@ export class NativeWorkerClient {
               error instanceof Error ? error : new Error(String(error)),
             );
           } finally {
+            verifiedStates.delete(context);
             this.deliveries.delete(data.id);
           }
         };

@@ -16,7 +16,8 @@ export class VisionMediaBridge {
           const method = Reflect.get(target, property);
           if (
             property !== "create_html_canvas" &&
-            property !== "create_html_canvas_with_fonts"
+            property !== "create_html_canvas_with_fonts" &&
+            property !== "create_empty_html_canvas"
           )
             return method;
           return async (...args: unknown[]) => {

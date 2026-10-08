@@ -1,3 +1,4 @@
+import { VerifiedFont } from "../scenes/verified-font";
 import type { SceneRenderDelivery } from "../scenes/types";
 import { visionImageValue, visionTextPatch } from "../scenes/native-document";
 import { CanvasPresentation } from "./canvas-presentation";
@@ -25,6 +26,9 @@ export interface VisionPresenterMessage {
 
 const COMPLETED_REQUESTS = new Set([
   "frame-submitted",
+  "engine-ready",
+  "fonts-ready",
+  "scene-cleared",
   "media-applied",
   "media-cleared",
   "resize-unchanged",
@@ -101,6 +105,7 @@ type PresenterModule = {
 
 export interface VisionRenderPackage {
   data: Uint8Array;
+  assets?: Array<{ path: string; bytes: Uint8Array }>;
   sceneVersion: string;
   /** Native defaults include LSML-owned __lit bindings. Camera control stays separate. */
   lsmlDefaults?: boolean;
@@ -110,8 +115,63 @@ export interface VisionRenderPackage {
   imageValues?: Record<string, unknown>;
   animationBindings?: Record<string, string>;
   geometryBindings?: Record<string, [string, string]>;
-  hostFonts?: Uint8Array[];
+  hostFonts?: Array<Uint8Array | VerifiedFont>;
+  requiredFontDigests?: readonly string[];
   surface?: { width: number; height: number };
+  installationFonts?: () => AsyncIterable<Uint8Array[]>;
+  resolveImages?: (patch: Record<string, unknown>) => Promise<{
+    values: Record<string, unknown>;
+    assets: Array<{ path: string; bytes: Uint8Array }>;
+  }>;
+}
+
+interface PersistentVisionSession {
+  layer: HTMLDivElement;
+  canvas: HTMLCanvasElement;
+  presentation: CanvasPresentation;
+  presenter: VisionPresenter | null;
+  bridge: VisionMediaBridge;
+  sequence: number;
+  owner: object;
+  closed: boolean;
+  fontsReady: boolean;
+  admittedFonts: Set<string>;
+  onMessage: (event: PresenterEvent) => void;
+}
+const visionSessions = new WeakMap<HTMLElement, PersistentVisionSession>();
+const sceneLoads = new WeakMap<HTMLElement, Promise<void>>();
+
+function createSessionPresenter(
+  module: PresenterModule,
+  canvas: HTMLCanvasElement,
+  bridge: VisionMediaBridge,
+): VisionPresenter {
+  return module.createMainThreadPresenter(canvas, {
+    loadWasm: async () =>
+      bridge.module(
+        await import(
+          /* @vite-ignore */ new URL(
+            "vision/pkg/lumencast_vision_web.js",
+            document.baseURI,
+          ).href
+        ),
+      ),
+  });
+}
+function listenToSession(session: PersistentVisionSession): void {
+  session.presenter!.addEventListener("message", (event) =>
+    session.onMessage(event),
+  );
+}
+
+/** End the host session; a scene switch must never call this. */
+export function disconnectVisionSession(target: HTMLElement): void {
+  const session = visionSessions.get(target);
+  if (!session) return;
+  visionSessions.delete(target);
+  session.closed = true;
+  session.presenter?.terminate();
+  session.layer.remove();
 }
 
 /** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
@@ -122,12 +182,56 @@ export async function mountVisionScene(
   onMediaSources: (sources: readonly VisionLiveMediaSource[]) => void,
   onError: (error: unknown) => void,
   renderPackage?: VisionRenderPackage,
+  persistent = false,
+): Promise<VisionSceneHandle> {
+  if (!persistent)
+    return mountVisionSceneNow(
+      target,
+      delivery,
+      initialState,
+      onMediaSources,
+      onError,
+      renderPackage,
+    );
+  const preceding = sceneLoads.get(target) ?? Promise.resolve();
+  const load = preceding.then(() =>
+    mountVisionSceneNow(
+      target,
+      delivery,
+      initialState,
+      onMediaSources,
+      onError,
+      renderPackage,
+      true,
+    ),
+  );
+  sceneLoads.set(
+    target,
+    load.then(
+      () => {},
+      () => {},
+    ),
+  );
+  return load;
+}
+
+/** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
+async function mountVisionSceneNow(
+  target: HTMLElement,
+  delivery: SceneRenderDelivery,
+  initialState: Record<string, unknown>,
+  onMediaSources: (sources: readonly VisionLiveMediaSource[]) => void,
+  onError: (error: unknown) => void,
+  renderPackage?: VisionRenderPackage,
+  persistent = false,
 ): Promise<VisionSceneHandle> {
   if (delivery.format !== "lsmlz" && !renderPackage) {
     throw new Error("Vision scene delivery must be an LSMLZ archive.");
   }
 
-  const layer = document.createElement("div");
+  const existing = persistent ? visionSessions.get(target) : undefined;
+  const owner = {};
+  const layer = existing?.layer ?? document.createElement("div");
   layer.dataset.solarVisionScene = delivery.sceneVersion;
   Object.assign(layer.style, {
     position: "absolute",
@@ -139,7 +243,7 @@ export async function mountVisionScene(
     target.style.position = "relative";
   }
 
-  const canvas = document.createElement("canvas");
+  const canvas = existing?.canvas ?? document.createElement("canvas");
   canvas.setAttribute("aria-hidden", "true");
   Object.assign(canvas.style, {
     display: "block",
@@ -149,11 +253,11 @@ export async function mountVisionScene(
     position: "absolute",
     inset: "0",
   });
-  const presentation = new CanvasPresentation(canvas);
+  const presentation = existing?.presentation ?? new CanvasPresentation(canvas);
   layer.append(canvas, presentation.canvas);
   target.append(layer);
 
-  let presenter: VisionPresenter | null = null;
+  let presenter: VisionPresenter | null = existing?.presenter ?? null;
   let sequence = 0;
   let disposed = false;
   let width =
@@ -166,7 +270,26 @@ export async function mountVisionScene(
   let resizeObserver: ResizeObserver | null = null;
   let removeWindowResize: (() => void) | null = null;
   let termination: Promise<void> | null = null;
-  const mediaBridge = new VisionMediaBridge();
+  const mediaBridge = existing?.bridge ?? new VisionMediaBridge();
+  const session: PersistentVisionSession | null = persistent
+    ? (existing ?? {
+        layer,
+        canvas,
+        presentation,
+        presenter: null,
+        bridge: mediaBridge,
+        sequence: 0,
+        owner,
+        closed: false,
+        fontsReady: false,
+        admittedFonts: new Set<string>(),
+        onMessage: () => {},
+      })
+    : null;
+  if (session) {
+    session.owner = owner;
+    visionSessions.set(target, session);
+  }
   let frameQueue: VisionFrames | null = null;
   const waiters = new Map<
     number,
@@ -184,6 +307,7 @@ export async function mountVisionScene(
     return error;
   };
   const onMessage = (event: PresenterEvent): void => {
+    if (disposed) return;
     const message = event.data;
     if (message.mediaSources) {
       mediaSources = message.mediaSources;
@@ -227,9 +351,13 @@ export async function mountVisionScene(
   };
 
   const requestFrame = (request: Record<string, unknown>): Promise<void> => {
-    if (!presenter || disposed)
+    if (
+      !presenter ||
+      disposed ||
+      (session && (session.closed || session.owner !== owner))
+    )
       return Promise.reject(new Error("Vision scene is disconnected."));
-    const seq = ++sequence;
+    const seq = session ? ++session.sequence : ++sequence;
     return new Promise<void>((resolve, reject) => {
       waiters.set(seq, { resolve, reject });
       presenter!.postMessage({ ...request, seq });
@@ -244,58 +372,135 @@ export async function mountVisionScene(
     const presenterModule = (await import(
       /* @vite-ignore */ presenterUrl.href
     )) as PresenterModule;
-    presenter = presenterModule.createMainThreadPresenter(canvas, {
-      fetch: async (
-        input: RequestInfo | URL,
-        init?: RequestInit,
-      ): Promise<Response> => {
-        if (String(input) === "/scene") {
-          return new Response(
-            new Uint8Array(renderPackage?.data ?? delivery.data),
-            {
-              status: 200,
-              headers: { "content-type": "application/zip" },
+    if (!presenter)
+      presenter = persistent
+        ? createSessionPresenter(presenterModule, canvas, mediaBridge)
+        : presenterModule.createMainThreadPresenter(canvas, {
+            fetch: async (
+              input: RequestInfo | URL,
+              init?: RequestInit,
+            ): Promise<Response> => {
+              if (String(input) === "/scene") {
+                return new Response(
+                  new Uint8Array(renderPackage?.data ?? delivery.data),
+                  {
+                    status: 200,
+                    headers: { "content-type": "application/zip" },
+                  },
+                );
+              }
+              if (String(input) === "/fonts")
+                return Response.json(
+                  [...hostFonts, ...(renderPackage?.hostFonts ?? [])].map(
+                    (_, i) => `/fonts/${i}`,
+                  ),
+                );
+              if (String(input).startsWith("/fonts/")) {
+                const index = Number(String(input).slice(7));
+                const bytes = Number.isInteger(index)
+                  ? [
+                      ...(await loadHostFonts()),
+                      ...(renderPackage?.hostFonts ?? []).map((font) =>
+                        VerifiedFont.isVerified(font) ? font.copy() : font,
+                      ),
+                    ][index]
+                  : undefined;
+                return bytes
+                  ? new Response(new Uint8Array(bytes))
+                  : new Response(null, { status: 404 });
+              }
+              return fetch(input, init);
             },
-          );
-        }
-        if (String(input) === "/fonts")
-          return Response.json(
-            [...hostFonts, ...(renderPackage?.hostFonts ?? [])].map(
-              (_, i) => `/fonts/${i}`,
-            ),
-          );
-        if (String(input).startsWith("/fonts/")) {
-          const index = Number(String(input).slice(7));
-          const bytes = Number.isInteger(index)
-            ? [...(await loadHostFonts()), ...(renderPackage?.hostFonts ?? [])][
-                index
-              ]
-            : undefined;
-          return bytes
-            ? new Response(new Uint8Array(bytes))
-            : new Response(null, { status: 404 });
-        }
-        return fetch(input, init);
-      },
-      loadWasm: async () =>
-        mediaBridge.module(
-          await import(
-            /* @vite-ignore */ new URL(
-              "vision/pkg/lumencast_vision_web.js",
-              document.baseURI,
-            ).href
-          ),
-        ),
-    });
-    presenter.addEventListener("message", onMessage);
+            loadWasm: async () =>
+              mediaBridge.module(
+                await import(
+                  /* @vite-ignore */ new URL(
+                    "vision/pkg/lumencast_vision_web.js",
+                    document.baseURI,
+                  ).href
+                ),
+              ),
+          });
+    if (session?.closed) {
+      presenter.terminate();
+      throw new Error("Vision host session disconnected.");
+    }
+    if (session) {
+      session.onMessage = onMessage;
+      if (!session.presenter) {
+        session.presenter = presenter;
+        listenToSession(session);
+      }
+    } else presenter.addEventListener("message", onMessage);
 
-    await requestFrame({
-      type: "init",
-      canvas,
-      width,
-      height,
-      sentAt: performance.timeOrigin + performance.now(),
-    });
+    if (!existing)
+      await requestFrame({
+        type: persistent ? "init-empty" : "init",
+        canvas,
+        width,
+        height,
+        sentAt: performance.timeOrigin + performance.now(),
+      });
+    const admitFonts = async (
+      fonts: Array<Uint8Array | VerifiedFont>,
+    ): Promise<void> => {
+      if (!session) return;
+      // Native WebCrypto avoids WASM SHA compression on every switch. Only
+      // digests acknowledged by Rust belong to this engine's font bank.
+      const entries = await Promise.all(
+        fonts.map((font) =>
+          VerifiedFont.isVerified(font) ? font : VerifiedFont.admit(font),
+        ),
+      );
+      const pending = new Map(
+        entries
+          .filter((entry) => !session.admittedFonts.has(entry.digest))
+          .map((entry) => [entry.digest, entry]),
+      );
+      if (!pending.size) return;
+      let batch = new Map<string, Uint8Array>();
+      let batchBytes = 0;
+      const submit = async (): Promise<void> => {
+        if (!batch.size) return;
+        await requestFrame({
+          type: "preload-fonts",
+          fonts: [...batch.values()],
+        });
+        for (const digest of batch.keys()) session.admittedFonts.add(digest);
+        batch = new Map();
+        batchBytes = 0;
+      };
+      for (const [digest, font] of pending) {
+        const bytes = font.copy();
+        if (bytes.length > 64 * 1024 * 1024)
+          throw new Error("Font preload exceeds byte limit.");
+        if (batch.size === 64 || batchBytes + bytes.length > 64 * 1024 * 1024)
+          await submit();
+        batch.set(digest, bytes);
+        batchBytes += bytes.length;
+      }
+      await submit();
+    };
+    if (session && !session.fontsReady) {
+      if (renderPackage?.installationFonts) {
+        for await (const fonts of renderPackage.installationFonts())
+          await admitFonts(fonts);
+      } else await admitFonts(await loadHostFonts());
+      session.fontsReady = true;
+    }
+    if (persistent) {
+      await admitFonts(renderPackage?.hostFonts ?? []);
+      for (const digest of renderPackage?.requiredFontDigests ?? [])
+        if (!session?.admittedFonts.has(digest))
+          throw new Error(`SOLAR_AUTHORING_FONT_NOT_ADMITTED: ${digest}`);
+      await requestFrame({
+        type: "load",
+        ...(renderPackage?.assets ? { assets: renderPackage.assets } : {}),
+        packageBytes: new Uint8Array(renderPackage?.data ?? delivery.data),
+        fonts: [],
+        sentAt: performance.timeOrigin + performance.now(),
+      });
+    }
     const filterState = renderPackage?.lsmlDefaults
       ? (state: Record<string, unknown>) =>
           Object.fromEntries(
@@ -362,6 +567,7 @@ export async function mountVisionScene(
         await requestFrame({
           type: "patch",
           patchJson: JSON.stringify(frame.patch),
+          ...(frame.images ? { images: frame.images } : {}),
         });
       } else if (frame.frames.length > 0) {
         await requestFrame({ type: "media-frames", frames: frame.frames });
@@ -405,6 +611,7 @@ export async function mountVisionScene(
         return mediaSources;
       },
       canApplyPatch: (patch) =>
+        Boolean(renderPackage?.resolveImages) ||
         Object.keys(renderPackage?.imageBindings ?? {}).every((path) => {
           const value = patch[path];
           return (
@@ -415,8 +622,11 @@ export async function mountVisionScene(
         }),
       applyPatch: async (patch) => {
         const filtered = projectState(patch);
+        const images = await renderPackage?.resolveImages?.(patch);
+        for (const [path, value] of Object.entries(images?.values ?? {}))
+          filtered[renderPackage!.imageBindings![path]!] = value;
         if (Object.keys(filtered).length > 0) {
-          await frameQueue!.addPatch(filtered);
+          await frameQueue!.addPatch(filtered, images?.assets);
         }
       },
       resize: async (nextWidth, nextHeight) => {
@@ -429,10 +639,12 @@ export async function mountVisionScene(
         await requestFrame({ type: "resize", width, height });
       },
       activate: () => {
-        if (!disposed) layer.style.opacity = "1";
+        if (!disposed && (!session || session.owner === owner))
+          layer.style.opacity = "1";
       },
       deactivate: () => {
-        if (!disposed) layer.style.opacity = "0";
+        if (!disposed && (!session || session.owner === owner))
+          layer.style.opacity = "0";
       },
       updateMedia: (frames) => {
         if (frames.length === 0) return Promise.resolve();
@@ -456,10 +668,17 @@ export async function mountVisionScene(
         frameQueue?.close();
         resizeObserver?.disconnect();
         removeWindowResize?.();
-        presenter?.terminate();
+        if (!session) {
+          presenter?.terminate();
+          layer.remove();
+        } else if (session.owner === owner) {
+          layer.style.opacity = "0";
+          const seq = ++session.sequence;
+          presenter?.postMessage({ type: "clear-scene", seq });
+          session.onMessage = () => {};
+        }
         termination = presenter?.flush() ?? Promise.resolve();
         presenter = null;
-        layer.remove();
         for (const waiter of waiters.values())
           waiter.reject(new Error("Vision scene disconnected."));
         waiters.clear();
@@ -468,8 +687,14 @@ export async function mountVisionScene(
   } catch (error) {
     resizeObserver?.disconnect();
     removeWindowResize?.();
-    presenter?.terminate();
-    layer.remove();
+    if (!session) {
+      presenter?.terminate();
+      layer.remove();
+    } else {
+      session.onMessage = () => {};
+      presenter?.postMessage({ type: "clear-scene", seq: ++session.sequence });
+      layer.style.opacity = "0";
+    }
     throw error;
   }
 }
@@ -477,10 +702,12 @@ export async function mountVisionScene(
 export function activateVisionScene(
   scene: VisionSceneHandle,
   previous?: VisionSceneHandle,
+  retainPrevious = false,
 ): void {
   scene.activate();
   if (previous && previous !== scene) {
-    previous.dispose();
+    if (retainPrevious) previous.deactivate?.();
+    else previous.dispose();
   }
 }
 

@@ -1,10 +1,17 @@
 # Solar
 
 Solar is the LSDP scene client and Vision renderer for Zab broadcast hosts.
-Orion sends the authoritative scene id, `scene_version` and live leaf state;
+The native LSDP resource supplies the authoritative scene id, `scene_version` and live leaf state;
 Solar fetches that exact published LSMLZ revision from ZabCanvas and mounts it
 in Vision. Scene changes use the next authoritative LSDP snapshot. Solar does
 not request or render compiled scene bundles.
+
+Once a mutation arrives over LSDP, Solar verifies and applies it, then Vision
+renders it. This mutation contract is independent of its producer: no Orion
+query, producer acknowledgement or `x-orion` projection is required. Solar's
+reception and presentation events identify the native transaction and state;
+they do not carry producer projections. Scene-selection coordination is a
+separate contract.
 
 Vision owns LSML/LSMLZ parsing, retained scene state, assets and GPU rendering.
 Solar owns the LSDP connection, pinned source acquisition, local capture and
@@ -36,9 +43,10 @@ The source provider requests by scene id, pins every fetch to the LSDP
 `scene_version`, verifies response identity and hashes, and carries the
 revision's Blue manifest beside the LSMLZ bytes. `createCachedSceneSourceProvider`
 and `FileSceneSourceStore` now preserve verified immutable sources/assets/Blue
-closure through that same boundary. The served browser host synchronizes the
-Canvas catalogue at startup into a credential-partitioned IndexedDB store,
-with quota/LRU eviction and exact offline reads.
+closure through that same boundary when supplied by the application host.
+The standalone Solar host acquires the selected scene directly and performs no
+catalog synchronization or inactive-scene preloading. Launcher synchronization
+and account-scoped local source storage remain an integration task.
 See [source cache](docs/development/source-cache.md).
 
 Native Lumencast LSDP supplies the complete live LSML document. The mount
@@ -100,7 +108,8 @@ Unit checks cover native snapshots/mutations, exact scene revision acquisition,
 Vision activation, Blue manifest identity and camera/peer texture updates.
 They do not prove authenticated production access, physical camera behavior,
 Pulsar composition or deployment. Cache storage and exact offline reads are
-implemented, including browser startup synchronization and bounded storage.
+available through exported adapters with bounded storage; startup synchronization
+is not wired into the standalone host.
 Prism integration remains outside this scope.
 
 - [Qualification native, CEF et paquet installé](docs/runbooks/qualification.md)

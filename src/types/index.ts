@@ -1,6 +1,7 @@
+import type { VerifiedFont } from "../scenes/verified-font";
 import type {
   SceneSourceProvider,
-  LocalSceneSourceProvider,
+  SceneImageAssetsProvider,
 } from "../scenes/types";
 
 export type SolarMode = "broadcast" | "control" | "test";
@@ -41,14 +42,17 @@ export interface MountOptions {
   /** Trusted native compositor viewport; local capture pixels remain host-owned. */
   nativeComposition?: { width: number; height: number };
   /** Trusted host-supplied font bytes; source identity and assets stay pinned. */
-  fontAssetsProvider?: (signal: AbortSignal) => Promise<Uint8Array[]>;
+  fontAssetsProvider?: (
+    signal: AbortSignal,
+  ) => Promise<Array<Uint8Array | VerifiedFont>>;
+  installationFonts?: () => AsyncIterable<Uint8Array[]>;
+  /** Optional trusted local image authority; LSML's original host allowlist still applies. */
+  sceneImageAssetsProvider?: SceneImageAssetsProvider;
   target: HTMLElement;
   /** Native Lumencast LSDP resource containing the complete LSML document. */
   nativeLSDP: NativeLSDPOptions;
   /** Fetches exact published LSML/LSMLZ revisions from ZabCanvas. */
   sceneSourceProvider: SceneSourceProvider;
-  /** Trusted local authoring only; never saved in the published/offline cache. */
-  localSceneSourceProvider?: LocalSceneSourceProvider;
   token: SolarToken;
   mode: SolarMode;
   onError?: (error: SolarError) => void;

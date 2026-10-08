@@ -5,19 +5,20 @@ separate from the browser renderer. A single instance accepts declared resources
 for Solar and Orion; neither consumer launches a second daemon.
 
 `SolarReceptionServer.start()` injects resource seeds and typed local routes over
-stdin, waits for listeners, checks native capabilities and reads all resources over
-the real protocol. `replace()` sends the full desired LSML to Rust's existing
+stdin, waits for listeners and checks native capabilities. It creates no automatic
+resource subscriptions or JavaScript recovery mirror. `replace()` sends the full desired LSML to Rust's existing
 state route, which computes the diff. `apply()` sends explicit operations with a
 baseline precondition. `stop()` cancels requests and reaps the owned process.
 
 The application main host is the lifecycle authority: supply its local HTTP origin, distribute the
 TCP/WebSocket addresses and invalidate readiness on terminal `onFailure`.
-The host watches accepted external resource updates into bounded resource
-snapshots in parent RAM. A failed child is replaced on the same ports, restoring
-those snapshots and reconnecting watchers; `status()` exposes recovering/ready,
+Rust alone owns accepted resource state. A failed child is replaced on the same
+ports with empty scene resources and declared control-state seeds. Producers must
+republish the active selection; no previously accepted scene is restored.
+Explicit consumer watchers reconnect; `status()` exposes recovering/ready,
 and `onRecovery` reports attempts. Recovery defaults to three bounded attempts.
 An individual watch failure resynchronizes against the live receiver. It never
-restarts a healthy child from the watcher's older checkpoint. Child exit or a
+restarts a healthy child from the watcher's older state. Child exit or a
 failed readiness probe remains the authority for process recovery. Watched state
 uses immutable path copies and cached normative hashes, shared with Solar's reader.
 `recoveryAttempts: 0` retains an explicit fatal-exit policy. `stop()` cancels
@@ -36,3 +37,23 @@ Identical concurrent writes succeed; conflicting bytes preserve the accepted fil
 The cached provider verifies each capsule before reuse. Supply a per-account
 application directory and retention policy. No credential/live mutation is saved.
 This store does not replace Orion's signed Blue/source admission or daemon lifecycle.
+
+## Installation fonts
+
+`installation-fonts.ts` owns immutable font files under the installation user-data
+`Solar/fonts` directory. It enumerates packaged editor fonts, Windows system and
+per-user font directories, and registered external Windows font paths from
+`windows-fonts.ts`. Only new/modified sources are copied and content-addressed;
+unchanged files reuse the installation index. TTF/OTF/TTC/WOFF/WOFF2 are admitted;
+legacy Windows FON/FNT bitmap files are reported as unsupported. The authenticated
+loopback catalogue belongs to the receiver lifecycle and has explicit origin,
+file-count, byte and digest checks. No scene data is written to this catalogue.
+The browser receives its endpoint through `ReceptionConnection.fontCatalog`.
+`tests/unit/installation-fonts.test.ts` covers cold/warm preparation, incremental
+additions, deduplication, endpoint authorization and corrupt file rejection.
+
+`SolarReceptionServer.replace` validates portable JSON, Unicode, safe numbers and
+the native depth/node budgets before its route transaction. It does not compute a
+Merkle hash whose result would be discarded: the Rust receiver hashes the accepted
+resource, and subscribers continue checking normative before/after hashes. Snapshot
+read verification and initial resource checks retain their existing Merkle hashes.

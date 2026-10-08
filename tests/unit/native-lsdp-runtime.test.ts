@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
     transaction: ReturnType<typeof vi.fn>;
   }>,
   mount: vi.fn(),
+  disconnectSession: vi.fn(),
   activate: vi.fn(),
   feedback: vi.fn(
     async (
@@ -32,6 +33,7 @@ const mocks = vi.hoisted(() => ({
     pause: vi.fn(async () => {}),
     resume: vi.fn(),
     dispose: vi.fn(),
+    clearMedia: vi.fn(async () => {}),
   },
   stream: { onReservedLeaves: vi.fn(), dispose: vi.fn() },
 }));
@@ -72,6 +74,7 @@ vi.mock("../../src/engine/control-feedback", () => ({
 }));
 vi.mock("../../src/engine/vision-presenter", () => ({
   mountVisionScene: mocks.mount,
+  disconnectVisionSession: mocks.disconnectSession,
   activateVisionScene: mocks.activate,
 }));
 vi.mock("../../src/engine/live-media", () => ({
@@ -119,6 +122,7 @@ async function setup(
 ) {
   const scene = {
     applyPatch: vi.fn(async () => {}),
+    clearMedia: vi.fn(async () => {}),
     canApplyPatch: vi.fn(() => true),
     dispose: vi.fn(),
     mediaSources: [],
@@ -417,9 +421,11 @@ describe("native Solar subscriber", () => {
     expect(options.onStatus).not.toHaveBeenLastCalledWith("live");
     runtime.disconnect();
   });
-  it("distinguishes native reception from presentation and never confirms pixels before submission", async () => {
-    const { runtime, receiveRaw, flush, context, scene, options } =
-      await setup();
+  it("applies and presents received mutations without producer feedback or projection", async () => {
+    const initial = { ...document, "x-orion": { producer: "upstream" } };
+    const resource = "solar/preview";
+    const { runtime, receiveRaw, flush, context, scene, options, peer } =
+      await setup(initial, undefined, resource);
     let finish!: () => void;
     scene.applyPatch.mockImplementation(
       () =>
@@ -428,9 +434,15 @@ describe("native Solar subscriber", () => {
         }),
     );
     const observed = vi.fn();
+    const reception = vi.fn();
     options.target.addEventListener("solar:lsdp-applied", observed);
+    options.target.addEventListener("solar:lsdp-received", reception);
+    const event = change();
+    event.mutation.beforeHash = nativeTreeHash(initial);
+    event.mutation.target = resource;
+    event.receipt.target = resource;
     const received = await receiveRaw(
-      change(),
+      event,
       context("lsdp.state.subscription/1"),
     );
     expect(received).toMatchObject({
@@ -443,6 +455,9 @@ describe("native Solar subscriber", () => {
     expect(scene.applyPatch).toHaveBeenCalledWith({
       "__lit.text.title": "edited",
     });
+    expect(reception).toHaveBeenCalledOnce();
+    expect(reception.mock.calls[0]![0].detail).not.toHaveProperty("projection");
+    expect(mocks.feedback).not.toHaveBeenCalled();
     finish();
     await applied;
     expect(observed).toHaveBeenCalledWith(
@@ -453,6 +468,14 @@ describe("native Solar subscriber", () => {
         }),
       }),
     );
+    expect(observed.mock.calls[0]![0].detail).not.toHaveProperty("projection");
+    expect(mocks.feedback).not.toHaveBeenCalled();
+    expect(mocks.peers).toHaveLength(1);
+    expect(
+      peer.transaction.mock.calls.every(
+        ([request]) => request.target === resource,
+      ),
+    ).toBe(true);
     runtime.disconnect();
   });
   it("rebuilds a structural edit in memory while retaining the original source manifest", async () => {
@@ -469,6 +492,7 @@ describe("native Solar subscriber", () => {
     expect(mocks.media.resume).toHaveBeenCalled();
     expect(mocks.mount.mock.calls[1]![1]).toBe(origin);
     expect(origin.blueManifest.scene_version).toBe(version);
+    expect(mocks.feedback).not.toHaveBeenCalled();
     runtime.disconnect();
   });
   it("rejects stale baselines and invalid receipts without touching Vision", async () => {
@@ -573,6 +597,127 @@ describe("native Solar subscriber", () => {
 });
 
 describe("coordinated physical lane presentation", () => {
+  it.each(["commit", "finalize"])(
+    "reconstructs a fresh subscriber from a compact %s resource",
+    async (phase) => {
+      vi.clearAllMocks();
+      const ready = await setup(
+        {
+          ...document,
+          "x-solar-transition": { request_id: "compact-recovery", phase },
+        },
+        undefined,
+        "solar/preview",
+      );
+      expect(mocks.mount).toHaveBeenCalledOnce();
+      expect(ready.scene.activate).toHaveBeenCalledOnce();
+      expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+        phase: phase === "commit" ? "committed" : "active",
+        scene_id: document.scene_id,
+      });
+      ready.runtime.disconnect();
+    },
+  );
+  it("fetches and mounts a fresh scene on A to B to A without retaining inactive frames", async () => {
+    vi.clearAllMocks();
+    const initial = {
+      ...structuredClone(document),
+      layout: {
+        type: "frame",
+        children: [
+          {
+            id: "animated-title",
+            kind: "text",
+            bind: { value: "__lit.text.title" },
+            style: { fontSize: 20 },
+          },
+        ],
+      },
+      animations: {
+        pulse: {
+          target: "animated-title",
+          keyframes: {
+            duration_ms: 100,
+            steps: [
+              { at: 0, opacity: 1 },
+              { at: 1, opacity: 0 },
+            ],
+          },
+        },
+      },
+    };
+    const ready = await setup(initial, undefined, "solar/preview");
+    Object.assign(ready.scene, {
+      clearMedia: vi.fn(async () => {}),
+      deactivate: vi.fn(),
+    });
+    const second = {
+      ...ready.scene,
+      applyPatch: vi.fn(async () => {}),
+      dispose: vi.fn(),
+      activate: vi.fn(),
+      clearMedia: vi.fn(async () => {}),
+    };
+    const third = {
+      ...second,
+      dispose: vi.fn(),
+      applyPatch: vi.fn(async () => {}),
+    };
+    mocks.mount.mockResolvedValueOnce(second).mockResolvedValueOnce(third);
+    vi.mocked(ready.options.sceneSourceProvider.get).mockImplementation(
+      async (id) => ({
+        ...origin,
+        sceneId: id,
+        blueManifest: nativeManifest(id, version),
+      }),
+    );
+    let state = initial as Record<string, unknown>,
+      sequence = 0;
+    const deliver = async (value: Record<string, unknown>) => {
+      const transactionId = String(++sequence).padStart(32, "0");
+      await ready.receive(
+        {
+          kind: "applied_change",
+          sequence,
+          mutation: {
+            format: "lsdp.apply/1",
+            id: transactionId,
+            target: "solar/preview",
+            beforeHash: nativeTreeHash(state),
+            operations: [{ op: "replace", path: "", value }],
+          },
+          receipt: { target: "solar/preview", transactionId, level: "applied" },
+        },
+        ready.context("lsdp.state.subscription/1"),
+      );
+      state = value;
+    };
+    const select = async (source: typeof initial, request_id: string) => {
+      const previous = state;
+      for (const phase of ["prepare", "commit", "finalize"])
+        await deliver({
+          ...(phase === "finalize" ? source : previous),
+          "x-solar-transition": { request_id, phase, source },
+        });
+      await deliver(source);
+    };
+    await deliver({
+      ...initial,
+      defaults: { "__lit.text.title": "mutated before switching" },
+    });
+    await select({ ...initial, scene_id: "second-source" }, "to-second");
+    await select(initial, "back-to-first");
+    expect(mocks.mount).toHaveBeenCalledTimes(3);
+    expect(ready.options.sceneSourceProvider.get).toHaveBeenCalledTimes(3);
+    expect(ready.scene.dispose).toHaveBeenCalledOnce();
+    expect(second.dispose).toHaveBeenCalledOnce();
+    expect(third.dispose).not.toHaveBeenCalled();
+    expect(mocks.disconnectSession).not.toHaveBeenCalled();
+    for (const call of mocks.mount.mock.calls) expect(call[6]).toBe(true);
+    ready.runtime.disconnect();
+    expect(third.dispose).toHaveBeenCalledOnce();
+    expect(mocks.disconnectSession).toHaveBeenCalledOnce();
+  });
   it("restores a fresh subscriber after an aborted Prism request", async () => {
     vi.clearAllMocks();
     const requestId =
@@ -677,7 +822,10 @@ describe("coordinated physical lane presentation", () => {
     });
     await ready.deliver("cleanup");
     expect(ready.scene.dispose).toHaveBeenCalledOnce();
+    expect(mocks.mount).toHaveBeenCalledTimes(mounts);
+    expect(ready.next.dispose).not.toHaveBeenCalled();
     ready.runtime.disconnect();
+    expect(ready.scene.dispose).toHaveBeenCalledOnce();
   });
   it("can compensate finalization while its receipt or cleanup is unresolved", async () => {
     const ready = await staged();

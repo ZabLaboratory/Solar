@@ -1,34 +1,33 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "4feaca8822400de4a201a8768334578918d9d949",
-  "source_state": "Candidate with retained scalar geometry bindings; built from isolated Vision worktree on merged source, not activated upstream.",
+  "base_revision": "031788f42750f08e00dfa506c0e85d0819da8aa1",
+  "source_state": "Local uncommitted direct LSML/assets transfer, canonical serialization and verified font candidate; not merged or deployed.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "sha256": "92cd1fdc5ab30b90630f0cda648144c877f4dc86ec6dc102634eb8be5dd65be8",
-      "bytes": 19681
+      "bytes": 26702,
+      "sha256": "88de7073b8538a12998139bc499866a06eb03925ff523f7683fb2f721aab3eae"
     },
     "ui/fonts.mjs": {
-      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
-      "bytes": 1977
+      "bytes": 1977,
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
     },
     "pkg/lumencast_vision_web.js": {
-      "bytes": 142709,
-      "sha256": "1bbccc8f25069be588b1a940ea88d1bd305b20243b45728f9ffb6b42cf3d5185"
+      "bytes": 148483,
+      "sha256": "f9f61fbf53fee481cf5c26179d853bf34eb94c0fb5cb4c8d386264638c31297a"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10207230,
-      "sha256": "b97407d1a4d48a21f3db18a16d427dc1dedd0ca44f80cad18d3c9aedb50d9452"
+      "bytes": 10253842,
+      "sha256": "7626634a8ad14231ee9f7a50b0aaacca999d9f78d30cb4e171f798b3aa2a3796"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_commit": "02714c2fd1a0fd4753a1d56409307a0f2551cce8",
-    "engine_base": "4feaca8822400de4a201a8768334578918d9d949",
-    "engine_branch": "eleven/local-20261007-geometry-bindings",
-    "host_ui_commit": "f86fa436d3065402d23bbf06de8e309e8e954ea3",
-    "engine_evidence": "evidence/local-20261007-geometry-bindings/eleven/20261007T203900Z-validation.txt"
+    "engine_base": "031788f42750f08e00dfa506c0e85d0819da8aa1",
+    "engine_branch": "eleven/local-20261008-font-preload",
+    "engine_evidence": "evidence/local-20261008-direct-scene-parts/eleven/",
+    "working_diff_sha256": "a99e5020b608d4a391f059be30d780f25dad9fee22854b30b30e411e4bd66d5a"
   },
-  "source_revision": "02714c2fd1a0fd4753a1d56409307a0f2551cce8",
-  "merged_revision": "4feaca8822400de4a201a8768334578918d9d949"
+  "source_revision": "031788f42750f08e00dfa506c0e85d0819da8aa1",
+  "merged_revision": "031788f42750f08e00dfa506c0e85d0819da8aa1"
 }

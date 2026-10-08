@@ -9,14 +9,31 @@ Initially null means no scene selected, not a
 renderable demo. Orion performs a native handshake/read at startup and readiness.
 The host must invalidate readiness on receiver failure, reset it on logout, and
 await the owned receiver at shutdown. While its parent survives, automatic child
-recovery uses verified resource snapshots held only in parent RAM and the same
-ports. Explicit stop/start uses the original seeds; parent loss drops live state.
+recovery uses the same ports but starts scene resources empty and control resources
+from declared seeds. The host neither subscribes automatically nor mirrors accepted
+state. Producers republish the active selection after receiver loss. Explicit
+stop/start uses the original seeds; parent loss drops live state.
 
 Orion's ordered producer actor publishes original LSML, validated Blue output
 mutations, editable inputs, cameras and overlay state to this node. Solar has
 one native subscription path. Collections use a selector for an exact scene
 generation or API test-session ID; unrelated entries cannot retarget Vision.
 Scene-intent, editable and camera responses await native application ACK.
+
+## Mutation application contract
+
+After sending, the producer is outside the mutation application/rendering contract.
+Solar receives and verifies native LSDP state, applies it, and Vision renders it.
+Neither scalar nor structural mutations query `orion/state`, request Orion
+permission, or await producer feedback. Native transport receipts and local
+`solar:lsdp-received` / `solar:lsdp-applied` observations retain transaction,
+sequence and state identity; they expose no `x-orion` projection. Explicit
+scene-selection transition phases have separate coordination receipts.
+
+Mutation latency is measured at Solar/Vision, with its boundary stated explicitly:
+verified reception occurs after the transport worker's integrity checks, while
+presentation means GPU submission and completed front-canvas copy. A producer's
+HTTP command, preliminary state read or acknowledgement is not this duration.
 
 ## Run the current scene without saving mutations
 

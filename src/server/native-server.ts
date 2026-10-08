@@ -1,11 +1,16 @@
+import { windowsRegisteredFonts } from "./windows-fonts";
+import {
+  InstallationFonts,
+  type InstallationFontEndpoint,
+} from "./installation-fonts";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
-import { arch, platform } from "node:os";
+import { arch, platform, homedir } from "node:os";
 import { fileURLToPath } from "node:url";
 import { BrowserLSDP } from "../../vendor/lsdp-native-browser/src/browser.js";
-import { nativeTreeHash } from "../internal/native-tree";
+import { nativeTreeHash, validateNativeJSON } from "../internal/native-tree";
 import { requireLSML } from "../scenes/native-document";
 import type { Operation } from "fast-json-patch";
 import { NativeState } from "../internal/native-state";
@@ -25,7 +30,7 @@ export interface ReceptionOptions {
   timeoutMs?: number;
   probeIntervalMs?: number;
   onFailure?: (error: Error) => void;
-  /** Automatic same-endpoint recovery, retaining accepted state in parent RAM only. */
+  /** Automatic same-endpoint recovery. Scenes restart empty; producers republish. */
   recoveryAttempts?: number;
   onRecovery?: (event: {
     attempt: number;
@@ -38,6 +43,7 @@ export interface ReceptionConnection {
   pid: number;
   wire: typeof NATIVE_WIRE;
   resources: string[];
+  fontCatalog?: InstallationFontEndpoint;
 }
 export interface NativeSnapshot {
   state: unknown;
@@ -133,6 +139,8 @@ export class SolarReceptionServer {
   private stopping: Promise<void> | null = null;
   private abort: AbortController | null = null;
   private monitor: ReturnType<typeof setInterval> | null = null;
+  private installationFonts: InstallationFonts | null = null;
+  private fontCatalog: InstallationFontEndpoint | undefined;
   private probing = false;
   private readonly settings: Record<string, unknown>;
   private readonly peers = new Set<BrowserLSDP>();
@@ -169,6 +177,28 @@ export class SolarReceptionServer {
         this.options.binaryPath ??
         (await packagedNativeBinary(this.options.packageRoot));
       abort.signal.throwIfAborted();
+      if (this.options.packageRoot && !this.installationFonts) {
+        const data =
+          process.env.LOCALAPPDATA ?? resolve(homedir(), ".local", "share");
+        const fonts = new InstallationFonts(resolve(data, "Solar", "fonts"));
+        const roots = [
+          resolve(this.options.packageRoot, "host", "fonts"),
+          resolve(this.options.packageRoot, "fonts"),
+        ];
+        if (platform() === "win32") {
+          const windows = process.env.WINDIR ?? "C:/Windows";
+          roots.push(
+            resolve(windows, "Fonts"),
+            resolve(data, "Microsoft", "Windows", "Fonts"),
+            ...(await windowsRegisteredFonts(windows)),
+          );
+        }
+        this.installationFonts = fonts;
+        await fonts.prepare(roots);
+        abort.signal.throwIfAborted();
+        this.fontCatalog = await fonts.start(this.options.origins);
+        abort.signal.throwIfAborted();
+      }
       const child = spawn(binary, ["--settings", "-"], {
         stdio: "pipe",
         windowsHide: true,
@@ -228,6 +258,7 @@ export class SolarReceptionServer {
                 pid: child.pid,
                 wire: NATIVE_WIRE,
                 resources: Object.keys(this.options.resources),
+                ...(this.fontCatalog ? { fontCatalog: this.fontCatalog } : {}),
               });
             } catch {
               finish(new Error("LSDP_READINESS_INVALID"));
@@ -240,23 +271,6 @@ export class SolarReceptionServer {
       abort.signal.throwIfAborted();
       this.connection = ready;
       await this.check();
-      // Read the declared resources through the same fragmented wire as Solar.
-      // Keep validated snapshots of external Orion writes as well as host writes.
-      // No journal/storage option is enabled: live LSML never goes to disk.
-      for (const target of ready.resources)
-        await this.watch(
-          target,
-          (state) => {
-            const resource = this.resource(target);
-            if (resource.type === "solar.lsml/1" && state !== null)
-              requireLSML(state);
-            (this.settings.resources as Record<string, unknown>)[target] =
-              state;
-          },
-          (error) => {
-            if (!abort.signal.aborted) this.failed(error);
-          },
-        );
       // A renderer/producer can keep its URL when the child is replaced.
       this.settings.listen = ready.address;
       (this.settings.websocket as { listen: string }).listen = new URL(
@@ -281,6 +295,9 @@ export class SolarReceptionServer {
       return ready;
     } catch (error) {
       await this.halt();
+      await this.installationFonts?.stop();
+      this.installationFonts = null;
+      this.fontCatalog = undefined;
       throw error;
     }
   }
@@ -291,6 +308,16 @@ export class SolarReceptionServer {
     this.connection = null;
     const operation = (async (): Promise<ReceptionConnection> => {
       await this.halt();
+      // Rust alone owns accepted state. Never resurrect a scene from a host seed
+      // or a JavaScript checkpoint after receiver loss.
+      this.settings.resources = Object.fromEntries(
+        Object.entries(this.options.resources).map(([target, resource]) => [
+          target,
+          resource.type === "solar.lsml/1"
+            ? null
+            : structuredClone(resource.initial),
+        ]),
+      );
       let last = error;
       const attempts = this.options.recoveryAttempts ?? 3;
       for (
@@ -437,7 +464,7 @@ export class SolarReceptionServer {
     const resource = this.resource(target);
     if (resource.type === "solar.lsml/1" && desired !== null)
       requireLSML(desired);
-    nativeTreeHash(desired);
+    validateNativeJSON(desired);
     // The existing Rust state route reads B and computes its Merkle diff to A.
     // No root-replace shortcut and no JavaScript diff here.
     const result = (await this.exchange((peer, signal) =>
@@ -496,7 +523,7 @@ export class SolarReceptionServer {
             const error =
               next instanceof Error ? next : new Error(String(next));
             // A stale subscription must reread the live receiver, not kill it and
-            // reseed it from the watcher's older RAM checkpoint.
+            // reseed it from the watcher's older state.
             try {
               await this.check();
               retry = setTimeout(reconnect, 50);
@@ -657,6 +684,11 @@ export class SolarReceptionServer {
   async stop(): Promise<void> {
     this.wanted = false;
     this.epoch++;
+    this.abort?.abort();
+    await this.starting?.catch(() => {});
+    await this.installationFonts?.stop();
+    this.installationFonts = null;
+    this.fontCatalog = undefined;
     for (const close of this.watches) close();
     await this.halt();
     await this.recovering?.catch(() => {});

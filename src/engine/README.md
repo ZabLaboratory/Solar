@@ -14,7 +14,12 @@ If preparation advances the resource between read and subscribe, BASE_MISMATCH
 causes a fresh read/render/hash check, bounded to four attempts on that connection.
 Other failures and repeated conflicts remain visible and reconnect normally.
 `native-worker-client.ts` owns the dedicated `native-worker.ts` transport and
-LSML verification thread. Simple state reception continues while CEF draws;
+LSML verification thread. It certifies each state through its private Worker
+channel; the render consumer reuses that exact structured-clone state instead of
+repeating Merkle hashing on the drawing thread. Certification is scoped to the
+callback context and removed after delivery, so network fields or caller-created
+contexts cannot claim it. Direct reception without a Worker retains full hashing.
+Simple state reception continues while CEF draws;
 snapshot, structure and command receipts still await the main consumer. Both
 sides abort on disconnect, including pending connection/request work. A snapshot
 can bypass the main notification queue to complete same-connection resync.
@@ -32,10 +37,15 @@ one GPU submission in flight. It retains every transaction identity and emits
 `presentation.throughSequence`, final hash and mutation count. Earlier
 `solar:lsdp-received` proves LSML application, never displayed pixels. Structure,
 camera/animation commands and coordinated transitions drain pending frames first.
+Ordinary mutation reception, application and presentation are producer-independent:
+Solar never queries `orion/state` or waits for Orion for these mutations. Events
+carry native transaction/state identity, without an `x-orion` projection. Only
+explicit scene-selection transition phases use `control-feedback.ts`; this is
+not a mutation application or presentation dependency.
 Reserved `__cam.*` leaves stay in native authority, outside Vision defaults;
 positional camera names therefore cannot invalidate Vision's binding grammar.
 Native document replacement pauses video uploads and drains GPU work while
-the next Vision layer is staged and the previous engine released. The same
+the new package is loaded into the persistent Vision engine. The same
 media controller and tracks then resume into the new layer. CEF validation
 must assert static images, text and panels as well as the camera and mutation
 receipt; camera-only output is a failed scene.
@@ -45,9 +55,34 @@ one generation/session into Vision. Updates to another entry are acknowledged
 without changing the visible scene. Missing or deleted entries clear the
 renderer. The old Orion LSDP/1 client has been removed from Solar.
 
-`vision-presenter.ts` owns one hidden Vision canvas until its initial snapshot
-has been applied and a frame submitted. It then swaps the canvas into view and
-disposes the previous Vision scene. Scene assets remain in LSMLZ and Vision
+`vision-presenter.ts` owns one Vision engine, GPU canvas and presentation surface
+per native host target. An empty engine starts once; fresh scene packages use
+Vision's serialized `load` request on that same device/surface. The outgoing
+scene's images, graph, geometry and composition caches are released.
+The engine-owned font registry survives scene replacement: installation fonts
+are preloaded once at engine startup, and additional scene fonts are admitted
+by content digest only when new. Scene-local layout and glyph caches remain fresh.
+There is no inactive source or scene retention and A-B-A loads A freshly.
+Runtime packages exclude the separately admitted flat font files. WebCrypto
+identifies supplied font bytes; only acknowledged digests are reused in this
+engine session. New fonts still pass Rust decoding and registration limits.
+Package preparation and host font discovery run concurrently. A live-media clear
+acknowledges without drawing when Rust reports that its active texture was already
+transparent; clearing actual live pixels still submits a frame.
+`native-scene-frames.ts` owns verified source acquisition and temporary packages.
+Scene handles close their observers and pending work on retirement without
+terminating the host engine. Stale handles cannot submit into a newer scene.
+Clearing the active scene keeps the engine ready; host disconnect terminates it.
+Explicit WebGL context-loss recovery remains distinct from a scene switch.
+Absolute native assignments compare accepted
+documents before rendering, so finalization does not mount the prepared scene again.
+Preparation carries the current and candidate sources; compact commit/finalize
+assignments carry the candidate at the resource root. A fresh renderer reconstructs
+that stage from the root, while older payloads with an embedded source remain valid.
+Bounded `solar:native-stage` measures separate worker verification/delivery,
+classification, source/package/fonts, arena reuse, image resolution and feedback.
+Their numeric durations and reuse categories contain no source values or tokens.
+Scene assets remain in LSMLZ and Vision
 loads them directly. There is no render-bundle URL, compile step, React render
 tree or renderer selection flag.
 `canvas-presentation.ts` retains a synchronized front canvas for CEF. Only actual
@@ -79,9 +114,11 @@ archive or Blue pins. Repeater row bindings retain their own context.
 Image-bound URLs are resolved by Solar against the LSML `assets.allowedHosts`
 policy without forwarding credentials. The bytes become hashed assets in the
 temporary RAM archive, while the native document retains the original URL.
-An image already packaged can be selected by a normal patch. A new image stages
-an archive containing its bytes and swaps the presenter after its first frame;
-the media controller and physical camera tracks remain acquired.
+Independent image fetches and decodes run together. New images are admitted as
+immutable content-addressed assets into the retained engine before one state/GPU
+submission. Rust verifies hashes, encoded dimensions and resource budgets; rejected
+assets/patches preserve the accepted scene. The archive and Blue source pins do not
+change. The media controller and physical camera tracks remain acquired.
 
 The bundled Vision engine must render canonical LSML frame `background` and
 `backgrounds`, including nested panels and bound color changes. Rendering text,
@@ -111,7 +148,7 @@ Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and
 `npm run check:bundle` after changing these paths. Hardware cameras and the live
 CEF compositor still need a host-level smoke test.
 
-`animations.ts` consumes Orion's `__animation.<asset>` command leaves and the
+`animations.ts` consumes native LSDP `__animation.<asset>` command leaves and the
 LSML animation catalogue `{id:{target,keyframes:{duration_ms,easing,steps}}}`.
 Opacity, rotation and blur use private Vision bindings; translation/scale use
 the existing scene swap from original geometry. The source stays untouched.
@@ -120,3 +157,9 @@ channels/easing fail explicitly before rendering. Only one animation submission
 is in flight, repeated commands are deduplicated, and a new command replays.
 Final frames survive an unrelated structural mutation, but clear on scene change
 or removal. Geometry swaps are more expensive than scalar GPU patches.
+
+Persistent font admission accepts owned `VerifiedFont` snapshots as well as raw
+font arrays. Only the owned snapshot may reuse its verified digest; mutable caller
+arrays are copied and hashed. An already acknowledged digest causes no transfer
+copy or WASM admission. Host manifest acquisition still occurs on each scene load
+so changes to the registry remain observable.

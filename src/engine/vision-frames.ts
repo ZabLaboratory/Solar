@@ -1,12 +1,14 @@
 export interface VisionFrame {
   patch: Record<string, unknown>;
   frames: Array<{ path: string; bitmap: ImageBitmap }>;
+  images?: Array<{ path: string; bytes: Uint8Array }>;
 }
 
 /** One submission combines replaceable state and the latest owned camera images. */
 export class VisionFrames {
   private patch: Record<string, unknown> = {};
   private frames = new Map<string, ImageBitmap>();
+  private images = new Map<string, Uint8Array>();
   private waiting: Array<{
     resolve: () => void;
     reject: (error: Error) => void;
@@ -25,10 +27,14 @@ export class VisionFrames {
     };
   }
 
-  addPatch(patch: Record<string, unknown>): Promise<void> {
+  addPatch(
+    patch: Record<string, unknown>,
+    images: NonNullable<VisionFrame["images"]> = [],
+  ): Promise<void> {
     if (this.closed)
       return Promise.reject(new Error("Vision frame queue closed."));
     Object.assign(this.patch, patch);
+    for (const { path, bytes } of images) this.images.set(path, bytes);
     return this.pending();
   }
 
@@ -53,7 +59,8 @@ export class VisionFrames {
   }
 
   private schedule(): void {
-    if (this.closed || this.busy || this.scheduled || !this.waiting.length) return;
+    if (this.closed || this.busy || this.scheduled || !this.waiting.length)
+      return;
     if (Object.keys(this.patch).length === 0) {
       // A camera-only frame may wait one 120 Hz interval for an arriving patch.
       // Patch arrival or an explicit flush bypasses this bounded media grace.
@@ -80,9 +87,13 @@ export class VisionFrames {
     const frame: VisionFrame = {
       patch: this.patch,
       frames: [...this.frames].map(([path, bitmap]) => ({ path, bitmap })),
+      ...(this.images.size
+        ? { images: [...this.images].map(([path, bytes]) => ({ path, bytes })) }
+        : {}),
     };
     this.patch = {};
     this.frames.clear();
+    this.images.clear();
     this.busy = true;
     this.running = Promise.resolve().then(async () => {
       try {
@@ -114,6 +125,7 @@ export class VisionFrames {
     this.frames.forEach((bitmap) => bitmap.close());
     this.frames.clear();
     this.patch = {};
+    this.images.clear();
     const error = new Error("Vision frame queue closed.");
     this.waiting.splice(0).forEach(({ reject }) => reject(error));
   }
