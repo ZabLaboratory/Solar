@@ -9,6 +9,15 @@ Scale retains the document-variant path and does not share the retained-position
 guarantee. `scripts/sponsor-motion` exercises 35 tracks through actual native LSDP,
 Solar and Vision; its capture asserts replay adds no scene-load request.
 
+The experimental `waveAmplitude`, `wavePhase`, `waveWavelength` and `waveHarmonic`
+channels patch exact `x-vision.wave*` image bindings. The pinned Vision candidate
+renders two whole images on continuous textured meshes. This is a namespaced local
+extension requiring that GPU candidate, not a standard LSML deformation or shader
+API. Wave targets must be images and parameters are checked before playback.
+One command transaction shares one start timestamp across all its targets.
+The sponsor-wave capture records actual submitted-frame cadence separately from
+the sampled canvas signatures; neither proves physical display scanout.
+
 `native-lsdp-runtime.ts` connects to the real Lumencast Rust server through the
 portable draft2 binary WebSocket client. A fragmented `state.read` loads the
 full LSML resource, then a hash-pinned subscription delivers atomic tree or

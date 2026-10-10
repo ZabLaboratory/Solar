@@ -2,7 +2,7 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98",
-  "source_state": "Local inspector stroke, appearance, live text outline and transparent sRGB output correction; not pushed or deployed.",
+  "source_state": "Local continuous textured wave deformation, adopted inspector baseline; not pushed or deployed.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 26045,
@@ -14,19 +14,19 @@
     },
     "pkg/lumencast_vision_web.js": {
       "bytes": 148483,
-      "sha256": "46062f4badc49abcb4f517923b25ac68ddcccd24adf40fcc564ca42bcab9aaf8"
+      "sha256": "532967bf57ef57eb31b3bbe33cdd6b8f8fa5edf56526e48e371f2e1950e225ad"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10270669,
-      "sha256": "c64b197e56775c65403e84fa08a41d85f7e9656faaa0a3c38dd0aa37d80f81da"
+      "bytes": 10274154,
+      "sha256": "49b0580e84ceb90b826e9e6645d619edc32012994081b9e9106084d1bc4289c0"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
     "engine_base": "61739735aa67eed69d6a4d8a86650717d46d8e98",
-    "engine_branch": "eleven/local-20261009-inspector-stroke",
-    "engine_evidence": "evidence/local-20261009-inspector-stroke/eleven/"
+    "engine_branch": "eleven/local-20261010-continuous-motion",
+    "engine_evidence": "evidence/local-20261010-continuous-motion/eleven/"
   },
-  "source_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98",
+  "source_revision": "5fea52150dfd65da0d3f4c2e994296219670a87f",
   "merged_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98"
 }

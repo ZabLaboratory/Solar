@@ -11,7 +11,8 @@ export const animationLeaf = (target: string, property: string): string =>
 const object = (value: unknown): RecordValue | null =>
   value && typeof value === "object" && !Array.isArray(value)
     ? value as RecordValue : null;
-const channels = new Set(["opacity", "rotation", "rotate", "blur", "translateX", "translateY", "x", "y", "scale", "scaleX", "scaleY"]);
+const waveChannels = ["waveAmplitude", "wavePhase", "waveWavelength", "waveHarmonic"];
+const channels = new Set(["opacity", "rotation", "rotate", "blur", "translateX", "translateY", "x", "y", "scale", "scaleX", "scaleY", ...waveChannels]);
 
 function values(step: RecordValue): Record<string, number> {
   const result: Record<string, number> = {};
@@ -26,6 +27,8 @@ function values(step: RecordValue): Record<string, number> {
     if (!channels.has(name) || typeof value !== "number" || !Number.isFinite(value))
       throw new Error(`Unsupported Vision animation channel: ${property}`);
     if (name.startsWith("scale") && value < 0) throw new Error("Negative animation scale is unsupported.");
+    if ((name === "waveWavelength" && value < 4) || (name === "waveAmplitude" && Math.abs(value) > 4096) ||
+        (name === "waveHarmonic" && Math.abs(value) > 1)) throw new Error("Vision wave animation parameter is out of range.");
     result[name === "rotate" ? "rotation" : name] = value;
   }
   return result;
@@ -106,7 +109,7 @@ export function animationPatch(document: LSMLDocument, frames: readonly Animatio
   for (const frame of frames) {
     const node = nodes.get(frame.target);
     if (!node) throw new Error(`Animation target not found: ${frame.target}`);
-    for (const property of ["opacity", "rotation", "blur"])
+    for (const property of ["opacity", "rotation", "blur", ...waveChannels])
       if (frame.values[property] !== undefined) patch[animationLeaf(frame.target, property)] = frame.values[property]!;
     patch[animationLeaf(frame.target, "x")] = coordinate(document, node, "x") + (frame.values.translateX ?? frame.values.x ?? 0);
     patch[animationLeaf(frame.target, "y")] = coordinate(document, node, "y") + (frame.values.translateY ?? frame.values.y ?? 0);
@@ -117,6 +120,8 @@ export function animationPatch(document: LSMLDocument, frames: readonly Animatio
 export function prepareAnimationBindings(document: LSMLDocument): Record<string, string> {
   const aliases: Record<string, string> = {};
   const targets = new Set(Object.values(animationAssets(document)).map(asset => asset.target));
+  const waveTargets = new Set(Object.values(animationAssets(document)).filter(asset =>
+    asset.keyframes.steps.some(step => waveChannels.some(channel => step[channel] !== undefined))).map(asset => asset.target));
   const defaults = document.defaults ??= {};
   const found = new Set<string>();
   visit(document.layout, node => {
@@ -136,6 +141,17 @@ export function prepareAnimationBindings(document: LSMLDocument): Record<string,
       defaults[path] = coordinate(document, node, axis);
       if (typeof original === "string" && original !== path) aliases[path] = original;
       bind[`position.${axis}`] = path;
+    }
+    if (waveTargets.has(node.id)) {
+      if (node.kind !== "image") throw new Error("Wave animation requires an image target.");
+      for (const channel of waveChannels) {
+        const property = `x-vision.${channel}`, path = animationLeaf(node.id, channel);
+        const original = bind[property];
+        const existing = typeof original === "string" ? defaults[original] : node[property];
+        if (typeof original === "string" && original !== path) aliases[path] = original;
+        defaults[path] = typeof existing === "number" ? existing : channel === "waveWavelength" ? 720 : 0;
+        bind[property] = path;
+      }
     }
     node.bind = bind;
   });
@@ -191,6 +207,7 @@ export class VisionAnimations {
     if (this.document?.scene_id !== document.scene_id || this.document?.scene_version !== document.scene_version) this.reset();
     this.document = document;
     const assets = animationAssets(document);
+    const started = performance.now();
     for (const [key, raw] of Object.entries(document.defaults ?? {})) {
       if (!key.startsWith("__animation.")) continue;
       const command = object(raw); if (!command) throw new Error("Invalid Blue animation command.");
@@ -199,7 +216,7 @@ export class VisionAnimations {
       const asset = assets[String(command.animation_id)];
       if (!asset) throw new Error(`Blue animation not declared: ${String(command.animation_id)}`);
       this.seen.set(key, identity);
-      this.playing.set(asset.target, { asset, started: performance.now() });
+      this.playing.set(asset.target, { asset, started });
     }
     const targets = new Set(Object.values(assets).map(asset => asset.target));
     for (const target of this.frames.keys()) if (!targets.has(target)) this.frames.delete(target);

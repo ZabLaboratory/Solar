@@ -30,16 +30,19 @@ creates the alternative scene using `wave.mjs`. Then set `SPONSOR_MOTION_PORT=45
 and run `node scripts/sponsor-motion/serve.mjs fixtures/sponsor-motion/wave`.
 The same capture script reads the duration/catalogue from this reader.
 
-The wave uses 48 horizontal image crops, 98 simultaneous tracks and 65 sampled
-keyframes per displacement track over 4200ms. A traveling sine plus its harmonic
-bends the logo while a staggered slide changes the sponsor. Whole-image opacity
-bookends preserve exact endpoints despite source-crop integer rounding.
-`srcRect` reuses Vision's existing image crop primitive and the unchanged PNGs;
-there are no generated video frames, CSS motion or alternative renderer.
+The current wave uses two whole images and two simultaneous tracks over 4200ms.
+127 keys sample translation, amplitude and phase; Vision creates continuous
+textured triangle meshes with shared vertices and UVs. A sine plus its second
+harmonic bends the logos during the slide, settling to zero amplitude at rest.
+Solar binds the experimental `wave*` animation channels to `x-vision.wave*`
+properties supported by the pinned local Vision candidate. The original PNGs
+remain unchanged, without row crops, generated video frames or CSS motion.
 
-This is a piecewise approximation at 15px row spacing. It demonstrates coordinated
-motion using supported channels, not a continuous mesh warp, procedural shader,
-physics simulation, arbitrary path morph, live Blue execution or a frame-rate guarantee.
-The initial 90-row prototype failed the rendered-frame diversity check and was
-reduced after real Solar capture. Review this development fixture when native
-deformation primitives or the shared animation catalogue become available.
+The previous 48-row approximation produced staircase contours and only 62
+patches in its capture. It was replaced following visual rejection. The new
+capture records `frame-submitted` timestamps and checks submitted cadence in
+addition to canvas signatures, exact endpoints and retained-scene replay.
+Recorded cadence qualifies this local browser run, not physical scanout or all
+scenes. The extension is whole-image GPU deformation, not a standardized LSML
+mesh/shader API, physics simulation, arbitrary path morph or live Blue execution.
+Review it when a shared deformation/catalogue contract becomes available.

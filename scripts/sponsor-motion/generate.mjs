@@ -56,6 +56,7 @@ await writeFile(resolve(out, "sponsor-motion.lsml"), json);
 await writeFile(resolve(out, "sponsor-motion.lsmlz"), zipSync({ "scene.lsml": strToU8(json), ...assets }));
 await writeFile(resolve(out, "catalogue.json"), JSON.stringify({ duration_ms: wave?.duration ?? duration, size: W,
   title: wave?.title ?? "Sponsor Motion", slug: wave?.slug ?? "sponsor-motion",
+  minimum_render_rate: wave?.minimumRenderRate,
   description: wave?.description ?? "12 bandes · 35 pistes simultanées · translation, rotation, flou, opacité et découpe.",
   animations: Object.keys(document.animations) }, null, 2));
 console.log(JSON.stringify({ scene: document.scene_id, animations: Object.keys(document.animations).length, out }));

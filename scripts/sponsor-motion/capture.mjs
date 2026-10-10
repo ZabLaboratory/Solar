@@ -17,7 +17,9 @@ page.on("pageerror", e => errors.push(e.message));
 page.on("console", e => { if (e.type() === "error") consoleMessages.push(e.text()); });
 await page.route("**/vision/ui/mainpresenter.mjs", async route => {
   const response = await route.fetch();
-  const body = (await response.text()).replace("function postMessage(request) {", "function postMessage(request) { globalThis.__motionRequests ??= []; globalThis.__motionRequests.push({type:request.type,t:performance.now()});");
+  const body = (await response.text())
+    .replace("function postMessage(request) {", "function postMessage(request) { globalThis.__motionRequests ??= []; globalThis.__motionRequests.push({type:request.type,t:performance.now()});")
+    .replace("function emit(message) {", "function emit(message) { if(message.type==='frame-submitted'){globalThis.__motionSubmissions ??= []; globalThis.__motionSubmissions.push({t:performance.now(),seq:message.seq,timing:message.timing});}");
   await route.fulfill({ response, body });
 });
 try {
@@ -50,16 +52,26 @@ try {
   await front.screenshot({ path: output("after.png") });
   const video = await solar.evaluate(() => globalThis.__stopRecording());
   await writeFile(output(`${catalogue.slug ?? "sponsor-motion"}.webm`), Buffer.from(video, "base64"));
-  const after = await solar.evaluate(() => ({ requests: globalThis.__motionRequests, frames: globalThis.__motionFrames, width: document.querySelector('#scene canvas[aria-hidden=true]').width, height: document.querySelector('#scene canvas[aria-hidden=true]').height }));
+  const after = await solar.evaluate(() => ({ requests: globalThis.__motionRequests, submissions: globalThis.__motionSubmissions, frames: globalThis.__motionFrames, width: document.querySelector('#scene canvas[aria-hidden=true]').width, height: document.querySelector('#scene canvas[aria-hidden=true]').height }));
+  // Exclude the initial loaded scene. The remaining submissions cover this play,
+  // including its command frame and final frame, never the idle capture margins.
+  const submitted = after.submissions.slice(1);
+  const intervals = submitted.slice(1).map((entry, index) => entry.t - submitted[index].t).sort((a, b) => a - b);
+  const cadence = { frames: submitted.length, duration_ms: submitted.at(-1).t - submitted[0].t,
+    rate: (submitted.length - 1) * 1000 / (submitted.at(-1).t - submitted[0].t),
+    interval_median_ms: intervals[Math.floor(intervals.length * .5)],
+    interval_p95_ms: intervals[Math.floor(intervals.length * .95)], interval_max_ms: intervals.at(-1),
+    boundary: "Vision frame-submitted, excluding load and idle; not physical scanout" };
   await page.evaluate(() => window.playMotion());
   await front.screenshot({ path: output("replay-after.png") });
   const replay = await solar.evaluate(() => globalThis.__motionRequests);
-  const report = { command, baseline, after, replay, errors, consoleMessages, native: await (await fetch(`${origin}/status`)).json() };
+  const report = { command, baseline, after, cadence, replay, errors, consoleMessages, native: await (await fetch(`${origin}/status`)).json() };
   await writeFile(output("capture.json"), JSON.stringify(report, null, 2));
   if (errors.length || consoleMessages.length) throw Error("Solar reported a runtime error");
   if (new Set(after.frames.map(f => f.hash)).size < 40) throw Error("Insufficient distinct rendered frames");
+  if (catalogue.minimum_render_rate && cadence.rate < catalogue.minimum_render_rate) throw Error("Rendered cadence below fixture quality gate");
   if (replay.filter(r => r.type === "load").length !== baseline.filter(r => r.type === "load").length) throw Error("Animation reloaded the scene");
-  console.log(JSON.stringify({ out, width: after.width, height: after.height, frames: after.frames.length, uniqueFrames: new Set(after.frames.map(f=>f.hash)).size, requestCounts: after.requests.reduce((r,v)=>(r[v.type]=(r[v.type]??0)+1,r),{}), errors, consoleMessages }));
+  console.log(JSON.stringify({ out, width: after.width, height: after.height, cadence, frames: after.frames.length, uniqueFrames: new Set(after.frames.map(f=>f.hash)).size, requestCounts: after.requests.reduce((r,v)=>(r[v.type]=(r[v.type]??0)+1,r),{}), errors, consoleMessages }));
 } catch (error) {
   await page.screenshot({ path: output("failure.png") });
   const status=await(await fetch(`${origin}/status`)).text();

@@ -10,6 +10,36 @@ const document: LSMLDocument = {
 };
 afterEach(() => vi.unstubAllGlobals());
 describe("Vision Blue animation adapter", () => {
+  it("projects wave channels into retained namespaced image bindings and preserves their source authority", () => {
+    const source = structuredClone(document);
+    source.defaults!.amplitude = 12;
+    source.layout = { kind: "image", id: "panel", position: { x: 30, y: 20 }, size: { w: 100, h: 100 },
+      "x-vision.waveWavelength": 100, bind: { "x-vision.waveAmplitude": "amplitude" } };
+    source.animations = { wave: { target: "panel", keyframes: { duration_ms: 100,
+      steps: [{ at: 0, waveAmplitude: 0, wavePhase: 0 }, { at: 1, waveAmplitude: 20, wavePhase: 3 }] } } };
+    const variant = structuredClone(source);
+    const aliases = prepareAnimationBindings(variant);
+    expect(aliases[animationLeaf("panel", "waveAmplitude")]).toBe("amplitude");
+    expect(variant.defaults![animationLeaf("panel", "waveAmplitude")]).toBe(12);
+    expect(variant.defaults![animationLeaf("panel", "waveWavelength")]).toBe(100);
+    const frame = { target: "panel", values: { waveAmplitude: 20, wavePhase: 3, translateX: 10 } };
+    expect(hasGeometry(frame)).toBe(false);
+    expect(animationPatch(source, [frame])).toEqual({
+      [animationLeaf("panel", "waveAmplitude")]: 20, [animationLeaf("panel", "wavePhase")]: 3,
+      [animationLeaf("panel", "x")]: 40, [animationLeaf("panel", "y")]: 20,
+    });
+    expect((source.layout as Record<string, unknown>).bind).toEqual({ "x-vision.waveAmplitude": "amplitude" });
+    expect(animationDocument(source, [frame]).defaults![animationLeaf("panel", "wavePhase")]).toBe(3);
+  });
+  it("rejects invalid wave ranges and wave commands targeting non-image geometry", () => {
+    const source = structuredClone(document);
+    source.animations = { wave: { target: "panel", keyframes: { duration_ms: 100, steps: [{ at: 0, waveAmplitude: 0 }] } } };
+    expect(() => prepareAnimationBindings(source)).toThrow("image target");
+    for (const values of [{ waveAmplitude: 5000 }, { waveWavelength: 0 }, { waveHarmonic: 2 }]) {
+      source.animations = { wave: { target: "panel", keyframes: { duration_ms: 100, steps: [{ at: 0, ...values }] } } };
+      expect(() => animationAssets(source)).toThrow("out of range");
+    }
+  });
   it("patches translation relative to authored coordinates without requiring a scene reload", () => {
     const frame = { target: "panel", values: { translateX: 20, translateY: -10, rotation: 4 } };
     expect(hasGeometry(frame)).toBe(false);
