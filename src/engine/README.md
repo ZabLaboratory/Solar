@@ -166,15 +166,13 @@ Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and
 `npm run check:bundle` after changing these paths. Hardware cameras and the live
 CEF compositor still need a host-level smoke test.
 
-`animations.ts` consumes native LSDP `__animation.<asset>` command leaves and the
-LSML animation catalogue `{id:{target,keyframes:{duration_ms,easing,steps}}}`.
-Opacity, rotation, blur and translation use private Vision bindings; scale uses
-the existing scene swap from original geometry. The source stays untouched.
-Named CSS easing and cubic-bezier are sampled from the authored curve. Unsupported
-channels/easing fail explicitly before rendering. Only one animation submission
-is in flight, repeated commands are deduplicated, and a new command replays.
-Final frames survive an unrelated structural mutation, but clear on scene change
-or removal. Geometry swaps are more expensive than scalar GPU patches.
+`animations.ts` projects compiled motion onto private retained bindings and preserves
+source authority. [`motion`](motion/README.md) owns timeline compilation, curves and
+the single playback clock. Nested sequences/parallel compositions, per-segment
+curves, cubic paths and native command controls share this clock. Scale/skew/pivots
+use the pinned Vision GPU affine extension; playback never reloads a scene.
+The [motion contract and audit](../../docs/development/motion-system.md) records
+supported effects, LSML compatibility, deterministic overlap and remaining gaps.
 
 Persistent font admission accepts owned `VerifiedFont` snapshots as well as raw
 font arrays. Only the owned snapshot may reuse its verified digest; mutable caller

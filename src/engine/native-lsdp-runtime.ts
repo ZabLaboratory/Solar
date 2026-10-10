@@ -30,7 +30,6 @@ import {
   VisionAnimations,
   animationDocument,
   animationPatch,
-  hasGeometry,
 } from "./animations";
 import {
   activateVisionScene,
@@ -75,18 +74,9 @@ export class NativeLsdpRuntime {
           !this.current
         )
           return;
-        if (frames.some(hasGeometry)) {
-          await this.render(
-            animationDocument(document, frames),
-            () => {
-              if (!this.active || this.document !== document)
-                throw new Error("Animation scene superseded.");
-            },
-            this.abort!.signal,
-          );
-        } else {
-          await this.current.scene.applyPatch(animationPatch(document, frames));
-        }
+        await this.current.scene.applyPatch(
+          animationPatch(document, frames, true),
+        );
       });
     },
     (error) => this.report(error),

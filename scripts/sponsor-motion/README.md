@@ -19,8 +19,7 @@ directory providing Playwright; run `node scripts/sponsor-motion/capture.mjs`.
 `compare.py <capture-stamp> <explicit-output.json>` compares captured endpoints
 to the supplied PNGs using Pillow/NumPy and verifies identical replay output.
 
-Translation uses retained Vision position bindings. Scale retains the existing
-document-variant fallback. The visual proof captures the real Solar canvas and
+Translation and scale use retained Vision bindings. The visual proof captures the real Solar canvas and
 records load/patch counts, endpoints, replay, console errors and source hashes.
 
 ## Traveling wave
@@ -46,3 +45,21 @@ Recorded cadence qualifies this local browser run, not physical scanout or all
 scenes. The extension is whole-image GPU deformation, not a standardized LSML
 mesh/shader API, physics simulation, arbitrary path morph or live Blue execution.
 Review it when a shared deformation/catalogue contract becomes available.
+
+## Composed motion studio
+
+`composed.mjs` authors a five-second sequence with three acts, nested parallel
+tracks, cubic travel, spring settling, colors, strokes, shadow effects and continuous
+whole-image deformation. `controls.mjs` checks real canvas pause, seek, resume,
+speed, reverse, second alternate iteration, stop and cancel through native LSDP.
+It asserts that controls never load another scene. The player controls edit command
+leaves; they do not animate the iframe or draw a substitute canvas.
+
+Generate with `node scripts/sponsor-motion/generate.mjs fixtures/sponsor-motion/composed composed`.
+Set `SPONSOR_MOTION_PORT=4570` and serve with
+`node scripts/sponsor-motion/serve.mjs fixtures/sponsor-motion/composed`.
+Use `capture.mjs` for the recording and `controls.mjs` for interaction proof.
+A native host retains command leaves between readers: a reader joining after a
+play starts that command again. Use an initially clean native fixture for a
+before/after recording; a current replay is not an untouched before image.
+This demo does not supply cross-host playhead synchronization or execute Blue.

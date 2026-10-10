@@ -1,3 +1,4 @@
+/* global document, window, requestAnimationFrame, MediaRecorder */
 import { createRequire } from "node:module";
 import { mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";

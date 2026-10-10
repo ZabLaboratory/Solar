@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { zipSync, strToU8 } from "fflate";
 import { canonicalize } from "@lumencast/canonical";
 import { waveScene } from "./wave.mjs";
+import { composedScene } from "./composed.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const out = resolve(root, process.argv[2] ?? "fixtures/sponsor-motion");
@@ -47,8 +48,8 @@ for (let i = 0; i < count; i++) {
     ]);
   }
 }
-const wave = process.argv[3] === "wave" ? waveScene(W) : null;
-const document = { lsml: "1.2", scene_id: wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: W, height: W }, defaults: {},
+const wave = process.argv[3] === "composed" ? composedScene(W) : process.argv[3] === "wave" ? waveScene(W) : null;
+const document = { lsml: "1.2", scene_id: process.argv[3] === "composed" ? "sponsor-composed-demo" : wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: W, height: W }, defaults: {},
   layout: { kind: "frame", id: "stage", size: { w: W, h: W }, background: "#000000", clipsContent: true, children: wave?.children ?? children }, animations: wave?.animations ?? animations };
 document.scene_version = `sha256:${createHash("sha256").update(canonicalize(document)).digest("hex")}`;
 const json = canonicalize(document);

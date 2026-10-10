@@ -19,16 +19,23 @@ let run = 0, closed = false;
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://127.0.0.1:${port}`);
+    if (url.pathname === "/favicon.ico") return res.writeHead(204).end();
     if (url.pathname === "/") {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.end((await readFile(resolve(import.meta.dirname, "player.html"), "utf8")).replaceAll("__SOLAR_ORIGIN__", native)
         .replaceAll("Sponsor Motion", catalogue.title ?? "Sponsor Motion")
-        .replaceAll("12 bandes · 35 pistes simultanées · translation, rotation, flou, opacité et découpe.", catalogue.description ?? "Transition LSML"));
+        .replaceAll("__MOTION_DESCRIPTION__", catalogue.description ?? "Transition LSML"));
     }
     if (url.pathname === "/catalogue") { res.setHeader("Content-Type", "application/json"); return res.end(JSON.stringify(catalogue)); }
     if (url.pathname === "/play" && req.method === "POST") {
+      const chunks = []; let length = 0;
+      for await (const chunk of req) { length += chunk.length; if (length > 4096) throw Error("Control body exceeds 4 KiB"); chunks.push(chunk); }
+      const command = length ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : {};
+      if (!["play","pause","resume","seek","speed","reverse","stop","cancel"].includes(command.action ?? "play")) throw Error("Invalid motion action");
+      const selected = command.animation_id ? [command.animation_id] : catalogue.animations;
+      if (!selected.every(id => catalogue.animations.includes(id))) throw Error("Unknown animation id");
       const id = `sponsor-demo-${++run}`;
-      const operations = catalogue.animations.map(animation_id => ({ op: "add", path: `/defaults/__animation.${animation_id}`, value: { animation_id, command_id: `${id}-${animation_id}` } }));
+      const operations = selected.map(animation_id => ({ op: "add", path: `/defaults/__animation.${animation_id}`, value: { ...command, animation_id, command_id: `${id}-${animation_id}` } }));
       const response = await fetch(`${native}/mutations`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(operations) });
       res.writeHead(response.status, { "Content-Type": "application/json" });
       return res.end(JSON.stringify({ command_id: id, animations: operations.length, duration_ms: catalogue.duration_ms, receipt: await response.json() }));
