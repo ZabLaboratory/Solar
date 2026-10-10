@@ -1,0 +1,1 @@
+{"result":"PASS","nativeBinary":"D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke/dist/native/win32-x64/lsdpd.exe","realScene":true,"mutations":5,"fragmentedPayload":true,"rejectedBatchAtomicity":true,"staleBaseRejected":true,"duplicateIdempotency":true,"unchangedSource":true,"restartResetsState":true,"persistence":"memory-only"}
