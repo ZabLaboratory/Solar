@@ -11,6 +11,10 @@ const stamp=new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z");
 const browser=await chromium.launch({channel:"chrome",headless:true});
 const page=await browser.newPage({viewport:{width:1360,height:980}});
 const errors=[], failed=[];
+await page.addInitScript(()=>document.addEventListener("solar:lsdp-applied",e=>{
+  globalThis.__storyboardReceipts ??= [];
+  globalThis.__storyboardReceipts.push(e.detail);
+},true));
 page.on("pageerror",e=>errors.push(e.message));
 page.on("console",e=>{if(e.type()==="error")errors.push(e.text());});
 page.on("requestfailed",r=>failed.push(r.url()));
@@ -22,10 +26,12 @@ try {
   const command=async body=>{
     const response=await fetch(origin+"/play",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
     if(!response.ok)throw Error(await response.text());
-    await page.waitForTimeout(200);
+    const result=await response.json(), id=result.receipt.receipt.transactionId;
+    await frame.waitForFunction(id=>globalThis.__storyboardReceipts?.some(r=>r.transactionId===id),id,{timeout:10000});
   };
   await command({action:"pause"});
-  const times=[0,700,1400,2200,2700,3080,3500,3890,4400,4780,5300,6000,7000];
+  const times=process.argv[3] ? JSON.parse(process.argv[3]) : [0,700,1400,2200,2700,3080,3500,3890,4400,4780,5300,6000,7000];
+  if(!Array.isArray(times) || !times.every(t=>Number.isFinite(t) && t>=0))throw Error("Invalid storyboard positions");
   for(const time_ms of times) {
     await command({action:"seek",time_ms});
     await canvas.screenshot({path:resolve(output,`${stamp}-vector-${String(time_ms).padStart(4,"0")}.png`)});

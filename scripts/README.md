@@ -3,6 +3,9 @@
 [`sponsor-motion/`](sponsor-motion/README.md) creates and plays the local sponsor
 LSML fixture, captures the real Solar front canvas and checks retained-scene replay.
 
+[`kumiki-motion/`](kumiki-motion/README.md) authors an original five-act vector
+choreography of the canonical Kumiki mark and reuses the native motion reader.
+
 Owner: Solar build/installation/qualification. Package commands and the following CLI tools
 are active entrypoints. Helpers belong to their nearest README. They are not renderer code.
 All generated output must be inside this worktree's `build/`, `dist/` or canonical `evidence/`.

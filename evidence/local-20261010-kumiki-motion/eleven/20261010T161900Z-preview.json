@@ -1,0 +1,20 @@
+{
+  "result": {
+    "auto": true,
+    "loop": "infinite",
+    "command": {
+      "command_id": "sponsor-demo-44",
+      "animations": 1,
+      "duration_ms": 15000,
+      "receipt": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "65041e68773dcfa5f539647f9f21074d"
+        },
+        "persistence": "memory-only"
+      }
+    }
+  },
+  "errors": []
+}

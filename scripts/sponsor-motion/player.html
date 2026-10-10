@@ -184,6 +184,12 @@
       ) {
         button.disabled = false;
         status.textContent = "Prêt · scène native chargée";
+        const preview = new URLSearchParams(location.search);
+        if (preview.get("autoplay") === "1" && !window.previewStarted) {
+          window.previewStarted = true;
+          if (preview.get("loop") === "1") document.querySelector("#iterations").value = "infinite";
+          window.playMotion().catch(e => (status.textContent = e.message));
+        }
       }
     });
 
