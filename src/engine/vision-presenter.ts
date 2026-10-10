@@ -236,7 +236,9 @@ async function mountVisionSceneNow(
   Object.assign(layer.style, {
     position: "absolute",
     inset: "0",
-    opacity: "0",
+    // The persistent front surface already contains the active frame.
+    // Structural/effect loads must not hide it while awaiting the next frame.
+    ...(!existing ? { opacity: "0" } : {}),
     pointerEvents: "none",
   });
   if (getComputedStyle(target).position === "static") {
@@ -254,8 +256,10 @@ async function mountVisionSceneNow(
     inset: "0",
   });
   const presentation = existing?.presentation ?? new CanvasPresentation(canvas);
-  layer.append(canvas, presentation.canvas);
-  target.append(layer);
+  if (canvas.parentElement !== layer) layer.append(canvas);
+  if (presentation.canvas.parentElement !== layer)
+    layer.append(presentation.canvas);
+  if (layer.parentElement !== target) target.append(layer);
 
   let presenter: VisionPresenter | null = existing?.presenter ?? null;
   let sequence = 0;

@@ -29,7 +29,7 @@ import { CaptureStreamPool, LiveMediaController } from "./live-media";
 import {
   VisionAnimations,
   animationDocument,
-  animationLeaf,
+  animationPatch,
   hasGeometry,
 } from "./animations";
 import {
@@ -85,11 +85,7 @@ export class NativeLsdpRuntime {
             this.abort!.signal,
           );
         } else {
-          const patch: Record<string, unknown> = {};
-          for (const frame of frames)
-            for (const [property, value] of Object.entries(frame.values))
-              patch[animationLeaf(frame.target, property)] = value;
-          await this.current.scene.applyPatch(patch);
+          await this.current.scene.applyPatch(animationPatch(document, frames));
         }
       });
     },

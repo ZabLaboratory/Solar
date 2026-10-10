@@ -1,12 +1,12 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "031788f42750f08e00dfa506c0e85d0819da8aa1",
-  "source_state": "Local uncommitted direct LSML/assets transfer, canonical serialization and verified font candidate; not merged or deployed.",
+  "base_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98",
+  "source_state": "Local inspector stroke, appearance, live text outline and transparent sRGB output correction; not pushed or deployed.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "bytes": 26702,
-      "sha256": "88de7073b8538a12998139bc499866a06eb03925ff523f7683fb2f721aab3eae"
+      "bytes": 26045,
+      "sha256": "37fe912a89103c0985d407f5bc993a037cd4b2a8f86d6e95e45d12b7b9977ea0"
     },
     "ui/fonts.mjs": {
       "bytes": 1977,
@@ -14,20 +14,19 @@
     },
     "pkg/lumencast_vision_web.js": {
       "bytes": 148483,
-      "sha256": "f9f61fbf53fee481cf5c26179d853bf34eb94c0fb5cb4c8d386264638c31297a"
+      "sha256": "46062f4badc49abcb4f517923b25ac68ddcccd24adf40fcc564ca42bcab9aaf8"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10253842,
-      "sha256": "7626634a8ad14231ee9f7a50b0aaacca999d9f78d30cb4e171f798b3aa2a3796"
+      "bytes": 10270669,
+      "sha256": "c64b197e56775c65403e84fa08a41d85f7e9656faaa0a3c38dd0aa37d80f81da"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_base": "031788f42750f08e00dfa506c0e85d0819da8aa1",
-    "engine_branch": "eleven/local-20261008-font-preload",
-    "engine_evidence": "evidence/local-20261008-direct-scene-parts/eleven/",
-    "working_diff_sha256": "a99e5020b608d4a391f059be30d780f25dad9fee22854b30b30e411e4bd66d5a"
+    "engine_base": "61739735aa67eed69d6a4d8a86650717d46d8e98",
+    "engine_branch": "eleven/local-20261009-inspector-stroke",
+    "engine_evidence": "evidence/local-20261009-inspector-stroke/eleven/"
   },
-  "source_revision": "031788f42750f08e00dfa506c0e85d0819da8aa1",
-  "merged_revision": "031788f42750f08e00dfa506c0e85d0819da8aa1"
+  "source_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98",
+  "merged_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98"
 }

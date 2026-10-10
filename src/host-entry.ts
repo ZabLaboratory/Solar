@@ -3,6 +3,7 @@ import { installationFontBatches } from "./scenes/installation-fonts";
 // Production bootstrap for the single LSDP-to-Vision renderer.
 
 import { createCanvasSceneSourceProvider } from "./scenes/canvas";
+import { createLocalSceneSourceProvider } from "./scenes/local-library";
 import {
   createLocalImageAssetsProvider,
   type LocalRenderAssetEndpoint,
@@ -14,6 +15,7 @@ interface SolarHostConfig {
   nativeComposition?: { width: number; height: number };
   canvasApiUrl?: string;
   canvasToken?: string;
+  sceneSourcesUrl?: string;
   fontAssetsUrl?: string;
   installationFontCatalog?: { url: string; token: string };
   nativeLSDP?: { url: string; resource: string; selector?: string };
@@ -128,7 +130,13 @@ mount({
   },
   token,
   mode,
-  sceneSourceProvider: upstream,
+  sceneSourceProvider: config?.sceneSourcesUrl
+    ? createLocalSceneSourceProvider(
+        config.sceneSourcesUrl,
+        canvasToken,
+        upstream,
+      )
+    : upstream,
   fontAssetsProvider: config?.fontAssetsUrl ? localFonts : undefined,
   installationFonts: config?.installationFontCatalog
     ? () => installationFontBatches(config.installationFontCatalog!)

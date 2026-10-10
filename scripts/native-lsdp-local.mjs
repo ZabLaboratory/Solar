@@ -13,6 +13,7 @@ const { values } = parseArgs({
     "lsdp-bin": { type: "string" },
     port: { type: "string", default: "8099" },
     camera: { type: "string" },
+    "status-parent": { type: "string" },
   },
 });
 if (!values.scene)
@@ -216,6 +217,7 @@ const server = createServer(async (request, response) => {
         const report=(detail)=>fetch('/__render_diag',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(detail)}).catch(()=>{});
         document.addEventListener('DOMContentLoaded',()=>document.getElementById('scene').addEventListener('solar:lsdp-applied',event=>report({type:'applied',...event.detail})));
         const originalError=console.error;console.error=(...args)=>{report({type:'error',message:args.map(String).join(' ')});originalError.apply(console,args)};
+        ${values["status-parent"] ? `document.addEventListener('DOMContentLoaded',()=>new MutationObserver(()=>{const state=document.documentElement.dataset.solarStatus;if(state)parent.postMessage({type:'solar-status',state},${JSON.stringify(new URL(values["status-parent"]).origin)});}).observe(document.documentElement,{attributes:true,attributeFilter:['data-solar-status']}));` : ""}
         const originalGum=navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices);navigator.mediaDevices.getUserMedia=async options=>{const stream=await originalGum(options);report({type:'camera',tracks:stream.getVideoTracks().map(track=>({label:track.label,settings:track.getSettings()}))});return stream};
       </script>`;
       data = Buffer.from(

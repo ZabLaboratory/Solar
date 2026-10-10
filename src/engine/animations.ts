@@ -91,6 +91,28 @@ function visit(value: unknown, callback: (node: RecordValue) => void): void {
   if (node.children) visit(node.children, callback);
   if (node.template) visit(node.template, callback);
 }
+function coordinate(document: LSMLDocument, node: RecordValue, axis: "x" | "y"): number {
+  const bind = object(node.bind);
+  const path = bind?.[`position.${axis}`];
+  const value = typeof path === "string" ? document.defaults?.[path] : object(node.position)?.[axis];
+  return typeof value === "number" ? value : 0;
+}
+
+/** Translation offsets become bound absolute coordinates in the retained scene. */
+export function animationPatch(document: LSMLDocument, frames: readonly AnimationFrame[]): Record<string, number> {
+  const nodes = new Map<string, RecordValue>();
+  visit(document.layout, node => { if (typeof node.id === "string") nodes.set(node.id, node); });
+  const patch: Record<string, number> = {};
+  for (const frame of frames) {
+    const node = nodes.get(frame.target);
+    if (!node) throw new Error(`Animation target not found: ${frame.target}`);
+    for (const property of ["opacity", "rotation", "blur"])
+      if (frame.values[property] !== undefined) patch[animationLeaf(frame.target, property)] = frame.values[property]!;
+    patch[animationLeaf(frame.target, "x")] = coordinate(document, node, "x") + (frame.values.translateX ?? frame.values.x ?? 0);
+    patch[animationLeaf(frame.target, "y")] = coordinate(document, node, "y") + (frame.values.translateY ?? frame.values.y ?? 0);
+  }
+  return patch;
+}
 /** Private bindings only: the original published LSML remains untouched. */
 export function prepareAnimationBindings(document: LSMLDocument): Record<string, string> {
   const aliases: Record<string, string> = {};
@@ -108,13 +130,20 @@ export function prepareAnimationBindings(document: LSMLDocument): Record<string,
       defaults[path] = typeof existing === "number" ? existing : property === "opacity" ? 1 : 0;
       bind[property] = path;
     }
+    for (const axis of ["x", "y"] as const) {
+      const path = animationLeaf(node.id, axis);
+      const original = bind[`position.${axis}`];
+      defaults[path] = coordinate(document, node, axis);
+      if (typeof original === "string" && original !== path) aliases[path] = original;
+      bind[`position.${axis}`] = path;
+    }
     node.bind = bind;
   });
   for (const target of targets) if (!found.has(target)) throw new Error(`Animation target not found: ${target}`);
   return aliases;
 }
 export function hasGeometry(frame: AnimationFrame): boolean {
-  return Object.keys(frame.values).some(key => !["opacity", "rotation", "blur"].includes(key));
+  return Object.keys(frame.values).some(key => key.startsWith("scale"));
 }
 /** Geometry channels use the existing source-preserving Vision scene swap. */
 export function animationDocument(document: LSMLDocument, frames: readonly AnimationFrame[]): LSMLDocument {
@@ -123,6 +152,7 @@ export function animationDocument(document: LSMLDocument, frames: readonly Anima
   // animation snapshot changes the retention key of an otherwise identical source.
   if (frames.length === 0) return variant;
   prepareAnimationBindings(variant);
+  Object.assign(variant.defaults!, animationPatch(document, frames));
   for (const frame of frames) {
     for (const property of ["opacity", "rotation", "blur"]) if (frame.values[property] !== undefined)
       variant.defaults![animationLeaf(frame.target, property)] = frame.values[property];

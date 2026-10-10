@@ -1,0 +1,12 @@
+<!doctype html><html lang="fr"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sponsor Motion · Solar</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#101112;color:#f5f5f5;font:15px system-ui}main{max-width:768px;margin:24px auto;padding:0 24px}header{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}h1{font-size:21px;margin:0}.tag{color:#94a89b;font-size:12px;letter-spacing:.12em}iframe{display:block;width:720px;height:720px;border:0;background:#000;max-width:100%;aspect-ratio:1}footer{display:flex;align-items:center;gap:16px;margin-top:20px}button{border:0;border-radius:9px;background:#ef1028;color:white;font:600 15px system-ui;padding:12px 22px;cursor:pointer}button:disabled{opacity:.4;cursor:wait}#status{font-size:13px;color:#a7afaa}p{color:#8d9690;font-size:13px;line-height:1.6}a{color:#9bb4a6}</style>
+<main><header><h1>Sponsor Motion</h1><span class="tag">LSML → SOLAR → VISION</span></header>
+<iframe title="Rendu Solar" src="__SOLAR_ORIGIN__/"></iframe>
+<footer><button id="play" disabled>Jouer la transition</button><span id="status">Préparation du moteur…</span></footer>
+<p>12 bandes · 35 pistes simultanées · translation, rotation, flou, opacité et découpe.<br><a href="/scene.lsmlz" download="sponsor-motion.lsmlz">Télécharger le LSMLZ</a> · <a href="/scene.lsml" download="sponsor-motion.lsml">Voir le LSML</a></p></main>
+<script>
+const button=document.querySelector('#play'),status=document.querySelector('#status');
+window.addEventListener('message',event=>{if(event.origin==='__SOLAR_ORIGIN__'&&event.data?.type==='solar-status'&&event.data.state==='live'){button.disabled=false;status.textContent='Prêt · scène native chargée';}});
+window.playMotion=async()=>{button.disabled=true;status.textContent='Transition en cours…';try{const response=await fetch('/play',{method:'POST'});const data=await response.json();if(!response.ok)throw Error(JSON.stringify(data));window.lastCommand=data;await new Promise(r=>setTimeout(r,data.duration_ms+350));status.textContent='Terminé · HelloFresh';button.textContent='Rejouer';return data;}catch(e){status.textContent=e.message;throw e;}finally{button.disabled=false;}};
+button.addEventListener('click',()=>window.playMotion());
+</script></html>

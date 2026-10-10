@@ -1,5 +1,14 @@
 # LSDP and Vision runtime
 
+`animations.ts` owns catalogue validation, easing and the local playback clock.
+Translation, rotation, opacity and blur patch private bindings in the active Vision
+scene. Translation adds the sampled offset to the current authored/bound position;
+source positions and the published LSML are preserved. Existing editable geometry
+is projected before these animation bindings so its source authority remains aliased.
+Scale retains the document-variant path and does not share the retained-position
+guarantee. `scripts/sponsor-motion` exercises 35 tracks through actual native LSDP,
+Solar and Vision; its capture asserts replay adds no scene-load request.
+
 `native-lsdp-runtime.ts` connects to the real Lumencast Rust server through the
 portable draft2 binary WebSocket client. A fragmented `state.read` loads the
 full LSML resource, then a hash-pinned subscription delivers atomic tree or
@@ -163,3 +172,11 @@ font arrays. Only the owned snapshot may reuse its verified digest; mutable call
 arrays are copied and hashed. An already acknowledged digest causes no transfer
 copy or WASM admission. Host manifest acquisition still occurs on each scene load
 so changes to the registry remain observable.
+
+During a persistent structural/effect load, the current front surface stays
+visible and attached. Only a newly created session starts hidden. The replacement
+is presented after its submitted frame; reusing the engine must not reapply the
+initial opacity-zero staging rule to the active layer. This also avoids detaching
+and reattaching its GPU/front canvases during ordinary document replacement.
+
+The pinned Vision engine accepts live text style leaves and stroke.width/stroke.color. Glyph outlines are tessellated by Rust in positioned scene pixels; Solar transports these as ordinary LSDP mutations.

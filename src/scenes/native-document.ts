@@ -394,8 +394,8 @@ export class NativeSceneAssets {
         ([key]) => !key.startsWith("__cam."),
       ),
     );
-    const animationBindings = prepareAnimationBindings(variant);
     const geometryBindings = prepareEditableBindings(variant);
+    const animationBindings = prepareAnimationBindings(variant);
     if (nativeComposition) prepareNativeComposition(variant, nativeComposition);
     const textBindings = prepareTextBindings(variant);
     const imageBindings = await this.prepareImageBindings(

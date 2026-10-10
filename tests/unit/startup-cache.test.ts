@@ -10,6 +10,39 @@ import {
 } from "../../src/scenes/startup";
 import { cacheSource } from "../helpers/cache-source";
 import { sceneSourceKey } from "../../src/scenes/cache";
+import { SceneSourceError } from "../../src/scenes/types";
+
+it("counts editable and unpublished entries without fabricating published sources", async () => {
+  const get = vi.fn(async () => {
+    throw new SceneSourceError("SOURCE_NOT_PUBLISHED");
+  });
+  const write = vi.fn(async () => {});
+  const result = await synchronizeSceneSources(
+    {
+      apiUrl: "https://canvas/api/v1",
+      fetch: async () =>
+        Response.json({
+          items: [
+            { id: "editable", scene_type: "editable" },
+            { id: "draft", scene_type: "standard" },
+          ],
+          next_offset: null,
+        }),
+    },
+    { get },
+    { read: async () => null, write },
+    new AbortController().signal,
+  );
+  expect(result).toEqual({
+    discovered: 2,
+    cached: 0,
+    skipped: 2,
+    failures: [],
+    truncated: false,
+  });
+  expect(get).toHaveBeenCalledOnce();
+  expect(write).not.toHaveBeenCalled();
+});
 
 it("isolates credentials, supports concurrent immutable writes and survives reopening", async () => {
   const factory = new IDBFactory();
@@ -65,7 +98,7 @@ it("startup sync uses the actual paginated Canvas schema, retains closure/assets
   const fetcher = vi.fn(
     async (url: URL | RequestInfo, options?: RequestInit) => {
       expect(String(url)).toContain(
-        "/api/v1/scenes?mine=true&limit=50&offset=0",
+        "/api/v1/scenes?mine=false&limit=50&offset=0",
       );
       expect(options?.headers).toEqual({
         Authorization: "Bearer account-token",
@@ -89,7 +122,13 @@ it("startup sync uses the actual paginated Canvas schema, retains closure/assets
       store,
       new AbortController().signal,
     ),
-  ).toEqual({ discovered: 1, cached: 1, failures: [], truncated: false });
+  ).toEqual({
+    discovered: 1,
+    cached: 1,
+    skipped: 0,
+    failures: [],
+    truncated: false,
+  });
   get.mockRejectedValue(new Error("offline"));
   const loaded = await createStartupSceneSourceProvider({ get }, store).get(
     delivery.sceneId,

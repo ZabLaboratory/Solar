@@ -24,17 +24,14 @@ Vision. `cache.ts` supplies an exact-revision cached provider and capsule codec.
 incomplete offline metadata, live variants and corrupt bytes fail visibly.
 Unpinned discovery remains online. `browser-store.ts` implements atomic IndexedDB
 storage shared by both physical lanes, partitioned by API/embedding credential
-digest, with 64 entries/512 MiB and eviction. `startup.ts` warms at most 64 scenes
-from Canvas' bounded paginated catalog and keeps pinned reads available offline.
-These exported adapters are not wired into the standalone host, which uses
-direct scene acquisition without catalog synchronization or IndexedDB.
-Launcher synchronization remains an application integration task.
-An embedded native host such as Prism already receives its exact admitted LSML
-over LSDP and does not walk the published catalog at startup. Its provider still
-supports exact source lookup and verified cache reads when the native document
-needs them, without fetching unrelated scenes in either CEF lane.
-Partial/unpublished entries do not block a verified online scene. Prism prewarms its physical Preview renderer before admitting the initial
-native scene intent, so the first admission has a render subscriber.
+digest, with 64 entries/512 MiB and eviction. This optional IndexedDB adapter is
+not used by Prism. `startup.ts` walks every accessible paginated Canvas scene,
+without a default scene-count ceiling. `src/server/scene-library.ts` owns the
+account-partitioned launcher disk library, descriptor revalidation and revision pruning.
+The served host uses `local-library.ts` when Main supplies `sceneSourcesUrl`,
+otherwise direct Canvas acquisition. Local reads carry an exact source version and
+revalidate source/assets/manifest. Editable scene state remains on native LSDP;
+unpublished standard scenes are counted separately. No inactive graph is retained.
 See `docs/development/source-cache.md` and the cache/store test suites.
 
 Tests in `tests/unit/scene-source.test.ts` cover descriptor acquisition,

@@ -23,11 +23,25 @@ export function prepareNativeComposition(
     }
     if (Array.isArray(node.children)) node.children.forEach(replaceCaptures);
   };
+  let mixed = false;
   for (const child of children) {
     const capture =
       (child as Record<string, unknown>)?.kind === "x-zab.capture";
-    if (!capture) bands.at(-1)!.push(child);
-    else bands.push([]);
+    const node = child as Record<string, unknown>;
+    if (
+      !capture &&
+      mixed &&
+      typeof node.blendMode === "string" &&
+      node.blendMode !== "normal"
+    ) {
+      // Pulsar owns the complete backdrop (native pixels plus earlier bands).
+      // Vision supplies the isolated source contribution without blending twice.
+      bands.push([{ ...node, blendMode: "normal" }], []);
+    } else if (!capture) bands.at(-1)!.push(child);
+    else {
+      mixed = true;
+      bands.push([]);
+    }
   }
   replaceCaptures(root);
   // Pulsar still owns the full browser atlas, but trailing capture-only bands

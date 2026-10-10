@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { animationAssets, animationDocument, animationLeaf, prepareAnimationBindings, sampleAnimation, VisionAnimations } from "../../src/engine/animations";
+import { animationAssets, animationDocument, animationLeaf, animationPatch, hasGeometry, prepareAnimationBindings, sampleAnimation, VisionAnimations } from "../../src/engine/animations";
 import type { LSMLDocument } from "../../src/scenes/native-document";
 
 const document: LSMLDocument = {
@@ -10,6 +10,26 @@ const document: LSMLDocument = {
 };
 afterEach(() => vi.unstubAllGlobals());
 describe("Vision Blue animation adapter", () => {
+  it("patches translation relative to authored coordinates without requiring a scene reload", () => {
+    const frame = { target: "panel", values: { translateX: 20, translateY: -10, rotation: 4 } };
+    expect(hasGeometry(frame)).toBe(false);
+    expect(animationPatch(document, [frame])).toEqual({
+      [animationLeaf("panel", "x")]: 50, [animationLeaf("panel", "y")]: 10,
+      [animationLeaf("panel", "rotation")]: 4,
+    });
+    expect(hasGeometry({ target: "panel", values: { scale: 1.2 } })).toBe(true);
+  });
+  it("preserves bound position authority and resolves the current base for repeated samples", () => {
+    const source = structuredClone(document);
+    (source.layout as Record<string, unknown>).bind = { "position.x": "panelX" };
+    source.defaults!.panelX = 75;
+    const variant = structuredClone(source);
+    const aliases = prepareAnimationBindings(variant);
+    expect(aliases[animationLeaf("panel", "x")]).toBe("panelX");
+    expect(variant.defaults![animationLeaf("panel", "x")]).toBe(75);
+    expect(animationPatch(source, [{ target: "panel", values: { translateX: 5 } }])[animationLeaf("panel", "x")]).toBe(80);
+    expect(source.defaults!.panelX).toBe(75);
+  });
   it("samples sparse channels and holds the last frame", () => {
     const asset = animationAssets(document).reveal!;
     expect(sampleAnimation(asset, 0.5)).toEqual({ opacity: 0.5, translateX: 20 });
