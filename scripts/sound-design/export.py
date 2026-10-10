@@ -38,7 +38,8 @@ if live["rms"] < .005 or live["clipped_samples"]:
 (output / "README.md").write_text(f"""# Kumiki — original sound design
 
 Open http://127.0.0.1:4610/ and click play to unlock browser audio.
-The 15-second vector choreography has 55 composed cues, seven original stereo
+The 15-second vector choreography ends with the Kumiki wordmark and its two-line
+signature. It has 58 composed cues, seven original stereo
 assets and five DSP buses: score, noise sweeps, contact clicks, metallic sparks,
 resonant lock, orbit bed and a seeded room impulse. Sources are PCM16/48kHz.
 
