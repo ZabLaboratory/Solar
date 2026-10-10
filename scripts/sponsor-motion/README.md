@@ -63,3 +63,24 @@ A native host retains command leaves between readers: a reader joining after a
 play starts that command again. Use an initially clean native fixture for a
 before/after recording; a current replay is not an untouched before image.
 This demo does not supply cross-host playhead synchronization or execute Blue.
+
+## Video-derived vector motion
+
+`reconstruct.py <recording.mp4> <explicit-output-directory>` extracts timestamped
+frames with ffmpeg and traces cubic SVG symbol/glyph contours with OpenCV/NumPy.
+The supplied recording's cursor islands are excluded. These are reconstructed
+contours, not official brand master assets or an automatic animation inference tool.
+`openai.mjs` authors matching intermediate Bézier poses, arc-length reveals and
+clipped glyph bands. `generate.mjs fixtures/sponsor-motion/openai openai` writes
+a seven-second, 1280x720 pure-vector LSML/LSMLZ scene (no images/video/fonts).
+The measured source frames and manual correspondence/timing are recorded in
+`fixtures/sponsor-motion/openai/vectors.json`. Short silhouette handoffs connect
+the animated strokes to the traced large emblem, then its final wordmark pose;
+these are not arbitrary topology morphs.
+
+Serve that fixture on `SPONSOR_MOTION_PORT=4580`. `storyboard.mjs <evidence-directory>`
+seeks thirteen positions through native commands and captures actual Solar pixels.
+`cadence.mjs <explicit-evidence.json>` measures frame-submitted timestamps without
+per-frame pixel readback or a video encoder. `capture.mjs` records the real canvas
+and checks retained replay, distinct pixels and errors. Its recording instrumentation
+can reduce cadence; both boundaries are reported rather than treated as equivalent.

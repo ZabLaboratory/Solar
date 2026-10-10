@@ -2,7 +2,7 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98",
-  "source_state": "Local retained affine motion and shadow bindings; composed Solar timeline; candidate not pushed or deployed.",
+  "source_state": "Local retained vector trim, shape drawing reuse and Solar path morph; candidate not merged or deployed.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 26045,
@@ -14,11 +14,11 @@
     },
     "pkg/lumencast_vision_web.js": {
       "bytes": 148483,
-      "sha256": "17e8004c7c99a7bcd8297cec9d07a62d9cb478ff9fd2bd54e249e0c4afd69821"
+      "sha256": "b81fc4ac48aa72b23e85dbe8803b951059a5a9b55c8175146a65bb0ca9d395eb"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10277583,
-      "sha256": "87bd742c147cff1fd5a94639c82254466abd5c5d9acc9c8f8680031806c1fb9a"
+      "bytes": 10283300,
+      "sha256": "443c9d9f1b58fd123508b067cc1cd34f0101389e2023c6a8c18e790a3a3f03e5"
     }
   },
   "source_provenance": {
@@ -27,6 +27,6 @@
     "engine_branch": "eleven/local-20261010-continuous-motion",
     "engine_evidence": "evidence/local-20261010-continuous-motion/eleven/"
   },
-  "source_revision": "2eb1e0b22930b445ab8b70964e00f9a9504ccf56",
+  "source_revision": "14658e3738399fd95b1498569de369a190988b17",
   "merged_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98"
 }

@@ -1,0 +1,16 @@
+{
+  "capture": "20261010T105949Z",
+  "replay_exact_pixels": true,
+  "reference_crop": {
+    "x": 4,
+    "y": 5,
+    "width": 1280,
+    "height": 720
+  },
+  "threshold": 150,
+  "silhouette_iou": {
+    "symbol": 0.9026732416298988,
+    "letters": 0.9358376187719238,
+    "whole": 0.9244221105527638
+  }
+}

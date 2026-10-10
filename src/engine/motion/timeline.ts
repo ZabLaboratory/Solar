@@ -1,4 +1,5 @@
 import type { LSMLDocument } from "../../scenes/native-document";
+import { morphPath, parseMorphPath } from "./vector";
 import {
   curve,
   finite,
@@ -96,6 +97,8 @@ export const transformChannels = [
   "anchorY",
 ];
 export const scalarChannels = [
+  "trimStart",
+  "trimEnd",
   "opacity",
   "rotation",
   "blur",
@@ -114,7 +117,9 @@ export const colorChannels = [
   "strokeColor",
   "shadowColor",
 ];
+export const vectorChannels = ["pathData"];
 const channels = new Set([
+  ...vectorChannels,
   ...scalarChannels,
   ...colorChannels,
   "scale",
@@ -139,7 +144,7 @@ export function channelRange(channel: string): [number, number] {
     low = -16;
     high = 16;
   }
-  if (["opacity", "pathProgress"].includes(channel)) {
+  if (["opacity", "pathProgress", "trimStart", "trimEnd"].includes(channel)) {
     low = 0;
     high = 1;
   }
@@ -204,6 +209,11 @@ export function values(
     const name = rawName === "rotate" ? "rotation" : rawName;
     if (!channels.has(name))
       throw new Error(`Unsupported Vision animation channel: ${rawName}`);
+    if (name === "pathData") {
+      parseMorphPath(raw);
+      result[name] = raw as string;
+      continue;
+    }
     if (colorChannels.includes(name)) {
       if (typeof raw !== "string") throw new Error("Invalid animation color");
       rgba(raw);
@@ -276,7 +286,13 @@ function tracks(asset: AnimationAsset): Track[] {
         start: left.at,
         end: right.at,
         ease: curve(easing ?? "linear", (right.at - left.at) * duration),
-        value: interpolate(left.values[property]!, right.values[property]!),
+        value:
+          property === "pathData"
+            ? morphPath(
+                left.values[property] as string,
+                right.values[property] as string,
+              )
+            : interpolate(left.values[property]!, right.values[property]!),
       };
     });
     return {
@@ -408,7 +424,8 @@ export function compileCatalogue(
     throw new Error("Motion catalogue budget exceeded");
   const plans: Record<string, MotionPlan> = Object.create(null),
     active = new Set<string>();
-  let budget = 0;
+  let budget = 0,
+    vectorBudget = 0;
   function compile(raw: unknown, depth: number): MotionPlan {
     if (depth > 16) throw new Error("Motion composition depth exceeded");
     if (typeof raw === "string") {
@@ -476,6 +493,13 @@ export function compileCatalogue(
       throw new Error("Invalid LSML animation target/keyframes");
     const asset = item as unknown as AnimationAsset,
       duration = finite(asset.keyframes.duration_ms, "duration", 0, 600000);
+    if (Array.isArray(asset.keyframes.steps))
+      for (const step of asset.keyframes.steps) {
+        const path = record(step)?.pathData;
+        if (typeof path === "string") vectorBudget += path.length;
+      }
+    if (vectorBudget > 2 * 1024 * 1024)
+      throw new Error("Motion vector catalogue budget exceeded");
     let compiled = tracks(asset);
     budget += asset.keyframes.steps.length;
     if (budget > 32768) throw new Error("Motion keyframe budget exceeded");

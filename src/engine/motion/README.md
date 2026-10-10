@@ -2,7 +2,8 @@
 
 Owner: Solar scene playback. `timeline.ts` compiles authored catalogue and standard
 primitive keyframes into bounded clips/tracks. `curves.ts` validates and compiles
-tweens, holds, springs and color interpolation. `player.ts` owns the single clock,
+tweens, holds, springs and color interpolation. `vector.ts` compiles authored
+absolute SVG M/L/C/Q/Z correspondence for morphs. `player.ts` owns the single clock,
 command admission and bounded GPU scheduling. The parent `animations.ts` projects
 sampled channels through private bindings into the current Vision scene.
 

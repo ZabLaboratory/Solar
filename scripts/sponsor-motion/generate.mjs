@@ -5,12 +5,14 @@ import { zipSync, strToU8 } from "fflate";
 import { canonicalize } from "@lumencast/canonical";
 import { waveScene } from "./wave.mjs";
 import { composedScene } from "./composed.mjs";
+import { openaiScene } from "./openai.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const out = resolve(root, process.argv[2] ?? "fixtures/sponsor-motion");
 await mkdir(out, { recursive: true });
 const assets = {};
-for (const name of ["w", "hello-fresh"]) assets[`assets/${name}.png`] = new Uint8Array(await readFile(resolve(root, `fixtures/sponsor-motion/${name}.png`)));
+if (process.argv[3] !== "openai")
+  for (const name of ["w", "hello-fresh"]) assets[`assets/${name}.png`] = new Uint8Array(await readFile(resolve(root, `fixtures/sponsor-motion/${name}.png`)));
 const W = 720, count = 12, duration = 2800;
 const children = [], animations = {};
 function animation(id, steps) {
@@ -48,16 +50,18 @@ for (let i = 0; i < count; i++) {
     ]);
   }
 }
-const wave = process.argv[3] === "composed" ? composedScene(W) : process.argv[3] === "wave" ? waveScene(W) : null;
-const document = { lsml: "1.2", scene_id: process.argv[3] === "composed" ? "sponsor-composed-demo" : wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: W, height: W }, defaults: {},
-  layout: { kind: "frame", id: "stage", size: { w: W, h: W }, background: "#000000", clipsContent: true, children: wave?.children ?? children }, animations: wave?.animations ?? animations };
+const wave = process.argv[3] === "openai" ? openaiScene(JSON.parse(await readFile(resolve(out,"vectors.json"),"utf8"))) : process.argv[3] === "composed" ? composedScene(W) : process.argv[3] === "wave" ? waveScene(W) : null;
+const document = { lsml: "1.2", scene_id: process.argv[3] === "openai" ? "openai-vector-demo" : process.argv[3] === "composed" ? "sponsor-composed-demo" : wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: wave?.width ?? W, height: wave?.height ?? W }, defaults: {},
+  layout: { kind: "frame", id: "stage", size: { w: wave?.width ?? W, h: wave?.height ?? W }, background: "#000000", clipsContent: true, children: wave?.children ?? children }, animations: wave?.animations ?? animations };
 document.scene_version = `sha256:${createHash("sha256").update(canonicalize(document)).digest("hex")}`;
 const json = canonicalize(document);
 await writeFile(resolve(out, "sponsor-motion.lsml"), json);
 await writeFile(resolve(out, "sponsor-motion.lsmlz"), zipSync({ "scene.lsml": strToU8(json), ...assets }));
 await writeFile(resolve(out, "catalogue.json"), JSON.stringify({ duration_ms: wave?.duration ?? duration, size: W,
+  width: wave?.width ?? W, height: wave?.height ?? W,
   title: wave?.title ?? "Sponsor Motion", slug: wave?.slug ?? "sponsor-motion",
   minimum_render_rate: wave?.minimumRenderRate,
+  capture: wave?.capture,
   description: wave?.description ?? "12 bandes · 35 pistes simultanées · translation, rotation, flou, opacité et découpe.",
   animations: Object.keys(document.animations) }, null, 2));
 console.log(JSON.stringify({ scene: document.scene_id, animations: Object.keys(document.animations).length, out }));

@@ -77,6 +77,17 @@ Multiple curves use equal parameter intervals, not constant arc-length velocity.
   exact retained scalar `shadow.0.*` bindings. Other shadows remain unchanged.
 - `waveAmplitude/Phase/Wavelength/Harmonic` deform whole fill/stretch images using
   shared texture vertices. Source crops and arbitrary deformation are unsupported.
+- `pathData` morphs explicitly corresponding absolute SVG M/L/C/Q/Z commands on
+  single `geometry:"path"` shape nodes. Curves, subpaths and closure must match
+  between adjacent keys; correspondence is authored and never guessed. Endpoints
+  retain exact strings; intermediate coefficients interpolate with the same curves.
+  Relative/arc/implicit commands must be normalized by the author first. Limits:
+  32768 characters, 1024 commands, 4096 coordinates per key; 2 MiB of path keys per
+  catalogue. `paths` arrays are not this channel's target.
+- `trimStart/End` fractions (0/1 defaults) bind `x-vision.trimStart/End` and reveal
+  strokes by flattened arc length in Vision. Fill stays complete, reversed/empty
+  intervals draw no stroke, and full intervals preserve closed joins. Multiple
+  contours share one interval per geometry path; no wrap or dash offset is implied.
 
 The nested canonical `transform: {translate:[x,y],scale:number|[sx,sy],rotate}` and
 `filter:{blur}` keyframe shapes normalize to those channels. Hex 3/4/6/8 and numeric
@@ -125,7 +136,7 @@ animation-profile compatibility. Unsupported timeline channels fail explicitly.
 
 Remaining substantial capabilities: `animate`/`bindAnimate` value-change transitions
 with velocity continuity; scoped repeater staggering; animated text colors and
-gradient stops; multiple shadow-track selection; mask/path morphing; mesh topology
+gradient stops; multiple shadow-track selection; arbitrary mask/path topology morphing; mesh topology
 and arbitrary shader effects; expressions/constraints/parent linking; additive
 layer blending; synchronized clocks and playback snapshots; motion blur/temporal
 sampling; a Prism authoring/export bridge and visual curve/timeline editor.
@@ -150,3 +161,13 @@ one scene load, errors and submitted cadence. A separate controls capture checks
 pause/seek/resume/speed/reverse/alternate/stop/cancel against real canvas pixels.
 These are local browser measurements, not physical scanout, Pulsar CEF Program,
 remote CI or live Blue end-to-end evidence.
+
+The subsequent OpenAI reference reconstruction uses no supplied SVG, font, image
+sequence or playback video. ffmpeg extracts the user recording at measured times;
+the local vectorizer rebuilds symbol/letter contours and authored LSML describes
+line-to-arc-to-brin morphs, reveal, placement and fragment assembly. Manual timing,
+prepared path correspondence and a short silhouette handoff remain intentional
+limits: this is a reconstruction from reference, not automatic arbitrary video-to-LSML.
+The shape adapter also reuses accepted meshes during presentation-only updates.
+Open paths now terminate explicitly before tessellation instead of leaving the
+builder active. CPU diagnostics reject non-default stroke trim explicitly.

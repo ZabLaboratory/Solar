@@ -16,7 +16,7 @@
       font: 15px system-ui;
     }
     main {
-      max-width: 768px;
+      max-width: calc(__MOTION_WIDTH__px + 48px);
       margin: 24px auto;
       padding: 0 24px;
     }
@@ -37,12 +37,12 @@
     }
     iframe {
       display: block;
-      width: 720px;
-      height: 720px;
+      width: __MOTION_WIDTH__px;
+      height: auto;
       border: 0;
       background: #000;
       max-width: 100%;
-      aspect-ratio: 1;
+      aspect-ratio: __MOTION_WIDTH__ / __MOTION_HEIGHT__;
     }
     footer {
       display: flex;

@@ -12,7 +12,8 @@ const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "
 const output = name => resolve(out, `${stamp}-${name}`);
 await mkdir(out, { recursive: true });
 const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--disable-background-timer-throttling", "--disable-renderer-backgrounding"] });
-const page = await browser.newPage({ viewport: { width: 800, height: 930 }, deviceScaleFactor: 1 });
+const catalogue = await (await fetch(`${origin}/catalogue`)).json();
+const page = await browser.newPage({ viewport: { width: Math.max(800,(catalogue.width ?? 720)+80), height: Math.max(930,(catalogue.height ?? 720)+240) }, deviceScaleFactor: 1 });
 const errors = [], consoleMessages = [];
 page.on("pageerror", e => errors.push(e.message));
 page.on("console", e => { if (e.type() === "error") consoleMessages.push(e.text()); });
@@ -25,24 +26,24 @@ await page.route("**/vision/ui/mainpresenter.mjs", async route => {
 });
 try {
   await page.goto(origin);
-  const catalogue = await (await fetch(`${origin}/catalogue`)).json();
   await page.waitForFunction(() => !document.querySelector("#play").disabled, null, { timeout: 45000 });
   const solar = page.frames().find(frame => frame.url().startsWith(`${solarOrigin}/host.html`));
   if (!solar) throw Error("Solar frame missing");
   const front = solar.locator("#scene canvas[aria-hidden=true]").last();
   await front.screenshot({ path: output("before.png") });
   const baseline = await solar.evaluate(() => globalThis.__motionRequests ?? []);
-  await solar.evaluate(() => {
+  await solar.evaluate(({interval,codec}) => {
     const canvas = [...document.querySelectorAll("#scene canvas[aria-hidden=true]")].at(-1);
     const frames = [], context = canvas.getContext("2d");
     globalThis.__motionFrames = frames;
-    const sample = () => { const pixels=context.getImageData(0,0,canvas.width,canvas.height);let sum=0;for(let i=0;i<pixels.data.length;i+=4096)sum=(sum*31+pixels.data[i]+pixels.data[i+1]*3+pixels.data[i+2]*7)>>>0;frames.push({t:performance.now(),hash:sum});if(globalThis.__recording)requestAnimationFrame(sample); };
+    let lastSample=-Infinity;
+    const sample = now => { if(now-lastSample>=interval){lastSample=now;const pixels=context.getImageData(0,0,canvas.width,canvas.height);let sum=0;for(let i=0;i<pixels.data.length;i+=4096)sum=(sum*31+pixels.data[i]+pixels.data[i+1]*3+pixels.data[i+2]*7)>>>0;frames.push({t:performance.now(),hash:sum});}if(globalThis.__recording)requestAnimationFrame(sample); };
     globalThis.__recording = true; requestAnimationFrame(sample);
-    const recorder = new MediaRecorder(canvas.captureStream(60), { mimeType: "video/webm;codecs=vp9", videoBitsPerSecond: 10000000 });
+    const recorder = new MediaRecorder(canvas.captureStream(60), { mimeType: `video/webm;codecs=${codec}`, videoBitsPerSecond: 10000000 });
     const chunks=[]; recorder.ondataavailable=e=>chunks.push(e.data);
     globalThis.__stopRecording=()=>new Promise(resolve=>{recorder.onstop=async()=>{globalThis.__recording=false;const bytes=new Uint8Array(await new Blob(chunks,{type:'video/webm'}).arrayBuffer());let text='';for(let i=0;i<bytes.length;i+=32768)text+=String.fromCharCode(...bytes.subarray(i,i+32768));resolve(btoa(text));};recorder.stop();});
     recorder.start();
-  });
+  }, {interval:catalogue.capture?.fingerprint_interval_ms ?? 0,codec:catalogue.capture?.codec ?? "vp9"});
   await page.waitForTimeout(700);
   const play = page.evaluate(() => window.playMotion());
   await page.waitForFunction(() => Boolean(window.lastCommand));
@@ -66,10 +67,10 @@ try {
   await page.evaluate(() => window.playMotion());
   await front.screenshot({ path: output("replay-after.png") });
   const replay = await solar.evaluate(() => globalThis.__motionRequests);
-  const report = { command, baseline, after, cadence, replay, errors, consoleMessages, native: await (await fetch(`${origin}/status`)).json() };
+  const report = { command, baseline, after, cadence, capture:catalogue.capture ?? {codec:"vp9",fingerprint_interval_ms:0}, replay, errors, consoleMessages, native: await (await fetch(`${origin}/status`)).json() };
   await writeFile(output("capture.json"), JSON.stringify(report, null, 2));
   if (errors.length || consoleMessages.length) throw Error("Solar reported a runtime error");
-  if (new Set(after.frames.map(f => f.hash)).size < 40) throw Error("Insufficient distinct rendered frames");
+  if (new Set(after.frames.map(f => f.hash)).size < (catalogue.capture?.minimum_distinct_frames ?? 40)) throw Error("Insufficient distinct rendered frames");
   if (catalogue.minimum_render_rate && cadence.rate < catalogue.minimum_render_rate) throw Error("Rendered cadence below fixture quality gate");
   if (replay.filter(r => r.type === "load").length !== baseline.filter(r => r.type === "load").length) throw Error("Animation reloaded the scene");
   console.log(JSON.stringify({ out, width: after.width, height: after.height, cadence, frames: after.frames.length, uniqueFrames: new Set(after.frames.map(f=>f.hash)).size, requestCounts: after.requests.reduce((r,v)=>(r[v.type]=(r[v.type]??0)+1,r),{}), errors, consoleMessages }));

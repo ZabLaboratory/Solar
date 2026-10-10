@@ -24,6 +24,8 @@ const server = createServer(async (req, res) => {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.end((await readFile(resolve(import.meta.dirname, "player.html"), "utf8")).replaceAll("__SOLAR_ORIGIN__", native)
         .replaceAll("Sponsor Motion", catalogue.title ?? "Sponsor Motion")
+        .replaceAll("__MOTION_WIDTH__", String(catalogue.width ?? catalogue.size ?? 720))
+        .replaceAll("__MOTION_HEIGHT__", String(catalogue.height ?? catalogue.size ?? 720))
         .replaceAll("__MOTION_DESCRIPTION__", catalogue.description ?? "Transition LSML"));
     }
     if (url.pathname === "/catalogue") { res.setHeader("Content-Type", "application/json"); return res.end(JSON.stringify(catalogue)); }

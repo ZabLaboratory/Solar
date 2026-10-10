@@ -6,6 +6,7 @@ import {
   channelRange,
   scalarChannels,
   colorChannels,
+  vectorChannels,
   waveChannels,
   transformChannels,
   type AnimationFrame,
@@ -29,7 +30,9 @@ function visit(value: unknown, callback: (node: RecordValue) => void): void {
   if (node.template) visit(node.template, callback);
 }
 const nativeProperty = (channel: string): string =>
-  waveChannels.includes(channel) || transformChannels.includes(channel)
+  waveChannels.includes(channel) ||
+  transformChannels.includes(channel) ||
+  channel.startsWith("trim")
     ? `x-vision.${channel}`
     : channel.startsWith("shadow")
       ? `shadow.0.${channel.slice(6).toLowerCase()}`
@@ -61,7 +64,8 @@ function base(
   if (typeof raw === "number" || typeof raw === "string") return raw;
   return property === "opacity" ||
     property.endsWith("scaleX") ||
-    property.endsWith("scaleY")
+    property.endsWith("scaleY") ||
+    property.endsWith("trimEnd")
     ? 1
     : property.endsWith("anchorX") || property.endsWith("anchorY")
       ? 0.5
@@ -101,6 +105,20 @@ export function prepareAnimationBindings(
     const bind = record(node.bind) ?? {};
     for (const channel of wanted.get(node.id)!) {
       if (channel === "pathProgress") continue;
+      if (
+        (channel === "pathData" || channel.startsWith("trim")) &&
+        node.kind !== "shape"
+      )
+        throw new Error("Vector animation requires a shape target");
+      if (
+        channel === "pathData" &&
+        (node.geometry !== "path" ||
+          node.paths !== undefined ||
+          typeof node.pathData !== "string")
+      )
+        throw new Error(
+          "Morph animation requires a single authored pathData geometry",
+        );
       if (waveChannels.includes(channel) && node.kind !== "image")
         throw new Error("Wave animation requires an image target.");
       if (channel === "fill" && node.kind !== "shape")
@@ -108,7 +126,9 @@ export function prepareAnimationBindings(
       if (channel === "background" && node.kind !== "frame")
         throw new Error("background animation requires a frame target");
       if (
-        ["strokeWidth", "strokeColor"].includes(channel) &&
+        ["strokeWidth", "strokeColor", "trimStart", "trimEnd"].includes(
+          channel,
+        ) &&
         !record(node.stroke)
       )
         throw new Error("Stroke animation requires an authored stroke");
@@ -157,7 +177,11 @@ export function animationPatch(
       if (!node) throw new Error(`Animation target not found: ${target}`);
       const values: Record<string, MotionValue> = {};
       for (const channel of properties)
-        if (scalarChannels.includes(channel) || colorChannels.includes(channel))
+        if (
+          scalarChannels.includes(channel) ||
+          colorChannels.includes(channel) ||
+          vectorChannels.includes(channel)
+        )
           values[channel] = base(document, node, nativeProperty(channel));
       merged.set(target, { target, values });
     }
@@ -173,7 +197,11 @@ export function animationPatch(
   for (const frame of merged.values()) {
     const node = nodes.get(frame.target);
     if (!node) throw new Error(`Animation target not found: ${frame.target}`);
-    for (const property of [...scalarChannels, ...colorChannels])
+    for (const property of [
+      ...scalarChannels,
+      ...colorChannels,
+      ...vectorChannels,
+    ])
       if (frame.values[property] !== undefined) {
         let value = frame.values[property]!;
         if (typeof value === "number") {
