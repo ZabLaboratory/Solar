@@ -9,6 +9,8 @@ visual source. Review retention when a shared motion/sound authoring catalogue e
 `generate.mjs <fixture-directory>` embeds those exact hashed files into LSMLZ and
 declares five buses, nested cue composition, envelopes, pan, filters, delay,
 convolution, saturation, compression and cue-authored music ducking.
+The ending adds three cues timed to the native LSML wordmark and its two-line
+Kumiki signature.
 
 Use `fixtures/sound-design`, then `npm run build`. Set `SPONSOR_MOTION_PORT=4610`
 and the verified `SPONSOR_LSDP_BIN`, and reuse

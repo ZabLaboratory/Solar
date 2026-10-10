@@ -23,6 +23,13 @@ the same native player controls the show. Vision draws every animated pixel.
 Only the settled silhouette is compared with the source: intermediate waves and
 disassembly deliberately depart from the static brand mark.
 
+The final lockup now animates the canonical wordmark `Kumiki` and the exact
+two-line hero signature, `Many systems.` / `One motion.`. The mark travels left
+and settles without changing its traced silhouette or crossing topology. Native
+LSML text nodes reveal each line in sequence; the sound-design fixture cues the
+name and both lines at those same playhead times. The preferred typeface is
+Recursive, with Solar's packaged Figtree as the host-safe fallback.
+
 `export.py <fixture-directory> <evidence-directory> <artifact-directory>
 <capture-stamp> <storyboard-stamp>` exports the actual capture to a VFR MP4 with
 ffmpeg, copies the source scene and selected native frames, and hashes delivery
