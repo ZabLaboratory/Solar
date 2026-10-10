@@ -53,7 +53,7 @@ export function scalarOperations(operations: Operation[]): boolean {
         op.op === "test" ||
         (["add", "replace"].includes(op.op) &&
           /^\/defaults\/[^/]+$/.test(op.path) &&
-          !/^\/defaults\/__(?:cam|animation)\./.test(op.path)),
+          !/^\/defaults\/__(?:cam|animation|audio)\./.test(op.path)),
     )
   );
 }

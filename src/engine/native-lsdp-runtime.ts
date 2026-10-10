@@ -29,6 +29,8 @@ import { createCaptureResolver } from "../sources/capture";
 import { createPeerSources } from "../sources/peers";
 import type { MountOptions, SolarToken } from "../types";
 import { CaptureStreamPool, LiveMediaController } from "./live-media";
+import { VisionSound } from "./sound/controller";
+import { renderSound } from "./sound/offline";
 import {
   VisionAnimations,
   animationDocument,
@@ -60,6 +62,7 @@ interface Change {
 
 /** Native binary transport → authoritative in-memory LSML → the same Vision presenter. */
 export class NativeLsdpRuntime {
+  private readonly sound: VisionSound;
   private patches: FramePatches<{
     detail: Record<string, unknown>;
     check: () => void;
@@ -83,6 +86,7 @@ export class NativeLsdpRuntime {
       });
     },
     (error) => this.report(error),
+    (playback) => this.sound.attach(playback),
   );
   private visual<T>(action: () => Promise<T>): Promise<T> {
     const work = this.visualQueue.then(action);
@@ -133,6 +137,13 @@ export class NativeLsdpRuntime {
   >;
 
   constructor(private readonly options: MountOptions) {
+    this.sound = new VisionSound(options.sceneAudio === true, (error) =>
+      options.onError?.({
+        code: "SOUND_FAILED",
+        message: error instanceof Error ? error.message : String(error),
+        recoverable: true,
+      }),
+    );
     this.token = options.token;
     this.frames = new NativeSceneFrames(
       options,
@@ -171,6 +182,7 @@ export class NativeLsdpRuntime {
   disconnect(): void {
     this.active = false;
     this.animations.dispose();
+    this.sound.dispose();
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
     this.closePeer();
@@ -420,7 +432,8 @@ export class NativeLsdpRuntime {
         check();
         this.document = document;
         this.presentedDocument = document;
-        if (document) this.animations.update(document);
+        if (document) await this.updatePlayback(document);
+        else this.sound.clear();
         this.nativeState = state;
         this.hasSnapshot = true;
         this.hash = hash;
@@ -604,7 +617,8 @@ export class NativeLsdpRuntime {
     check();
     this.document = next;
     this.presentedDocument = next;
-    if (next && changed) this.animations.update(next);
+    if (next && changed) await this.updatePlayback(next);
+    else if (!next) this.sound.clear();
     this.nativeState = state;
     this.hash = hash;
     this.sequence = event.sequence;
@@ -946,6 +960,35 @@ export class NativeLsdpRuntime {
       ...(viewer !== undefined ? { viewer } : {}),
       slots,
     });
+  }
+  private async updatePlayback(document: LSMLDocument): Promise<void> {
+    try {
+      await this.sound.prepare(
+        document,
+        this.assets?.soundAssets() ?? new Map(),
+      );
+      if (!this.active || this.document !== document)
+        throw Error("Stale sound admission");
+      if (this.options.sceneAudio)
+        this.sound.setMix(document.defaults?.["__audio.mix"]);
+      this.animations.update(document);
+    } catch (error) {
+      this.sound.clear();
+      throw error;
+    }
+  }
+  resumeAudio(): Promise<void> {
+    return this.sound.resume();
+  }
+  audioStream(): MediaStream | null {
+    return this.sound.stream();
+  }
+  audioStatus(): ReturnType<VisionSound["status"]> {
+    return this.sound.status();
+  }
+  renderAudio(animationId: string): Promise<AudioBuffer> {
+    if (!this.document || !this.assets) throw Error("No active sound scene");
+    return renderSound(this.document, this.assets.soundAssets(), animationId);
   }
 
   private report(error: unknown): void {

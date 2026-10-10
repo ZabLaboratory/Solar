@@ -1,5 +1,9 @@
 # Solar maintenance and qualification tools
 
+[`kumiki-motion/`](kumiki-motion/README.md) authors the original vector motion study.
+[`sound-design/`](sound-design/README.md) extends it with original music/sound assets,
+LSML cue composition and a real native canvas/live audio qualification capture.
+
 [`sponsor-motion/`](sponsor-motion/README.md) creates and plays the local sponsor
 LSML fixture, captures the real Solar front canvas and checks retained-scene replay.
 

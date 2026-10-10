@@ -33,6 +33,11 @@ does not resolve or compile a RenderBundle.
 | Served host configuration and Vision static assets | `src/host-entry.ts`, `host.html`, `public/vision/` | host build and `npm run check:bundle` |
 | Single Vision asset owner and strict combined release layout | `vite.config.ts`, `vite.config.host.ts`, `scripts/check-runtime-layout.mjs` | `tests/unit/runtime-layout.test.ts`; build, bundle and packing gates |
 
+Authored scene audio belongs to `src/engine/sound/`, consumed by the native LSDP
+runtime and `mount().audio`. See [sound contract](sound-system.md),
+`tests/unit/sound.test.ts` and `scripts/sound-design/prove.mjs` for the current
+extension, lifecycle, original fixture and actual PCM/canvas evidence boundary.
+
 The same Vision renderer handles broadcast, control and test subscriptions. Mode
 changes host audio policy; resource/selector declares the subscription. Source loads
 are pinned to the incoming `(scene_id, scene_version)`; a newer snapshot aborts

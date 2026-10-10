@@ -6,6 +6,7 @@ import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import type { SceneRenderDelivery, SceneImageAssetsProvider } from "./types";
 import { prepareAnimationBindings } from "../engine/animations";
+import { compileSound } from "../engine/sound/catalogue";
 import {
   prepareEditableBindings,
   prepareNativeComposition,
@@ -30,6 +31,7 @@ export function requireLSML(value: unknown): LSMLDocument {
   ) {
     throw new Error("Native resource LSML identity/layout is missing.");
   }
+  compileSound(document);
   return document;
 }
 
@@ -51,7 +53,12 @@ export function defaultsPatch(
       .slice(10)
       .replace(/~1/g, "/")
       .replace(/~0/g, "~");
-    if (key.startsWith("__cam.") || key.startsWith("__animation.")) continue;
+    if (
+      key.startsWith("__cam.") ||
+      key.startsWith("__animation.") ||
+      key === "__audio.mix"
+    )
+      continue;
     patch[key] = next.defaults?.[key];
   }
   return patch;
@@ -136,6 +143,10 @@ export class NativeSceneAssets {
   private readonly remote = new Map<string, Promise<string>>();
   private readonly fonts = new Map<string, Promise<VerifiedFont>>();
   private readonly imageAssets: Record<string, string> = Object.create(null);
+
+  soundAssets(): ReadonlyMap<string, Uint8Array> {
+    return new Map(Object.entries(this.files));
+  }
 
   get byteLength(): number {
     return Object.values(this.files).reduce(

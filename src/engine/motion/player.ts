@@ -19,6 +19,18 @@ interface Play {
   paused: boolean;
   order: number;
 }
+export interface MotionTransport {
+  id: string;
+  revision: number;
+  time: number;
+  phase: number;
+  duration: number;
+  iteration: number;
+  iterations: number;
+  speed: number;
+  paused: boolean;
+  running: boolean;
+}
 const position = (play: Play, now: number) =>
   play.plan.duration === 0
     ? 0
@@ -33,6 +45,37 @@ export class MotionPlayback {
   private players = new Map<string, Play>();
   private order = 0;
   constructor(private readonly plans: Record<string, MotionPlan>) {}
+  /** Shared accepted transport for nonvisual media; it never advances from GPU frame counts. */
+  transport(now: number): MotionTransport[] {
+    return [...this.players].map(([id, play]) => {
+      const time = position(play, now),
+        duration = play.plan.duration;
+      let iteration = duration ? Math.floor(time / duration) : 0,
+        phase = duration ? time % duration : 0;
+      if (duration && time === duration * play.iterations) {
+        iteration = play.iterations - 1;
+        phase = duration;
+      }
+      const reverse =
+        play.direction === "reverse" ||
+        (play.direction === "alternate" && iteration % 2 === 1) ||
+        (play.direction === "alternate-reverse" && iteration % 2 === 0);
+      return {
+        id,
+        revision: play.order,
+        time,
+        phase: reverse ? duration - phase : phase,
+        duration,
+        iteration,
+        iterations: play.iterations,
+        speed: play.rate * (reverse ? -1 : 1),
+        paused: play.paused,
+        running:
+          !play.paused &&
+          (play.rate > 0 ? time < duration * play.iterations : time > 0),
+      };
+    });
+  }
   /** Validate the whole native transaction against staged state before committing. */
   commands(commands: unknown[], now: number): void {
     const staged = new Map(
@@ -221,6 +264,7 @@ export class VisionAnimations {
       frames: readonly AnimationFrame[],
     ) => Promise<void>,
     private readonly error: (error: unknown) => void,
+    private readonly onPlayback?: (playback: MotionPlayback | null) => void,
   ) {}
   update(document: LSMLDocument): void {
     const automatic = nodeAnimations(document);
@@ -257,6 +301,7 @@ export class VisionAnimations {
     this.document = document;
     this.signature = signature;
     this.playback = playback;
+    this.onPlayback?.(playback);
     for (const [key, value] of changes) this.seen.set(key, value);
     if (commands.length) this.dirty = true;
     if (
@@ -280,6 +325,7 @@ export class VisionAnimations {
         .catch((error) => {
           if (generation === this.generation) {
             this.playback = null;
+            this.onPlayback?.(null);
             this.error(error);
           }
         })
@@ -308,6 +354,7 @@ export class VisionAnimations {
     if (this.scheduled !== null) cancelAnimationFrame(this.scheduled);
     this.scheduled = null;
     this.playback = null;
+    this.onPlayback?.(null);
     this.frames = [];
     this.seen.clear();
     this.dirty = false;

@@ -2,6 +2,11 @@ import type { MountOptions } from "../types";
 
 /** Throws on invalid mount options so hosts fail before the LSDP connection opens. */
 export function validateOptions(options: MountOptions): void {
+  if (
+    options.sceneAudio !== undefined &&
+    typeof options.sceneAudio !== "boolean"
+  )
+    throw new TypeError("solar.mount: sceneAudio must be boolean");
   if (!(options.target instanceof HTMLElement)) {
     throw new TypeError("solar.mount: `target` must be an HTMLElement");
   }
