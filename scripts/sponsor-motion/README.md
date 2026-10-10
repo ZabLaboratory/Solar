@@ -22,3 +22,24 @@ to the supplied PNGs using Pillow/NumPy and verifies identical replay output.
 Translation uses retained Vision position bindings. Scale retains the existing
 document-variant fallback. The visual proof captures the real Solar canvas and
 records load/patch counts, endpoints, replay, console errors and source hashes.
+
+## Traveling wave
+
+`node scripts/sponsor-motion/generate.mjs fixtures/sponsor-motion/wave wave`
+creates the alternative scene using `wave.mjs`. Then set `SPONSOR_MOTION_PORT=4560`
+and run `node scripts/sponsor-motion/serve.mjs fixtures/sponsor-motion/wave`.
+The same capture script reads the duration/catalogue from this reader.
+
+The wave uses 48 horizontal image crops, 98 simultaneous tracks and 65 sampled
+keyframes per displacement track over 4200ms. A traveling sine plus its harmonic
+bends the logo while a staggered slide changes the sponsor. Whole-image opacity
+bookends preserve exact endpoints despite source-crop integer rounding.
+`srcRect` reuses Vision's existing image crop primitive and the unchanged PNGs;
+there are no generated video frames, CSS motion or alternative renderer.
+
+This is a piecewise approximation at 15px row spacing. It demonstrates coordinated
+motion using supported channels, not a continuous mesh warp, procedural shader,
+physics simulation, arbitrary path morph, live Blue execution or a frame-rate guarantee.
+The initial 90-row prototype failed the rendered-frame diversity check and was
+reduced after real Solar capture. Review this development fixture when native
+deformation primitives or the shared animation catalogue become available.

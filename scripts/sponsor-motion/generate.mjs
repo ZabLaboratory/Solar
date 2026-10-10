@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { createHash } from "node:crypto";
 import { zipSync, strToU8 } from "fflate";
 import { canonicalize } from "@lumencast/canonical";
+import { waveScene } from "./wave.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const out = resolve(root, process.argv[2] ?? "fixtures/sponsor-motion");
@@ -46,11 +47,15 @@ for (let i = 0; i < count; i++) {
     ]);
   }
 }
-const document = { lsml: "1.2", scene_id: "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: W, height: W }, defaults: {},
-  layout: { kind: "frame", id: "stage", size: { w: W, h: W }, background: "#000000", clipsContent: true, children }, animations };
+const wave = process.argv[3] === "wave" ? waveScene(W) : null;
+const document = { lsml: "1.2", scene_id: wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: W, height: W }, defaults: {},
+  layout: { kind: "frame", id: "stage", size: { w: W, h: W }, background: "#000000", clipsContent: true, children: wave?.children ?? children }, animations: wave?.animations ?? animations };
 document.scene_version = `sha256:${createHash("sha256").update(canonicalize(document)).digest("hex")}`;
 const json = canonicalize(document);
 await writeFile(resolve(out, "sponsor-motion.lsml"), json);
 await writeFile(resolve(out, "sponsor-motion.lsmlz"), zipSync({ "scene.lsml": strToU8(json), ...assets }));
-await writeFile(resolve(out, "catalogue.json"), JSON.stringify({ duration_ms: duration, size: W, animations: Object.keys(animations) }, null, 2));
-console.log(JSON.stringify({ scene: document.scene_id, animations: Object.keys(animations).length, out }));
+await writeFile(resolve(out, "catalogue.json"), JSON.stringify({ duration_ms: wave?.duration ?? duration, size: W,
+  title: wave?.title ?? "Sponsor Motion", slug: wave?.slug ?? "sponsor-motion",
+  description: wave?.description ?? "12 bandes · 35 pistes simultanées · translation, rotation, flou, opacité et découpe.",
+  animations: Object.keys(document.animations) }, null, 2));
+console.log(JSON.stringify({ scene: document.scene_id, animations: Object.keys(document.animations).length, out }));

@@ -6,3 +6,7 @@ LSML document, its archive with embedded PNGs and the command catalogue from the
 The fixture is a development rendering probe owned by Solar, consumed by the local
 native host and the capture script. It does not declare a published scene or a
 validated Blue program. Revisit it when the shared animation catalogue contract changes.
+
+`wave/` holds the generated alternative LSML/LSMLZ and command catalogue. The
+archive embeds the same original PNGs and uses LSML `srcRect` rows for a traveling
+wave approximation. Its generator and limits are documented in the script README.

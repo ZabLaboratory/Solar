@@ -159,7 +159,7 @@ CEF compositor still need a host-level smoke test.
 
 `animations.ts` consumes native LSDP `__animation.<asset>` command leaves and the
 LSML animation catalogue `{id:{target,keyframes:{duration_ms,easing,steps}}}`.
-Opacity, rotation and blur use private Vision bindings; translation/scale use
+Opacity, rotation, blur and translation use private Vision bindings; scale uses
 the existing scene swap from original geometry. The source stays untouched.
 Named CSS easing and cubic-bezier are sampled from the authored curve. Unsupported
 channels/easing fail explicitly before rendering. Only one animation submission

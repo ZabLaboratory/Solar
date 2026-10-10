@@ -22,6 +22,7 @@ await page.route("**/vision/ui/mainpresenter.mjs", async route => {
 });
 try {
   await page.goto(origin);
+  const catalogue = await (await fetch(`${origin}/catalogue`)).json();
   await page.waitForFunction(() => !document.querySelector("#play").disabled, null, { timeout: 45000 });
   const solar = page.frames().find(frame => frame.url().startsWith(`${solarOrigin}/host.html`));
   if (!solar) throw Error("Solar frame missing");
@@ -41,13 +42,14 @@ try {
   });
   await page.waitForTimeout(700);
   const play = page.evaluate(() => window.playMotion());
-  await page.waitForTimeout(1250);
+  await page.waitForFunction(() => Boolean(window.lastCommand));
+  await page.waitForTimeout(catalogue.duration_ms * .5);
   await front.screenshot({ path: output("middle.png") });
   const command = await play;
   await page.waitForTimeout(800);
   await front.screenshot({ path: output("after.png") });
   const video = await solar.evaluate(() => globalThis.__stopRecording());
-  await writeFile(output("sponsor-motion.webm"), Buffer.from(video, "base64"));
+  await writeFile(output(`${catalogue.slug ?? "sponsor-motion"}.webm`), Buffer.from(video, "base64"));
   const after = await solar.evaluate(() => ({ requests: globalThis.__motionRequests, frames: globalThis.__motionFrames, width: document.querySelector('#scene canvas[aria-hidden=true]').width, height: document.querySelector('#scene canvas[aria-hidden=true]').height }));
   await page.evaluate(() => window.playMotion());
   await front.screenshot({ path: output("replay-after.png") });
