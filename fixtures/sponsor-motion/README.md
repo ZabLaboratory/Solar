@@ -20,3 +20,7 @@ Owner remains Solar, consuming the current local Vision path renderer. Cursor
 occlusions, contour births/merges and between-pose interpolation remain explicit
 qualification limits. Revisit this retained probe when semantic animation
 reconstruction or procedural logo authoring becomes a product capability.
+
+The user visually accepted the final `openai-reference/` reproduction on
+2026-10-10. Stable paths interpolate; merge/split windows hold measured 30Hz
+poses. This acceptance applies to that reference, not general semantic rig recovery.

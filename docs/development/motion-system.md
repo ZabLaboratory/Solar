@@ -162,12 +162,14 @@ pause/seek/resume/speed/reverse/alternate/stop/cancel against real canvas pixels
 These are local browser measurements, not physical scanout, Pulsar CEF Program,
 remote CI or live Blue end-to-end evidence.
 
-The subsequent OpenAI reference reconstruction uses no supplied SVG, font, image
-sequence or playback video. ffmpeg extracts the user recording at measured times;
-the local vectorizer rebuilds symbol/letter contours and authored LSML describes
-line-to-arc-to-brin morphs, reveal, placement and fragment assembly. Manual timing,
-prepared path correspondence and a short silhouette handoff remain intentional
-limits: this is a reconstruction from reference, not automatic arbitrary video-to-LSML.
+The accepted OpenAI reference fixture uses no supplied SVG, font, image sequence
+or playback video. ffmpeg extracts 232 poses at the recording's 30Hz cadence;
+the local vectorizer tracks symbol/letter contours and generates LSML path keys.
+Stable contours interpolate. Merge/split windows retain dense measured poses
+with hold interpolation because guessed correspondence produced invalid filled
+contours between matching endpoints. The user accepted this final reconstruction
+visually. Cursor occlusions and player chrome are excluded from comparisons.
+This is reference-specific vector rotoscoping, not automatic semantic rig recovery.
 The shape adapter also reuses accepted meshes during presentation-only updates.
 Open paths now terminate explicitly before tessellation instead of leaving the
 builder active. CPU diagnostics reject non-default stroke trim explicitly.

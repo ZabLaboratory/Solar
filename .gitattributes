@@ -1,5 +1,11 @@
 * text=auto eol=lf
 
+# Preserve the exact CRLF bytes pinned from the native upstream Git revision.
+vendor/lsdp-native-browser/src/browser.js -text
+vendor/lsdp-native-browser/src/error.js -text
+vendor/lsdp-native-browser/src/strict-json.js -text
+vendor/lsdp-native-browser/tree-vectors.json -text
+
 *.png binary
 *.jpg binary
 *.jpeg binary
