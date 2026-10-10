@@ -89,3 +89,16 @@ export function openaiScene(vectors) {
     capture:{fingerprint_interval_ms:100,minimum_distinct_frames:20,codec:"vp8"},
     description:"Reconstruction de la vidéo · lignes → arcs → six brins → symbole → lettres fragmentées · tracés Bézier, morphing et révélation vectorielle."};
 }
+
+// Reference-specific rotoscope: measured contour motion, not a procedural logo rig.
+export function referenceScene(vectors) {
+  const tracks = [...vectors.tracks].sort((a,b)=>a.hole-b.hole);
+  return {width:vectors.width,height:vectors.height,duration:vectors.duration_ms,
+    children:tracks.map(t=>({kind:"shape",id:t.id,geometry:"path",pathData:t.steps[0].pathData,
+      position:{x:0,y:0},size:{w:vectors.width,h:vectors.height},fill:t.hole?"#000":"#fff",
+      opacity:t.steps[0].opacity})),
+    animations:{show:{parallel:tracks.map(t=>({target:t.id,keyframes:{duration_ms:vectors.duration_ms,steps:t.steps}}))}},
+    title:"OpenAI · Reference Motion",slug:"openai-reference",minimumRenderRate:45,
+    capture:{fingerprint_interval_ms:100,minimum_distinct_frames:20,codec:"vp8"},
+    description:"Rotoscopie vectorielle de la référence · poses mesurées à 30 Hz, morphing des contours stables, poses maintenues lors des fusions/séparations · rebonds et rotations conservés · fidélité à valider."};
+}

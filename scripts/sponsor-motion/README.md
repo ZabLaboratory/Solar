@@ -84,3 +84,38 @@ seeks thirteen positions through native commands and captures actual Solar pixel
 per-frame pixel readback or a video encoder. `capture.mjs` records the real canvas
 and checks retained replay, distinct pixels and errors. Its recording instrumentation
 can reduce cadence; both boundaries are reported rather than treated as equivalent.
+
+The user rejected the first reconstruction for missing bounce and incorrect logo
+motion. Its capture is runtime evidence only, not accepted reference fidelity.
+`rotoscope.py <recording.mp4> <explicit-fixture-directory>` uses SciPy/OpenCV to
+track subpixel fill contours at the recording's 30Hz cadence, match cyclic path
+coordinates and simplify temporal keys with a 0.35px maximum vertex error.
+It preserves measured oscillation poses; it does not recover semantic component
+rigs or procedural springs. Cursor/player chrome are explicitly excluded.
+Generate `fixtures/sponsor-motion/openai-reference` with the `reference` mode.
+The scene contains only vector geometry/keyframes, no raster/video assets.
+The bounded catalogue allowance is 4MiB to admit this observed 3.96 million path characters;
+per-path/command/keyframe limits remain unchanged. Review actual native canvas
+fidelity at aligned timestamps, including intermediate poses, not endpoints alone.
+`reference-proof.mjs <explicit-capture-directory>` seeks all 232 source timestamps
+and captures actual Vision canvas pixels. `reference-compare.py <recording.mp4>
+<capture-directory> <explicit-report.json>` compares masks without spatial/time
+registration and writes a reference/Vision/difference sheet. Cursor/player chrome
+exclusions are explicit; inpainted cursor pixels are not a fidelity claim.
+Both seek comparison and control checks wait for the matching transaction's
+`solar:lsdp-applied` presentation event, not the server's memory-only ACK.
+The first heavy-contour control check exposed this harness timing assumption;
+its failed pause check is retained and superseded only after presentation-aware
+verification. Tiny normalized-time rounding is handled at authored hold boundaries.
+Capture/cadence cancel the retained demo command before a reader joins, so a
+previous play cannot restart during acquisition and pollute the measurement.
+Exact-content reuse of one accepted compilation handles unchanged native worker
+clones: the first vector frame must not parse the entire catalogue after play
+has started. This is plan reuse, not inactive-scene caching.
+
+The first live rotoscope showed a filled-contour artefact between correctly
+captured endpoints when topology merged/split. Frames 90..112 and 134..177 now
+retain every measured pose with hold interpolation at 30Hz, matching the video
+cadence. Stable contours still morph. The final comparison also captures 14
+half-frame positions in those windows; endpoint agreement alone is insufficient.
+This is a faithful-pose reconstruction candidate, not a recovered procedural rig.

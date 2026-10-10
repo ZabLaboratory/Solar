@@ -5,13 +5,13 @@ import { zipSync, strToU8 } from "fflate";
 import { canonicalize } from "@lumencast/canonical";
 import { waveScene } from "./wave.mjs";
 import { composedScene } from "./composed.mjs";
-import { openaiScene } from "./openai.mjs";
+import { openaiScene, referenceScene } from "./openai.mjs";
 
 const root = resolve(import.meta.dirname, "../..");
 const out = resolve(root, process.argv[2] ?? "fixtures/sponsor-motion");
 await mkdir(out, { recursive: true });
 const assets = {};
-if (process.argv[3] !== "openai")
+if (!["openai","reference"].includes(process.argv[3]))
   for (const name of ["w", "hello-fresh"]) assets[`assets/${name}.png`] = new Uint8Array(await readFile(resolve(root, `fixtures/sponsor-motion/${name}.png`)));
 const W = 720, count = 12, duration = 2800;
 const children = [], animations = {};
@@ -50,8 +50,8 @@ for (let i = 0; i < count; i++) {
     ]);
   }
 }
-const wave = process.argv[3] === "openai" ? openaiScene(JSON.parse(await readFile(resolve(out,"vectors.json"),"utf8"))) : process.argv[3] === "composed" ? composedScene(W) : process.argv[3] === "wave" ? waveScene(W) : null;
-const document = { lsml: "1.2", scene_id: process.argv[3] === "openai" ? "openai-vector-demo" : process.argv[3] === "composed" ? "sponsor-composed-demo" : wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: wave?.width ?? W, height: wave?.height ?? W }, defaults: {},
+const wave = process.argv[3] === "reference" ? referenceScene(JSON.parse(await readFile(resolve(out,"motion-vectors.json"),"utf8"))) : process.argv[3] === "openai" ? openaiScene(JSON.parse(await readFile(resolve(out,"vectors.json"),"utf8"))) : process.argv[3] === "composed" ? composedScene(W) : process.argv[3] === "wave" ? waveScene(W) : null;
+const document = { lsml: "1.2", scene_id: process.argv[3] === "reference" ? "openai-reference-demo" : process.argv[3] === "openai" ? "openai-vector-demo" : process.argv[3] === "composed" ? "sponsor-composed-demo" : wave ? "sponsor-wave-demo" : "sponsor-motion-demo", scene_version: `sha256:${"0".repeat(64)}`, viewport: { width: wave?.width ?? W, height: wave?.height ?? W }, defaults: {},
   layout: { kind: "frame", id: "stage", size: { w: wave?.width ?? W, h: wave?.height ?? W }, background: "#000000", clipsContent: true, children: wave?.children ?? children }, animations: wave?.animations ?? animations };
 document.scene_version = `sha256:${createHash("sha256").update(canonicalize(document)).digest("hex")}`;
 const json = canonicalize(document);

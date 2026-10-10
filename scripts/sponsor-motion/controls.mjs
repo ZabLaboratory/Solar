@@ -11,6 +11,10 @@ await mkdir(out,{recursive:true});
 const browser = await chromium.launch({channel:"chrome",headless:true,args:["--disable-background-timer-throttling","--disable-renderer-backgrounding"]});
 const catalogue=await(await fetch(`http://127.0.0.1:${port}/catalogue`)).json();
 const page = await browser.newPage({viewport:{width:Math.max(800,(catalogue.width ?? 720)+80),height:1100}}), errors=[];
+await page.addInitScript(()=>document.addEventListener("solar:lsdp-applied",e=>{
+  globalThis.__controlReceipts ??= [];
+  globalThis.__controlReceipts.push(e.detail);
+},true));
 page.on("pageerror",e=>errors.push(e.message));
 page.on("console",e=>{if(e.type()==="error")errors.push(e.text());});
 await page.route("**/vision/ui/mainpresenter.mjs",async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace("function postMessage(request) {","function postMessage(request) { globalThis.__controlsRequests ??= []; globalThis.__controlsRequests.push(request.type);")});});
@@ -19,7 +23,12 @@ try {
   await page.waitForFunction(()=>!document.querySelector("#play").disabled,null,{timeout:45000});
   const frame=page.frames().find(f=>f.url().includes(`${port+1}/host.html`));if(!frame)throw Error("Solar frame missing");
   const fingerprint=()=>frame.evaluate(()=>{const c=[...document.querySelectorAll('#scene canvas[aria-hidden=true]')].at(-1),p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<p.length;i+=4)h=(h*31+p[i]*3+p[i+1]*5+p[i+2]*7+p[i+3])>>>0;return h;});
-  const command=c=>page.evaluate(c=>window.controlMotion(c),c);
+  const command=async c=>{
+    const result=await page.evaluate(c=>window.controlMotion(c),c);
+    const id=result.receipt.receipt.transactionId;
+    await frame.waitForFunction(id=>globalThis.__controlReceipts?.some(r=>r.transactionId===id),id,{timeout:10000});
+    return result;
+  };
   const checks=[];
   await command({action:"cancel"});await page.waitForTimeout(180);
   const initial=await fingerprint();

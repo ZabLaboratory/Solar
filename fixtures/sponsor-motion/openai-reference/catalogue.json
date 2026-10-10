@@ -1,0 +1,18 @@
+{
+  "duration_ms": 7733.333333333333,
+  "size": 720,
+  "width": 1280,
+  "height": 720,
+  "title": "OpenAI · Reference Motion",
+  "slug": "openai-reference",
+  "minimum_render_rate": 45,
+  "capture": {
+    "fingerprint_interval_ms": 100,
+    "minimum_distinct_frames": 20,
+    "codec": "vp8"
+  },
+  "description": "Rotoscopie vectorielle de la référence · poses mesurées à 30 Hz, morphing des contours stables, poses maintenues lors des fusions/séparations · rebonds et rotations conservés · fidélité à valider.",
+  "animations": [
+    "show"
+  ]
+}

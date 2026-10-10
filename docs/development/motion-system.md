@@ -82,7 +82,7 @@ Multiple curves use equal parameter intervals, not constant arc-length velocity.
   between adjacent keys; correspondence is authored and never guessed. Endpoints
   retain exact strings; intermediate coefficients interpolate with the same curves.
   Relative/arc/implicit commands must be normalized by the author first. Limits:
-  32768 characters, 1024 commands, 4096 coordinates per key; 2 MiB of path keys per
+  32768 characters, 1024 commands, 4096 coordinates per key; 4 MiB of path keys per
   catalogue. `paths` arrays are not this channel's target.
 - `trimStart/End` fractions (0/1 defaults) bind `x-vision.trimStart/End` and reveal
   strokes by flattened arc length in Vision. Fill stays complete, reversed/empty

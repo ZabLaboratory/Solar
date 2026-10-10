@@ -304,14 +304,19 @@ function tracks(asset: AnimationAsset): Track[] {
           high = points.length;
         while (low < high) {
           const mid = (low + high) >>> 1;
-          if (points[mid]!.at <= progress) low = mid + 1;
+          // Milliseconds -> normalized phase can round one ulp below an authored
+          // boundary. Hold/discontinuous tracks must still select that pose.
+          if (points[mid]!.at <= progress + Number.EPSILON * 4) low = mid + 1;
           else high = mid;
         }
         if (low >= points.length) return points.at(-1)!.values[property]!;
         const segment = segments[low - 1]!;
         return segment.value(
           segment.ease(
-            (progress - segment.start) / (segment.end - segment.start),
+            Math.max(
+              0,
+              (progress - segment.start) / (segment.end - segment.start),
+            ),
           ),
         );
       },
@@ -395,6 +400,13 @@ export function animationAssets(
   ) as Record<string, AnimationAsset>;
 }
 const catalogueCache = new WeakMap<object, Record<string, MotionPlan>>();
+// Native worker snapshots clone unchanged catalogue objects. Retain one bounded
+// accepted definition by content so a defaults-only command cannot force a full
+// vector compilation on the first playback frame. The per-document weak cache
+// remains the hot path; changed catalogue/primitive definitions compile normally.
+let latestCatalogue:
+  | { signature: string; plans: Record<string, MotionPlan> }
+  | undefined;
 const documentCache = new WeakMap<
   LSMLDocument,
   { source: unknown; layout: unknown; plans: Record<string, MotionPlan> }
@@ -422,6 +434,13 @@ export function compileCatalogue(
   if (cached) return cached;
   if (Object.keys(catalogue).length > 512)
     throw new Error("Motion catalogue budget exceeded");
+  const signature = JSON.stringify(catalogue);
+  if (latestCatalogue?.signature === signature) {
+    const plans = latestCatalogue.plans;
+    catalogueCache.set(catalogue, plans);
+    documentCache.set(document, { source, layout: document.layout, plans });
+    return plans;
+  }
   const plans: Record<string, MotionPlan> = Object.create(null),
     active = new Set<string>();
   let budget = 0,
@@ -498,7 +517,7 @@ export function compileCatalogue(
         const path = record(step)?.pathData;
         if (typeof path === "string") vectorBudget += path.length;
       }
-    if (vectorBudget > 2 * 1024 * 1024)
+    if (vectorBudget > 4 * 1024 * 1024)
       throw new Error("Motion vector catalogue budget exceeded");
     let compiled = tracks(asset);
     budget += asset.keyframes.steps.length;
@@ -539,6 +558,7 @@ export function compileCatalogue(
   }
   for (const id of Object.keys(catalogue)) compile(id, 0);
   catalogueCache.set(catalogue, plans);
+  latestCatalogue = { signature, plans };
   documentCache.set(document, { source, layout: document.layout, plans });
   return plans;
 }

@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { morphPath, parseMorphPath } from "../../src/engine/motion/vector";
-import { sampleAnimation } from "../../src/engine/motion/timeline";
+import {
+  sampleAnimation,
+  compileCatalogue,
+  samplePlan,
+} from "../../src/engine/motion/timeline";
 import {
   animationPatch,
   prepareAnimationBindings,
@@ -31,6 +35,97 @@ describe("retained vector motion", () => {
     expect(() => parseMorphPath("M0 0 " + "L1 1 ".repeat(1024))).toThrow(
       /budget/,
     );
+  });
+  it("admits the larger observed contour catalogue but still bounds aggregate input", () => {
+    const padded = "M0 0 L1 1 Z".padEnd(32768, " ");
+    const document = (count: number) =>
+      ({
+        lsml: "1.2",
+        scene_id: "budget",
+        scene_version: `sha256:${"0".repeat(64)}`,
+        layout: { kind: "shape", id: "line", geometry: "path", pathData: from },
+        animations: {
+          show: {
+            target: "line",
+            keyframes: {
+              duration_ms: 100,
+              steps: Array.from({ length: count }, (_, index) => ({
+                at: index / (count - 1),
+                pathData: padded,
+              })),
+            },
+          },
+        },
+      }) as LSMLDocument;
+    expect(() => compileCatalogue(document(128))).not.toThrow();
+    expect(() => compileCatalogue(document(129))).toThrow(/catalogue budget/);
+  });
+  it("selects a hold boundary when millisecond seeking rounds below its normalized key", () => {
+    const source = {
+      lsml: "1.2",
+      scene_id: "hold",
+      scene_version: `sha256:${"0".repeat(64)}`,
+      layout: { kind: "shape", id: "line" },
+      animations: {
+        show: {
+          target: "line",
+          keyframes: {
+            duration_ms: (232 * 1000) / 30,
+            steps: [
+              { at: 0, opacity: 0, easing: "hold" },
+              { at: 37 / 232, opacity: 1 },
+            ],
+          },
+        },
+      },
+    } as LSMLDocument;
+    expect(
+      samplePlan(compileCatalogue(source).show!, (37 * 1000) / 30)[0]?.values
+        .opacity,
+    ).toBe(1);
+    expect(
+      samplePlan(compileCatalogue(source).show!, (37 * 1000) / 30 - 0.01)[0]
+        ?.values.opacity,
+    ).toBe(0);
+  });
+  it("reuses compiled paths across cloned native snapshots and invalidates changed definitions", () => {
+    const source = {
+      lsml: "1.2",
+      scene_id: "clone",
+      scene_version: `sha256:${"0".repeat(64)}`,
+      layout: { kind: "shape", id: "line" },
+      animations: {
+        show: {
+          target: "line",
+          keyframes: {
+            duration_ms: 100,
+            steps: [
+              { at: 0, pathData: from },
+              { at: 1, pathData: to },
+            ],
+          },
+        },
+      },
+    } as LSMLDocument;
+    const original = compileCatalogue(source);
+    const clone = structuredClone(source);
+    clone.defaults = { "__animation.show": { animation_id: "show" } };
+    expect(compileCatalogue(clone)).toBe(original);
+    const changed = structuredClone(clone);
+    (changed.animations as Record<string, unknown>).show = {
+      target: "line",
+      keyframes: {
+        duration_ms: 100,
+        steps: [
+          { at: 0, pathData: from },
+          { at: 1, pathData: from },
+        ],
+      },
+    };
+    const replacement = compileCatalogue(changed);
+    expect(replacement).not.toBe(original);
+    expect(samplePlan(replacement.show!, 100)[0]?.values.pathData).toBe(from);
+    expect(samplePlan(original.show!, 100)[0]?.values.pathData).toBe(to);
   });
   it("uses the existing timeline curves and projects/cancels exact path and trim bindings", () => {
     const asset = {

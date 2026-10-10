@@ -11,6 +11,8 @@ const out = resolve(root, process.argv[2] ?? "evidence/local-20261010-sponsor-mo
 const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
 const output = name => resolve(out, `${stamp}-${name}`);
 await mkdir(out, { recursive: true });
+const cancelled=await fetch(`${origin}/play`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cancel"})});
+if(!cancelled.ok)throw Error("Cannot establish a cancelled baseline before capture");
 const browser = await chromium.launch({ channel: "chrome", headless: true, args: ["--disable-background-timer-throttling", "--disable-renderer-backgrounding"] });
 const catalogue = await (await fetch(`${origin}/catalogue`)).json();
 const page = await browser.newPage({ viewport: { width: Math.max(800,(catalogue.width ?? 720)+80), height: Math.max(930,(catalogue.height ?? 720)+240) }, deviceScaleFactor: 1 });

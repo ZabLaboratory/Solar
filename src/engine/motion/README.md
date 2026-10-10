@@ -12,6 +12,10 @@ the bindings without changing source LSML/LSMLZ. Vision remains the sole rendere
 Plans and track searches are compiled/cached from immutable accepted source data.
 Defaults changes do not recompile unchanged plans; mutable authoring objects must
 be replaced before admission. Current state lives only for the active scene.
+One last accepted catalogue is also cached by exact serialized content, because
+native worker snapshots clone unchanged definitions. This bounded compilation
+cache holds pure plans, not an inactive scene/playhead or source asset cache;
+changed definitions invalidate it. Defaults-only clones reuse vector compilation.
 
 Invariants: staged whole command-batch validation; one outstanding submission;
 wall-clock progress independent of frame count; per-channel composition instead

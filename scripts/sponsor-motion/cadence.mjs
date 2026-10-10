@@ -5,6 +5,8 @@ import { resolve } from "node:path";
 const require=createRequire(resolve(process.env.SPONSOR_PLAYWRIGHT_ROOT ?? process.cwd(),"package.json"));
 const {chromium}=require("playwright");
 const port=Number(process.env.SPONSOR_MOTION_PORT ?? 4580), origin=`http://127.0.0.1:${port}`;
+const cancelled=await fetch(`${origin}/play`,{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({action:"cancel"})});
+if(!cancelled.ok)throw Error("Cannot establish a cancelled baseline before cadence measurement");
 const browser=await chromium.launch({channel:"chrome",headless:true,args:["--disable-background-timer-throttling","--disable-renderer-backgrounding"]});
 const page=await browser.newPage({viewport:{width:1360,height:980}}), errors=[];
 page.on("pageerror",e=>errors.push(e.message));
