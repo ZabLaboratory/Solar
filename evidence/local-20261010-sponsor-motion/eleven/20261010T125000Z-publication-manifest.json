@@ -1,0 +1,32 @@
+{
+  "thread": "01a124c8-8595-7f01-92fd-bf0d24ba8bd1",
+  "mandate": "User explicitly authorized push and merge of Solar animation updates",
+  "repository": "ZabLaboratory/Solar",
+  "worktree": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-sponsor-motion",
+  "branch": "eleven/local-20261010-sponsor-motion",
+  "candidate": "be932c74436f385e480439c3c7cd4095b654ba4a",
+  "originalBase": "421495ae759e7f69728507d557030eef640b66a3",
+  "upstream": "9dc261e8747ad07a294815b58adb442d546941fb",
+  "operations": [
+    "integrate main",
+    "refresh merged Vision provenance",
+    "validate",
+    "signed commit",
+    "push",
+    "PR",
+    "squash merge after green CI"
+  ],
+  "gates": [
+    "full local checks",
+    "green repository CI",
+    "verified squash receipt",
+    "remote main content parity"
+  ],
+  "acceptance": "User visually accepted the native reference reproduction: Beh gg ? Je vois 0 différence avec mon oeil humain",
+  "closure": "Merged source; preserve active demo and its clean worktree",
+  "excludes": [
+    "release tag",
+    "deployment",
+    "unrelated worktrees"
+  ]
+}

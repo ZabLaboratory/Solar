@@ -1,8 +1,8 @@
 # Motion runtime contract and audit — 2026-10-10
 
-Owner: Solar playback; Vision owns retained drawing and GPU effects. This local
-candidate continues the sponsor-motion and continuous-motion worktrees. It is not
-published, merged into Prism or qualified for Pulsar Program. The actual consumer
+Owner: Solar playback; Vision owns retained drawing and GPU effects. This runtime
+continues the sponsor-motion and continuous-motion worktrees. Prism integration
+and Pulsar Program qualification remain separate. The actual consumer
 is the Solar native LSDP demonstration, rendered by the pinned Vision WASM engine.
 
 ## Findings and corrections

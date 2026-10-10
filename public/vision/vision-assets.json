@@ -2,7 +2,7 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98",
-  "source_state": "Local retained vector trim, shape drawing reuse and Solar path morph; candidate not merged or deployed.",
+  "source_state": "Retained vector trim and motion drawing reuse built at source_revision, contained in verified Vision merge bb6d57f. Solar owns path morph playback; no deployment claimed.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 26045,
@@ -28,5 +28,5 @@
     "engine_evidence": "evidence/local-20261010-continuous-motion/eleven/"
   },
   "source_revision": "14658e3738399fd95b1498569de369a190988b17",
-  "merged_revision": "61739735aa67eed69d6a4d8a86650717d46d8e98"
+  "merged_revision": "bb6d57f4bb941f79e0d11d31dc3b582dcf762662"
 }
