@@ -57,7 +57,7 @@ This is the experimental Solar `x-solar.audio` LSML extension using Web Audio.
 Vision Rust remains graphics-only. It does not qualify Pulsar Program audio,
 device latency or long-running A/V drift. Speed also changes pitch. No VST/AU,
 dynamic detector sidechain or native standalone audio backend is implemented.
-Live bus automation is smoothed at 25ms; clip sources/envelopes use the sample clock.
+Live bus automation and clip sources/envelopes use the audio clock; cues are prequeued.
 Pause/seek/reverse clear effect tails; scene admission is not yet cross-media atomic.
 Blue may send reserved native animation/mix defaults; no Blue graph is executed here.
 """, encoding="utf-8")

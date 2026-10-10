@@ -30,3 +30,10 @@ browser session are owned; the script closes only its browser.
 transcodes the captured live video/audio to VFR MP4/AAC, measures decoded recorded
 PCM, delivers the independent offline WAV and scene/package/assets, and hashes
 the output. It never substitutes offline sound into the live video recording.
+
+`profile.mjs <evidence-directory>` compares audio-off, full sound and an
+explicit diagnostic bypass of convolution/saturation in a dedicated browser.
+`SOUND_PROFILE_MODES=on` limits a follow-up to normal sound. It records native
+frame submissions, JS CPU samples, long tasks and AudioParam call counts without
+a video encoder. These are controlled probes; they do not isolate all OS/GPU
+contention or prove physical scanout. Run alone against the owned native host.

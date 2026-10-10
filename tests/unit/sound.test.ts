@@ -11,6 +11,7 @@ import { MotionPlayback } from "../../src/engine/motion/player";
 import { compileCatalogue } from "../../src/engine/motion/timeline";
 import type { LSMLDocument } from "../../src/scenes/native-document";
 import type { SoundGraph } from "../../src/engine/sound/graph";
+import { scheduleBuses } from "../../src/engine/sound/automation";
 const fixture = (): LSMLDocument =>
   JSON.parse(readFileSync("fixtures/sound-design/sponsor-motion.lsml", "utf8"));
 interface RawAudio {
@@ -167,6 +168,86 @@ describe("shared sound and visual transport", () => {
   });
 });
 describe("sample scheduled voices", () => {
+  it("schedules future bus keys on the audio clock and restores authored effect defaults", () => {
+    const catalogue = compileSound(fixture())!,
+      bus = catalogue.buses.find((b) => b.id === "space")!;
+    const param = () => ({
+      cancelScheduledValues: vi.fn(),
+      setValueAtTime: vi.fn(),
+      linearRampToValueAtTime: vi.fn(),
+      exponentialRampToValueAtTime: vi.fn(),
+    });
+    const gain = param(),
+      pan = param(),
+      wet = param(),
+      dry = param(),
+      frequency = param();
+    const graph = {
+      buses: new Map([
+        [
+          bus.id,
+          { gain, pan, wet, dry, frequency, wetBase: 0.22, frequencyBase: 150 },
+        ],
+      ]),
+    } as unknown as SoundGraph;
+    const playback = new MotionPlayback(compileCatalogue(fixture()));
+    playback.commands([{ animation_id: "show" }], 0);
+    const context = { currentTime: 2 } as BaseAudioContext;
+    scheduleBuses(
+      context,
+      graph,
+      { ...catalogue, buses: [bus] },
+      playback,
+      playback.transport(0)[0]!,
+      0,
+      15000,
+      soundMix(catalogue, { space: { wet: 0.05, frequency: 700 } }),
+    );
+    expect(wet.setValueAtTime).toHaveBeenCalledWith(0.05, 2);
+    expect(frequency.setValueAtTime).toHaveBeenCalledWith(700, 2);
+    expect(wet.linearRampToValueAtTime).not.toHaveBeenCalled();
+    scheduleBuses(
+      context,
+      graph,
+      { ...catalogue, buses: [{ ...bus, automation: {} }] },
+      playback,
+      playback.transport(0)[0]!,
+      0,
+      15000,
+      new Map(),
+    );
+    expect(wet.setValueAtTime).toHaveBeenLastCalledWith(0.22, 2);
+    expect(frequency.setValueAtTime).toHaveBeenLastCalledWith(150, 2);
+    scheduleBuses(
+      context,
+      graph,
+      {
+        ...catalogue,
+        buses: [
+          {
+            ...bus,
+            automation: {
+              wet: [
+                { at_ms: 0, value: 0.1 },
+                { at_ms: 2000, value: 0.7 },
+              ],
+            },
+          },
+        ],
+      },
+      playback,
+      playback.transport(0)[0]!,
+      0,
+      15000,
+      new Map(),
+    );
+    expect(wet.linearRampToValueAtTime).toHaveBeenCalledWith(0.7, 4);
+    expect(
+      dry.linearRampToValueAtTime.mock.calls.some(
+        (c) => c[1] === 4 && Math.abs(Number(c[0]) - 0.3) < 1e-6,
+      ),
+    ).toBe(true);
+  });
   it("reverses every PCM channel without modifying the original asset", () => {
     const original = [new Float32Array([1, 2, 3]), new Float32Array([4, 5, 6])];
     const output = [new Float32Array(3), new Float32Array(3)];

@@ -5,8 +5,10 @@ export interface SoundBus {
   gain: AudioParam;
   pan: AudioParam;
   frequency?: AudioParam;
+  frequencyBase?: number;
   wet?: AudioParam;
   dry?: AudioParam;
+  wetBase?: number;
 }
 export interface SoundGraph {
   buses: Map<string, SoundBus>;
@@ -55,6 +57,7 @@ export function createSoundGraph(
         tail.connect(filter);
         tail = filter;
         result.frequency ??= filter.frequency;
+        result.frequencyBase ??= filter.frequency.value;
       } else if (effect.type === "compressor") {
         const compressor = own(context.createDynamicsCompressor());
         for (const [k, value] of Object.entries(effect))
@@ -75,6 +78,7 @@ export function createSoundGraph(
         dry.connect(sum);
         result.wet ??= wet.gain;
         result.dry ??= dry.gain;
+        result.wetBase ??= amount;
         if (effect.type === "delay") {
           const delay = own(context.createDelay(2)),
             feedback = own(context.createGain());

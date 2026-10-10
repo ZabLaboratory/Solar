@@ -1,15 +1,12 @@
 import type { LSMLDocument } from "../../scenes/native-document";
 import type { MotionPlayback, MotionTransport } from "../motion/player";
-import {
-  compileSound,
-  db,
-  evaluate,
-  soundMix,
-  type SoundCatalogue,
-} from "./catalogue";
+import { compileSound, soundMix, type SoundCatalogue } from "./catalogue";
 import { decodeSounds, reverseSound } from "./assets";
 import { createSoundGraph, type SoundGraph } from "./graph";
 import { startVoice } from "./voice";
+import { scheduleBuses } from "./automation";
+
+const SOUND_HORIZON_MS = 3000;
 
 export interface SoundStatus {
   state: string;
@@ -37,6 +34,7 @@ export class VisionSound {
   private voices = new Map<string, () => void>();
   private admitted = new Set<string>();
   private count = 0;
+  private busRefreshAt = 0;
   private mix = new Map<
     string,
     {
@@ -106,6 +104,7 @@ export class VisionSound {
     this.signature = signature;
     this.revision = "";
     this.count = 0;
+    this.busRefreshAt = 0;
     this.graph = createSoundGraph(context, catalogue, buffers, this.output!);
     // A suspended browser context stays visibly blocked until the host unlocks it.
     if (this.timer === null) this.timer = setInterval(() => this.tick(), 25);
@@ -120,6 +119,7 @@ export class VisionSound {
       this.revision = revision;
       this.stopVoices();
       this.admitted.clear();
+      this.busRefreshAt = 0;
       if (this.catalogue && this.context) {
         this.graph?.dispose();
         this.graph = createSoundGraph(
@@ -141,6 +141,7 @@ export class VisionSound {
   }
   setMix(value: unknown): void {
     this.mix = soundMix(this.catalogue, value);
+    this.busRefreshAt = 0;
     this.tick();
   }
   stream(): MediaStream | null {
@@ -199,44 +200,36 @@ export class VisionSound {
         return;
       }
       const lead = active.reduce((a, b) => (a.revision > b.revision ? a : b));
-      for (const bus of catalogue.buses) {
-        const node = graph.buses.get(bus.id)!;
-        for (const [channel, param] of [
-          ["gain_db", node.gain],
-          ["pan", node.pan],
-          ["frequency", node.frequency],
-          ["wet", node.wet],
-        ] as const) {
-          if (!param) continue;
-          const keys = bus.automation[channel];
-          const override = this.mix.get(bus.id);
-          if (
-            !keys &&
-            channel !== "gain_db" &&
-            channel !== "pan" &&
-            override?.[channel] === undefined
-          )
-            continue;
-          const base =
-            channel === "gain_db"
-              ? bus.gain_db
-              : channel === "pan"
-                ? bus.pan
-                : param.value;
-          let value = evaluate(keys, lead.phase, base);
-          if (channel === "gain_db") value = override?.gain ?? value;
-          if (channel === "pan") value = override?.pan ?? value;
-          if (channel === "frequency") value = override?.frequency ?? value;
-          if (channel === "wet") value = override?.wet ?? value;
-          if (channel === "gain_db") value = db(value);
-          if (channel === "gain_db" && override?.mute) value = 0;
-          param.setTargetAtTime(value, context.currentTime, 0.012);
-          if (channel === "wet")
-            node.dry?.setTargetAtTime(1 - value, context.currentTime, 0.012);
-        }
+      const horizonFor = (state: MotionTransport) =>
+        state.iterations === 1 && catalogue.shows[state.id]!.cues.length <= 128
+          ? Math.min(30000, state.duration / Math.abs(state.speed))
+          : SOUND_HORIZON_MS;
+      if (context.currentTime >= this.busRefreshAt) {
+        scheduleBuses(
+          context,
+          graph,
+          catalogue,
+          playback,
+          lead,
+          now,
+          horizonFor(lead),
+          this.mix,
+        );
+        const cycle = lead.duration / Math.abs(lead.speed);
+        this.busRefreshAt =
+          context.currentTime +
+          Math.min(1000, horizonFor(lead) / 2, cycle * 16) / 1000;
       }
       for (const state of active)
-        this.schedule(playback, state, now, context, graph, catalogue);
+        this.schedule(
+          playback,
+          state,
+          now,
+          context,
+          graph,
+          catalogue,
+          horizonFor(state),
+        );
       // Dedup bank is bounded to nearby iterations, rather than retaining every infinite loop.
       if (this.admitted.size > 4096)
         this.admitted = new Set([...this.voices.keys()]);
@@ -252,12 +245,13 @@ export class VisionSound {
     context: AudioContext,
     graph: SoundGraph,
     catalogue: SoundCatalogue,
+    horizon: number,
   ): void {
     let elapsed = 0,
       current = state;
     for (
       let segment = 0;
-      segment < 64 && elapsed < 180 && current.running;
+      segment < 64 && elapsed < horizon && current.running;
       segment++
     ) {
       const rate = Math.abs(current.speed),
@@ -265,7 +259,7 @@ export class VisionSound {
       const distance = backward
         ? current.phase
         : current.duration - current.phase;
-      const window = Math.min(180 - elapsed, distance / rate);
+      const window = Math.min(horizon - elapsed, distance / rate);
       const end = current.phase + current.speed * window;
       for (const cue of catalogue.shows[state.id]!.cues) {
         const buffer = this.buffers.get(cue.asset)!;
@@ -281,8 +275,7 @@ export class VisionSound {
         if (cue.start >= high || cueEnd <= low) continue;
         const key = `${state.id}:${state.revision}:${current.iteration}:${cue.id}`;
         if (this.admitted.has(key)) continue;
-        if (this.voices.size >= 128)
-          throw Error("Sound scheduled voice budget exceeded");
+        if (this.voices.size >= 128) return;
         const phase = backward
           ? Math.min(current.phase, cueEnd - 0.001)
           : Math.max(current.phase, cue.start);

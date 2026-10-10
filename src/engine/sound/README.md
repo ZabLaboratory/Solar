@@ -7,15 +7,18 @@ still owns graphics only. Browser/Web Audio support is required.
 
 `catalogue.ts` validates nested sequence/parallel/stagger cues, buses and bounded
 automation. `assets.ts` verifies packaged bytes before browser decoding and owns
-reverse PCM. `graph.ts` owns routing and DSP. `voice.ts` schedules clip offsets,
+reverse PCM. `graph.ts` owns routing and DSP; `automation.ts` schedules future bus keys. `voice.ts` schedules clip offsets,
 gain/pan envelopes and reverse sources on the audio sample clock. `controller.ts`
 uses the exact accepted `MotionPlayback` transport, clears voices/tails when a
 command changes, and admits only active-scene assets. `offline.ts` renders the
 same graph to stereo 48kHz PCM without relying on GPU frame cadence.
 
-The live scheduler has a 180ms horizon and a 25ms wakeup. Audio sources and clip
-envelopes use AudioContext time; live bus automation uses smoothed 25ms updates.
-Heavy main-thread starvation can still exhaust the horizon. Bus automation uses
+The live scheduler wakes every 25ms, but prequeues up to 30 seconds of a finite
+single play with at most 128 cues. Larger/looping shows have a 3-second horizon
+subject to the voice budget. Audio sources, envelopes and bus automation use
+AudioContext time; bus ramps are refreshed at most once per second (faster for
+short loops), rather than posting constant targets every tick. Heavy starvation
+can still exhaust the bounded horizon of larger/looping shows. Bus automation uses
 the newest active show's phase when multiple shows share a bus. Offline export
 uses one forward show at speed 1, authored bus settings and 1.5s of effect tail;
 live mix overrides are excluded. Speed couples duration and pitch. Reverse is

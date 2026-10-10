@@ -8,6 +8,12 @@ served broadcast/test hosts enable it, control hosts remain silent. Browser poli
 can require a user gesture: `handle.audio.resume()` unlocks the context. Embedded
 players delegate autoplay and send the trusted `solar-unlock-audio` message.
 
+Live scheduling prequeues finite single plays (at most 128 cues) for up to 30s;
+other plays use a bounded 3s horizon. Bus ramps use the audio clock and refresh
+at most once per second, faster for short loops. The 128-voice budget can reduce
+the available horizon for dense compositions. Graphics can still stall under GPU
+contention; audio preparation cannot guarantee OS/device deadlines.
+
 The LSML extension `x-solar.audio` has `version: 1`, `assets`, `buses`, and `shows`.
 Assets declare a safe package-local `assets/*.wav|mp3|ogg|flac|m4a|aac|webm` path
 and exact lowercase SHA-256. Browser codecs determine what is decodable; WAV
@@ -54,7 +60,7 @@ seek/resume, reverse, speed, effect mix, one retained Vision load, and a combine
 native canvas/live audio recording. It does not prove broadcast Program capture,
 preview monitoring, physical device latency, long-running A/V drift, standalone
 Vision native device output, VST/AU hosting, streaming long-form audio, dynamic
-sidechain detection, sample-exact live bus automation or DAW editing. Sound decode
+sidechain detection, DAW editing. Sound decode
 currently occurs after visual scene activation, so cross-media scene admission is
 not an atomic transaction. This extension needs that boundary and Program routing
 qualification before a production release.
