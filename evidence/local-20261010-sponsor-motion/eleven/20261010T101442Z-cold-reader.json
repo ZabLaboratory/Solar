@@ -1,0 +1,163 @@
+{
+  "state": {
+    "title": "Sponsor Motion Studio · Solar",
+    "status": "Prêt · scène native chargée",
+    "controls": [
+      {
+        "text": "Jouer la transition",
+        "disabled": false
+      },
+      {
+        "text": "Pause",
+        "disabled": true
+      },
+      {
+        "text": "Reprendre",
+        "disabled": true
+      },
+      {
+        "text": "Inverser",
+        "disabled": true
+      },
+      {
+        "text": "Retour au d�but",
+        "disabled": true
+      }
+    ]
+  },
+  "errors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "native": {
+    "native": "ws://127.0.0.1:65300/lsdp",
+    "nativeAddress": "127.0.0.1:65299",
+    "nativePid": 7228,
+    "sceneId": "sponsor-composed-demo",
+    "sceneVersion": "sha256:173d8816d8e4d354c5b2a157a658816ff678be2cc547e828a35df7fdccf22a29",
+    "sourceDigest": "sha256:75517ab8d12a5ec89ded104687ec1e3d39ccadc4fbdccc22be6faa3ad503ec0d",
+    "archiveDigest": "sha256:7c2af0318b22a0cbe2d5926f648f6905051f929fe3a61c718e9c4c65dc18e4f2",
+    "persistence": "memory-only",
+    "events": [
+      {
+        "type": "applied",
+        "transactionId": "c55c450e2044e260fec093653a2e645f",
+        "target": "scene",
+        "sequence": 1,
+        "stateHash": "tree-sha256:d6a4270e37a6d422d13b868f1fb38a9ec74e032b7f1c331767eb4035c23d6243",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "b25aafd78ae57e37976a624c5c364b89",
+        "target": "scene",
+        "sequence": 2,
+        "stateHash": "tree-sha256:dc0fef2dd000645d9262e2407e3aba5b5904528804f69fa53b57331ab477f516",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "4e9a1944e82fe5b9060c69e59cb383d6",
+        "target": "scene",
+        "sequence": 3,
+        "stateHash": "tree-sha256:cfc1d0422fa51f4b8406d995baf153e3a05c3615cbcef71ef1080c2a07605417",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "ed771d5a3c43cb106da3cf2e4e48ef0e",
+        "target": "scene",
+        "sequence": 4,
+        "stateHash": "tree-sha256:f86e874f8e75060da40277fa503ab7dc80623050445457e4cfacf5872643862f",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "44650fdfe12dec7bb33c1418d029cc77",
+        "target": "scene",
+        "sequence": 5,
+        "stateHash": "tree-sha256:6231a23643f58f2dc6183efcbceba3bb25c7bc7f8330da16317e4851049fa1fc",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "26823d42f4a4a9ba33ca7ce113007616",
+        "target": "scene",
+        "sequence": 6,
+        "stateHash": "tree-sha256:e4b4fd9b1d27f46aa3d0c56a39266f24b80b5bfe46d7034d0d3307eb8470e4c3",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "ae84cf321beed20e67494fe59edffb67",
+        "target": "scene",
+        "sequence": 7,
+        "stateHash": "tree-sha256:9e8c64bd3b7092986df9672b05c9d28df5332504ebd13b93a9006ed9a0b35426",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "32d65d385ad6e4aed05535f27b976139",
+        "target": "scene",
+        "sequence": 8,
+        "stateHash": "tree-sha256:bc6f46e293aeb68f37572796fce1d7058596176be16adb9a229b523db083e813",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "2c8741082b447152f54d1bd660f7a7ff",
+        "target": "scene",
+        "sequence": 9,
+        "stateHash": "tree-sha256:7a726b2f2f60e018bb105b8ff293b72dece044c36607be4a953974945bdff4f2",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "de04a989e4b9fe63bda82d16245c7b28",
+        "target": "scene",
+        "sequence": 10,
+        "stateHash": "tree-sha256:84773544acc5343927bd073995a930d88d160a47e42e5cca98b9e77953a604ab",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "119d255aa8d1b5c5562bbfde30915769",
+        "target": "scene",
+        "sequence": 11,
+        "stateHash": "tree-sha256:2ae707ade4d21d58729b1ba77935278dbdfee926b3c25e8a7e0fa36d5de0940e",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "47c33a299cf16d9f91b965be1a90d60c",
+        "target": "scene",
+        "sequence": 12,
+        "stateHash": "tree-sha256:81bd3c7e42149678c85c60bfa289dbafdd64a947ff3ef59ceb22b8d17bf344ac",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "2d9ac7c43c875f8fc8927349bdad1f23",
+        "target": "scene",
+        "sequence": 13,
+        "stateHash": "tree-sha256:4d7013c4ebd58500585c3f7501409aeb66bc6e6f53e18bb85f5457cb03a1e0e6",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "67b352bd56ab0453717022485a2d018f",
+        "target": "scene",
+        "sequence": 14,
+        "stateHash": "tree-sha256:00e6ad8be8035858e3aaed35122a3c719a7b0e029fdca795f148deb610f15891",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "7ac1fd89ca61244145c0281d00686a4d",
+        "target": "scene",
+        "sequence": 15,
+        "stateHash": "tree-sha256:5f402046233f19fbaf2ba9671eb39ae996d89c5e75e38243e31daa238c62b494",
+        "render": "patch"
+      }
+    ]
+  }
+}

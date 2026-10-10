@@ -1,5 +1,10 @@
 import { canonicalize } from "@lumencast/canonical";
 import type { SolarToken } from "../types";
+import {
+  decodeSceneSource,
+  sceneSourceKey,
+  type SceneSourceStore,
+} from "./cache";
 import { SceneSourceError } from "./types";
 import type {
   SceneBlueManifest,
@@ -17,6 +22,8 @@ export interface CanvasSceneSourceOptions {
   apiUrl: string;
   token?: SolarToken;
   fetch?: typeof globalThis.fetch;
+  /** Launcher-owned store; descriptor authorization/revision is checked before reuse. */
+  store?: SceneSourceStore;
 }
 
 interface Descriptor {
@@ -183,6 +190,13 @@ export function createCanvasSceneSourceProvider(
           cache: "no-store",
         });
         if (!response.ok) {
+          if (url.href === endpoint.href && response.status === 409) {
+            const reason = new TextDecoder().decode(
+              await bytes(response, MIB, request.signal),
+            );
+            if (reason.includes('"SCENE_NOT_PUBLISHED"'))
+              throw new SceneSourceError("SOURCE_NOT_PUBLISHED");
+          }
           await response.body?.cancel();
           throw new SceneSourceError("SOURCE_REQUEST_FAILED");
         }
@@ -209,6 +223,22 @@ export function createCanvasSceneSourceProvider(
           d.revision,
           d.scene_version,
         );
+        const cached = await options.store?.read(
+          sceneSourceKey(sceneId, d.scene_version, format),
+        );
+        if (cached) {
+          const local = decodeSceneSource(cached);
+          if (
+            local.sceneId !== sceneId ||
+            local.sceneVersion !== d.scene_version ||
+            local.revision !== d.revision ||
+            local.sourceDigest !== d.source_digest ||
+            local.blueManifest.manifest_digest !==
+              d.blue_manifest.manifest_digest
+          )
+            throw new SceneSourceError("SOURCE_INTEGRITY_FAILED");
+          return local;
+        }
         const root = new URL(`revisions/${d.revision}/`, endpoint);
         const link = (relative: string, suffix: string): URL => {
           const url = new URL(relative, endpoint);

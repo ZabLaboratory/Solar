@@ -6,8 +6,13 @@ import type { SceneSourceProvider } from "./types";
 export interface SceneCacheSync {
   discovered: number;
   cached: number;
+  skipped: number;
   failures: string[];
   truncated: boolean;
+}
+
+export interface SceneSyncOptions {
+  onSource?: (sceneId: string, sceneVersion: string) => void;
 }
 
 /** Discover published scenes using Canvas's bounded, authenticated pagination. */
@@ -16,13 +21,15 @@ export async function synchronizeSceneSources(
   provider: SceneSourceProvider,
   store: SceneSourceStore,
   signal: AbortSignal,
-  maximum = 64,
+  maximum = Number.MAX_SAFE_INTEGER,
+  sync: SceneSyncOptions = {},
 ): Promise<SceneCacheSync> {
-  if (!Number.isSafeInteger(maximum) || maximum < 1 || maximum > 64)
+  if (!Number.isSafeInteger(maximum) || maximum < 1)
     throw new Error("SOURCE_CACHE_SYNC_LIMIT");
   const report: SceneCacheSync = {
     discovered: 0,
     cached: 0,
+    skipped: 0,
     failures: [],
     truncated: false,
   };
@@ -41,7 +48,7 @@ export async function synchronizeSceneSources(
     signal.throwIfAborted();
     const url = new URL(`${api.pathname.replace(/\/$/, "")}/scenes`, api);
     url.search = new URLSearchParams({
-      mine: "true",
+      mine: "false",
       limit: String(Math.min(50, maximum - report.discovered)),
       offset: String(offset),
     }).toString();
@@ -78,7 +85,7 @@ export async function synchronizeSceneSources(
       reader.releaseLock();
     }
     const page = JSON.parse(text) as {
-      items: { id: string }[];
+      items: { id: string; scene_type?: string; status?: string }[];
       next_offset: number | null;
     };
     if (
@@ -90,27 +97,55 @@ export async function synchronizeSceneSources(
       )
     )
       throw new Error("SOURCE_CACHE_CATALOG_INVALID");
-    for (const item of page.items) {
-      signal.throwIfAborted();
+    const batch = page.items.slice(0, maximum - report.discovered);
+    for (const item of batch) {
       if (typeof item.id !== "string" || !item.id || seen.has(item.id))
         throw new Error("SOURCE_CACHE_CATALOG_INVALID");
       seen.add(item.id);
-      report.discovered++;
-      try {
-        const source = await provider.get(item.id, { format: "lsmlz", signal });
-        const capsule = encodeSceneSource(source); // includes assets + complete Blue closure
-        signal.throwIfAborted();
-        await store.write(
-          sceneSourceKey(source.sceneId, source.sceneVersion, source.format),
-          capsule,
-        );
-        report.cached++;
-      } catch {
-        signal.throwIfAborted();
-        report.failures.push(item.id);
-      }
-      if (report.discovered >= maximum) break;
     }
+    let cursor = 0;
+    // Four bounded transfers per page; never materialize the whole catalogue.
+    await Promise.all(
+      Array.from({ length: Math.min(4, batch.length) }, async () => {
+        while (cursor < batch.length) {
+          signal.throwIfAborted();
+          const item = batch[cursor++]!;
+          report.discovered++;
+          if (item.scene_type === "editable") {
+            report.skipped++;
+            continue;
+          }
+          try {
+            const source = await provider.get(item.id, {
+              format: "lsmlz",
+              signal,
+            });
+            if (source.sceneId !== item.id)
+              throw new Error("SOURCE_CACHE_IDENTITY_MISMATCH");
+            const capsule = encodeSceneSource(source);
+            signal.throwIfAborted();
+            await store.write(
+              sceneSourceKey(
+                source.sceneId,
+                source.sceneVersion,
+                source.format,
+              ),
+              capsule,
+            );
+            report.cached++;
+            sync.onSource?.(source.sceneId, source.sceneVersion);
+          } catch (error) {
+            signal.throwIfAborted();
+            if (
+              error instanceof Error &&
+              error.message === "SOURCE_NOT_PUBLISHED"
+            )
+              report.skipped++;
+            else report.failures.push(item.id);
+          }
+        }
+      }),
+    );
     offset = page.next_offset;
   }
   report.truncated = offset !== null;

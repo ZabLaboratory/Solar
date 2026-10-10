@@ -57,3 +57,15 @@ the native depth/node budgets before its route transaction. It does not compute 
 Merkle hash whose result would be discarded: the Rust receiver hashes the accepted
 resource, and subscribers continue checking normative before/after hashes. Snapshot
 read verification and initial resource checks retain their existing Merkle hashes.
+
+## Launcher scene library
+
+`SceneSourceLibrary` owns immutable sources only. Its directory is partitioned by
+SHA-256(gateway, stable account id); no token is persisted. `synchronize` walks every
+accessible catalogue page and verifies current descriptors before disk reuse.
+Sources include the published LSMLZ assets and complete Blue closure. A completed
+pass atomically publishes its index and prunes obsolete capsules; interrupted passes
+never publish a partial catalogue. An index on disk cannot authorize reads after restart.
+`read` serves only revisions admitted by the current pass. `revoke` clears admission.
+The application owns launch waiting, refresh cadence and abort on account/logout.
+Tests exercise 75 scenes, unchanged transfers, revised sources, removals and cancellation.

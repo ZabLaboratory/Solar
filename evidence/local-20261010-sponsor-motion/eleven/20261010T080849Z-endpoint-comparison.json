@@ -1,0 +1,15 @@
+{
+  "start": {
+    "mean_absolute_error": 0.001857638888888889,
+    "max": 1,
+    "fraction_channels_within_3": 1.0,
+    "passed": true
+  },
+  "end": {
+    "mean_absolute_error": 0.006413966049382716,
+    "max": 1,
+    "fraction_channels_within_3": 1.0,
+    "passed": true
+  },
+  "replay_identical": true
+}

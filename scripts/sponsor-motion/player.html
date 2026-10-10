@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="fr">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>Sponsor Motion · Solar</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      background: #101112;
+      color: #f5f5f5;
+      font: 15px system-ui;
+    }
+    main {
+      max-width: calc(__MOTION_WIDTH__px + 48px);
+      margin: 24px auto;
+      padding: 0 24px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: 21px;
+      margin: 0;
+    }
+    .tag {
+      color: #94a89b;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+    }
+    iframe {
+      display: block;
+      width: __MOTION_WIDTH__px;
+      height: auto;
+      border: 0;
+      background: #000;
+      max-width: 100%;
+      aspect-ratio: __MOTION_WIDTH__ / __MOTION_HEIGHT__;
+    }
+    footer {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    button {
+      border: 0;
+      border-radius: 9px;
+      background: #ef1028;
+      color: white;
+      font: 600 15px system-ui;
+      padding: 12px 22px;
+      cursor: pointer;
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: wait;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .controls button {
+      background: #303735;
+      padding: 8px 12px;
+      font-size: 13px;
+    }
+    .controls select {
+      background: #242b28;
+      color: #fff;
+      border: 1px solid #424c46;
+      padding: 8px;
+      border-radius: 6px;
+    }
+    .scrub {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 14px;
+      font-size: 13px;
+      color: #a7afaa;
+    }
+    .scrub input {
+      flex: 1;
+      accent-color: #90d8aa;
+    }
+    #status {
+      font-size: 13px;
+      color: #a7afaa;
+    }
+    p {
+      color: #8d9690;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    a {
+      color: #9bb4a6;
+    }
+  </style>
+
+  <main>
+    <header>
+      <h1>Sponsor Motion</h1>
+      <span class="tag">LSML → SOLAR → VISION</span>
+    </header>
+
+    <iframe title="Rendu Solar" src="__SOLAR_ORIGIN__/"></iframe>
+
+    <footer>
+      <button id="play" disabled>Jouer la transition</button
+      ><span id="status">Préparation du moteur…</span>
+    </footer>
+
+    <div class="controls">
+      <button data-action="pause" disabled>Pause</button
+      ><button data-action="resume" disabled>Reprendre</button
+      ><button data-action="reverse" disabled>Inverser</button
+      ><button data-action="stop" disabled>Retour au début</button
+      ><label
+        >Vitesse
+        <select id="speed">
+          <option value=".5">0,5×</option>
+          <option value="1" selected>1×</option>
+          <option value="1.5">1,5×</option>
+          <option value="2">2×</option>
+        </select></label
+      ><label
+        >Boucle
+        <select id="iterations">
+          <option value="1">Une fois</option>
+          <option value="2">2 fois</option>
+          <option value="infinite">Continue</option>
+        </select></label
+      ><label
+        >Sens
+        <select id="direction">
+          <option value="normal">Normal</option>
+          <option value="reverse">Inverse</option>
+          <option value="alternate">Ping-pong</option>
+        </select></label
+      >
+    </div>
+
+    <div class="scrub">
+      <span>Position à atteindre</span
+      ><input
+        id="seek"
+        type="range"
+        min="0"
+        max="1000"
+        step="1"
+        value="0"
+        disabled
+      /><output id="position">0,00 s</output>
+    </div>
+
+    <p>
+      __MOTION_DESCRIPTION__<br /><a href="/scene.lsmlz" download="sponsor-motion.lsmlz"
+        >Télécharger le LSMLZ</a
+      >
+      · <a href="/scene.lsml" download="sponsor-motion.lsml">Voir le LSML</a>
+    </p>
+  </main>
+
+  <script>
+    const button = document.querySelector("#play"),
+      status = document.querySelector("#status");
+
+    window.addEventListener("message", (event) => {
+      if (
+        event.origin === "__SOLAR_ORIGIN__" &&
+        event.data?.type === "solar-status" &&
+        event.data.state === "live"
+      ) {
+        button.disabled = false;
+        status.textContent = "Prêt · scène native chargée";
+      }
+    });
+
+    let duration = 0,
+      active = false;
+
+    fetch("/catalogue")
+      .then((r) => r.json())
+      .then((c) => (duration = c.duration_ms));
+
+    window.controlMotion = async (command) => {
+      const response = await fetch("/play", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(command),
+      });
+      const data = await response.json();
+      if (!response.ok) throw Error(JSON.stringify(data));
+      status.textContent =
+        "Commande " + (command.action ?? "play") + " transmise par LSDP";
+      return data;
+    };
+
+    for (const control of document.querySelectorAll("[data-action]"))
+      control.addEventListener("click", () =>
+        window
+          .controlMotion({ action: control.dataset.action })
+          .catch((e) => (status.textContent = e.message)),
+      );
+
+    document.querySelector("#speed").addEventListener("change", (e) => {
+      if (active)
+        window
+          .controlMotion({ action: "speed", speed: Number(e.target.value) })
+          .catch((e) => (status.textContent = e.message));
+    });
+
+    const seek = document.querySelector("#seek");
+    seek.addEventListener(
+      "input",
+      () =>
+        (document.querySelector("#position").textContent =
+          ((Number(seek.value) * duration) / 1000000).toFixed(2) + " s"),
+    );
+    seek.addEventListener("change", () =>
+      window
+        .controlMotion({
+          action: "seek",
+          time_ms: (Number(seek.value) * duration) / 1000,
+        })
+        .catch((e) => (status.textContent = e.message)),
+    );
+
+    window.playMotion = async () => {
+      button.disabled = true;
+      status.textContent = "Transition en cours…";
+      try {
+        const data = await window.controlMotion({
+          action: "play",
+          speed: Number(document.querySelector("#speed").value),
+          iterations:
+            document.querySelector("#iterations").value === "infinite"
+              ? "infinite"
+              : Number(document.querySelector("#iterations").value),
+          direction: document.querySelector("#direction").value,
+        });
+        active = true;
+        for (const c of document.querySelectorAll("[data-action],#seek"))
+          c.disabled = false;
+        window.lastCommand = data;
+        await new Promise((r) => setTimeout(r, data.duration_ms + 350));
+        status.textContent =
+          "Contrôles disponibles · lecture et position via LSDP";
+        button.textContent = "Rejouer";
+        return data;
+      } catch (e) {
+        status.textContent = e.message;
+        throw e;
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    button.addEventListener("click", () => window.playMotion());
+  </script>
+</html>

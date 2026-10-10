@@ -1,5 +1,8 @@
 # Solar maintenance and qualification tools
 
+[`sponsor-motion/`](sponsor-motion/README.md) creates and plays the local sponsor
+LSML fixture, captures the real Solar front canvas and checks retained-scene replay.
+
 Owner: Solar build/installation/qualification. Package commands and the following CLI tools
 are active entrypoints. Helpers belong to their nearest README. They are not renderer code.
 All generated output must be inside this worktree's `build/`, `dist/` or canonical `evidence/`.
@@ -65,7 +68,7 @@ External success is never inferred from a unit test or a connection ACK.
 The old React/bundle postinstall is removed. Session-specific `certify-chain.py`,
 `consolidate-maturity.py`, `consolidate-canvas-offline.py` and the early fixture-only
 `verify-canvas-acquisition.mjs` are archived byte-for-byte under
-[`evidence/local-20261005-solar-audit/forge/`](../evidence/local-20261005-solar-audit/forge/).
+[les preuves historiques du commit 421495ae759e7f69728507d557030eef640b66a3](https://github.com/ZabLaboratory/Solar/blob/421495ae759e7f69728507d557030eef640b66a3/evidence/local-20261005-solar-audit/forge).
 They are retained to explain immutable phase certificates and hashes, not to rewrite current
 source or docs. Owner: the corresponding qualification phase; review condition: deletion
 requires retiring the linked historical certificate. The dated burst reproduction script

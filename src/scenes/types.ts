@@ -78,6 +78,7 @@ export interface SceneImageAssetsProvider {
 }
 
 export type SceneSourceErrorCode =
+  | "SOURCE_NOT_PUBLISHED"
   | "SOURCE_REQUEST_FAILED"
   | "SOURCE_DESCRIPTOR_INVALID"
   | "SOURCE_RESOURCE_LIMIT"

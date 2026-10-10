@@ -12,3 +12,6 @@ WebSocket. Refresh the three portable files together and run the Rust interop
 test after an upstream protocol update. `scripts/check-native-client.mjs`
 verifies pinned bytes. The browser Merkle hash implementation in Solar follows
 upstream spec/02-data.md and is checked against these upstream vectors and Rust.
+
+The four pinned upstream Git blobs use CRLF. Their exact bytes are retained with
+scoped `-text` attributes; checkout normalization must not alter their digests.

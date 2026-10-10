@@ -1,5 +1,23 @@
 # LSDP and Vision runtime
 
+`animations.ts` owns catalogue validation, easing and the local playback clock.
+Translation, rotation, opacity and blur patch private bindings in the active Vision
+scene. Translation adds the sampled offset to the current authored/bound position;
+source positions and the published LSML are preserved. Existing editable geometry
+is projected before these animation bindings so its source authority remains aliased.
+Scale retains the document-variant path and does not share the retained-position
+guarantee. `scripts/sponsor-motion` exercises 35 tracks through actual native LSDP,
+Solar and Vision; its capture asserts replay adds no scene-load request.
+
+The experimental `waveAmplitude`, `wavePhase`, `waveWavelength` and `waveHarmonic`
+channels patch exact `x-vision.wave*` image bindings. The pinned Vision candidate
+renders two whole images on continuous textured meshes. This is a namespaced local
+extension requiring that GPU candidate, not a standard LSML deformation or shader
+API. Wave targets must be images and parameters are checked before playback.
+One command transaction shares one start timestamp across all its targets.
+The sponsor-wave capture records actual submitted-frame cadence separately from
+the sampled canvas signatures; neither proves physical display scanout.
+
 `native-lsdp-runtime.ts` connects to the real Lumencast Rust server through the
 portable draft2 binary WebSocket client. A fragmented `state.read` loads the
 full LSML resource, then a hash-pinned subscription delivers atomic tree or
@@ -148,18 +166,24 @@ Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` and
 `npm run check:bundle` after changing these paths. Hardware cameras and the live
 CEF compositor still need a host-level smoke test.
 
-`animations.ts` consumes native LSDP `__animation.<asset>` command leaves and the
-LSML animation catalogue `{id:{target,keyframes:{duration_ms,easing,steps}}}`.
-Opacity, rotation and blur use private Vision bindings; translation/scale use
-the existing scene swap from original geometry. The source stays untouched.
-Named CSS easing and cubic-bezier are sampled from the authored curve. Unsupported
-channels/easing fail explicitly before rendering. Only one animation submission
-is in flight, repeated commands are deduplicated, and a new command replays.
-Final frames survive an unrelated structural mutation, but clear on scene change
-or removal. Geometry swaps are more expensive than scalar GPU patches.
+`animations.ts` projects compiled motion onto private retained bindings and preserves
+source authority. [`motion`](motion/README.md) owns timeline compilation, curves and
+the single playback clock. Nested sequences/parallel compositions, per-segment
+curves, cubic paths and native command controls share this clock. Scale/skew/pivots
+use the pinned Vision GPU affine extension; playback never reloads a scene.
+The [motion contract and audit](../../docs/development/motion-system.md) records
+supported effects, LSML compatibility, deterministic overlap and remaining gaps.
 
 Persistent font admission accepts owned `VerifiedFont` snapshots as well as raw
 font arrays. Only the owned snapshot may reuse its verified digest; mutable caller
 arrays are copied and hashed. An already acknowledged digest causes no transfer
 copy or WASM admission. Host manifest acquisition still occurs on each scene load
 so changes to the registry remain observable.
+
+During a persistent structural/effect load, the current front surface stays
+visible and attached. Only a newly created session starts hidden. The replacement
+is presented after its submitted frame; reusing the engine must not reapply the
+initial opacity-zero staging rule to the active layer. This also avoids detaching
+and reattaching its GPU/front canvases during ordinary document replacement.
+
+The pinned Vision engine accepts live text style leaves and stroke.width/stroke.color. Glyph outlines are tessellated by Rust in positioned scene pixels; Solar transports these as ordinary LSDP mutations.

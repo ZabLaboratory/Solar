@@ -1,0 +1,41 @@
+{
+  "state": {
+    "title": "Sponsor Motion Studio · Solar",
+    "status": "Prêt · scène native chargée",
+    "controls": [
+      {
+        "text": "Jouer la transition",
+        "disabled": false
+      },
+      {
+        "text": "Pause",
+        "disabled": true
+      },
+      {
+        "text": "Reprendre",
+        "disabled": true
+      },
+      {
+        "text": "Inverser",
+        "disabled": true
+      },
+      {
+        "text": "Retour au d�but",
+        "disabled": true
+      }
+    ]
+  },
+  "errors": [],
+  "failed": [],
+  "native": {
+    "native": "ws://127.0.0.1:63477/lsdp",
+    "nativeAddress": "127.0.0.1:63476",
+    "nativePid": 28816,
+    "sceneId": "sponsor-composed-demo",
+    "sceneVersion": "sha256:173d8816d8e4d354c5b2a157a658816ff678be2cc547e828a35df7fdccf22a29",
+    "sourceDigest": "sha256:75517ab8d12a5ec89ded104687ec1e3d39ccadc4fbdccc22be6faa3ad503ec0d",
+    "archiveDigest": "sha256:7c2af0318b22a0cbe2d5926f648f6905051f929fe3a61c718e9c4c65dc18e4f2",
+    "persistence": "memory-only",
+    "events": []
+  }
+}

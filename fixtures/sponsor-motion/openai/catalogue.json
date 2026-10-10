@@ -1,0 +1,18 @@
+{
+  "duration_ms": 7000,
+  "size": 720,
+  "width": 1280,
+  "height": 720,
+  "title": "Vector Motion · OpenAI",
+  "slug": "openai-vector",
+  "minimum_render_rate": 45,
+  "capture": {
+    "fingerprint_interval_ms": 100,
+    "minimum_distinct_frames": 20,
+    "codec": "vp8"
+  },
+  "description": "Reconstruction de la vidéo · lignes → arcs → six brins → symbole → lettres fragmentées · tracés Bézier, morphing et révélation vectorielle.",
+  "animations": [
+    "show"
+  ]
+}

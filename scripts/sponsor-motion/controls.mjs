@@ -1,0 +1,55 @@
+/* global document, window */
+import { createRequire } from "node:module";
+import { writeFile, mkdir } from "node:fs/promises";
+import { resolve } from "node:path";
+const require = createRequire(resolve(process.env.SPONSOR_PLAYWRIGHT_ROOT ?? process.cwd(),"package.json"));
+const { chromium } = require("playwright");
+const root = resolve(import.meta.dirname,"../.."), port = Number(process.env.SPONSOR_MOTION_PORT ?? 4570);
+const out = resolve(root,"evidence/local-20261010-sponsor-motion/eleven");
+const stamp = new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z");
+await mkdir(out,{recursive:true});
+const browser = await chromium.launch({channel:"chrome",headless:true,args:["--disable-background-timer-throttling","--disable-renderer-backgrounding"]});
+const catalogue=await(await fetch(`http://127.0.0.1:${port}/catalogue`)).json();
+const page = await browser.newPage({viewport:{width:Math.max(800,(catalogue.width ?? 720)+80),height:1100}}), errors=[];
+await page.addInitScript(()=>document.addEventListener("solar:lsdp-applied",e=>{
+  globalThis.__controlReceipts ??= [];
+  globalThis.__controlReceipts.push(e.detail);
+},true));
+page.on("pageerror",e=>errors.push(e.message));
+page.on("console",e=>{if(e.type()==="error")errors.push(e.text());});
+await page.route("**/vision/ui/mainpresenter.mjs",async route=>{const response=await route.fetch();await route.fulfill({response,body:(await response.text()).replace("function postMessage(request) {","function postMessage(request) { globalThis.__controlsRequests ??= []; globalThis.__controlsRequests.push(request.type);")});});
+try {
+  await page.goto(`http://127.0.0.1:${port}`);
+  await page.waitForFunction(()=>!document.querySelector("#play").disabled,null,{timeout:45000});
+  const frame=page.frames().find(f=>f.url().includes(`${port+1}/host.html`));if(!frame)throw Error("Solar frame missing");
+  const fingerprint=()=>frame.evaluate(()=>{const c=[...document.querySelectorAll('#scene canvas[aria-hidden=true]')].at(-1),p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let h=0;for(let i=0;i<p.length;i+=4)h=(h*31+p[i]*3+p[i+1]*5+p[i+2]*7+p[i+3])>>>0;return h;});
+  const command=async c=>{
+    const result=await page.evaluate(c=>window.controlMotion(c),c);
+    const id=result.receipt.receipt.transactionId;
+    await frame.waitForFunction(id=>globalThis.__controlReceipts?.some(r=>r.transactionId===id),id,{timeout:10000});
+    return result;
+  };
+  const checks=[];
+  await command({action:"cancel"});await page.waitForTimeout(180);
+  const initial=await fingerprint();
+  await frame.locator('#scene canvas[aria-hidden=true]').last().screenshot({path:resolve(out,`${stamp}-controls-initial.png`)});
+  await command({action:"play"});await page.waitForTimeout(650);
+  await command({action:"pause"});await page.waitForTimeout(150);
+  const paused=await fingerprint();await page.waitForTimeout(250);if(await fingerprint()!==paused)throw Error("Pause pixels kept moving");checks.push("pause freezes actual pixels");
+  await command({action:"seek",time_ms:2400});await page.waitForTimeout(150);
+  const sought=await fingerprint();if(sought===paused)throw Error("Seek did not change pixels");
+  await page.waitForTimeout(250);if(await fingerprint()!==sought)throw Error("Paused seek resumed playback");checks.push("seek submits new pixels and preserves pause");
+  await command({action:"speed",speed:2});await command({action:"resume"});await page.waitForTimeout(300);
+  if(await fingerprint()===sought)throw Error("Resume/speed did not advance pixels");checks.push("resume and speed advance retained scene");
+  await command({action:"reverse"});await page.waitForTimeout(220);await command({action:"pause"});await page.waitForTimeout(150);checks.push("reverse accepted during playback");
+  await command({action:"stop"});await page.waitForTimeout(150);if(await fingerprint()!==initial){await frame.locator('#scene canvas[aria-hidden=true]').last().screenshot({path:resolve(out,`${stamp}-controls-stop-failure.png`)});console.log(JSON.stringify({stamp,initial,current:await fingerprint(),errors}));throw Error("Stop did not rewind to first source image");}checks.push("stop rewinds exactly");
+  await command({action:"play",iterations:2,direction:"alternate",speed:2});
+  await command({action:"pause"});await command({action:"seek",time_ms:7500});await page.waitForTimeout(150);
+  const alternate=await fingerprint();if(alternate===initial)throw Error("Alternate seek did not render intermediate state");checks.push("seek addresses second ping-pong iteration");
+  await command({action:"cancel"});await page.waitForTimeout(180);if(await fingerprint()!==initial)throw Error("Cancel did not restore source values");checks.push("cancel restores source bindings");
+  await frame.locator('#scene canvas[aria-hidden=true]').last().screenshot({path:resolve(out,`${stamp}-controls-restored.png`)});
+  const requests=await frame.evaluate(()=>globalThis.__controlsRequests);
+  if(requests.filter(t=>t==="load").length!==1)throw Error("Controls reloaded scene");if(errors.length)throw Error(JSON.stringify(errors));
+  const report={checks,errors,requests,initial,paused,sought,alternate,loads:1};
+  await writeFile(resolve(out,`${stamp}-controls.json`),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+} finally { await browser.close(); }

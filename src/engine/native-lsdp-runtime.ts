@@ -29,8 +29,7 @@ import { CaptureStreamPool, LiveMediaController } from "./live-media";
 import {
   VisionAnimations,
   animationDocument,
-  animationLeaf,
-  hasGeometry,
+  animationPatch,
 } from "./animations";
 import {
   activateVisionScene,
@@ -75,22 +74,9 @@ export class NativeLsdpRuntime {
           !this.current
         )
           return;
-        if (frames.some(hasGeometry)) {
-          await this.render(
-            animationDocument(document, frames),
-            () => {
-              if (!this.active || this.document !== document)
-                throw new Error("Animation scene superseded.");
-            },
-            this.abort!.signal,
-          );
-        } else {
-          const patch: Record<string, unknown> = {};
-          for (const frame of frames)
-            for (const [property, value] of Object.entries(frame.values))
-              patch[animationLeaf(frame.target, property)] = value;
-          await this.current.scene.applyPatch(patch);
-        }
+        await this.current.scene.applyPatch(
+          animationPatch(document, frames, true),
+        );
       });
     },
     (error) => this.report(error),
