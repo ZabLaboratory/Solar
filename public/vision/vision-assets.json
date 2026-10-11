@@ -14,11 +14,11 @@
     },
     "pkg/lumencast_vision_web.js": {
       "bytes": 148483,
-      "sha256": "85092f02f89e8bfc4bb172c7dd693c5f4b2c5bcded4f1778ff2048edeb4e0430"
+      "sha256": "c2a5322d1224092e3b60704bce7ff82eba1077a5a0a836032c3b1eec56453c8a"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10311309,
-      "sha256": "b16e4c250c1ec0f321042a7258dcb7ee4a2ecc4d5a818244b5377edfc5f34db3"
+      "bytes": 10312579,
+      "sha256": "d46d3b1ff1457a05152fe7161db938135953158b8fbfaa3f4339b6b466e773df"
     }
   },
   "source_provenance": {
@@ -27,5 +27,5 @@
     "engine_branch": "eleven/local-20261011-source-box",
     "engine_evidence": "evidence/local-20261011-source-box/eleven/"
   },
-  "source_revision": "b9af5e5eb375d790e4c165006c715b069c112a38"
+  "source_revision": "ea8a2088bc7dc521e7bd72ab319082b0b3648d2c"
 }
