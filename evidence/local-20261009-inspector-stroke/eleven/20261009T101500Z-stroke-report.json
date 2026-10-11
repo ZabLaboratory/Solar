@@ -1,0 +1,21 @@
+{
+  "repository": "Solar",
+  "worktree": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+  "branch": "eleven/local-20261009-inspector-stroke",
+  "head": "421495ae759e7f69728507d557030eef640b66a3",
+  "ownedFiles": [
+    "public/vision/pkg/lumencast_vision_web.js",
+    "public/vision/pkg/lumencast_vision_web_bg.wasm",
+    "public/vision/vision-assets.json"
+  ],
+  "validation": [
+    "npm run build passed",
+    "four Vision artifact hashes verified",
+    "runtime layout verified",
+    "native LSDP receiver packaging verified"
+  ],
+  "inheritedChanges": "Session startup/local scene-library source baseline copied from forge-local-20261003-source-resolution; not Stroke edits.",
+  "runtime": "Prism relaunched from original scene-sync worktree .cache/jump-session, PID29112. Corrected Solar v3.0.0-local-969251fdf7872b8b active; installed asset hashes verified. Cockpit displays Editable scene and served StrokesEditor contains corrected controls.",
+  "remaining": "Full user-scene Stroke interaction remains to confirm in the relaunched cockpit. No push or merge.",
+  "workspaceGate": "Global guard blocks on three noncanonical evidence names in foreign Blue worktree eleven-local-20261008-electron-editor; no foreign files changed."
+}

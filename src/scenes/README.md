@@ -125,3 +125,12 @@ Within the active `NativeSceneAssets`, owned font snapshots also survive structu
 rebuilds. Plain delivery arrays are copied on acquisition, so subsequent caller
 mutation cannot invalidate that verification. This active owner is released on
 scene change; no scene instance or inactive asset owner is retained.
+
+Mixed native compositions isolate root images above captures into their own
+stable bands, even in normal blend mode. Other root objects with non-normal
+blend are isolated too. Vision renders those nodes with normal blend and their
+original opacity, geometry and effects; the source LSML remains intact. Pulsar
+owns the final W3C blend against native captures and previous Solar bands.
+Pure Solar scenes retain Vision's existing blend implementation. The isolated
+source must never contain adjacent ordinary objects or a second application of
+the same blend. `tests/unit/editable-bindings.test.ts` checks this projection.

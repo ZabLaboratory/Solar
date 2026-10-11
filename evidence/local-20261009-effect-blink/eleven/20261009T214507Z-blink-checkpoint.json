@@ -1,0 +1,23 @@
+{
+  "path": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261009-inspector-stroke",
+  "branch": "eleven/local-20261009-inspector-stroke",
+  "head": "421495ae759e7f69728507d557030eef640b66a3",
+  "ownedFiles": [
+    "src/engine/vision-presenter.ts",
+    "src/engine/README.md",
+    "tests/unit/vision-session.test.ts",
+    "docs/development/code-map.md"
+  ],
+  "validation": [
+    "230 tests in 33 files pass",
+    "TypeScript pass",
+    "Build and packaged native receiver checks pass",
+    "Source usage, discovery and documentation checks pass",
+    "Workspace layout guard pass"
+  ],
+  "remaining": [
+    "No commit/push/merge; keep worktrees and shared dev active",
+    "Full architecture file-size check flags pre-existing node_modules-canonical-link dependency junction; it was preserved."
+  ],
+  "prismProof": "D:\\Documents\\Zab\\Prism\\.worktrees\\eleven-local-20261008-scene-sync\\evidence\\local-20261009-effect-blink\\eleven\\20261009T214507Z-blink-validation.json"
+}

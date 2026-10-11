@@ -1,0 +1,29 @@
+{
+  "identity": {
+    "path": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+    "top": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+    "commonDir": "D:/Documents/Zab/Solar/.git",
+    "branch": "eleven/local-20261009-inspector-stroke",
+    "head": "421495ae759e7f69728507d557030eef640b66a3",
+    "status": "M docs/development/code-map.md\n M public/vision/pkg/lumencast_vision_web.js\n M public/vision/pkg/lumencast_vision_web_bg.wasm\n M public/vision/vision-assets.json\n M scripts/README.md\n M src/engine/README.md\n M src/engine/vision-presenter.ts\n M src/host-entry.ts\n M src/scenes/README.md\n M src/scenes/canvas.ts\n M src/scenes/editable-bindings.ts\n M src/scenes/startup.ts\n M src/scenes/types.ts\n M src/server/README.md\n M src/server/index.ts\n M tests/unit/editable-bindings.test.ts\n M tests/unit/startup-cache.test.ts\n?? evidence/local-20261009-effect-blink/\n?? evidence/local-20261009-inspector-appearance/\n?? evidence/local-20261009-inspector-stroke/\n?? evidence/local-20261010-image-blend/\n?? evidence/local-20261010-image-capture-blend/\n?? evidence/local-20261010-inspector-completeness/\n?? evidence/local-20261010-live-typography/\n?? node_modules-canonical-link/\n?? src/scenes/local-library.ts\n?? src/server/scene-library.ts\n?? tests/unit/scene-library.test.ts\n?? tests/unit/vision-session.test.ts",
+    "worktrees": "worktree D:/Documents/Zab/Solar\nHEAD f5c303f4709d12caa8f2e0c4ae263aa53717591d\nbranch refs/heads/main\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20260919-feature-modules\nHEAD c8dda46e78062e275138082f3d2c3796032d02d3\nbranch refs/heads/eleven/local-20260919-feature-modules\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20260928-lumencast-runtime-adoption\nHEAD 9e583913aa59f3d8e8397f2f238bda46001aecd9\nbranch refs/heads/eleven/local-20260928-lumencast-runtime-adoption\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20260929-camera-routing\nHEAD 537b606f9ecf97b5e0ce0f5bd80e88350f0823d5\nbranch refs/heads/eleven/local-20260929-camera-routing\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261006-solar-editable-cache\nHEAD 5deffc0b9d996fd97d9f791d508696d16d317403\nbranch refs/heads/eleven/local-20261006-solar-editable-cache\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261006-solar-render-asset-batch\nHEAD 9109e4ca4200037732910d20688a82f18eba038c\nbranch refs/heads/eleven/local-20261006-solar-render-asset-batch\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261006-solar-render-asset-sites\nHEAD ea85c44d3859fee4009687139ca82d139be5cb55\nbranch refs/heads/eleven/local-20261006-solar-render-asset-sites\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-capability-audit\nHEAD 421495ae759e7f69728507d557030eef640b66a3\nbranch refs/heads/eleven/local-20261009-capability-audit\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke\nHEAD 421495ae759e7f69728507d557030eef640b66a3\nbranch refs/heads/eleven/local-20261009-inspector-stroke\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-kumiki-motion\nHEAD 2f97657b756619f97e6d07620d62a0eee65c3181\nbranch refs/heads/eleven/local-20261010-kumiki-motion\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-sound-design\nHEAD 13507b03424d15debd1ed441d0ff322521dbf98a\nbranch refs/heads/eleven/local-20261010-sound-design\n\nworktree D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-sponsor-motion\nHEAD 94608bc4d3c0afbd8f8d9faceca8cc97583a4033\nbranch refs/heads/eleven/local-20261010-sponsor-motion\n\nworktree D:/Documents/Zab/Solar/.worktrees/forge-local-20261003-source-resolution\nHEAD 421495ae759e7f69728507d557030eef640b66a3\nbranch refs/heads/forge/local-20261003-source-resolution"
+  },
+  "validation": [
+    "Host build: 63 modules",
+    "Bundle check passed, five Vision assets and one emitted copy each",
+    "Four asset pins passed",
+    "Held native LSDP binary preserved, native package check passed"
+  ],
+  "remaining": [
+    "External scene instances and editor repeat authoring",
+    "Live text-file provider",
+    "Physical capture alpha/luminance/vector masks",
+    "Grid hug and resolved editor grid hit-test/reparent geometry",
+    "Fully ordered and repeated material effect stack parity",
+    "Exhaustive per-control/per-source visual matrix, including physical capture availability and video controls",
+    "Inherited historical capability-evolution drift outside owned entries",
+    "Voice ASR replacement still owned and being qualified by coordinated chat"
+  ],
+  "inheritedChangesPreserved": true,
+  "pushedOrMerged": false
+}

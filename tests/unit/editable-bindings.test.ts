@@ -152,3 +152,56 @@ it("omits empty trailing capture bands while retaining inner z-order gaps", asyn
   expect(bands[1]!.children[0]!.children).toEqual([]);
   expect(bands[2]!.position.y).toBe(2160);
 });
+
+it("isolates mixed-scene blend objects between ordinary Solar bands", async () => {
+  const { prepareNativeComposition } =
+    await import("../../src/scenes/editable-bindings");
+  const document = {
+    scene_id: "mixed",
+    scene_version: "base",
+    layout: {
+      kind: "frame",
+      children: [
+        { kind: "shape", id: "bottom", blendMode: "multiply" },
+        { kind: "x-zab.capture", id: "camera" },
+        { kind: "text", id: "before" },
+        {
+          kind: "image",
+          id: "image",
+          blendMode: "difference",
+          opacity: 0.7,
+          rotation: 30,
+        },
+        { kind: "text", id: "after" },
+      ],
+    },
+  };
+  prepareNativeComposition(document, { width: 1920, height: 1080 });
+  const layout = document.layout as unknown as {
+    size: { h: number };
+    children: Array<{
+      children: Array<{
+        children: Array<{
+          id: string;
+          blendMode?: string;
+          opacity?: number;
+          rotation?: number;
+        }>;
+      }>;
+    }>;
+  };
+  expect(layout.size.h).toBe(4320);
+  const bands = layout.children.map((b) => b.children[0]!.children);
+  expect(bands.map((b) => b.map((c) => c.id))).toEqual([
+    ["bottom"],
+    ["before"],
+    ["image"],
+    ["after"],
+  ]);
+  expect(bands[0]![0]!.blendMode).toBe("multiply");
+  expect(bands[2]![0]).toMatchObject({
+    blendMode: "normal",
+    opacity: 0.7,
+    rotation: 30,
+  });
+});
