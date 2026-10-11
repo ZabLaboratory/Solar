@@ -27,8 +27,7 @@ The final lockup now animates the canonical wordmark `Kumiki` and the exact
 two-line hero signature, `Many systems.` / `One motion.`. The mark travels left
 and settles without changing its traced silhouette or crossing topology. Native
 LSML text nodes reveal each line in sequence; the sound-design fixture cues the
-name and both lines at those same playhead times. The preferred typeface is
-Recursive, with Solar's packaged Figtree as the host-safe fallback.
+name and both lines at those same playhead times. The lockup uses the packaged Figtree typeface recognized by Vision.
 
 `export.py <fixture-directory> <evidence-directory> <artifact-directory>
 <capture-stamp> <storyboard-stamp>` exports the actual capture to a VFR MP4 with

@@ -326,7 +326,7 @@ export function kumikiScene(vectors) {
     size: { w, h: size * 1.25 },
     opacity: 0,
     style: {
-      fontFamily: "Recursive, Figtree, sans-serif",
+      fontFamily: "Figtree",
       fontSize: size,
       fontWeight: weight,
       color: colour,
