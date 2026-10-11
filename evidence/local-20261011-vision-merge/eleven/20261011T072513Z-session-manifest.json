@@ -1,0 +1,14 @@
+{
+  "session": "local-20261011-solar-vision-merge",
+  "userMandate": "Group, push, and merge all remaining Solar and Vision work from this collaboration.",
+  "repository": "ZabLaboratory/Solar",
+  "worktree": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261011-vision-merge",
+  "branch": "eleven/local-20261011-vision-merge",
+  "baseRef": "origin/main",
+  "baseRevision": "9c8f837",
+  "authorizedOperations": ["inspect", "test", "commit", "push", "open-pr", "merge-pr"],
+  "scope": ["Solar scene-library synchronization", "Vision startup and retained-engine integration", "bundled Vision runtime update", "related evidence"],
+  "exclusions": ["uncommitted historical evidence deletions", "node_modules links", "caches", "unrelated worktree changes"],
+  "mergeGates": ["targeted tests pass", "typecheck and build pass", "CI green", "signed commits", "post-merge verification"],
+  "humanApproval": "User explicitly authorized pushing and merging all Solar and Vision work in this request."
+}

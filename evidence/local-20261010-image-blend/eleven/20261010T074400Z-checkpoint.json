@@ -1,0 +1,38 @@
+{
+  "task": "Image blend audit and transparent output correction",
+  "worktree": "D:\\Documents\\Zab\\Prism\\.worktrees\\eleven-local-20261008-scene-sync",
+  "branch": "eleven/local-20261008-scene-sync",
+  "base": "9051f4b05076bd04e9c5014f2d54966991396798",
+  "operatorMutations": [],
+  "cause": "Image blend is correctly exported and handled by Vision, but native capture pixels are in separate Pulsar layers. The image cannot blend against pixels absent from its Solar band.",
+  "fixed": "Vision final sRGB attachment conversion now decodes the encoded premultiplied RGB, rather than decoding straight RGB and multiplying alpha. This preserves transparent image colors and opacity.",
+  "validation": {
+    "browserCases": 64,
+    "modes": 16,
+    "backgrounds": [
+      "solid Solar",
+      "transparent"
+    ],
+    "imageAlpha": [
+      255,
+      128
+    ],
+    "nodeOpacity": 0.7,
+    "maxChannelError": 3,
+    "gpuTests": "23 passed serially; parallel driver stall stopped and retried serially",
+    "solarBuild": "PASS with package, native receiver and Vision pins verified",
+    "guard": "continue=true",
+    "dev": {
+      "tag": "v3.0.0-local-85795dd36f6bc0de",
+      "runner": 37424,
+      "previewActivationState": "ready",
+      "previewRenderReady": true,
+      "previewComposed": true
+    }
+  },
+  "proof": "D:/Documents/Lumencast/lumencast-vision/.worktrees/eleven-local-20261009-inspector-stroke/evidence/local-20261010-image-blend/eleven/20261010T073938Z-image-blend-matrix.json",
+  "remaining": "Blend against native camera/window/screen pixels in another band is not implemented by this fix. It requires a compositor backdrop contract across Solar/Pulsar, not approximating the whole Solar band with a blend.",
+  "harnessNotes": "First two matrices used default ImageBitmap premultiplication and are not production-contract comparisons. 073424 uses production decode options and reproduces the transparent-output bug; 073938 is corrected.",
+  "delivery": "Shared dev restarted; no push or merge. Preserve existing dirty worktrees.",
+  "owner": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke"
+}

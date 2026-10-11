@@ -1,0 +1,36 @@
+{
+  "scope": "inspector audit and native rounding/mask corrections; inherited dirty work preserved",
+  "path": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+  "branch": "eleven/local-20261009-inspector-stroke",
+  "head": "421495ae759e7f69728507d557030eef640b66a3",
+  "remaining": "Overall canvas-like completeness is not achieved. See Prism audit report. No global commit/push/merge.",
+  "runtime": {
+    "solarTag": "v3.0.0-local-c4e88ffb155f4df0",
+    "visionWasmSha256": "fed9092baa6cbc7227944819bfc028983a72d988b7b19d695fab7b327c48a288",
+    "installedMatchesQualifiedVision": true
+  },
+  "filesRevisited": [
+    "public/vision/pkg/lumencast_vision_web.js",
+    "public/vision/pkg/lumencast_vision_web_bg.wasm",
+    "public/vision/vision-assets.json",
+    "dist/host/vision/pkg/lumencast_vision_web.js",
+    "dist/host/vision/pkg/lumencast_vision_web_bg.wasm",
+    "dist/host/vision/vision-assets.json"
+  ],
+  "preserve": "These files may contain inherited dirty changes. This is a responsibility manifest, not an isolated commit diff.",
+  "validation": {
+    "inspectorLsmlLayoutTests": 254,
+    "visionRetainedTests": 25,
+    "gpuInsetTest": "passed",
+    "nativePixelProbes": 8,
+    "typescript": "passed",
+    "lint": "passed",
+    "discovery": "zero blocking drifts",
+    "workspaceGuard": "verified",
+    "liveAndRecording": "not exercised"
+  },
+  "commonVoiceCommits": [
+    "cf26783b",
+    "ca1711bb"
+  ]
+}

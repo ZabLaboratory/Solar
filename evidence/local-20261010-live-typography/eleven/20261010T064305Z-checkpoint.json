@@ -1,0 +1,20 @@
+{
+  "worktree": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+  "branch": "eleven/local-20261009-inspector-stroke",
+  "head": "421495ae759e7f69728507d557030eef640b66a3",
+  "changedThisIncrement": [
+    "public/vision/pkg/lumencast_vision_web.js",
+    "public/vision/pkg/lumencast_vision_web_bg.wasm",
+    "public/vision/vision-assets.json",
+    "src/engine/README.md"
+  ],
+  "runtime": "v3.0.0-local-2f6a7f901af8b4f4",
+  "validation": [
+    "230 unit tests passed",
+    "Vision asset pins passed",
+    "runtime package and layout passed",
+    "documentation and code discovery passed"
+  ],
+  "crossRepositoryProof": "Prism/evidence/local-20261010-live-typography/eleven/20261010T064009Z-typography-focused-proof.json",
+  "state": "local dev installed; no commit/push/merge; inherited work preserved"
+}

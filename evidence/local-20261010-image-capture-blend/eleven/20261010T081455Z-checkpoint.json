@@ -1,0 +1,37 @@
+{
+  "task": "Blend Solar images against native capture pixels",
+  "cause": "Vision could not see camera/window pixels composed later in Pulsar. Its isolated atlas band had no native backdrop.",
+  "implementation": "Stable isolated image bands in mixed root composition; runtime-only neutral Vision blend, native Pulsar W3C source contribution against scene prefix. Encoded premultiplied alpha-over committed on the wrapper scene item; shared CEF source untouched.",
+  "validation": {
+    "nativeGpu": {
+      "cases": 64,
+      "modes": 16,
+      "imageAlpha": [
+        255,
+        128
+      ],
+      "opacity": [
+        1,
+        0.7
+      ],
+      "maxChannelError": 2,
+      "proof": "D:/Documents/Zab/Pulsar/.worktrees/eleven-local-20261009-capture-effects/evidence/local-20261010-image-capture-blend/eleven/20261010T080200Z-pixel-matrix.json"
+    },
+    "prism": "107 targeted tests; node/web TypeScript; code:check 0 drifts",
+    "solar": "231 tests across 33 files; code map current; lib/host/server builds and layout/native hash checks pass",
+    "dev": {
+      "tag": "v3.0.0-local-bca8052125ebef3a",
+      "previewRenderReady": true,
+      "multiplyFilterMode": 1,
+      "restoredFilterMode": 0,
+      "operatorMutation": "Only image blend changed temporarily to multiply, then restored to absent/normal; transforms/effects untouched"
+    }
+  },
+  "limits": "GPU matrix uses isolated native fixtures. Live Editable scene verifies multiply across camera/window layers and restoration. Nested mixed capture groups are not covered by this root-composition change; no exhaustive temporal blink certification.",
+  "buildNote": "Foreign sponsor-motion harness uses this dist/native binary. Preserved it; rebuilt lib with emptyOutDir=false, host/server normally, verified retained native binary hash against configured source before packaging and rebuilt native manifest. No unrelated process stopped.",
+  "delivery": "Same shared dev snapshot and existing worktrees; no push/merge. Preserve inherited changes.",
+  "owner": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+  "branch": "eleven/local-20261009-inspector-stroke",
+  "head": "421495ae759e7f69728507d557030eef640b66a3",
+  "changedFiles": "M docs/development/code-map.md\n M public/vision/pkg/lumencast_vision_web.js\n M public/vision/pkg/lumencast_vision_web_bg.wasm\n M public/vision/vision-assets.json\n M scripts/README.md\n M src/engine/README.md\n M src/engine/vision-presenter.ts\n M src/host-entry.ts\n M src/scenes/README.md\n M src/scenes/canvas.ts\n M src/scenes/editable-bindings.ts\n M src/scenes/startup.ts\n M src/scenes/types.ts\n M src/server/README.md\n M src/server/index.ts\n M tests/unit/editable-bindings.test.ts\n M tests/unit/startup-cache.test.ts\n?? evidence/local-20261009-effect-blink/\n?? evidence/local-20261009-inspector-appearance/\n?? evidence/local-20261009-inspector-stroke/\n?? evidence/local-20261010-image-blend/\n?? evidence/local-20261010-live-typography/\n?? node_modules-canonical-link/\n?? src/scenes/local-library.ts\n?? src/server/scene-library.ts\n?? tests/unit/scene-library.test.ts\n?? tests/unit/vision-session.test.ts"
+}

@@ -1,0 +1,18 @@
+{
+  "createdAt": "2026-10-09T11:17:56.228Z",
+  "worktree": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+  "branch": "eleven/local-20261009-inspector-stroke",
+  "base": "421495ae759e7f69728507d557030eef640b66a3",
+  "ownedAppearanceFiles": [
+    "public/vision/pkg/lumencast_vision_web.js",
+    "public/vision/pkg/lumencast_vision_web_bg.wasm",
+    "public/vision/vision-assets.json"
+  ],
+  "solarTag": "v3.0.0-local-15bdb393dc62695e",
+  "validation": [
+    "Runtime package build and native receiver/asset pins passed",
+    "Installed active manifest matches tag",
+    "Prism main PID30268 uses this package; Preview ready"
+  ],
+  "state": "Packaging only this increment; inherited scene startup and scene library baseline preserved."
+}
