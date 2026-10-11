@@ -2,7 +2,7 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "bb6d57f4bb941f79e0d11d31dc3b582dcf762662",
-  "source_state": "Retained image/text surface materials, live mutations, and image corner clipping built from the signed Vision consolidation commit; merge provenance is recorded after merge.",
+  "source_state": "Retained image/text surface materials, live mutations, and image corner clipping built from the signed Vision consolidation commit, now merged in verified Vision revision e5b2720589e30820bd6b70b89cc78fec0ab6153a.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 26045,
@@ -27,5 +27,6 @@
     "engine_branch": "eleven/local-20261011-vision-merge",
     "engine_evidence": "evidence/local-20261011-vision-merge/eleven/"
   },
-  "source_revision": "64d0cfc7d7a539d1e4c7fcfcddafbf771bacd49e"
+  "source_revision": "64d0cfc7d7a539d1e4c7fcfcddafbf771bacd49e",
+  "merged_revision": "e5b2720589e30820bd6b70b89cc78fec0ab6153a"
 }
