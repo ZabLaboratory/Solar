@@ -1,8 +1,8 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "bb6d57f4bb941f79e0d11d31dc3b582dcf762662",
-  "source_state": "Retained image/text surface materials, live mutations, and image corner clipping built from the signed Vision consolidation commit, now merged in verified Vision revision e5b2720589e30820bd6b70b89cc78fec0ab6153a.",
+  "base_revision": "e5b2720589e30820bd6b70b89cc78fec0ab6153a",
+  "source_state": "Signed source-box correction: image clipEffects bounds final shadow/blur output and retained geometry.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 26045,
@@ -13,20 +13,19 @@
       "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
     },
     "pkg/lumencast_vision_web.js": {
-      "sha256": "85092f02f89e8bfc4bb172c7dd693c5f4b2c5bcded4f1778ff2048edeb4e0430",
-      "bytes": 148483
+      "bytes": 148483,
+      "sha256": "85092f02f89e8bfc4bb172c7dd693c5f4b2c5bcded4f1778ff2048edeb4e0430"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "e535ae4e1c596c7ade8d5110498f94154634a20765f2ecf2e39c275572e64f3c",
-      "bytes": 10310965
+      "bytes": 10311309,
+      "sha256": "b16e4c250c1ec0f321042a7258dcb7ee4a2ecc4d5a818244b5377edfc5f34db3"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_base": "bb6d57f4bb941f79e0d11d31dc3b582dcf762662",
-    "engine_branch": "eleven/local-20261011-vision-merge",
-    "engine_evidence": "evidence/local-20261011-vision-merge/eleven/"
+    "engine_base": "e5b2720589e30820bd6b70b89cc78fec0ab6153a",
+    "engine_branch": "eleven/local-20261011-source-box",
+    "engine_evidence": "evidence/local-20261011-source-box/eleven/"
   },
-  "source_revision": "64d0cfc7d7a539d1e4c7fcfcddafbf771bacd49e",
-  "merged_revision": "e5b2720589e30820bd6b70b89cc78fec0ab6153a"
+  "source_revision": "b9af5e5eb375d790e4c165006c715b069c112a38"
 }
