@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw
 
 
 TIMES_MS = (0, 80, 160, 240, 320, 400, 480, 560,
-            640, 780, 920, 1060, 1200, 1300, 1400, 1520)
+            640, 700, 740, 760, 780, 800, 840, 900)
 FPS = 60
 CROP = (0, 700, 430, 1080)
 LABEL_HEIGHT = 26
@@ -26,7 +26,9 @@ def main() -> None:
         frame_number = round(time_ms * FPS / 1000)
         path = args.frames / f"frame-{frame_number:04d}.png"
         with Image.open(path) as frame:
-            crop = frame.convert("RGB").crop(CROP)
+            black = Image.new("RGBA", frame.size, (0, 0, 0, 255))
+            black.alpha_composite(frame.convert("RGBA"))
+            crop = black.convert("RGB").crop(CROP)
             x = (index % 4) * tile_w
             y = (index // 4) * tile_h
             sheet.paste(crop, (x, y + LABEL_HEIGHT))

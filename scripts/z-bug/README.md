@@ -14,19 +14,22 @@ NumPy and Shapely at authoring time; playback uses only vector `pathData`.
 
 The source fuses both arrows in its central red region, so two disjoint pieces
 cannot reproduce every source pixel without an artificial seam. The LSML
-motion therefore draws both arrows, keeps them separate through their approach,
-collapses them into the source-derived complete mark at impact, then bounces
-that mark. The final source contour is never constructed from an image node or
-an in-motion raster swap. All five Solar/Vision nodes are vector paths. The
-two drawing paths fade into their corresponding closed arrow fills before
-movement begins.
+motion gives each arrow a small scale overshoot while its own ribbon is drawn,
+then sends both closed ribbons toward a shared point without reversing. They
+contract at contact while the complete source-derived mark grows from that
+point. This is an optical assembly, not a claim that the two isolated arrow
+outlines geometrically union into every source pixel. The final source contour
+is never constructed from an image node or an in-motion raster swap. All five
+Solar/Vision nodes are vector paths. The drawing paths fade into their
+corresponding closed arrow fills before convergence begins.
 
 `generate.mjs <artifact-dir>` authors `z-bug.lsml`/`z-bug.lsmlz` plus the
 generic `sponsor-motion.lsmlz` expected by the native reader. It positions a
 180×189 mark at (112,839) in a transparent 1920×1080 stream scene. Motion
-draws for about 0.56 seconds, sweeps the arrows together by 1.28 seconds,
-then settles with one restrained overshoot by 1.5 seconds. The full sequence
-lasts 2.5 seconds.
+draws for about 0.56 seconds with elasticity synchronized to the trim,
+converges without direction reversals, and completes the source-contour
+handoff by 0.9 seconds.
+The full sequence lasts 2 seconds.
 
 `storyboard.py <frames-dir> <output.png>` arranges sixteen actual Vision
 samples across the quicker drawing and fusion. `validate.py <source.png>
