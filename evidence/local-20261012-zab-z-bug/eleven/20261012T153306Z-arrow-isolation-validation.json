@@ -1,0 +1,23 @@
+{
+  "supersedes": "Prior diagonal split and guide stroke prototypes",
+  "method": "Two complete mitered ribbons derived from the two source arrow voids; exact full source contour at impact",
+  "checks": {
+    "source_voids": 2,
+    "standalone_arrow_svg_xml_parse": "pass",
+    "artificial_partition_cuts": 0,
+    "native_solar_canvas_frames": 216,
+    "native_canvas_page_errors": [],
+    "animated_frame_edge_touch_count": 0,
+    "webm_alpha_mode": 1,
+    "webm_duration_s": 3.6,
+    "webm_fps": 60,
+    "source_mask_iou_at_final_size": 0.957688,
+    "node_check": "pass",
+    "python_compile": "pass",
+    "check_docs": "pass",
+    "code_check": "pass",
+    "git_diff_check": "pass"
+  },
+  "artifact": "D:\\Documents\\Zab\\Artifacts\\2026-10-12\\zab-z-corner-motion",
+  "scene_version": "sha256:c280eb5400954b35aaf0003392fffffb13b9e613ac89b3d613da16166c7e1acf"
+}

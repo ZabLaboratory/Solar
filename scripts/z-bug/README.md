@@ -1,38 +1,33 @@
-# Vector Z stream bug
+# Two-arrow vector Z stream bug
 
-Owner: Solar demonstration authoring. This local proof animates the confirmed
-red Z from the landing asset as two connected vector regions in a transparent
-1920×1080 scene. It reuses the existing sponsor-motion native LSDP reader and
-Solar/Vision motion tracks. It does not wire a real Prism scene or Program output.
+Owner: Solar demonstration authoring. The confirmed landing Z is a single red
+silhouette with two arrow-shaped black voids. A hard split through its red area
+damages those arrows; no partitioned path or pixel-cut asset is used here.
 
-`segment.py <source-z.png> <artifact-dir>/assets` partitions the original pixels
-along one diagonal seam. Both parts are connected and their PNG union is pixel
-identical to the supplied cutout. It also traces each binary contour to SVG and
-emits scaled fill and arrow-gesture `pathData` in `vectors.json`. The gestures
-follow the two opposed source arrowheads; each is drawn with native trim before
-its corresponding filled region materializes. The transparent PNGs are comparison
-references; the running scene uses no image nodes or raster assets.
+`extract.py <source-z.png> <artifact-dir>/assets` traces the two real void
+contours and creates a closed mitered red ribbon around each one. Those are two
+complete independently transformable SVG arrows. It also traces the full source
+silhouette as `z-assembled.svg`. The arrow extraction uses OpenCV, Pillow,
+NumPy and Shapely at authoring time; playback uses only vector `pathData`.
 
-`generate.mjs <artifact-dir>` reads those paths and authors a pure-vector
-LSML/LSMLZ fixture. Four shape nodes form two independent arrow pairs (one
-guide stroke and one source-derived fill each). The arrows arrive from opposed
-directions, draw, fill, rebound, reunite by 2.1 seconds and hold through 4.2
-seconds. The assembled
-180×189 mark starts at (112,839), inside the lower-left stream-safe area.
-The generic native reader expects `sponsor-motion.lsmlz` and `catalogue.json`;
-`z-bug.lsmlz` is the same downloadable scene under a descriptive name.
+The source fuses both arrows in its central red region, so two disjoint pieces
+cannot reproduce every source pixel without an artificial seam. The LSML
+motion therefore keeps the complete arrows separate through their approach,
+collapses them into the source-derived complete mark at impact, then bounces
+that mark. The final source contour is never constructed from an image node or
+an in-motion raster swap. The three Solar/Vision nodes are all vector paths.
+
+`generate.mjs <artifact-dir>` authors `z-bug.lsml`/`z-bug.lsmlz` plus the
+generic `sponsor-motion.lsmlz` expected by the native reader. It positions a
+180×189 mark at (112,839) in a transparent 1920×1080 stream scene. Motion
+lasts about 1.9 seconds with the full mark held through 3.6 seconds.
 
 Build Solar, set `SPONSOR_MOTION_PORT` and `SPONSOR_LSDP_BIN` to an available
 local port and verified native binary, then run
-`node scripts/sponsor-motion/serve.mjs <artifact-dir>`. The reader exposes native
-play/pause/seek controls. Set `SPONSOR_PLAYWRIGHT_ROOT` to a package with
-Playwright and run `render.mjs <artifact-dir>` to sample the actual Vision canvas
-at 60 Hz. Its temporary PNG frames stay in this worktree's `.cache/z-bug/frames`;
-the final alpha PNG and render report go to the artifact directory. Encode the
-PNG sequence with VP9 `yuva420p` and `-auto-alt-ref 0` for a transparent WebM.
-
-The settled native canvas is compared to the supplied crop at the delivered
-size. Its binary silhouette IoU is 0.958; color is a single sampled brand pink
-instead of the landing image's pixel-level variation. The original source is
-preserved and the two SVG paths remain editable. Recheck the source crop and
-seam if the brand master asset changes.
+`node scripts/sponsor-motion/serve.mjs <artifact-dir>`. Set
+`SPONSOR_PLAYWRIGHT_ROOT` to a package with Playwright and run
+`node scripts/z-bug/render.mjs <artifact-dir>` to sample the actual Vision
+canvas at 60 Hz. Temporary frames stay in `.cache/z-bug/frames` in this
+worktree. Encode them with VP9 `yuva420p` and `-auto-alt-ref 0` for transparent
+WebM; the MP4 preview places them over black. This proof does not establish
+behavior in Prism Program or OBS.
