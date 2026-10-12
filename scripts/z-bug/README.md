@@ -1,19 +1,23 @@
 # Vector Z stream bug
 
 Owner: Solar demonstration authoring. This local proof animates the confirmed
-red Z from the landing asset as two connected vector arrows in a transparent
+red Z from the landing asset as two connected vector regions in a transparent
 1920×1080 scene. It reuses the existing sponsor-motion native LSDP reader and
 Solar/Vision motion tracks. It does not wire a real Prism scene or Program output.
 
 `segment.py <source-z.png> <artifact-dir>/assets` partitions the original pixels
 along one diagonal seam. Both parts are connected and their PNG union is pixel
 identical to the supplied cutout. It also traces each binary contour to SVG and
-emits scaled `pathData` in `vectors.json`. The transparent PNGs are comparison
+emits scaled fill and arrow-gesture `pathData` in `vectors.json`. The gestures
+follow the two opposed source arrowheads; each is drawn with native trim before
+its corresponding filled region materializes. The transparent PNGs are comparison
 references; the running scene uses no image nodes or raster assets.
 
 `generate.mjs <artifact-dir>` reads those paths and authors a pure-vector
-LSML/LSMLZ fixture. The two independently transformable shapes separate,
-rebound, reunite by 2.1 seconds and hold through 6 seconds. The assembled
+LSML/LSMLZ fixture. Four shape nodes form two independent arrow pairs (one
+guide stroke and one source-derived fill each). The arrows arrive from opposed
+directions, draw, fill, rebound, reunite by 2.1 seconds and hold through 4.2
+seconds. The assembled
 180×189 mark starts at (112,839), inside the lower-left stream-safe area.
 The generic native reader expects `sponsor-motion.lsmlz` and `catalogue.json`;
 `z-bug.lsmlz` is the same downloadable scene under a descriptive name.

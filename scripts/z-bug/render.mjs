@@ -1,7 +1,7 @@
 // Render the native Solar canvas at fixed timeline positions. The PNG alpha is
 // read from the actual Vision canvas, not inferred from a black screenshot.
 import { createRequire } from "node:module";
-import { mkdir, writeFile, copyFile } from "node:fs/promises";
+import { mkdir, writeFile, copyFile, readdir, unlink } from "node:fs/promises";
 import { resolve } from "node:path";
 
 const root = resolve(import.meta.dirname, "../..");
@@ -13,6 +13,8 @@ const frames = resolve(root, ".cache/z-bug/frames");
 const deliverable = resolve(process.argv[2] ?? "");
 if (!process.argv[2]) throw Error("Usage: node scripts/z-bug/render.mjs <explicit-deliverable-directory>");
 await mkdir(frames, { recursive: true });
+for (const name of await readdir(frames))
+  if (/^frame-\d{4}\.png$/.test(name)) await unlink(resolve(frames, name));
 await mkdir(deliverable, { recursive: true });
 const browser = await chromium.launch({ channel: "chrome", headless: true });
 const page = await browser.newPage({ viewport: { width: 1360, height: 980 } });
@@ -38,7 +40,7 @@ try {
     await frame.waitForFunction(value => globalThis.__renderReceipts?.some(receipt => receipt.transactionId === value), id, { timeout: 15000 });
   };
   await command({ action: "pause" });
-  const fps = 60, duration_ms = 6000, motion_ms = 2100;
+  const fps = 60, duration_ms = 4200, motion_ms = 2100;
   const total = Math.round(duration_ms / 1000 * fps);
   const animated = Math.round(motion_ms / 1000 * fps) + 1;
   for (let i = 0; i < animated; i++) {

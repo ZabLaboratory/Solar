@@ -1,0 +1,19 @@
+{
+  "type": "Solar two-arrow construction superseding earlier static-split proof",
+  "checks": {
+    "source_partition_pixel_exact": true,
+    "native_canvas_rendered_frames": 252,
+    "native_canvas_page_errors": [],
+    "webm_alpha_mode": 1,
+    "webm_duration_s": 4.2,
+    "webm_fps": 60,
+    "source_mask_iou": 0.957841,
+    "node_check": "pass",
+    "python_compile": "pass",
+    "check_docs": "pass",
+    "code_check": "pass",
+    "git_diff_check": "pass"
+  },
+  "artifact": "D:\\Documents\\Zab\\Artifacts\\2026-10-12\\zab-z-corner-motion",
+  "scene_version": "sha256:f511341119ace755b7c4e69964b5aa303e6970cf961286f1ab448ad06595708e"
+}

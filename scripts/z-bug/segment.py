@@ -1,8 +1,9 @@
-"""Split the confirmed landing Z into two source-pixel-preserving arrow layers.
+"""Trace the two opposed arrow regions of the confirmed landing Z.
 
-The diagonal seam follows the logo's two opposed arrow gestures. Each source
-pixel is assigned to exactly one layer, so the assembled PNG is identical to
-the input, including its original color and antialiased outer edge.
+The left region contains the (4, 127) arrow tip and the right region contains
+the (291, 183) tip. A diagonal partition preserves the original pixels for
+the assembled reference; the animation additionally draws each actual arrow
+gesture before its source-derived region fills in.
 """
 
 from __future__ import annotations
@@ -44,6 +45,10 @@ def svg_for(mask: np.ndarray, color: str) -> str:
     )
 
 
+def guide_path(points: list[tuple[int, int]], scale_x: float, scale_y: float) -> str:
+    return "M" + " L".join(f"{x * scale_x:.3f} {y * scale_y:.3f}" for x, y in points)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("source", type=Path)
@@ -57,7 +62,11 @@ def main() -> None:
     upper = yy < 240 - 0.6 * xx
     layers = []
     vectors = {}
-    for name, selection in (("arrow-upper", upper), ("arrow-lower", ~upper)):
+    gestures = {
+        "arrow-left": [(246, 58), (205, 20), (24, 127), (76, 174)],
+        "arrow-right": [(50, 251), (90, 290), (274, 182), (224, 134)],
+    }
+    for name, selection in (("arrow-left", upper), ("arrow-right", ~upper)):
         layer = original.copy()
         layer[~selection] = 0
         layers.append(layer)
@@ -71,8 +80,15 @@ def main() -> None:
         (args.output / f"{name}.svg").write_text(svg_for(opaque * 255, color), encoding="utf-8")
         vectors[name] = {
             "pathData": traced_path(opaque * 255, 180 / width, 189 / height),
+            "guidePathData": guide_path(gestures[name], 180 / width, 189 / height),
             "fill": color,
         }
+        (args.output / f"{name}-guide.svg").write_text(
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 189">\n'
+            f'<path d="{vectors[name]["guidePathData"]}" fill="none" stroke="#ffffff" '
+            'stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>\n</svg>\n',
+            encoding="utf-8",
+        )
     # The hard partition keeps every original alpha and RGB pixel. On assembly,
     # no color transfer, blend, or hidden logo swap is necessary.
     reassembled = layers[0] + layers[1]
@@ -80,7 +96,7 @@ def main() -> None:
     Image.fromarray(reassembled).save(args.output / "reassembled.png")
     (args.output / "vectors.json").write_text(json.dumps(vectors), encoding="utf-8")
     vector_layers = []
-    for name in ("arrow-upper", "arrow-lower"):
+    for name in ("arrow-left", "arrow-right"):
         layer = cv2.imread(str(args.output / f"{name}.png"), cv2.IMREAD_UNCHANGED)
         opaque = (layer[:, :, 3] > 128).astype(np.uint8)
         vector_layers.append(
@@ -96,10 +112,11 @@ def main() -> None:
     report = {
         "source": str(args.source.resolve()),
         "size": [width, height],
-        "seam": "y < 240 - 0.6*x",
+        "arrow_tips": {"left": [4, 127], "right": [291, 183]},
+        "partition": "y < 240 - 0.6*x; source-pixel reference only",
         "component_pixels": [int(np.count_nonzero(layer[:, :, 3] > 128)) for layer in layers],
         "pixel_exact_reassembly": True,
-        "note": "Solar animates two native vector paths. The PNGs preserve the source-pixel segmentation for reference and reconstruction verification.",
+        "note": "Solar animates two source-derived fill paths and two arrow gesture paths. The PNGs preserve source-pixel reconstruction for comparison.",
     }
     (args.output / "segmentation.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print(json.dumps(report))
