@@ -1,4 +1,4 @@
-// Two source-derived, closed arrow ribbons interlock into the exact Z master.
+// Draw two source-derived arrow ribbons, then move and fuse them into the Z.
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { resolve } from "node:path";
 import { createHash } from "node:crypto";
@@ -9,51 +9,78 @@ const out = resolve(process.argv[2] ?? "");
 if (!process.argv[2]) throw Error("Usage: node scripts/z-bug/generate.mjs <explicit-output-directory>");
 await mkdir(out, { recursive: true });
 const vectors = JSON.parse(await readFile(resolve(out, "assets/vectors.json"), "utf8"));
-const width = 1920, height = 1080, duration = 3600;
+const width = 1920, height = 1080, duration = 4500;
 const key = (ms, values, easing = "cubic-bezier(.2,.8,.2,1)") => ({ at: ms / duration, ...values, easing });
 const position = { x: 112, y: height - 52 - 189 };
 const size = { w: 180, h: 189 };
 const arrow = name => ({ kind: "shape", id: name, geometry: "path",
   pathData: vectors[name].pathData, windingRule: "EVENODD",
-  position, size, fill: vectors[name].fill });
+  position, size, fill: vectors[name].fill, opacity: 0 });
+const drawing = name => ({ kind: "shape", id: `${name}-draw`, geometry: "path",
+  pathData: vectors[name].drawPathData, position, size, opacity: 0,
+  stroke: { color: vectors[name].fill, width: vectors[name].drawStrokeWidth,
+    lineJoin: "miter", lineCap: "butt" }, "x-vision.trimEnd": 0 });
 const final = { ...arrow("master"), id: "z-master", opacity: 0,
   stroke: { color: vectors.master.fill, width: .85, lineJoin: "round" } };
 const track = (target, steps) => ({ target, keyframes: { duration_ms: duration, steps } });
+const leftPose = { translateX: -73, translateY: -73, rotation: -15, scale: .96 };
+const rightPose = { translateX: 80, translateY: 34, rotation: 16, scale: .96 };
+const leftDraw = [
+  key(0, { ...leftPose, opacity: 1, trimEnd: 0 }, "linear"),
+  key(650, { trimEnd: 1, opacity: 1 }, "linear"),
+  key(740, { trimEnd: 1, opacity: 1 }),
+  key(850, { trimEnd: 1, opacity: 0 }),
+  key(duration, { opacity: 0 }),
+];
+const rightDraw = [
+  key(0, { ...rightPose, opacity: 0, trimEnd: 0 }),
+  key(90, { opacity: 1, trimEnd: 0 }, "linear"),
+  key(740, { trimEnd: 1, opacity: 1 }, "linear"),
+  key(850, { trimEnd: 1, opacity: 0 }),
+  key(duration, { opacity: 0 }),
+];
 const left = [
-  key(0, { translateX: -73, translateY: -73, rotation: -15, scale: .96, opacity: 1 }),
-  key(260, { translateX: -88, translateY: -84, rotation: -8, scale: 1.025 }),
-  key(650, { translateX: -58, translateY: -48, rotation: 4, scale: 1.01 }),
-  key(930, { translateX: -68, translateY: -57, rotation: -7, scale: .98 }),
-  key(1250, { translateX: -49, translateY: -41, rotation: -3, scale: 1, opacity: 1 }),
-  key(1370, { translateX: -42, translateY: -35, rotation: -2, scale: 1, opacity: 1 }),
-  key(1395, { translateX: -7, translateY: -6, rotation: 0, scale: .52, opacity: 0 }, "cubic-bezier(.65,0,.9,.45)"),
+  key(0, { ...leftPose, opacity: 0 }),
+  key(680, { opacity: 0 }),
+  key(830, { opacity: 1 }),
+  key(850, { ...leftPose, opacity: 1 }),
+  key(1110, { translateX: -88, translateY: -84, rotation: -8, scale: 1.025 }),
+  key(1500, { translateX: -58, translateY: -48, rotation: 4, scale: 1.01 }),
+  key(1780, { translateX: -68, translateY: -57, rotation: -7, scale: .98 }),
+  key(2100, { translateX: -49, translateY: -41, rotation: -3, scale: 1, opacity: 1 }),
+  key(2220, { translateX: -42, translateY: -35, rotation: -2, scale: 1, opacity: 1 }),
+  key(2245, { translateX: -7, translateY: -6, rotation: 0, scale: .52, opacity: 0 }, "cubic-bezier(.65,0,.9,.45)"),
   key(duration, { translateX: 0, translateY: 0, rotation: 0, scale: 1, opacity: 0 }),
 ];
 const right = [
-  key(0, { translateX: 80, translateY: 34, rotation: 16, scale: .96, opacity: 1 }),
-  key(280, { translateX: 92, translateY: 42, rotation: 9, scale: 1.025 }),
-  key(670, { translateX: 62, translateY: 34, rotation: -4, scale: 1.01 }),
-  key(950, { translateX: 72, translateY: 40, rotation: 7, scale: .98 }),
-  key(1270, { translateX: 51, translateY: 30, rotation: 3, scale: 1, opacity: 1 }),
-  key(1370, { translateX: 44, translateY: 27, rotation: 2, scale: 1, opacity: 1 }),
-  key(1395, { translateX: 7, translateY: 6, rotation: 0, scale: .52, opacity: 0 }, "cubic-bezier(.65,0,.9,.45)"),
+  key(0, { ...rightPose, opacity: 0 }),
+  key(680, { opacity: 0 }),
+  key(830, { opacity: 1 }),
+  key(850, { ...rightPose, opacity: 1 }),
+  key(1130, { translateX: 92, translateY: 42, rotation: 9, scale: 1.025 }),
+  key(1520, { translateX: 62, translateY: 34, rotation: -4, scale: 1.01 }),
+  key(1800, { translateX: 72, translateY: 40, rotation: 7, scale: .98 }),
+  key(2120, { translateX: 51, translateY: 30, rotation: 3, scale: 1, opacity: 1 }),
+  key(2220, { translateX: 44, translateY: 27, rotation: 2, scale: 1, opacity: 1 }),
+  key(2245, { translateX: 7, translateY: 6, rotation: 0, scale: .52, opacity: 0 }, "cubic-bezier(.65,0,.9,.45)"),
   key(duration, { translateX: 0, translateY: 0, rotation: 0, scale: 1, opacity: 0 }),
 ];
 const master = [
   key(0, { opacity: 0, scale: .65 }),
-  key(1370, { opacity: 0, scale: .65 }),
-  key(1395, { opacity: 1, scale: .84 }, "cubic-bezier(.1,.8,.2,1)"),
-  key(1580, { opacity: 1, scale: 1.075 }),
-  key(1710, { opacity: 1, scale: .984 }),
-  key(1860, { opacity: 1, scale: 1 }),
+  key(2220, { opacity: 0, scale: .65 }),
+  key(2245, { opacity: 1, scale: .84 }, "cubic-bezier(.1,.8,.2,1)"),
+  key(2430, { opacity: 1, scale: 1.075 }),
+  key(2560, { opacity: 1, scale: .984 }),
+  key(2710, { opacity: 1, scale: 1 }),
   key(duration, { opacity: 1, scale: 1 }),
 ];
 const document = {
   lsml: "1.2", scene_id: "zab-z-corner-bug", scene_version: `sha256:${"0".repeat(64)}`,
   viewport: { width, height }, defaults: {},
   layout: { kind: "frame", id: "stage", size: { w: width, h: height },
-    clipsContent: true, children: [arrow("arrow-left"), arrow("arrow-right"), final] },
-  animations: { show: { parallel: [track("arrow-left", left), track("arrow-right", right), track("z-master", master)] } },
+    clipsContent: true, children: [drawing("arrow-left"), drawing("arrow-right"), arrow("arrow-left"), arrow("arrow-right"), final] },
+  animations: { show: { parallel: [track("arrow-left-draw", leftDraw), track("arrow-right-draw", rightDraw),
+    track("arrow-left", left), track("arrow-right", right), track("z-master", master)] } },
 };
 document.scene_version = `sha256:${createHash("sha256").update(canonicalize(document)).digest("hex")}`;
 const json = canonicalize(document);
@@ -67,6 +94,6 @@ await Promise.all([
 await writeFile(resolve(out, "catalogue.json"), JSON.stringify({
   title: "Z · Deux flèches imbriquées", width, height, duration_ms: duration,
   animations: ["show"],
-  description: "Deux flèches fermées issues des évidements du Z source. Aucun cut : elles se rejoignent et fusionnent en silhouette source.",
+  description: "Deux flèches issues des évidements du Z se dessinent le long de leurs propres rubans, dansent puis fusionnent en silhouette source.",
 }, null, 2));
-console.log(JSON.stringify({ scene: document.scene_id, out, duration, nodes: 3 }));
+console.log(JSON.stringify({ scene: document.scene_id, out, duration, nodes: 5 }));

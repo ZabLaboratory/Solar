@@ -71,12 +71,24 @@ def main() -> None:
         assert isinstance(hole, Polygon) and hole.is_valid
         arrow = hole.buffer(19.5, join_style="mitre", mitre_limit=2).difference(hole)
         assert isinstance(arrow, Polygon) and arrow.is_valid and len(arrow.interiors) == 1
+        # A stroke on this medial contour paints the ribbon itself progressively.
+        # It follows the extracted arrow rather than an ornamental guide.
+        draw_contour = hole.buffer(9.75, join_style="mitre", mitre_limit=2).exterior
         path = polygon_path(arrow)
         svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}">\n'
                f'<path fill="{color}" fill-rule="evenodd" d="{path}"/>\n</svg>\n')
         (args.output / f"{name}.svg").write_text(svg, encoding="utf-8")
+        (args.output / f"{name}-draw.svg").write_text(
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}">\n'
+            f'<path fill="none" stroke="{color}" stroke-width="19.5" '
+            f'stroke-linejoin="miter" stroke-linecap="butt" '
+            f'd="{contour_path(np.asarray(draw_contour.coords))}"/>\n</svg>\n',
+            encoding="utf-8",
+        )
         raster_preview(arrow, color, (w, h)).save(args.output / f"{name}.png")
         vectors[name] = {"pathData": polygon_path(arrow, sx, sy), "fill": color,
+                         "drawPathData": contour_path(np.asarray(draw_contour.coords), sx, sy),
+                         "drawStrokeWidth": 19.5 * sx,
                          "sourceHoleVertices": len(simplified), "ringWidthPx": 19.5}
 
     master = source_path(mask)
@@ -91,6 +103,7 @@ def main() -> None:
         "source": str(args.source.resolve()), "size": [w, h],
         "method": "Two closed mitered ribbons offset from the two arrow-shaped source voids",
         "ribbon_width_px": 19.5,
+        "drawing": "Progressive centerline stroke of each source-derived arrow ribbon",
         "source_master": "Full original silhouette traced independently; final merged red area is not artificially partitioned",
         "artificial_cuts": 0,
     }
