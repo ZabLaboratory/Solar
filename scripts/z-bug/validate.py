@@ -35,12 +35,12 @@ def main() -> None:
     scene = json.loads((args.deliverable / "z-bug.lsml").read_text(encoding="utf-8"))
     render = json.loads((args.deliverable / "render.json").read_text(encoding="utf-8"))
     assert scene["scene_id"] == "zab-z-corner-bug"
-    assert render["total"] == 270 and render["animated"] == 165
+    assert render["total"] == 150 and render["animated"] == 93
     assert not render["errors"]
     frame_paths = sorted(args.frames.glob("frame-????.png"))
-    assert len(frame_paths) == 270
+    assert len(frame_paths) == 150
     edge_touch = 0
-    for path in frame_paths[:165]:
+    for path in frame_paths[:93]:
         with Image.open(path) as frame:
             assert frame.size == (1920, 1080)
             bounds = frame.getchannel("A").getbbox()
@@ -48,11 +48,11 @@ def main() -> None:
                 edge_touch += 1
     assert edge_touch == 0
     samples = {}
-    for time_ms in (0, 100, 200, 300, 400, 500, 600, 700, 800, 2700):
+    for time_ms in (0, 80, 160, 240, 320, 400, 480, 560, 640, 1280, 1520):
         with Image.open(args.frames / f"frame-{round(time_ms * 60 / 1000):04d}.png") as frame:
             samples[str(time_ms)] = frame.getchannel("A").getbbox()
-    assert samples["0"] is None and samples["100"] is not None
-    with Image.open(args.source) as original, Image.open(args.frames / "frame-0164.png") as final_frame:
+    assert samples["0"] is None and samples["80"] is not None
+    with Image.open(args.source) as original, Image.open(args.frames / "frame-0092.png") as final_frame:
         source_mask = np.asarray(original.convert("RGBA").resize((180, 189), Image.Resampling.LANCZOS))[:, :, 3] > 128
         final_mask = np.asarray(final_frame.convert("RGBA").crop((112, 839, 292, 1028)))[:, :, 3] > 128
     source_iou = float(np.count_nonzero(source_mask & final_mask) / np.count_nonzero(source_mask | final_mask))
@@ -62,7 +62,7 @@ def main() -> None:
     alpha_video = probe(args.deliverable / "z-bug-alpha.webm")
     preview = probe(args.deliverable / "z-bug-preview.mp4")
     assert alpha_video["codec_name"] == "vp9" and alpha_video.get("tags", {}).get("alpha_mode") == "1"
-    assert preview["codec_name"] == "h264" and preview.get("nb_frames") == "270"
+    assert preview["codec_name"] == "h264" and preview.get("nb_frames") == "150"
     files = {}
     for name in ("z-bug.lsml", "z-bug.lsmlz", "sponsor-motion.lsml", "sponsor-motion.lsmlz",
                  "z-bug-alpha.webm", "z-bug-preview.mp4", "z-bug-storyboard.png", "z-final-transparent.png",
@@ -73,8 +73,8 @@ def main() -> None:
     report = {
         "source": str(args.source.resolve()), "source_sha256": sha256(args.source),
         "scene_version": scene["scene_version"], "render": "Solar native LSDP / Vision canvas",
-        "viewport": [1920, 1080], "fps": 60, "duration_s": 4.5,
-        "draw_s": 0.85, "fusion_s": 2.245, "vector_shapes": 5,
+        "viewport": [1920, 1080], "fps": 60, "duration_s": 2.5,
+        "draw_s": 0.56, "fusion_s": 1.28, "vector_shapes": 5,
         "source_derived_arrow_ribbons": 2, "progressive_arrow_draw_paths": 2,
         "source_derived_final_mark": 1, "artificial_partition_cuts": 0,
         "raster_image_nodes": 0, "source_mask_iou_at_final_size": round(source_iou, 6),

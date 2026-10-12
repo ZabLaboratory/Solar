@@ -6,8 +6,8 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 
-TIMES_MS = (0, 100, 200, 300, 400, 500, 600, 700,
-            800, 1100, 1500, 1900, 2200, 2300, 2500, 2700)
+TIMES_MS = (0, 80, 160, 240, 320, 400, 480, 560,
+            640, 780, 920, 1060, 1200, 1300, 1400, 1520)
 FPS = 60
 CROP = (0, 700, 430, 1080)
 LABEL_HEIGHT = 26

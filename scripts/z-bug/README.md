@@ -24,11 +24,12 @@ movement begins.
 `generate.mjs <artifact-dir>` authors `z-bug.lsml`/`z-bug.lsmlz` plus the
 generic `sponsor-motion.lsmlz` expected by the native reader. It positions a
 180×189 mark at (112,839) in a transparent 1920×1080 stream scene. Motion
-draws for about 0.85 seconds, moves and fuses by 2.25 seconds, then bounces
-and holds the full mark through 4.5 seconds.
+draws for about 0.56 seconds, sweeps the arrows together by 1.28 seconds,
+then settles with one restrained overshoot by 1.5 seconds. The full sequence
+lasts 2.5 seconds.
 
 `storyboard.py <frames-dir> <output.png>` arranges sixteen actual Vision
-samples, every 100 ms during the drawing phase. `validate.py <source.png>
+samples across the quicker drawing and fusion. `validate.py <source.png>
 <frames-dir> <artifact-dir> <evidence.json>` checks the native frame sequence,
 edge safety, vector SVGs, alpha export and video metadata, then records hashes
 in the user deliverable and repository evidence.

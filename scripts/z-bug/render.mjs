@@ -40,7 +40,7 @@ try {
     await frame.waitForFunction(value => globalThis.__renderReceipts?.some(receipt => receipt.transactionId === value), id, { timeout: 15000 });
   };
   await command({ action: "pause" });
-  const fps = 60, duration_ms = 4500, motion_ms = 2734;
+  const fps = 60, duration_ms = 2500, motion_ms = 1534;
   const total = Math.round(duration_ms / 1000 * fps);
   const animated = Math.round(motion_ms / 1000 * fps) + 1;
   for (let i = 0; i < animated; i++) {
