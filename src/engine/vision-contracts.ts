@@ -79,5 +79,7 @@ export interface VisionRenderPackage {
   resolveImages?: (patch: Record<string, unknown>) => Promise<{
     values: Record<string, unknown>;
     assets: Array<{ path: string; bytes: Uint8Array }>;
+    /** Release Solar's staging pins after the frame queue accepts or rejects the patch. */
+    release?: () => void;
   }>;
 }

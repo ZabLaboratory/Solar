@@ -228,6 +228,7 @@ describe("native LSML mutation and runtime package", () => {
     );
     expect(patch.values.logo).not.toBe(direct.imageValues.logo);
     expect(patch.assets[0]!.bytes).toEqual(new Uint8Array([2]));
+    patch.release();
     expect(fetchImage).toHaveBeenCalledTimes(2);
     expect(scene.defaults.logo).toBe("https://images.example/first.png");
   });
@@ -300,6 +301,7 @@ describe("native LSML mutation and runtime package", () => {
     );
     expect(patch.values).toEqual({ champion: path });
     expect(patch.assets).toEqual([{ path, bytes: image }]);
+    patch.release();
     await expect(
       assets.prepareImagePatch(
         { champion: "assets/missing.png" },
@@ -356,7 +358,7 @@ describe("native LSML mutation and runtime package", () => {
     const preparing = assets.renderPackage(scene);
     // The sequential implementation starts only one request and cannot satisfy
     // this barrier until the first response is released.
-    expect(fetchImage).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(fetchImage).toHaveBeenCalledTimes(2));
     pending.forEach((resolve, index) =>
       resolve(
         new Response(new Uint8Array([index + 1]), {
@@ -400,11 +402,12 @@ describe("native LSML mutation and runtime package", () => {
     const fetchImage = vi.fn();
     const assets = new NativeSceneAssets(origin, fetchImage, { get });
     const rendered = await assets.renderPackage(scene);
-    await assets.prepareImagePatch(
+    const patch = await assets.prepareImagePatch(
       { logo: scene.defaults.logo },
       rendered.imageBindings,
       scene,
     );
+    patch.release();
     expect(get).toHaveBeenCalledOnce();
     expect(fetchImage).not.toHaveBeenCalled();
     expect(
