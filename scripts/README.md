@@ -71,12 +71,18 @@ lifecycle remains a separate Prism task. See [qualification](../docs/runbooks/qu
 | `qualify-native-burst.mjs`       | `node scripts/proof/qualify-native-burst.mjs --mode paced --duration 3900 --playwright-root <Prism>` or `--mode burst`; real private Rust/Solar/Vision path, separate ACK/event/pixel evidence |
 | `qualify-meet-framing.mjs`       | Private Chrome, Solar controller and Vision WASM pixels for a synthetic peer, plus bounded capture-stage Performance entries; `--out build/meet-framing --playwright-root <Prism>`; excludes LSDP, real Meet and CEF |
 | `qualify-instance-runtime.mjs`   | `node scripts/qualify-instance-runtime.mjs --out <private-output> --playwright-root <Prism>`; offline LSMLZ root and injected exact plain-LSML child fixture, including named/SHA-1 assets, through Solar's persistent Vision WASM/WebGL path; Canvas HTTP separately serves SHA-256-addressed assets only |
+| `proof/qualify-repeat-runtime.mjs` | Prism import/export provenance, nested Repeat scopes, real native LSDP collection updates, front-canvas visibility, and malformed-key recovery boundary in one private scene; see [proof helpers](proof/README.md) for invocation and evidence scope |
 | `prove-authenticated-canvas.mjs` | Identity/source route/broker-locator probe with separate boundary verdicts                                                                                                                                                      |
 | `prove-read-query-gateway.mjs`   | Authoritative query/gateway diagnostic; operator denial is not broker artifact absence                                                                                                                                          |
 | `proof/`                         | [Capture, producer and analysis helpers](proof/README.md)                                                                                                                                                                       |
 
 Pass `--help` to Python drivers; Node diagnostic headers document their arguments. Each run
 records its specific admitted source, receipt/pixel boundary, errors and owned-process cleanup.
+The Repeat run keeps one private scene identity/version while updating nested team and player
+collections and records Solar's Vision asset pins beside each captured canvas. The valid
+leaf/reorder/add/remove renders qualify, while the duplicate-key probe exposes a partial
+recovery failure: native acceptance precedes Vision refusal, and Solar hides the retained
+canvas layer.
 External success is never inferred from a unit test or a connection ACK.
 
 ## Historical evidence
