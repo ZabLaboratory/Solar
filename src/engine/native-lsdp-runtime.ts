@@ -1,3 +1,4 @@
+import { InstanceSourceError } from "../scenes/instances";
 import {
   disconnectVisionSession,
   prewarmVisionSession,
@@ -978,7 +979,7 @@ export class NativeLsdpRuntime {
 
   private report(error: unknown): void {
     this.options.onError?.({
-      code: "INTERNAL",
+      code: error instanceof InstanceSourceError ? error.code : "INTERNAL",
       message: `Native LSDP: ${error instanceof Error ? error.message : String(error)}`,
       recoverable: true,
     });

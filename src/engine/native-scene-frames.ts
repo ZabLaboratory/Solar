@@ -1,4 +1,5 @@
 import { readNativeAuthoringSource } from "../scenes/local-authoring";
+import { acquireInstanceSources } from "../scenes/instances";
 import type { MountOptions } from "../types";
 import {
   NativeSceneAssets,
@@ -65,7 +66,7 @@ export class NativeSceneFrames {
     }
     this.measure("source", started, { sceneId: document.scene_id });
     started = performance.now();
-    const [renderPackage, hostFonts] = await Promise.all([
+    const [renderPackage, hostFonts, instances] = await Promise.all([
       assets
         .renderPackage(
           document,
@@ -84,6 +85,11 @@ export class NativeSceneFrames {
           return result;
         },
       ),
+      acquireInstanceSources(
+        document,
+        this.options.sceneSourceProvider,
+        signal,
+      ),
     ]);
     check();
     started = performance.now();
@@ -98,6 +104,19 @@ export class NativeSceneFrames {
       this.onError,
       {
         ...renderPackage,
+        instances: instances.map((source) => ({
+          sceneId: source.sceneId,
+          sceneVersion: source.sceneVersion,
+          packageBytes: source.data,
+          ...(source.format === "lsml"
+            ? {
+                assets: [...source.assets].map(([path, bytes]) => ({
+                  path,
+                  bytes,
+                })),
+              }
+            : {}),
+        })),
         hostFonts: [...(renderPackage.hostFonts ?? []), ...(hostFonts ?? [])],
         installationFonts: this.options.installationFonts,
         requiredFontDigests:

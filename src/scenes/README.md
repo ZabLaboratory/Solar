@@ -12,6 +12,31 @@ snapshot's `scene_version`. Solar rejects a descriptor or response that changes
 scene identity, revision, version, digest, origin, or size limits. It never
 falls back to a different version or to a compiled bundle.
 
+`instances.ts` walks semantic layout children and repeat templates to acquire
+the exact pinned sources of active LSML instances through that same provider.
+One acquisition deduplicates repeated references, retains distinct child versions,
+and rejects cycles, depth beyond eight, more than 256 sources, 128 MiB expanded
+dependencies or 100,000 traversed layout nodes. Shared dependencies still count
+toward each path's depth. Metadata and parameter objects are not scene children.
+The graph has no global or inactive lifetime. Missing exact sources fail with
+`BUNDLE_FETCH_FAILED` before Vision load; cancellation preserves the owner's
+reason. `cache.ts` supplies the existing content/manifest verifier: online instance
+admission does not require offline Blue readiness, while cache reads/writes keep
+that stricter default. The verified documents and expanded byte counts are reused
+for traversal instead of parsing an archive again for each instance occurrence.
+`native-scene-frames.ts` forwards original child packages/assets to Vision's
+instance-aware load message. `scripts/qualify-instance-runtime.mjs` drives that
+real path in a private Chrome/Vite page: local root and child LSMLZ, an embedded
+WOFF2 font and content-addressed PNG, asymmetric pixels for all four fit modes, a
+live `bindParams` update, WebGL context loss/restoration, and a missing exact child
+that leaves the accepted frame intact. Its result and pixel capture are recorded
+under `evidence/local-20261015-instance-sources/eleven/`. This does not qualify
+ZabCanvas HTTP acquisition, remote child assets, capture composition, editor asset
+resolution, shared runtime admission or public output.
+The embedded child-font fixture uses an asset path addressed by its 64-hex SHA-256
+digest. The source verifier still rejects named and legacy SHA-1 asset filenames;
+those remain unsupported rather than bypassing the existing address check.
+
 Each delivery carries the ZabCanvas Blue manifest for that same validated
 revision. `blue_manifest` includes the scene's declared Blue bindings and
 blueprints, validation record, binding closure, offline-readiness result and a
