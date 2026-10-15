@@ -5,11 +5,11 @@ of Vision's scene graph. `LiveMediaController` consumes Vision's live-source
 descriptors and uploads each resolved video frame into the corresponding Vision
 texture.
 
-| Capability | Entry point | Contract |
-| --- | --- | --- |
-| Local camera, screen, window and app capture | `capture.ts` / `createCaptureResolver` | Maps the scene's logical `deviceRef` to a host-provided device or desktop-capture id. Missing or inaccessible sources remain transparent. |
-| Receive-only remote cameras | `peers.ts` / `createPeerSources` | Reconciles room membership, joins as viewer, resolves the reserved `__cam.slots.*` leaves and publishes `MediaStream` changes by slot. |
-| Vision texture updates | `engine/live-media.ts` | Fits camera frames to the exact Vision texture size, uploads them, and clears textures on disconnect or source replacement. |
+| Capability                                   | Entry point                            | Contract                                                                                                                                                                                                                                                                      |
+| -------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Local camera, screen, window and app capture | `capture.ts` / `createCaptureResolver` | Maps the scene's logical `deviceRef` to a host-provided device or desktop-capture id. Missing or inaccessible sources remain transparent.                                                                                                                                     |
+| Receive-only remote cameras                  | `peers.ts` / `createPeerSources`       | Reconciles room membership, joins as viewer, resolves the reserved `__cam.slots.*` leaves and publishes `MediaStream` changes by slot. On the Prism loopback channel it also reports revision-matched effective peer labels and stream availability without room credentials. |
+| Vision texture updates                       | `engine/live-media.ts`                 | Fits camera frames to the exact Vision texture size, uploads them, and clears textures on disconnect or source replacement.                                                                                                                                                   |
 
 Capture is not limited by Solar mode. The host must pass stable machine-local
 capture mappings; Solar never opens a native picker or selects an arbitrary

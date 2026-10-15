@@ -304,6 +304,26 @@ describe("slot-binding registry", () => {
     expect(reg.resolve("@0")).toBe(a);
   });
 
+  it("reports the effective peer identity separately from stream availability", () => {
+    const peers = fakePeerRegistry();
+    const reg = createSlotBindingRegistry(peers);
+    const alice = streamFor("cam-alice");
+    peers.push("alice", alice);
+
+    expect(reg.resolvedPeer("@0")).toBe("alice");
+    expect(reg.resolve("@0")).toBe(alice);
+
+    reg.assign("@0", "bob");
+    expect(reg.resolvedPeer("@0")).toBe("bob");
+    expect(reg.resolve("@0")).toBeNull();
+
+    reg.assign("@0", null);
+    expect(reg.resolvedPeer("@0")).toBeNull();
+    expect(reg.resolve("@0")).toBeNull();
+    peers.push("bob", streamFor("cam-bob"));
+    expect(reg.resolvedPeer("@0")).toBeNull();
+  });
+
   it("shifts positions up when an earlier peer leaves (slot 0 re-keys)", () => {
     const peers = fakePeerRegistry();
     const reg = createSlotBindingRegistry(peers);

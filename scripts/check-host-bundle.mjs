@@ -5,6 +5,17 @@ const root = resolve(import.meta.dirname, "..");
 const hostDir = resolve(root, "dist/host");
 if (!existsSync(hostDir)) throw new Error("Solar host build is missing.");
 
+const hostContractPath = resolve(hostDir, "solar-host-contract.json");
+if (!existsSync(hostContractPath)) throw new Error("Solar host capability contract is missing.");
+const hostContract = JSON.parse(readFileSync(hostContractPath, "utf8"));
+if (
+  hostContract.protocol_version !== "solar.host.v2" ||
+  !Array.isArray(hostContract.capabilities) ||
+  !hostContract.capabilities.includes("prism.camera.routing-readback.v1")
+) {
+  throw new Error("Solar host contract does not advertise Prism camera routing readback.");
+}
+
 function jsFiles(dir) {
   return readdirSync(dir).flatMap((name) => {
     const file = resolve(dir, name);

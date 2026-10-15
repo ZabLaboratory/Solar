@@ -82,6 +82,7 @@ writeFileSync(
         "solar.vision.lsml.v1",
         "solar.native-lsdp.v1",
         "solar.source-provider.v1",
+        "prism.camera.routing-readback.v1",
       ],
     },
     null,
