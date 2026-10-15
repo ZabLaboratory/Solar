@@ -206,11 +206,31 @@ rebuilds. Plain delivery arrays are copied on acquisition, so subsequent caller
 mutation cannot invalidate that verification. This active owner is released on
 scene change; no scene instance or inactive asset owner is retained.
 
-Mixed native compositions isolate root images above captures into their own
-stable bands, even in normal blend mode. Other root objects with non-normal
-blend are isolated too. Vision renders those nodes with normal blend and their
-original opacity, geometry and effects; the source LSML remains intact. Pulsar
-owns the final W3C blend against native captures and previous Solar bands.
-Pure Solar scenes retain Vision's existing blend implementation. The isolated
-source must never contain adjacent ordinary objects or a second application of
-the same blend. `tests/unit/editable-bindings.test.ts` checks this projection.
+`native-composition.ts` derives the ordered group graph and local Solar surface
+slots from the active LSML snapshot. Its fixed-frame planner carries authored
+capture IDs, local sizes, transforms, opacity, effective visibility and crop;
+unresolved auto-layout and texture limits fail explicitly. The synthetic root
+stays neutral and authored root styles live on one child group. The private
+atlas is rendered by the existing Vision session using its actual
+`MAX_TEXTURE_SIZE`, without creating another rendering context. The plan hash
+covers schema, source identity/hash, viewport, groups and surfaces; the Main
+assigned producer nonce is deliberately outside that hash.
+
+`native-composition-plan.ts` stamps that plan with the active snapshot's exact
+LSDP `stateHash`. The engine publishes only to the optional, separate
+`solar/composition` resource, after the active scene is prepared or updated.
+Main owns the `producers.A|B` claim in the same resource; Solar checks that
+claim on every compare-and-set and only writes/removes its own graph. Publication
+is derived latest-state output: one peer operation may be active and one latest
+plan pending. A replaced pending promise resolves as `superseded`, a completed
+operation as `completed`, and later work after retirement as `retired`; these
+results are not LSML mutation or Vision frame receipts. Existing mutation IDs,
+receipts and frame coverage are unchanged.
+
+This does not yet qualify native mixed-scene pixels. The current Pulsar backend
+still refuses Solar surface bands, non-null masks and unsupported blend modes;
+the Solar plan tests establish ordering, ownership, geometry and refusal
+conditions only. Auto-layout/grid/repeat and effects outside owner bounds also
+remain unresolved. See `tests/unit/native-composition.test.ts`,
+`tests/unit/native-composition-publisher.test.ts` and the native-group
+composition evidence for the tested boundary.

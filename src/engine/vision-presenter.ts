@@ -106,6 +106,23 @@ const visionSessions = new WeakMap<HTMLElement, PersistentVisionSession>();
 const sceneLoads = new WeakMap<HTMLElement, Promise<void>>();
 const visionLifetimes = new WeakMap<HTMLElement, PersistentVisionLifetime>();
 
+/** Read the cap from Vision's already initialized, session-owned WebGL2 context. */
+export function visionMaxTextureSize(target: HTMLElement): number {
+  const session = visionSessions.get(target);
+  if (!session || session.closed || !session.presenter || !session.fontsReady)
+    throw new Error("NATIVE_COMPOSITION_VISION_SESSION_UNAVAILABLE");
+  // The presenter initializes this exact canvas as WebGL2 before the session is
+  // marked ready. getContext therefore returns the owned context; this does not
+  // create an auxiliary canvas or GPU context.
+  const context = session.canvas.getContext("webgl2");
+  if (!context || context.isContextLost())
+    throw new Error("NATIVE_COMPOSITION_WEBGL2_CONTEXT_UNAVAILABLE");
+  const limit = context.getParameter(context.MAX_TEXTURE_SIZE);
+  if (!Number.isSafeInteger(limit) || limit < 1)
+    throw new Error("NATIVE_COMPOSITION_TEXTURE_LIMIT_UNAVAILABLE");
+  return limit;
+}
+
 function disconnectedError(): Error {
   const error = new Error("Vision host session disconnected.");
   error.name = "AbortError";

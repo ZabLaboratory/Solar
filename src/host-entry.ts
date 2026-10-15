@@ -9,10 +9,11 @@ import {
   type LocalRenderAssetEndpoint,
 } from "./scenes/local-images";
 import { mount } from "./mount";
-import type { SolarMode } from "./types";
+import type { NativeCompositionLSDPOptions, SolarMode } from "./types";
 
 interface SolarHostConfig {
   nativeComposition?: { width: number; height: number };
+  nativeCompositionLSDP?: NativeCompositionLSDPOptions;
   canvasApiUrl?: string;
   canvasToken?: string;
   sceneSourcesUrl?: string;
@@ -121,6 +122,7 @@ const handle = mount({
     ? createLocalImageAssetsProvider(globalThis.__ZAB_RENDER_ASSET_ENDPOINT__)
     : undefined,
   nativeComposition: config?.nativeComposition,
+  nativeCompositionLSDP: config?.nativeCompositionLSDP,
   target,
   nativeLSDP: {
     url: nativeUrl,

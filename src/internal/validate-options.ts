@@ -49,4 +49,35 @@ export function validateOptions(options: MountOptions): void {
   ) {
     throw new TypeError("solar.mount: invalid native scene selector");
   }
+  if (options.nativeComposition !== undefined) {
+    const { width, height } = options.nativeComposition;
+    if (
+      !Number.isSafeInteger(width) ||
+      width < 1 ||
+      !Number.isSafeInteger(height) ||
+      height < 1
+    )
+      throw new TypeError("solar.mount: invalid native composition viewport");
+  }
+  const composition = options.nativeCompositionLSDP;
+  if (composition) {
+    const expectedGraph =
+      options.nativeLSDP.resource === "solar/lane-a"
+        ? "A"
+        : options.nativeLSDP.resource === "solar/lane-b"
+          ? "B"
+          : null;
+    if (
+      !expectedGraph ||
+      composition.graph !== expectedGraph ||
+      composition.resource !== "solar/composition" ||
+      composition.url !== options.nativeLSDP.url ||
+      !options.nativeComposition ||
+      typeof composition.producer_id !== "string" ||
+      !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,255}$/.test(composition.producer_id)
+    )
+      throw new TypeError(
+        "solar.mount: native composition publication must match its physical lane host",
+      );
+  }
 }
