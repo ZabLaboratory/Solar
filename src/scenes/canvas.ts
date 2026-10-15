@@ -283,8 +283,14 @@ export function createCanvasSceneSourceProvider(
               link(relative, path),
               Math.min(32 * MIB, 128 * MIB - expanded),
             );
+            const assetDigest = await digest(asset.data);
             if (
-              (await digest(asset.data)) !== `sha256:${ASSET.exec(path)![1]}`
+              asset.response.headers.get("x-scene-version") !==
+                d.scene_version ||
+              asset.response.headers.get("x-scene-revision") !==
+                String(d.revision) ||
+              asset.response.headers.get("etag") !== `"${assetDigest}"` ||
+              assetDigest !== `sha256:${ASSET.exec(path)![1]}`
             ) {
               throw new SceneSourceError("SOURCE_INTEGRITY_FAILED");
             }

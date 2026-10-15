@@ -10,9 +10,24 @@ la source publiée. Une capsule corrompue échoue explicitement sans changer de 
 
 La capsule solar.scene-cache.v1 conserve les octets LSMLZ, ou LSML et assets,
 ainsi que le manifeste Blue complet. Chaque lecture revalide l'adresse LSML,
-le digest des octets source/transport, les assets hashés et la fermeture Blue.
+le digest des octets source/transport, les chemins d'assets et les digests des
+assets adressés ou nommés transportés séparément, ainsi que la fermeture Blue.
 offline_ready et binding_closure_complete doivent être vrais. Modifier le LSML
 sans changer son adresse est refusé même si son digest d'octets est recalculé.
+Pour les capsules LSMLZ, les chemins nommés sûrs sont admis et un basename qui
+correspond à une adresse SHA-1/SHA-256 est vérifié contre ses octets; cette
+admission suit le lecteur de packages Vision. Les demandes exactes LSML du
+fournisseur local peuvent extraire ces mêmes fichiers sans changer les octets
+LSML, la version de scène ou le digest source. La capsule garde chaque asset
+LSML nommé sous un digest de transport interne, indépendant de l'identité LSML.
+
+Le transport HTTP Canvas émet actuellement séparément uniquement les chemins
+`assets/<sha256>.<ext>` et refuse les références locales SHA-1 historiques;
+les réponses d'asset sont liées à la version/révision et portent l'ETag du corps.
+Solar exige ces headers et compare aussi le corps à l'adresse SHA-256 du chemin.
+Une publication contenant des assets nommés ou SHA-1 n'est pas servie par ce
+contrat HTTP séparé; le cache local ne constitue pas une permission pour inventer
+un digest ou un lien d'asset que le descriptor ne fournit pas.
 
 FileSceneSourceStore publie une seule fois par staging/link atomique dans le même
 dossier. Une publication concurrente identique est idempotente ; un contenu
@@ -22,9 +37,14 @@ Les tailles d'archive, d'assets et les expansions ZIP sont bornées.
 
 ```ts
 // Hôte Node/Electron ; transférer les sources à la frontière de rendu existante.
-import { FileSceneSourceStore, createCachedSceneSourceProvider } from "@zablab/solar/server";
-const provider = createCachedSceneSourceProvider(canvasProvider,
-  new FileSceneSourceStore(accountOwnedSourceDirectory));
+import {
+  FileSceneSourceStore,
+  createCachedSceneSourceProvider,
+} from "@zablab/solar/server";
+const provider = createCachedSceneSourceProvider(
+  canvasProvider,
+  new FileSceneSourceStore(accountOwnedSourceDirectory),
+);
 const scene = await provider.get(sceneId, { sceneVersion, format: "lsmlz" });
 ```
 

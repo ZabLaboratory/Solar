@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { bundleAddress, canonicalize } from "@lumencast/canonical";
+import { sha1 } from "@noble/hashes/sha1";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import { strToU8, zipSync } from "fflate";
@@ -38,7 +39,8 @@ const signal = () => new AbortController().signal;
 async function source(
   sceneId: string,
   layout: unknown = { kind: "frame", children: [] },
-  format: "lsml" | "lsmlz" = "lsmlz",
+  format: "lsml" | "lsmlz" = "lsml",
+  assets: ReadonlyMap<string, Uint8Array> = new Map(),
 ): Promise<SceneSourceDelivery> {
   const document = {
     lsml: "1.1",
@@ -51,14 +53,16 @@ async function source(
   const blueManifest = nativeManifest(sceneId, document.scene_version);
   const { manifest_digest: _digest, ...unsigned } = blueManifest;
   blueManifest.manifest_digest = hash(strToU8(canonicalize(unsigned)));
+  const entries = Object.fromEntries(assets);
   return {
     sceneId,
     sceneVersion: document.scene_version,
     revision: 1,
     sourceDigest: hash(bytes),
     format,
-    data: format === "lsmlz" ? zipSync({ "scene.lsml": bytes }) : bytes,
-    assets: new Map(),
+    data:
+      format === "lsmlz" ? zipSync({ "scene.lsml": bytes, ...entries }) : bytes,
+    assets: format === "lsml" ? assets : new Map(),
     blueManifest,
   };
 }
@@ -68,7 +72,9 @@ function provider(sources: SceneSourceDelivery[]) {
     get: vi.fn(async (id: string, request?: SceneSourceRequest) => {
       const found = sources.find(
         (value) =>
-          value.sceneId === id && value.sceneVersion === request?.sceneVersion,
+          value.sceneId === id &&
+          value.sceneVersion === request?.sceneVersion &&
+          value.format === request?.format,
       );
       if (!found) throw new Error("Unavailable exact source");
       return found;
@@ -79,12 +85,34 @@ function provider(sources: SceneSourceDelivery[]) {
 describe("active exact-version instance acquisition", () => {
   it("passes verified dependencies through real scene preparation and refuses missing children before Vision load", async () => {
     vi.mocked(mountVisionScene).mockClear();
-    const child = await source("child");
-    const parent = await source("parent", {
-      kind: "frame",
-      size: { w: 1920, h: 1080 },
-      children: [ref(child)],
-    });
+    const legacyFont = strToU8("legacy sha1 child font");
+    const legacyFontPath = `assets/${bytesToHex(sha1(legacyFont))}.woff2`;
+    const namedImage = strToU8("named child image");
+    const namedImagePath = "assets/instances/named-child-image.png";
+    const child = await source(
+      "child",
+      {
+        kind: "frame",
+        children: [
+          { kind: "image", src: legacyFontPath },
+          { kind: "image", src: namedImagePath },
+        ],
+      },
+      "lsml",
+      new Map([
+        [legacyFontPath, legacyFont],
+        [namedImagePath, namedImage],
+      ]),
+    );
+    const parent = await source(
+      "parent",
+      {
+        kind: "frame",
+        size: { w: 1920, h: 1080 },
+        children: [ref(child)],
+      },
+      "lsmlz",
+    );
     const store = provider([parent, child]);
     const controller = new AbortController();
     const frames = new NativeSceneFrames(
@@ -110,8 +138,28 @@ describe("active exact-version instance acquisition", () => {
         sceneId: child.sceneId,
         sceneVersion: child.sceneVersion,
         packageBytes: child.data,
+        assets: [
+          { path: legacyFontPath, bytes: legacyFont },
+          { path: namedImagePath, bytes: namedImage },
+        ],
       },
     ]);
+    expect(store.get).toHaveBeenNthCalledWith(
+      1,
+      "parent",
+      expect.objectContaining({
+        format: "lsmlz",
+        sceneVersion: parent.sceneVersion,
+      }),
+    );
+    expect(store.get).toHaveBeenNthCalledWith(
+      2,
+      "child",
+      expect.objectContaining({
+        format: "lsml",
+        sceneVersion: child.sceneVersion,
+      }),
+    );
     vi.mocked(mountVisionScene).mockClear();
     store.get.mockImplementation(async (id) => {
       if (id === parent.sceneId) return parent;
@@ -144,7 +192,7 @@ describe("active exact-version instance acquisition", () => {
       "leaf",
       expect.objectContaining({
         sceneVersion: leaf.sceneVersion,
-        format: "lsmlz",
+        format: "lsml",
       }),
     );
     expect(input).toEqual(before);

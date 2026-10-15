@@ -13,29 +13,47 @@ scene identity, revision, version, digest, origin, or size limits. It never
 falls back to a different version or to a compiled bundle.
 
 `instances.ts` walks semantic layout children and repeat templates to acquire
-the exact pinned sources of active LSML instances through that same provider.
-One acquisition deduplicates repeated references, retains distinct child versions,
-and rejects cycles, depth beyond eight, more than 256 sources, 128 MiB expanded
-dependencies or 100,000 traversed layout nodes. Shared dependencies still count
-toward each path's depth. Metadata and parameter objects are not scene children.
-The graph has no global or inactive lifetime. Missing exact sources fail with
-`BUNDLE_FETCH_FAILED` before Vision load; cancellation preserves the owner's
-reason. `cache.ts` supplies the existing content/manifest verifier: online instance
-admission does not require offline Blue readiness, while cache reads/writes keep
-that stricter default. The verified documents and expanded byte counts are reused
-for traversal instead of parsing an archive again for each instance occurrence.
-`native-scene-frames.ts` forwards original child packages/assets to Vision's
-instance-aware load message. `scripts/qualify-instance-runtime.mjs` drives that
-real path in a private Chrome/Vite page: local root and child LSMLZ, an embedded
-WOFF2 font and content-addressed PNG, asymmetric pixels for all four fit modes, a
-live `bindParams` update, WebGL context loss/restoration, and a missing exact child
-that leaves the accepted frame intact. Its result and pixel capture are recorded
-under `evidence/local-20261015-instance-sources/eleven/`. This does not qualify
-ZabCanvas HTTP acquisition, remote child assets, capture composition, editor asset
-resolution, shared runtime admission or public output.
-The embedded child-font fixture uses an asset path addressed by its 64-hex SHA-256
-digest. The source verifier still rejects named and legacy SHA-1 asset filenames;
-those remain unsupported rather than bypassing the existing address check.
+the exact pinned sources of active LSML instances through that same provider,
+requesting plain LSML so Canvas can use its existing separately fetched, exact
+revision asset files. The local source provider re-expresses the already verified
+LSMLZ capsule as the same LSML bytes plus its original asset paths and bytes;
+root scene requests remain LSMLZ. One acquisition deduplicates repeated
+references, retains distinct child versions, and rejects cycles, depth beyond
+eight, more than 256 sources, 128 MiB expanded dependencies or 100,000 traversed
+layout nodes. Shared dependencies still count toward each path's depth. Metadata
+and parameter objects are not scene children. The graph has no global or inactive
+lifetime. Missing exact sources fail with `BUNDLE_FETCH_FAILED` before Vision load;
+cancellation preserves the owner's reason. `cache.ts` supplies the existing
+content/manifest verifier: online instance admission does not require offline
+Blue readiness, while cache reads/writes keep that stricter default. It admits
+safe `assets/...` paths permitted by Vision, verifies top-level 40-hex SHA-1 and
+64-hex SHA-256 addresses, and retains transport digests for separately cached
+named assets. Duplicate archive entries, unsafe paths and over-budget packages
+fail before Vision load. The verified documents and expanded byte counts are
+reused for traversal instead of parsing an archive again for each occurrence.
+`native-scene-frames.ts` forwards the exact child LSML bytes and explicit asset
+paths/bytes to Vision's instance-aware load message. `scripts/qualify-instance-runtime.mjs`
+drives that real path in a private Chrome/Vite page: LSMLZ root, plain LSML child,
+a legacy SHA-1-addressed WOFF2 font, a named nested PNG, asymmetric pixels for all
+four fit modes, a live `bindParams` update, WebGL context loss/restoration, and
+missing-child and wrong-hash failures that leave the accepted frame intact. Its
+result and pixel capture are recorded under the current qualification evidence
+directory; the injected child fixture proves Vision admission and failure
+preservation, not named/SHA-1 delivery from Canvas. Provider tests separately
+exercise Canvas's pinned HTTP source/asset requests and its origin, redirect,
+size, abort, exact revision and digest checks. ZabCanvas's current HTTP descriptor
+lists only `assets/<64 lowercase hex>.<ext>` files; Solar verifies each file
+against that SHA-256 path and the response's `X-Scene-Version`,
+`X-Scene-Revision` and body ETag. The producer's source-delivery contract also
+explicitly refuses legacy SHA-1 local asset paths. Named and SHA-1 assets are
+supported when already present in a verified exact LSMLZ local capsule and
+converted locally, but are unavailable through the current Canvas separated-file
+HTTP contract. Solar does not invent a digest for named URLs or retry a failed
+LSML request as LSMLZ. The package path
+does not rewrite `http(s)` image URLs embedded in child LSML or route them through
+the active scene image provider; those URLs remain outside child package parity.
+Capture composition, editor asset resolution, shared runtime admission and public
+output are also outside this qualification.
 
 Each delivery carries the ZabCanvas Blue manifest for that same validated
 revision. `blue_manifest` includes the scene's declared Blue bindings and
@@ -65,9 +83,12 @@ unpublished standard scenes are counted separately. No inactive graph is retaine
 See `docs/development/source-cache.md` and the cache/store test suites.
 
 Tests in `tests/unit/scene-source.test.ts` cover descriptor acquisition,
-LSML/LSMLZ delivery, authentication forwarding, version pinning, content hashes,
-manifest digest and mismatch rejection, untrusted destinations, request errors
-and response-size limits.
+LSML/LSMLZ delivery, authenticated exact child acquisition with separately fetched
+assets, version pinning, response revision/ETag headers, content hashes, manifest
+digest and mismatch rejection, untrusted destinations, request errors and
+response-size limits. Cache and
+instance-source suites cover named and SHA-1 packages, wrong hashes, duplicate and
+traversal entries, aborts, graph budgets and failure before renderer admission.
 
 The trusted Prism host can opt into `local-authoring.ts` reads `x-solar-authoring` from the active, verified LSDP
 resource. The `solar.authoring/1` delivery contains an immutable `lsml_bundle`
