@@ -28,12 +28,15 @@ with a fresh compositor whose new composition cache is disabled.
 
 The exact local engine bytes and source provenance are recorded in
 `public/vision/vision-assets.json`. The retained-rendering predecessor was merged
-in Vision PR #1. The current manifest identifies the full-resolution media
-qualification worktree, its immutable base and source-file hashes, including
-the already qualified contentBox scalar support. Generated WASM and glue are
-qualified and installed together; internal closure indices can change while
-the public API stays equivalent. Host checks compare the emitted assets with
-all four pins. The native LSDP source and binary stay unchanged.
+in Vision PR #1. The current manifest identifies the engine source revision,
+qualification scope and source-file hashes, including contentBox scalar support.
+Generated WASM and glue are qualified and installed together; internal closure
+indices can change while the public API stays equivalent. Host checks compare
+the emitted assets with all four pins. Native server source and binary identity
+are recorded separately in `dist/native/manifest.json`; a private consolidated
+package can therefore qualify a newer native server without implying that the
+running common dev runtime has adopted it. Browser client pins remain independent
+when their upstream files and wire contract have not changed.
 
 ## Proof contract
 
