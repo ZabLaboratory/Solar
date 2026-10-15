@@ -12,6 +12,23 @@ snapshot's `scene_version`. Solar rejects a descriptor or response that changes
 scene identity, revision, version, digest, origin, or size limits. It never
 falls back to a different version or to a compiled bundle.
 
+`instances.ts` walks semantic layout children and repeat templates to acquire
+the exact pinned sources of active LSML instances through that same provider.
+One acquisition deduplicates repeated references, retains distinct child versions,
+and rejects cycles, depth beyond eight, more than 256 sources, 128 MiB expanded
+dependencies or 100,000 traversed layout nodes. Shared dependencies still count
+toward each path's depth. Metadata and parameter objects are not scene children.
+The graph has no global or inactive lifetime. Missing exact sources fail with
+`BUNDLE_FETCH_FAILED` before Vision load; cancellation preserves the owner's
+reason. `cache.ts` supplies the existing content/manifest verifier: online instance
+admission does not require offline Blue readiness, while cache reads/writes keep
+that stricter default. The verified documents and expanded byte counts are reused
+for traversal instead of parsing an archive again for each instance occurrence.
+`native-scene-frames.ts` forwards original child packages/assets to Vision's
+instance-aware load message. This source boundary does not render child layouts
+or project their local state. Full engine/WebGL admission and child HTTP image,
+capture composition and authoring-preview parity require their own qualification.
+
 Each delivery carries the ZabCanvas Blue manifest for that same validated
 revision. `blue_manifest` includes the scene's declared Blue bindings and
 blueprints, validation record, binding closure, offline-readiness result and a

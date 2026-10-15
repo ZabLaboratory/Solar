@@ -56,8 +56,11 @@ function unpack(data: Uint8Array): Record<string, Uint8Array> {
   }
 }
 
-/** Revalidate cached bytes, including Blue closure, before they become a source. */
-export function verifySceneSource(source: SceneSourceDelivery): void {
+/** Verify pinned source bytes; cache callers also require complete offline Blue closure. */
+export function verifySceneSource(
+  source: SceneSourceDelivery,
+  options: { requireOfflineReady?: boolean } = {},
+): { document: Record<string, unknown>; expandedBytes: number } {
   const manifest = source.blueManifest;
   if (
     !manifest ||
@@ -69,8 +72,11 @@ export function verifySceneSource(source: SceneSourceDelivery): void {
     source.revision < 1 ||
     !ADDRESS.test(source.sourceDigest) ||
     !ADDRESS.test(source.sceneVersion) ||
-    !manifest.readiness?.offline_ready ||
-    !manifest.readiness.binding_closure_complete ||
+    typeof manifest.readiness?.offline_ready !== "boolean" ||
+    typeof manifest.readiness.binding_closure_complete !== "boolean" ||
+    (options.requireOfflineReady !== false &&
+      (!manifest.readiness.offline_ready ||
+        !manifest.readiness.binding_closure_complete)) ||
     !Array.isArray(manifest.binding_closure) ||
     !manifest.declarations ||
     !manifest.validation
@@ -121,6 +127,7 @@ export function verifySceneSource(source: SceneSourceDelivery): void {
     if (bytes.byteLength > 32 * MIB || size > 128 * MIB)
       throw new SceneSourceError("SOURCE_RESOURCE_LIMIT");
   }
+  return { document, expandedBytes: size };
 }
 
 export function encodeSceneSource(source: SceneSourceDelivery): Uint8Array {

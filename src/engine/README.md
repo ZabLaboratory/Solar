@@ -281,3 +281,12 @@ contain, fill and horizontal/vertical crop mutations in one Vision engine. This
 qualifies bitmap fitting and descriptor hot patches; it does not exercise LSDP,
 Meet signaling, physical capture, CEF, 1080p60 or switch timing. The caller owns
 the explicit output directory; no shared development session is attached.
+
+## Vision contracts
+
+`vision-contracts.ts` owns the host/presenter message, live-media descriptor,
+render-package and scene-handle TypeScript contracts. `vision-presenter.ts`
+re-exports their existing names for its consumers and continues to own the
+persistent host, load, patch, frame and teardown implementations. Verified active
+instance packages travel in the existing load message; dependency fetching remains
+with `scenes/instances.ts`, and instance state/rendering remains with Vision.
