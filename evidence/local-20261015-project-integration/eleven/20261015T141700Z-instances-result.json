@@ -1,0 +1,209 @@
+{
+  "passed": true,
+  "boundary": "Solar NativeSceneFrames exact-source acquisition + Solar persistent presenter + pinned Vision WASM/WebGL; private offline source fixtures only",
+  "exclusions": [
+    "ZabCanvas HTTP acquisition (covered by provider tests)",
+    "child-document http(s) image URL rewriting",
+    "capture composition",
+    "editor asset resolver",
+    "runtime/shared-dev admission"
+  ],
+  "dimensions": {
+    "gpu": [
+      200,
+      80
+    ],
+    "front": [
+      200,
+      80
+    ]
+  },
+  "sourceIdentity": {
+    "sceneId": "instance-root",
+    "sceneVersion": "sha256:eb1ba932ccc467809d1cdd47b3116efc82909cef5f9710588428f7267b38615f",
+    "sourceDigest": "sha256:f4acf18d778fa14363a382503f9105e689d88b0c39123303f66bcb7c3d71fef5"
+  },
+  "privateRenderPackage": {
+    "sceneId": "instance-root",
+    "sceneVersion": "sha256:4932a00a89c5de49cc9ba4911d3556bc2bfd3a0800dd1da6ad1d0c3f9dc81d29"
+  },
+  "sourcePins": [
+    {
+      "sceneId": "instance-root",
+      "sceneVersion": "sha256:eb1ba932ccc467809d1cdd47b3116efc82909cef5f9710588428f7267b38615f",
+      "sourceDigest": "sha256:f4acf18d778fa14363a382503f9105e689d88b0c39123303f66bcb7c3d71fef5"
+    },
+    {
+      "sceneId": "fit-child",
+      "sceneVersion": "sha256:c555e83fff1e62d5976e383610fa9b92362c5a6045498afd77af17eb9e5b3889",
+      "sourceDigest": "sha256:1f5ef0e7971894aa8f88b8142b02547229c996708b740a445e9a8ebb0f03379c"
+    },
+    {
+      "sceneId": "state-child",
+      "sceneVersion": "sha256:98dab48e81481984be0ee6b2fd448df2c270443438fb788a2803b464933575b1",
+      "sourceDigest": "sha256:481b27ebcb2761f2c2d04b325d906bc92312d3b376d6576e2217aaaf4a3c8762"
+    },
+    {
+      "sceneId": "missing-root",
+      "sceneVersion": "sha256:8d3aea660bdd5c1cc80910b855e4ecf1ae421efa9864a28a22baebc6a2cb4206",
+      "sourceDigest": "sha256:3d99cb04fe38db0396bc67c63e0ffd067718a17739a4955be02c14e1ca9c245e"
+    },
+    {
+      "sceneId": "wrong-hash-child",
+      "sceneVersion": "sha256:673aa8eb16d7d61f07b4b827015326085141add06c9d3933b476d5565c6f9743",
+      "sourceDigest": "sha256:2ee5d8eb5470da6186dfd30248cafdd5cf783a41004fa9bde26965be1fd64730"
+    },
+    {
+      "sceneId": "wrong-hash-root",
+      "sceneVersion": "sha256:d9a900fe985ecd28847d0af6da305179c161522436c7876049609363cb34687d",
+      "sourceDigest": "sha256:fff31186e3fe4c6d1c0d0016932bcbabdb5dfe92c36cf47d87f603e991b767ee"
+    }
+  ],
+  "font": {
+    "path": "assets/db828b56971ee4c696272565e4c621c221ea356f.woff2",
+    "sha1": "db828b56971ee4c696272565e4c621c221ea356f",
+    "sha256": "sha256:a419094441326e38d68a583e78744efe1c0ccbc90b4c87a43f5d619c83a438b1",
+    "bytes": 13500
+  },
+  "image": {
+    "path": "assets/instances/child-image.png",
+    "sha256": "sha256:2d26de4fb677d35619adf780b93162934d11277bf357144e7b244adf9ef2e330",
+    "bytes": 111
+  },
+  "samples": [
+    {
+      "phase": "first accepted GPU frame with nested assets",
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "swatch": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "embeddedFontPixels": 194
+    },
+    {
+      "phase": "live bindParams mutation",
+      "swatch": [
+        0,
+        255,
+        0,
+        255
+      ]
+    },
+    {
+      "phase": "WebGL context restoration",
+      "swatch": [
+        0,
+        170,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "embeddedFontPixels": 194,
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "contextLost": false
+    },
+    {
+      "phase": "missing dependency refusal preserves active output",
+      "rejection": {
+        "code": "BUNDLE_FETCH_FAILED",
+        "message": "InstanceSourceError: BUNDLE_FETCH_FAILED"
+      },
+      "preserved": {
+        "swatch": [
+          0,
+          170,
+          0,
+          255
+        ],
+        "image": {
+          "x": 40,
+          "y": 13
+        },
+        "embeddedFontPixels": 194
+      }
+    },
+    {
+      "phase": "wrong SHA-1 child asset refusal preserves active output",
+      "rejection": {
+        "code": "INSTANCE_SOURCE_INVALID",
+        "message": "InstanceSourceError: INSTANCE_SOURCE_INVALID"
+      },
+      "preserved": {
+        "swatch": [
+          0,
+          170,
+          0,
+          255
+        ],
+        "image": {
+          "x": 40,
+          "y": 13
+        },
+        "embeddedFontPixels": 194
+      }
+    }
+  ],
+  "errors": [],
+  "browser": "154.0.8037.98",
+  "node": "v24.16.0",
+  "pageErrors": []
+}
