@@ -1,11 +1,13 @@
 import type {
   VisionLiveMediaSource,
+  VisionMediaSubmitReceipt,
   VisionPresenterMessage,
   VisionSceneHandle,
   VisionRenderPackage,
 } from "./vision-contracts";
 export type {
   VisionLiveMediaSource,
+  VisionMediaSubmitReceipt,
   VisionPresenterMessage,
   VisionSceneHandle,
   VisionRenderPackage,
@@ -402,7 +404,7 @@ async function mountVisionSceneNow(
   const waiters = new Map<
     number,
     {
-      resolve: () => void;
+      resolve: (message: VisionPresenterMessage) => void;
       reject: (error: Error) => void;
       started?: number;
       stage?: string;
@@ -512,11 +514,13 @@ async function mountVisionSceneNow(
           detail: { stage: waiter.stage, sceneId: delivery?.sceneId },
         });
       }
-      waiter.resolve();
+      waiter.resolve(message);
     }
   };
 
-  const requestFrame = (request: Record<string, unknown>): Promise<void> => {
+  const requestFrame = (
+    request: Record<string, unknown>,
+  ): Promise<VisionPresenterMessage> => {
     if (
       !presenter ||
       disposed ||
@@ -525,7 +529,7 @@ async function mountVisionSceneNow(
     )
       return Promise.reject(new Error("Vision scene is disconnected."));
     const seq = session ? ++session.sequence : ++sequence;
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<VisionPresenterMessage>((resolve, reject) => {
       const measured = ["init-empty", "preload-fonts", "load"].includes(
         String(request.type),
       );
@@ -769,14 +773,20 @@ async function mountVisionSceneNow(
       if (Object.keys(frame.patch).length > 0) {
         // Upload camera pixels before the state patch's one real GPU render.
         mediaBridge.upload(frame.frames);
-        await requestFrame({
+        const acknowledgement = await requestFrame({
           type: "patch",
           patchJson: JSON.stringify(frame.patch),
           ...(frame.images ? { images: frame.images } : {}),
         });
+        return mediaSubmitReceipt(acknowledgement);
       } else if (frame.frames.length > 0) {
-        await requestFrame({ type: "media-frames", frames: frame.frames });
+        const acknowledgement = await requestFrame({
+          type: "media-frames",
+          frames: frame.frames,
+        });
+        return mediaSubmitReceipt(acknowledgement);
       }
+      return null;
     });
     const updateSize = (nextWidth: number, nextHeight: number): void => {
       const boundedWidth = Math.round(nextWidth);
@@ -863,9 +873,12 @@ async function mountVisionSceneNow(
         )
           layer.style.opacity = "0";
       },
-      updateMedia: (frames) => {
+      updateMedia: (frames, onSubmission) => {
         if (frames.length === 0) return Promise.resolve();
-        return frameQueue!.addMedia(frames);
+        return frameQueue!.addMedia(frames, (receipt) => {
+          if (receipt) onSubmission?.(receipt);
+          else onSubmission?.({ frameSubmitted: false, renderSubmitCallMs: null });
+        });
       },
       clearMedia: (paths) => {
         // A reused media controller can retire paths from the previous scene.
@@ -875,7 +888,8 @@ async function mountVisionSceneNow(
         if (current.length === 0) return Promise.resolve();
         return frameQueue!
           .flush()
-          .then(() => requestFrame({ type: "media-clear", paths: current }));
+          .then(() => requestFrame({ type: "media-clear", paths: current }))
+          .then(() => undefined);
       },
       flush: () =>
         termination ?? frameQueue!.flush().then(() => presenter?.flush()),
@@ -945,4 +959,17 @@ export function visibleState(
   return Object.fromEntries(
     Object.entries(state).filter(([path]) => !path.startsWith("__")),
   );
+}
+
+function mediaSubmitReceipt(
+  message: VisionPresenterMessage,
+): VisionMediaSubmitReceipt {
+  const elapsed = message.timing?.gpuSubmitCallMs;
+  return {
+    frameSubmitted: message.type === "frame-submitted",
+    renderSubmitCallMs:
+      typeof elapsed === "number" && Number.isFinite(elapsed) && elapsed >= 0
+        ? elapsed
+        : null,
+  };
 }

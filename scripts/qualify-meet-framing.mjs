@@ -59,11 +59,72 @@ try {
       ),
     ]),
   );
+  const performanceProbe = await page.evaluate(() => {
+    try {
+      performance.measure("solar:live-media-stage-probe", {
+        start: performance.now(),
+        detail: { gpuCompletionAvailable: false, gpuCompletionMs: null },
+      });
+      const entries = performance.getEntriesByName("solar:live-media-stage-probe");
+      performance.clearMeasures("solar:live-media-stage-probe");
+      return { supported: entries.length === 1, error: null };
+    } catch (error) {
+      return { supported: false, error: String(error) };
+    }
+  });
+  const metricsReady = await page.waitForFunction(
+    () => performance.getEntriesByName("solar:live-media-stage").length > 0,
+    undefined,
+    { timeout: 5000 },
+  ).then(() => true, () => false);
+  if (!metricsReady) {
+    const diagnostic = await page.evaluate(() => {
+      try {
+        performance.measure("solar:live-media-stage-probe", {
+          start: performance.now(),
+          detail: { gpuCompletionAvailable: false, gpuCompletionMs: null },
+        });
+        const supported =
+          performance.getEntriesByName("solar:live-media-stage-probe").length === 1;
+        performance.clearMeasures("solar:live-media-stage-probe");
+        return {
+          metricEntryCount: performance.getEntriesByName("solar:live-media-stage").length,
+          measureDetailSupported: supported,
+          timeOrigin: performance.timeOrigin,
+          now: performance.now(),
+        };
+      } catch (error) {
+        return {
+          metricEntryCount: performance.getEntriesByName("solar:live-media-stage").length,
+          measureDetailSupported: false,
+          error: String(error),
+        };
+      }
+    });
+    throw Error(`No bounded live-media Performance entry was published: ${JSON.stringify(diagnostic)}`);
+  }
+  const stageMetrics = await page.evaluate(() =>
+    performance
+      .getEntriesByName("solar:live-media-stage")
+      .map((entry) => ({ emittedAtMs: entry.startTime, sample: entry.detail })),
+  );
+  if (stageMetrics.length > 64)
+    throw Error(`Live-media metric history exceeded its cap: ${stageMetrics.length}`);
+  for (let index = 0; index < stageMetrics.length; index += 1) {
+    const { emittedAtMs, sample } = stageMetrics[index];
+    if (!Number.isFinite(sample?.windowMs) || sample.windowMs < 1000)
+      throw Error("A live-media sample covered less than one second.");
+    if (sample?.gpuCompletionAvailable !== false || sample?.gpuCompletionMs !== null)
+      throw Error("GPU completion must remain explicitly unavailable.");
+    if (index > 0 && emittedAtMs - stageMetrics[index - 1].emittedAtMs < 1000)
+      throw Error("Live-media samples were emitted more than once per second.");
+  }
+  const resultWithMetrics = { ...result, performanceProbe, stageMetrics };
   await page.screenshot({ path: resolve(out, "pixels.png"), fullPage: true });
   await writeFile(
     resolve(out, "result.json"),
     JSON.stringify(
-      { ...result, browser: browser.version(), pageErrors: errors },
+      { ...resultWithMetrics, browser: browser.version(), pageErrors: errors },
       null,
       2,
     ) + "\n",
@@ -74,6 +135,8 @@ try {
       passed: result.passed,
       states: result.samples.length,
       uploads: result.uploads,
+      metricsEntries: stageMetrics.length,
+      gpuCompletionAvailable: false,
       browser: browser.version(),
       out,
     }) + "\n",

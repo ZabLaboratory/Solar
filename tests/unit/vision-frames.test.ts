@@ -47,15 +47,18 @@ describe("combined Vision frame submission", () => {
   });
 
   it("submits the latest state and latest camera image once, preserving all completion waiters", async () => {
-    const submit = vi.fn(async (_frame: VisionFrame) => {});
+    const receipt = { frameSubmitted: true, renderSubmitCallMs: 1.75 };
+    const submit = vi.fn(async (_frame: VisionFrame) => receipt);
     const queue = new VisionFrames(submit);
     const first = bitmap(),
       latest = bitmap();
+    const firstSubmission = vi.fn();
+    const latestSubmission = vi.fn();
     const pending = [
       queue.addPatch({ score: 1 }),
-      queue.addMedia([{ path: "cam", bitmap: first }]),
+      queue.addMedia([{ path: "cam", bitmap: first }], firstSubmission),
       queue.addPatch({ score: 2 }),
-      queue.addMedia([{ path: "cam", bitmap: latest }]),
+      queue.addMedia([{ path: "cam", bitmap: latest }], latestSubmission),
     ];
     expect(first.close).toHaveBeenCalledOnce();
     expect(submit).not.toHaveBeenCalled();
@@ -67,24 +70,29 @@ describe("combined Vision frame submission", () => {
       frames: [{ path: "cam", bitmap: latest }],
     });
     expect(latest.close).toHaveBeenCalledOnce();
+    expect(firstSubmission).toHaveBeenCalledWith(receipt);
+    expect(latestSubmission).toHaveBeenCalledWith(receipt);
     queue.close();
   });
 
   it("keeps arrivals behind the in-flight frame and drains them at the barrier", async () => {
     let finish!: () => void;
+    const receipt = { frameSubmitted: true, renderSubmitCallMs: 2.5 };
     const submit = vi.fn(async (_frame: VisionFrame) => {
       if (submit.mock.calls.length === 1)
         await new Promise<void>((resolve) => {
           finish = resolve;
         });
+      return receipt;
     });
     const queue = new VisionFrames(submit);
     const first = queue.addPatch({ score: 1 });
     const work = queue.flush();
     await Promise.resolve();
     const image = bitmap();
+    const submission = vi.fn();
     const next = [
-      queue.addMedia([{ path: "cam", bitmap: image }]),
+      queue.addMedia([{ path: "cam", bitmap: image }], submission),
       queue.addPatch({ score: 2 }),
     ];
     const barrier = queue.flush();
@@ -93,6 +101,7 @@ describe("combined Vision frame submission", () => {
     expect(submit).toHaveBeenCalledTimes(2);
     expect(submit.mock.calls[1]![0].patch).toEqual({ score: 2 });
     expect(image.close).toHaveBeenCalledOnce();
+    expect(submission).toHaveBeenCalledWith(receipt);
     queue.close();
   });
 

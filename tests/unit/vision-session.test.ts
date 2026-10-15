@@ -10,7 +10,7 @@ const fake = vi.hoisted(() => ({
   heldTypes: new Set<string>(),
   held: [] as Array<{ type: string; deliver: () => void }>,
   listeners: [] as Array<
-    ((event: { data: { type: string; seq: number } }) => void) | null
+    ((event: { data: { type: string; seq: number; timing?: Record<string, unknown> } }) => void) | null
   >,
   created: 0,
   terminated: 0,
@@ -22,7 +22,7 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
   createMainThreadPresenter: (canvas: HTMLCanvasElement) => {
     fake.created++;
     let listener:
-      | ((event: { data: { type: string; seq: number } }) => void)
+      | ((event: { data: { type: string; seq: number; timing?: Record<string, unknown> } }) => void)
       | null = null;
     return {
       addEventListener: (_type: string, next: typeof listener) => {
@@ -39,6 +39,7 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
             data: {
               type: type === "init-empty" ? "engine-ready" : "frame-submitted",
               seq: request.seq as number,
+              timing: { gpuSubmitCallMs: 2.5 },
             },
           });
         if (fake.heldTypes.has(type)) fake.held.push({ type, deliver });
@@ -129,6 +130,34 @@ it("prepares the empty engine and installation fonts before any scene, then reus
   expect(fake.created).toBe(1);
   expect(fake.requests.filter((x) => x === "init-empty")).toHaveLength(1);
   expect(fake.requests.filter((x) => x === "load")).toHaveLength(1);
+  scene.dispose();
+});
+
+it("reports only the presenter's render-call timing with its frame-submitted media receipt", async () => {
+  const { target, delivery, pack } = setup();
+  const scene = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    pack,
+    true,
+  );
+  const onSubmission = vi.fn();
+  const update = scene.updateMedia(
+    [{ path: "camera.live", bitmap: { close: vi.fn() } as unknown as ImageBitmap }],
+    onSubmission,
+  );
+
+  await scene.flush?.();
+  await update;
+
+  expect(fake.requests).toContain("media-frames");
+  expect(onSubmission).toHaveBeenCalledWith({
+    frameSubmitted: true,
+    renderSubmitCallMs: 2.5,
+  });
   scene.dispose();
 });
 
