@@ -44,6 +44,10 @@ application/rendering boundary. The pinned browser adapter's existing 32-channel
 window therefore bounds worker deliveries while main admission is pending. Both
 sides abort on disconnect, including pending connection/request work. A snapshot
 can bypass the main notification queue to complete same-connection resync.
+`tests/unit/native-worker.test.ts` exercises the worker callback itself: scalar
+receipts stay pending until main admission, and a refused admission propagates
+its typed error. The transport is mocked; this does not measure native window
+throughput or GPU presentation.
 `internal/native-stream.ts` owns notification identity/order/integrity and scalar
 classification. The worker uses a local SHA-256 implementation for native frame
 checksums; the byte-pinned upstream client still compares every checksum. This
