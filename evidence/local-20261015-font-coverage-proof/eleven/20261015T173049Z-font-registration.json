@@ -1,0 +1,196 @@
+{
+  "capturedUtc": "2026-10-15T17:30:50.449Z",
+  "passed": true,
+  "privateBrowser": true,
+  "sharedApplicationTouched": false,
+  "fontsChanged": false,
+  "indexSha256": "8d18412d6d223e31af87a6c6ee38ec4fe06e4ebd839434552ec49844ac0ea10f",
+  "uniqueEncodedFiles": 165,
+  "encodedBytes": 368309930,
+  "artifacts": {
+    "/pkg/lumencast_vision_web.js": {
+      "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d",
+      "bytes": 152321
+    },
+    "/pkg/lumencast_vision_web_bg.wasm": {
+      "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd",
+      "bytes": 10491253
+    }
+  },
+  "scope": "Real private Rust/WASM registry admission using existing Solar installationFontBatches, two passes in one empty engine. No scene, glyph rendering or shared-runtime registration is claimed.",
+  "browserVersion": "154.0.8037.98",
+  "registry": {
+    "engineCreations": 1,
+    "sceneLoads": 0,
+    "passes": [
+      {
+        "files": 165,
+        "batches": [
+          {
+            "files": 32,
+            "info": {
+              "decode_count": 32,
+              "decoded_bytes": 18215356,
+              "registered_fonts": 32,
+              "registration_count": 32
+            }
+          },
+          {
+            "files": 32,
+            "info": {
+              "decode_count": 64,
+              "decoded_bytes": 32736166,
+              "registered_fonts": 64,
+              "registration_count": 64
+            }
+          },
+          {
+            "files": 26,
+            "info": {
+              "decode_count": 90,
+              "decoded_bytes": 73377638,
+              "registered_fonts": 90,
+              "registration_count": 90
+            }
+          },
+          {
+            "files": 5,
+            "info": {
+              "decode_count": 95,
+              "decoded_bytes": 120715394,
+              "registered_fonts": 95,
+              "registration_count": 95
+            }
+          },
+          {
+            "files": 3,
+            "info": {
+              "decode_count": 98,
+              "decoded_bytes": 169438518,
+              "registered_fonts": 98,
+              "registration_count": 98
+            }
+          },
+          {
+            "files": 26,
+            "info": {
+              "decode_count": 124,
+              "decoded_bytes": 236129150,
+              "registered_fonts": 124,
+              "registration_count": 124
+            }
+          },
+          {
+            "files": 15,
+            "info": {
+              "decode_count": 139,
+              "decoded_bytes": 302935730,
+              "registered_fonts": 139,
+              "registration_count": 139
+            }
+          },
+          {
+            "files": 26,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          }
+        ],
+        "elapsedMs": 4885.5,
+        "final": {
+          "decode_count": 165,
+          "decoded_bytes": 368558778,
+          "registered_fonts": 165,
+          "registration_count": 165
+        }
+      },
+      {
+        "files": 165,
+        "batches": [
+          {
+            "files": 32,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 32,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 26,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 5,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 3,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 26,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 15,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          },
+          {
+            "files": 26,
+            "info": {
+              "decode_count": 165,
+              "decoded_bytes": 368558778,
+              "registered_fonts": 165,
+              "registration_count": 165
+            }
+          }
+        ],
+        "elapsedMs": 6154.5,
+        "final": {
+          "decode_count": 165,
+          "decoded_bytes": 368558778,
+          "registered_fonts": 165,
+          "registration_count": 165
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "capturedUtc": "2026-10-15T17:35:44.5651969Z",
+  "base": "dc55ecd81517669615ce4c1ce45c84e9551ae7eb",
+  "scope": "Read-only source/cache inventory and private single-engine font admission; no shared-runtime change",
+  "coverage": "20261015T172649Z-font-coverage.json",
+  "registration": "20261015T173214Z-font-registration.json",
+  "supportedFiles": 165,
+  "encodedBytes": 368309930,
+  "cachedContentDigests": 165,
+  "movedSourceIndexPaths": 11,
+  "unsupportedWindowsBitmapFiles": 192,
+  "registryResources": 165,
+  "decodeCountAfterTwoPasses": 165,
+  "registrationCountAfterTwoPasses": 165,
+  "coldMs": 5897.100000023842,
+  "secondPassMs": 5061.600000023842,
+  "limitations": [
+    "Counts identify decoded font resources, not TTC faces or glyph coverage",
+    "Second pass still fetches/transfers font bytes; unchanged counters prove registry deduplication only",
+    "Shared runtime registration is not exposed by existing public diagnostics; Main2 confirmed no count can be observed without added instrumentation",
+    "No public stream, scene change, application restart, cache write, or package admission"
+  ],
+  "validations": [
+    "Focused ESLint passed",
+    "node --check passed",
+    "npm run check:docs: 80 tools, 31 docs, 174 links, zero failures",
+    "File-size guard: 290 text files, three reviewed exceptions, no growth",
+    "git diff --check passed"
+  ],
+  "retainedEarlierReports": "First inventory separates source-path index membership; later inventory adds content-digest coverage. Both browser runs pass."
+}
