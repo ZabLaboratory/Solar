@@ -49,13 +49,28 @@ blocks later work and clears the owned graph after any active operation before
 closing the peer. This bound is verified with a blocked fake peer and a 130-plan
 burst; it is not a native 130-mutations-per-second measurement.
 
+The composition socket has its own terminal-close recovery. If only that peer
+closes, Solar abandons it without attempting a clear over the dead connection,
+uses the runtime's existing reconnect timer/backoff to fetch a fresh token and
+replace that peer, then republishes only the latest accepted composition (or
+repeats its current clear). Composition accepted from later LSML mutations is
+retained as one current publication while that peer is absent, so recovery does
+not depend on another mutation arriving. The primary LSML/Vision session remains connected;
+a primary reconnect takes priority on the shared timer, and runtime disconnect
+cancels a pending composition retry. This recovers the derived side channel; it
+does not create an LSML receipt or retain prior scene plans.
+
 The current Solar planner accepts only resolved fixed frames for native group
 bounds and reads `MAX_TEXTURE_SIZE` from the existing Vision WebGL2 session.
 Unresolved grid/repeat/auto-layout geometry and over-budget atlases fail closed.
-Pulsar's current consumer still refuses Solar surface bands, non-null masks and
-unsupported group blend modes, so the plan is not yet proof of native mixed
-composition pixels. See `tests/unit/native-composition.test.ts`,
-`tests/unit/native-composition-publisher.test.ts` and
+Pulsar's isolated native probe now covers Solar surface bands composed with a
+capture under group opacity. Non-null masks and unsupported group blend modes
+remain refused. Solar's local plan tests do not qualify atlas routing through
+the external Main consumer and Pulsar together, so they are not proof of
+end-to-end mixed composition pixels. See `tests/unit/native-composition.test.ts`,
+`tests/unit/native-composition-publisher.test.ts`,
+`tests/unit/native-composition-session.test.ts` and
+`tests/unit/native-lsdp-runtime-composition.test.ts` plus
 `tests/unit/native-lsdp-runtime.test.ts` for Solar-local coverage.
 
 ## Mutation application contract

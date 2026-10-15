@@ -1,4 +1,4 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
 import { nativeTreeHash } from "../../src/internal/native-tree";
 import {
   NativeCompositionPublisher,
@@ -564,4 +564,42 @@ it("makes retire a terminal clear barrier behind an active write", async () => {
   await retire;
   expect(shared.state.graphs).toEqual({});
   expect(closed).toBe(true);
+});
+
+it("reports a terminal peer close and retires without attempting a remote clear", async () => {
+  const transaction = vi.fn(async () => {
+    throw new Error("closed peer must not receive transactions");
+  });
+  const close = vi.fn();
+  let onClose: ((error: Error) => void) | undefined;
+  let reported: unknown;
+  let disconnected: unknown;
+  const publisher = new NativeCompositionPublisher(
+    options(),
+    (error) => {
+      reported = error;
+    },
+    (_url, peerOptions) => {
+      onClose = peerOptions.onClose;
+      return { ready: Promise.resolve(), transaction, close };
+    },
+    (error) => {
+      disconnected = error;
+    },
+  );
+  const error = new Error("composition peer closed");
+  onClose?.(error);
+
+  expect(reported).toBe(error);
+  expect(disconnected).toBe(error);
+  await expect(
+    publisher.publish(
+      projection(),
+      { scene_id: "scene-a", scene_version: "sha256:revision-a" },
+      "tree-sha256:after-close",
+    ),
+  ).resolves.toBe("retired");
+  await publisher.retire();
+  expect(transaction).not.toHaveBeenCalled();
+  expect(close).toHaveBeenCalledOnce();
 });

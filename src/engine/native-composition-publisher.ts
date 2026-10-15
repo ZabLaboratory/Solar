@@ -133,6 +133,7 @@ export class NativeCompositionPublisher {
   private draining = false;
   private retiring = false;
   private retired = false;
+  private disconnected = false;
   private retirement: Promise<void> | null = null;
 
   constructor(
@@ -140,6 +141,7 @@ export class NativeCompositionPublisher {
     private readonly onError: (error: unknown) => void,
     createPeer: NativeCompositionPeerFactory = (url, peerOptions) =>
       new BrowserLSDP(url, peerOptions),
+    private readonly onDisconnected: (error: unknown) => void = () => {},
   ) {
     this.peer = createPeer(options.url, {
       authToken: options.authToken,
@@ -148,7 +150,14 @@ export class NativeCompositionPublisher {
         this.pendingSnapshot?.reject(error),
       onClose: (error) => {
         this.pendingSnapshot?.reject(error);
-        if (!this.retiring && !this.retired) this.onError(error);
+        if (!this.retiring && !this.retired) {
+          this.disconnected = true;
+          try {
+            this.onError(error);
+          } finally {
+            this.onDisconnected(error);
+          }
+        }
       },
     });
   }
@@ -184,6 +193,10 @@ export class NativeCompositionPublisher {
   retire(): Promise<void> {
     if (this.retirement) return this.retirement;
     if (this.retired) return Promise.resolve();
+    if (this.disconnected) {
+      this.discard();
+      return Promise.resolve();
+    }
     this.retiring = true;
     const completion = deferred<NativeCompositionPublishResult>();
     this.replacePending({
@@ -202,6 +215,22 @@ export class NativeCompositionPublisher {
     return this.retirement;
   }
 
+  /** Close an unusable peer without attempting a remote clear over it. */
+  discard(): void {
+    if (this.retired) return;
+    this.retiring = true;
+    this.retired = true;
+    const error = new Error("Composition publisher discarded.");
+    this.pendingSnapshot?.reject(error);
+    this.pendingSnapshot = null;
+    this.pendingAction?.completions.forEach((completion) =>
+      completion.resolve("retired"),
+    );
+    this.pendingAction = null;
+    this.abort.abort(error);
+    this.peer.close();
+  }
+
   /**
    * A composition is derived latest-state output, not an LSML receipt. Keep
    * one active read/write and replace at most one not-yet-started action.
@@ -211,7 +240,8 @@ export class NativeCompositionPublisher {
   private enqueueLatest(
     action: () => Promise<void>,
   ): Promise<NativeCompositionPublishResult> {
-    if (this.retiring || this.retired) return Promise.resolve("retired");
+    if (this.retiring || this.retired || this.disconnected)
+      return Promise.resolve("retired");
     const completion = deferred<NativeCompositionPublishResult>();
     if (this.pendingAction)
       this.pendingAction.completions.forEach((pending) =>

@@ -227,10 +227,12 @@ operation as `completed`, and later work after retirement as `retired`; these
 results are not LSML mutation or Vision frame receipts. Existing mutation IDs,
 receipts and frame coverage are unchanged.
 
-This does not yet qualify native mixed-scene pixels. The current Pulsar backend
-still refuses Solar surface bands, non-null masks and unsupported blend modes;
-the Solar plan tests establish ordering, ownership, geometry and refusal
-conditions only. Auto-layout/grid/repeat and effects outside owner bounds also
-remain unresolved. See `tests/unit/native-composition.test.ts`,
+Pulsar's isolated native probe now covers Solar surface bands composed with a
+capture under group opacity; non-null masks and unsupported blend modes remain
+refused. This does not yet qualify the browser-produced Solar atlas routed
+through the external Main consumer and Pulsar together. Solar plan tests
+establish ordering, ownership, geometry and refusal conditions only.
+Auto-layout/grid/repeat and effects outside owner bounds also remain unresolved.
+See `tests/unit/native-composition.test.ts`,
 `tests/unit/native-composition-publisher.test.ts` and the native-group
 composition evidence for the tested boundary.

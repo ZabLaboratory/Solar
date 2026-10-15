@@ -31,6 +31,7 @@ import { presentationFeedback } from "./control-feedback";
 import { FramePatches } from "./frame-patches";
 import { NativeSceneFrames } from "./native-scene-frames";
 import { NativeCompositionSession } from "./native-composition-session";
+import { NativeLsdpReconnect } from "./native-lsdp-reconnect";
 import type { NativeCompositionProjection } from "../scenes/native-composition";
 import { createCaptureResolver } from "../sources/capture";
 import { createPeerSources } from "../sources/peers";
@@ -106,8 +107,7 @@ export class NativeLsdpRuntime {
   }
   private active = false;
   private peer: BrowserLSDP | null = null;
-  private timer: ReturnType<typeof setTimeout> | null = null;
-  private delay = 250;
+  private readonly reconnectTimer: NativeLsdpReconnect;
   private abort: AbortController | null = null;
   private token: SolarToken;
   private document: LSMLDocument | null = null;
@@ -153,6 +153,17 @@ export class NativeLsdpRuntime {
   >;
 
   constructor(private readonly options: MountOptions) {
+    this.reconnectTimer = new NativeLsdpReconnect({
+      active: () => this.active,
+      connectPrimary: () => void this.connect(),
+      reconnectComposition: () =>
+        void this.reconnectTimer.recoverComposition(
+          this.token,
+          (authToken) => this.composition.start(authToken),
+          (error) => this.report(error),
+        ),
+      connecting: () => this.options.onStatus?.("connecting"),
+    });
     this.measure = (stage, start, extra) =>
       measureNativeLsdpStage(
         stage,
@@ -179,7 +190,11 @@ export class NativeLsdpRuntime {
       () => this.abort?.signal,
       this.measure,
     );
-    this.composition = new NativeCompositionSession(options);
+    this.composition = new NativeCompositionSession(
+      options,
+      () => this.reconnectTimer.schedule("composition"),
+      () => this.reconnectTimer.reset(),
+    );
     this.peers = createPeerSources(options, createPeerViewerFromInjection);
     this.resolveCaptureDevice = createCaptureResolver(options);
   }
@@ -194,8 +209,7 @@ export class NativeLsdpRuntime {
     this.active = false;
     this.animations.dispose();
     this.sound.dispose();
-    if (this.timer) clearTimeout(this.timer);
-    this.timer = null;
+    this.reconnectTimer.clear();
     this.closePeer();
     if (this.presentation) {
       if (this.presentation.scene !== this.current?.scene)
@@ -227,9 +241,8 @@ export class NativeLsdpRuntime {
     this.token = token;
     if (!this.active) return;
     this.closePeer();
-    this.reconnect();
+    this.reconnectTimer.schedule("primary");
   }
-
   private closePeer(): void {
     this.patches?.close();
     this.patches = null;
@@ -242,24 +255,13 @@ export class NativeLsdpRuntime {
     peer?.close();
   }
 
-  private reconnect(): void {
-    if (!this.active || this.timer) return;
-    this.options.onStatus?.("connecting");
-    this.timer = setTimeout(() => {
-      this.timer = null;
-      void this.connect();
-    }, this.delay);
-    this.delay = Math.min(this.delay * 2, 10_000);
-  }
-
   private async connect(): Promise<void> {
     if (!this.active || this.abort) return;
     this.options.onStatus?.("connecting");
     const abort = new AbortController();
     this.abort = abort;
     try {
-      // Both physical hosts start their engine/font bank before scene admission.
-      // Observe failure immediately even while token acquisition is pending.
+      // Prewarm both engines before scene admission and observe failures immediately.
       const engineReady = prewarmVisionSession(
         this.options.target,
         (error) => this.report(error),
@@ -324,13 +326,13 @@ export class NativeLsdpRuntime {
       abort.signal.throwIfAborted();
       await this.readSubscribe(peer, abort.signal);
       abort.signal.throwIfAborted();
-      this.delay = 250;
+      this.reconnectTimer.reset();
       this.options.onStatus?.("live");
     } catch (error) {
       if (!abort.signal.aborted) {
         this.report(error);
         this.closePeer();
-        this.reconnect();
+        this.reconnectTimer.schedule("primary");
       }
     }
   }
@@ -339,7 +341,6 @@ export class NativeLsdpRuntime {
     peer: BrowserLSDP,
     signal: AbortSignal,
   ): Promise<void> {
-    // Same-connection catch-up also serves explicit native resync notifications.
     for (let attempt = 0; attempt < 4; attempt++) {
       const ready = new Promise<void>((resolve, reject) => {
         this.snapshot = { resolve, reject };
@@ -377,7 +378,7 @@ export class NativeLsdpRuntime {
     if (this.peer !== peer || !this.active) return;
     this.report(error);
     this.closePeer();
-    this.reconnect();
+    this.reconnectTimer.schedule("primary");
   }
 
   private async receive(
@@ -982,7 +983,6 @@ export class NativeLsdpRuntime {
       this.current?.media.resume();
     }
   }
-
   private reserved(document: LSMLDocument): void {
     this.peers.onReservedLeaves?.(
       readReservedPeerLeaves(document.defaults ?? {}),

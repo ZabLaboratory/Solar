@@ -1,4 +1,8 @@
-import { NativeCompositionPublisher } from "./native-composition-publisher";
+import {
+  NativeCompositionPublisher,
+  type NativeCompositionPeerFactory,
+  type NativeCompositionPublishResult,
+} from "./native-composition-publisher";
 import {
   nativeCompositionRequiresRebuild,
   type NativeCompositionProjection,
@@ -7,12 +11,27 @@ import type { LSMLDocument } from "../scenes/native-document";
 import type { MountOptions } from "../types";
 import type { NativeSceneFrames } from "./native-scene-frames";
 
+interface AcceptedPublication {
+  projection: NativeCompositionProjection | null;
+  document: LSMLDocument;
+  stateHash: string;
+}
+
 /** Owns publication and active-plan bookkeeping for one physical Solar host. */
 export class NativeCompositionSession {
   private publisher: NativeCompositionPublisher | null = null;
   private activeProjection: NativeCompositionProjection | null = null;
+  private acceptedPublication: AcceptedPublication | null = null;
+  private hasAcceptedState = false;
+  private hasStarted = false;
+  private recoveringPublisher: NativeCompositionPublisher | null = null;
 
-  constructor(private readonly options: MountOptions) {}
+  constructor(
+    private readonly options: MountOptions,
+    private readonly onDisconnected: (error: unknown) => void = () => {},
+    private readonly onRecovered: () => void = () => {},
+    private readonly createPeer?: NativeCompositionPeerFactory,
+  ) {}
 
   get currentProjection(): NativeCompositionProjection | null {
     return this.activeProjection;
@@ -21,7 +40,9 @@ export class NativeCompositionSession {
   start(authToken: string): void {
     const config = this.options.nativeCompositionLSDP;
     if (!config || this.publisher) return;
-    this.publisher = new NativeCompositionPublisher(
+    const recovering = this.hasStarted;
+    this.hasStarted = true;
+    const publisher = new NativeCompositionPublisher(
       {
         ...config,
         authToken,
@@ -33,14 +54,35 @@ export class NativeCompositionSession {
         },
       },
       (error) => this.reportError(error),
+      this.createPeer,
+      (error) => {
+        if (this.publisher !== publisher) return;
+        this.publisher = null;
+        if (this.recoveringPublisher === publisher)
+          this.recoveringPublisher = null;
+        try {
+          publisher.discard();
+        } finally {
+          this.onDisconnected(error);
+        }
+      },
     );
+    this.publisher = publisher;
+    this.recoveringPublisher = recovering ? publisher : null;
+    if (this.hasAcceptedState) {
+      const accepted = this.acceptedPublication;
+      if (accepted) this.publishTo(publisher, accepted);
+      else this.clearOn(publisher);
+    }
   }
 
   project(
     document: LSMLDocument,
     frames: NativeSceneFrames,
   ): NativeCompositionProjection | null {
-    return this.publisher ? frames.projectComposition(document) : null;
+    return this.options.nativeCompositionLSDP
+      ? frames.projectComposition(document)
+      : null;
   }
 
   use(projection: NativeCompositionProjection | null): void {
@@ -56,17 +98,17 @@ export class NativeCompositionSession {
     document: LSMLDocument,
     stateHash: unknown,
   ): void {
-    const publisher = this.publisher;
-    if (!publisher) return;
     if (typeof stateHash !== "string") {
       this.reportError(
         new Error("Composition publication requires an exact state hash."),
       );
       return;
     }
-    void publisher
-      .publish(projection, document, stateHash)
-      .catch((error) => this.reportError(error));
+    const accepted = { projection, document, stateHash };
+    this.hasAcceptedState = true;
+    this.acceptedPublication = accepted;
+    const publisher = this.publisher;
+    if (publisher) this.publishTo(publisher, accepted);
   }
 
   accept(
@@ -88,15 +130,20 @@ export class NativeCompositionSession {
 
   clear(): void {
     this.activeProjection = null;
+    this.hasAcceptedState = true;
+    this.acceptedPublication = null;
     const publisher = this.publisher;
     if (!publisher) return;
-    void publisher.clear().catch((error) => this.reportError(error));
+    this.clearOn(publisher);
   }
 
   retire(): void {
     this.activeProjection = null;
+    this.hasAcceptedState = false;
+    this.acceptedPublication = null;
     const publisher = this.publisher;
     this.publisher = null;
+    this.recoveringPublisher = null;
     if (publisher)
       void publisher.retire().catch((error) => this.reportError(error));
   }
@@ -107,5 +154,36 @@ export class NativeCompositionSession {
       message: `Native composition: ${error instanceof Error ? error.message : String(error)}`,
       recoverable: true,
     });
+  }
+
+  private publishTo(
+    publisher: NativeCompositionPublisher,
+    accepted: AcceptedPublication,
+  ): void {
+    void publisher
+      .publish(accepted.projection, accepted.document, accepted.stateHash)
+      .then((result) => this.completeRecovery(publisher, result))
+      .catch((error) => this.reportError(error));
+  }
+
+  private clearOn(publisher: NativeCompositionPublisher): void {
+    void publisher
+      .clear()
+      .then((result) => this.completeRecovery(publisher, result))
+      .catch((error) => this.reportError(error));
+  }
+
+  private completeRecovery(
+    publisher: NativeCompositionPublisher,
+    result: NativeCompositionPublishResult,
+  ): void {
+    if (
+      result !== "completed" ||
+      this.publisher !== publisher ||
+      this.recoveringPublisher !== publisher
+    )
+      return;
+    this.recoveringPublisher = null;
+    this.onRecovered();
   }
 }
