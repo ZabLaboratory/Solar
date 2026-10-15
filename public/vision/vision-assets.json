@@ -2,7 +2,7 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "405cda96e96d47f681e8e6d664195f7f98cfab58",
-  "source_state": "Signed Vision instance-runtime source 728e1247 built as release WASM and pinned with its exact main presenter. Native GPU semantics and a private Solar browser path pass exact root/child acquisition, four fit pixel modes, embedded WOFF2/PNG, bindParams mutation, WebGL restoration and missing-child refusal with active-frame preservation. ZabCanvas HTTP, remote assets, shared runtime admission and public output are not qualified.",
+  "source_state": "Signed consolidated Vision source rebuilt with existing build-web.ps1. All four emitted files are byte-identical to the preceding Solar source728e1247 pin. Private Chrome154 same-scene instance/font/image/fit mutation and WebGL restoration passed, with no renderer or page errors. The repository contains consolidated Vision3D; its separate 3D API is not exposed through this 2D Solar host. No shared runtime, CEF scanout or public output admission.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 27634,
@@ -24,8 +24,8 @@
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
     "engine_base": "405cda96e96d47f681e8e6d664195f7f98cfab58",
-    "engine_branch": "eleven/local-20261015-instance-runtime",
-    "engine_evidence": "evidence/local-20261015-instance-runtime/eleven/20261015T124330Z-agent-report.md",
+    "engine_branch": "eleven/local-20261015-vision3d-integration",
+    "engine_evidence": "evidence/local-20261015-vision3d-integration/eleven/20261015T154119Z-consolidated-wasm-build.gz",
     "source_files": {
       "README.md": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca",
       "crates/vision-web/README.md": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54",
@@ -38,7 +38,10 @@
       "crates/vision-gpu/src/renderer.rs": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
       "crates/vision-gpu/src/renderer/composition_cache.rs": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b"
     },
-    "uncommitted_qualified_source": false
+    "uncommitted_qualified_source": false,
+    "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2",
+    "source_tree": "930329e30ed1379e48359945641c13272aa02fb9",
+    "build_command": "pwsh -NoProfile -File scripts/vision/build-web.ps1"
   },
-  "source_revision": "728e1247a830fec777b4a234af5d8cd9d20dc311"
+  "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2"
 }
