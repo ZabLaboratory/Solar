@@ -13,6 +13,8 @@ prefixes; these files contain reusable capture/producer/analysis boundaries.
 | `generate-native-burst-fixture.mjs` | Generate the single-bound-text LSML/LSMLZ browser fixture |
 | `qualify-native-burst.mjs` | Private real-daemon Solar/Vision Chrome run; `--mode paced --duration 3900` or `--mode burst`, plus `--playwright-root` |
 | `qualify-repeat-runtime.mjs` | Private one-scene Solar/Vision run; invokes Prism's real LSML importer/exporter read-only, then exercises nested collection updates through `native-lsdp-local.mjs` and records retained front-canvas pixels |
+| `qualify-font-coverage.mjs` | Read-only Windows/packaged-font and installation-cache inventory; uses production registry discovery and capacity diagnostics, verifies source/cache SHA-256, and keeps engine registration unverified |
+| `qualify-font-registration.mjs` | Private Chrome and installed Vision WASM; production font batching, cold admission and a second pass in one empty engine, with actual registry counters and exact artifact hashes |
 | `native-burst-analysis.mjs` | Correlate observed transaction identities/hashes, presentation batches, queue samples and producer rates while preserving unavailable values |
 | `native-burst-analysis.test.mjs` | `node --test tests/proof/native-burst-analysis.test.mjs`; coverage for gaps, duplicates, hash drift, batching, unknown metrics and timing |
 | `analyse-render-cadence.py` | `--prefix <prefix>`; fixed receipt/LSML/completed-frame windows |
@@ -23,6 +25,34 @@ See [render cadence](../../docs/development/render-cadence.md) and
 [qualification](../../docs/runbooks/qualification.md). All script paths are current;
 source/media/evidence inputs identify a particular run. Hashes/identities, physical pixels,
 native ACKs and completed presentation are measured separately.
+
+Font inventory invocation (Node with TypeScript transformation support):
+
+```powershell
+node --experimental-transform-types scripts/proof/qualify-font-coverage.mjs `
+  --installed-root <installed-Solar-package> `
+  --cache-index <installation-font-cache>/index.json `
+  --report evidence/<issue>/eleven/<UTC-stamp>-font-coverage.json
+```
+
+The inventory never prepares or changes fonts, the cache, the running application
+or its engine. It records counts and hashes without source paths or catalogue
+credentials. Exact source-path index coverage is distinct from verified indexed
+cache content: a moved package can have identical cached font bytes. Neither
+count proves active catalogue admission, parser compatibility, glyph coverage or
+Vision registration. Bitmap FON/FNT exclusions and missing registered files are
+counted explicitly. The report refuses to overwrite an existing output file.
+
+`qualify-font-registration.mjs` takes the same three arguments plus
+`--playwright-root <Prism-worktree>`. It uses an ephemeral authenticated loopback
+catalogue of the indexed cache contents and Solar's existing
+`installationFontBatches`. An isolated Chrome browser creates one empty Vision
+engine from the specified installed package, admits every file, then admits the
+same files again. Rust's actual counters must remain identical after the second
+pass. Artifact hashes, index hash, batch counts and timings are retained; no
+running application is attached and no source/cache file is changed. The registry
+counts decoded font resources, not every individual face in a TTC collection.
+This does not qualify glyph rendering or the shared application's active bank.
 
 The native burst qualification uses a private headless Chrome browser and the retained
 Solar front canvas after a Vision `frame-submitted` response. Its report keeps native ACK,
