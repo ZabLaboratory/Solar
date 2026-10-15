@@ -89,8 +89,10 @@ The endpoint reads the native resource, prepares `lsdp.apply/1` with its Merkle
 `beforeHash` and a fresh transaction ID, then sends it to Rust. It returns the
 native authoritative receipt, which proves server application. Solar separately
 emits `solar:lsdp-applied` on its mount target after Vision submits the changed
-frame. Scalar defaults use a distinct native `received` receipt after integrity
-and atomic LSML application, plus `solar:lsdp-received`. The frame queue combines
+frame. Scalar defaults use a distinct native `received` receipt after worker
+integrity checks, ordered main-thread LSML application and admission to
+`FramePatches`; this receipt does not wait for Vision. Solar also emits
+`solar:lsdp-received` at that admission boundary. The frame queue combines
 the latest scalar values through the actual Vision submission barrier, using a
 MessageChannel task rather than a 60 Hz animation-frame cap; every original
 transaction gets a presentation event after its covering submission, carrying
@@ -161,12 +163,21 @@ the old presenter's GPU queue. It resumes uploads after old-engine teardown,
 while keeping the capture tracks acquired. This prevents overlapping WebGL
 work from erasing static scene layers during an otherwise accepted mutation.
 
-Scalar state is received and verified in a dedicated Solar worker. The main
-consumer emits `solar:lsdp-received` after ordered LSML application; a frame queue
-merges replaceable values while preserving every transaction ID. Following a
+Scalar state is received and verified in a dedicated Solar worker. Its native
+callback remains open until the main consumer applies the LSML change in order
+and admits replaceable values to `FramePatches`. This uses the pinned browser
+adapter's existing 32-channel bound to limit worker deliveries while the main
+consumer queue is busy; it adds no transport queue and does not wait for Vision.
+The main consumer emits `solar:lsdp-received` at admission; a frame queue merges
+replaceable values while preserving every transaction ID. Bounded
+`solar:native-stage` measures record main-consumer queue depth/high-water and
+FramePatches pending count/high-water/oldest age. Following a
 successful Vision submission, `solar:lsdp-applied` includes the original state
 hash and `presentation` with the covering sequence/hash/count. A covering frame
 does not claim that each overwritten intermediate value appeared on screen.
+These Solar-side measures do not prove Rust subscriber lag or encoded/GPU output;
+the immediate native burst and mounted-engine capture remain separate host-level
+qualification steps.
 Commands, camera/animation effects and structure drain this queue before execution.
 
 The pinned Rust subscription has a bounded event buffer and no historical replay.

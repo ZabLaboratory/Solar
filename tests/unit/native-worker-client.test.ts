@@ -35,6 +35,7 @@ class WorkerStub {
 afterEach(() => {
   vi.unstubAllGlobals();
   WorkerStub.instances = [];
+  performance.clearMeasures("solar:native-stage");
 });
 const start = (
   onTransaction?: ConstructorParameters<
@@ -133,6 +134,7 @@ describe("isolated native transport lifecycle", () => {
     client.close();
   });
   it("delivers notifications in order while a resync snapshot can unblock the current callback", async () => {
+    performance.clearMeasures("solar:native-stage");
     let release!: () => void;
     const blocked = new Promise<void>((resolve) => {
       release = resolve;
@@ -153,6 +155,19 @@ describe("isolated native transport lifecycle", () => {
     expect(
       worker.messages.filter((value) => value.type === "result"),
     ).toHaveLength(3);
+    const queueSamples = performance
+      .getEntriesByName("solar:native-stage")
+      .map(
+        (entry) =>
+          (entry as PerformanceMeasure).detail as Record<string, unknown>,
+      )
+      .filter((detail) => detail.stage === "worker-main-queue");
+    expect(queueSamples).toHaveLength(2);
+    expect(queueSamples.map((detail) => detail.messageId)).toEqual([1, 2]);
+    expect(queueSamples.map((detail) => detail.queueDepthAtArrival)).toEqual([
+      1, 2,
+    ]);
+    expect(queueSamples.map((detail) => detail.queueHighWater)).toEqual([1, 2]);
     client.close();
   });
   it("can cancel a transaction during connection establishment", async () => {

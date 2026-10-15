@@ -11,11 +11,25 @@ interface VerifiedWorkerState {
 // Only this client's private Worker channel can certify a delivery. A field
 // supplied by the network or a caller's lookalike context cannot bypass hashing.
 const verifiedStates = new WeakMap<IncomingContext, VerifiedWorkerState>();
+const measureStage = (
+  start: number,
+  end: number,
+  detail: Record<string, unknown>,
+): void => {
+  try {
+    const name = "solar:native-stage";
+    if (performance.getEntriesByName(name).length >= 64)
+      performance.clearMeasures(name);
+    performance.measure(name, { start, end, detail });
+  } catch {
+    // Instrumentation must not change transaction delivery behavior.
+  }
+};
 export const verifiedNativeWorkerState = (
   context: IncomingContext,
 ): VerifiedWorkerState | undefined => verifiedStates.get(context);
 
-/** Same consumer boundary; network/application work does not wait on CEF drawing. */
+/** Ordered main consumer; scalar native receipts end at frame-queue admission. */
 export class NativeWorkerClient {
   readonly ready: Promise<void>;
   private readonly worker = new Worker(
@@ -29,6 +43,8 @@ export class NativeWorkerClient {
     { resolve: (value: unknown) => void; reject: (error: Error) => void }
   >();
   private queue: Promise<void> = Promise.resolve();
+  private queuedDeliveries = 0;
+  private queueHighWater = 0;
   private rejectReady!: (error: Error) => void;
   private readonly deliveries = new Map<number, AbortController>();
   constructor(
@@ -75,16 +91,44 @@ export class NativeWorkerClient {
       } else if (data.type === "incoming") {
         const delivery = new AbortController();
         this.deliveries.set(data.id, delivery);
+        const queued = data.metadata.profile !== "lsdp.state.read/1";
+        const queuedAt = performance.now();
+        const queueDepthAtArrival = queued ? ++this.queuedDeliveries : 0;
+        if (queued)
+          this.queueHighWater = Math.max(
+            this.queueHighWater,
+            queueDepthAtArrival,
+          );
+        const queueHighWaterAtArrival = this.queueHighWater;
+        let queueSlotReleased = false;
+        const releaseQueueSlot = () => {
+          if (!queued || queueSlotReleased) return;
+          queueSlotReleased = true;
+          this.queuedDeliveries = Math.max(0, this.queuedDeliveries - 1);
+        };
         const deliver = async () => {
-          if (this.abort.signal.aborted) return;
           const received = performance.now();
+          if (queued)
+            measureStage(queuedAt, received, {
+              stage: "worker-main-queue",
+              resource,
+              profile: data.metadata.profile,
+              messageId: data.id,
+              queueDepthAtArrival,
+              queueHighWater: queueHighWaterAtArrival,
+            });
+          if (this.abort.signal.aborted) {
+            releaseQueueSlot();
+            return;
+          }
           if (
             Number.isFinite(data.verificationMs) &&
             Number.isFinite(data.sentAt)
           ) {
-            if (performance.getEntriesByName("solar:native-stage").length >= 64)
-              performance.clearMeasures("solar:native-stage");
-            performance.measure("solar:native-stage", {
+            const name = "solar:native-stage";
+            if (performance.getEntriesByName(name).length >= 64)
+              performance.clearMeasures(name);
+            performance.measure(name, {
               start: received,
               duration: Math.max(0, data.verificationMs ?? 0),
               detail: {
@@ -96,14 +140,14 @@ export class NativeWorkerClient {
                     : "change",
               },
             });
-            performance.measure("solar:native-stage", {
-              start: Math.min(
+            measureStage(
+              Math.min(
                 received,
                 Math.max(0, data.sentAt - performance.timeOrigin),
               ),
-              end: received,
-              detail: { stage: "worker-delivery", resource },
-            });
+              received,
+              { stage: "worker-delivery", resource },
+            );
           }
           const context: IncomingContext = {
             metadata: data.metadata,
@@ -136,6 +180,7 @@ export class NativeWorkerClient {
               error instanceof Error ? error : new Error(String(error)),
             );
           } finally {
+            releaseQueueSlot();
             verifiedStates.delete(context);
             this.deliveries.delete(data.id);
           }

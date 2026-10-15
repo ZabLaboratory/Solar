@@ -37,8 +37,11 @@ channel; the render consumer reuses that exact structured-clone state instead of
 repeating Merkle hashing on the drawing thread. Certification is scoped to the
 callback context and removed after delivery, so network fields or caller-created
 contexts cannot claim it. Direct reception without a Worker retains full hashing.
-Simple state reception continues while CEF draws;
-snapshot, structure and command receipts still await the main consumer. Both
+Every native callback waits for the ordered main consumer. Scalar `received`
+returns after LSML verification and admission to `FramePatches`, before Vision
+submission; structural, snapshot and command receipts retain their stronger
+application/rendering boundary. The pinned browser adapter's existing 32-channel
+window therefore bounds worker deliveries while main admission is pending. Both
 sides abort on disconnect, including pending connection/request work. A snapshot
 can bypass the main notification queue to complete same-connection resync.
 `internal/native-stream.ts` owns notification identity/order/integrity and scalar
@@ -123,7 +126,8 @@ Preparation carries the current and candidate sources; compact commit/finalize
 assignments carry the candidate at the resource root. A fresh renderer reconstructs
 that stage from the root, while older payloads with an embedded source remain valid.
 Bounded `solar:native-stage` measures separate worker verification/delivery,
-classification, source/package/fonts, arena reuse, image resolution and feedback.
+main-consumer queue wait/depth/high-water, FramePatches pending count/high-water/oldest
+age, classification, source/package/fonts, arena reuse, image resolution and feedback.
 Their numeric durations and reuse categories contain no source values or tokens.
 Scene assets remain in LSMLZ and Vision
 loads them directly. There is no render-bundle URL, compile step, React render
