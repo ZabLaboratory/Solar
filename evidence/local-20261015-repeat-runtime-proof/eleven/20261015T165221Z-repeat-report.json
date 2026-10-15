@@ -1,0 +1,2152 @@
+{
+  "schema": "solar.repeat-runtime-qualification.v1",
+  "stamp": "20261015T165221Z",
+  "boundary": "one private local Solar scene; Prism serializer provenance; native LSDP collection updates; Solar-pinned Vision WASM front-canvas pixels; no transition or scene-selection test",
+  "prism": {
+    "root": "D:\\Documents\\Zab\\Prism\\.worktrees\\eleven-local-20261015-project-integration",
+    "head": "9310b251293e17f467cb94c0a6c18068b15b234c",
+    "relevantWorkingTreeStatus": "clean",
+    "fixtureInputSha256": "954835bc8f1c9a4ba43a0a9ba681ecf348a472d26070e914d556ac04ca98cdda",
+    "sourceHashes": {
+      "src/renderer/src/lib/lsml/to-scene.ts": "0d765abf20b553104efae56c6a8a44646d55c2470187e4823a382f8c64935fc8",
+      "src/renderer/src/lib/lsml/from-scene.ts": "ddb280e5439e335ba00cdc20e46ed8c2e50677968cec92099a327c9ee0b5fcf9",
+      "src/renderer/src/lib/lsml/export/containers.ts": "80ca28842bbd016daa8b7c859fe8a4315dc73d8740a7693e682687b7ed37db0a",
+      "src/renderer/src/lib/lsml/export/primitives.ts": "d89df1d332691eb96ca91f24664aeb9c5f70bafe177d3f703e436e23904077ac",
+      "src/renderer/src/lib/lsml/import/collections.ts": "33140f572cbf3d719ea766a25c062fb0c9082331ea70e839bca910f532322d81",
+      "src/renderer/src/lib/lsml/_test/to-lsml.test.ts": "1f81242473fb4eefd3cbde30baeb67eef4f08f23d0510a6c373a4aaa136fa69c",
+      "src/renderer/src/lib/lsml/_test/repeat-authoring.test.ts": "4ccb2e24607adf6b129ff92db60c8a15d5c48b0e10092b0645ef510ab2dfee94",
+      "src/renderer/src/components/canvas/properties/model/repeat-path.ts": "5a0e70b8106a01624e0ba59410b041d64129f1b2920da9d6b521a1bab92ec041",
+      "src/renderer/src/components/canvas/properties/sections/TextSections.tsx": "03841ff6018dff0d9fdf41ddbe7032d3e645ab796d835abdb37e3fb8495989b5"
+    }
+  },
+  "export": {
+    "runtimeMode": "Prism source-preserving sceneToLsmlz output",
+    "lsmlSha256": "31ed4ede4a0ce2913ece42af2137b69975fd204afbc6ba359c7ee75069e19db9",
+    "archiveSha256": "2989ed6e74c09e884b45e65939433b6cbfc05175dd20a080e0bb9d13250af8c6",
+    "sceneId": "repeat-runtime-proof",
+    "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+    "defaultsPreserved": true,
+    "defaults": {
+      "__lit.heading": "LIVE ROSTER",
+      "teams": [
+        {
+          "id": "red",
+          "name": "RED TEAM",
+          "code": "R",
+          "players": [
+            {
+              "id": "r-a",
+              "name": "ALICE",
+              "score": "11"
+            },
+            {
+              "id": "r-b",
+              "name": "BOB",
+              "score": "22"
+            },
+            {
+              "id": "r-c",
+              "name": "CARA",
+              "score": "33"
+            }
+          ]
+        },
+        {
+          "id": "blue",
+          "name": "BLUE TEAM",
+          "code": "B",
+          "players": [
+            {
+              "id": "b-d",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "b-e",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ]
+    },
+    "repeatCollections": [
+      {
+        "items": "teams",
+        "scope": "team",
+        "key": "{team}.id"
+      },
+      {
+        "items": "{team}.players",
+        "scope": "player",
+        "key": "{player}.id",
+        "limit": 2
+      }
+    ],
+    "textBindings": [
+      "__lit.heading",
+      "{team}.name",
+      "{player}.name",
+      "{player}.score",
+      "{team}.code"
+    ],
+    "warnings": [],
+    "freshRebuild": {
+      "lsmlSha256": "18b319f733e3a512171e2640041ebdf166d5f99b1d3d57047addaad448436431",
+      "sceneVersion": "sha256:cfbbe9b7dbe143ea90b0900b0241cde2e51909dbe9e45b9a9844c235f416d8b6",
+      "repeatCollections": [
+        {
+          "items": "teams",
+          "scope": "team",
+          "key": "{team}.id"
+        },
+        {
+          "items": "{team}.players",
+          "scope": "player",
+          "key": "{player}.id",
+          "limit": 2
+        }
+      ],
+      "textBindings": [
+        "__lit.heading",
+        "{team}.name",
+        "{player}.name",
+        "{player}.score",
+        "{team}.code"
+      ],
+      "warnings": []
+    }
+  },
+  "solar": {
+    "head": "96be535c06b3906b8ff1a26fa4a97bf5fc516046",
+    "visionAssets": {
+      "schema": "solar.vision-assets.v1",
+      "upstream": "Lumencast/lumencast-vision",
+      "base_revision": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+      "source_state": "Signed consolidated Vision source rebuilt with existing build-web.ps1. All four emitted files are byte-identical to the preceding Solar source728e1247 pin. Private Chrome154 same-scene instance/font/image/fit mutation and WebGL restoration passed, with no renderer or page errors. The repository contains consolidated Vision3D; its separate 3D API is not exposed through this 2D Solar host. No shared runtime, CEF scanout or public output admission.",
+      "files": {
+        "ui/mainpresenter.mjs": {
+          "bytes": 27634,
+          "sha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
+        },
+        "ui/fonts.mjs": {
+          "bytes": 1977,
+          "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+        },
+        "pkg/lumencast_vision_web.js": {
+          "bytes": 152321,
+          "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d"
+        },
+        "pkg/lumencast_vision_web_bg.wasm": {
+          "bytes": 10491253,
+          "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd"
+        }
+      },
+      "source_provenance": {
+        "repository": "Lumencast/lumencast-vision",
+        "engine_base": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+        "engine_branch": "eleven/local-20261015-vision3d-integration",
+        "engine_evidence": "evidence/local-20261015-vision3d-integration/eleven/20261015T154119Z-consolidated-wasm-build.gz",
+        "source_files": {
+          "README.md": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca",
+          "crates/vision-web/README.md": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54",
+          "crates/vision-web/src/instances.rs": "865106569a8c99bd60a20f376105b9421e13ff305459534831fe51ab5d1abce9",
+          "crates/vision-web/src/lib.rs": "24d89fd2c40ab866d9aa4b9853f3470c1a2f58015e9fb006b9edbd162e120b27",
+          "crates/vision-web/ui/mainpresenter.mjs": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7",
+          "crates/vision-web/ui/tests/mainpresenter.test.mjs": "bb8bb601880af507f68f1e0700818d3e7c2bb7b5ab2411a466668da898869904",
+          "crates/vision-gpu-scene/src/lib.rs": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15",
+          "crates/vision-render/src/image.rs": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f",
+          "crates/vision-gpu/src/renderer.rs": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
+          "crates/vision-gpu/src/renderer/composition_cache.rs": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b"
+        },
+        "uncommitted_qualified_source": false,
+        "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2",
+        "source_tree": "930329e30ed1379e48359945641c13272aa02fb9",
+        "build_command": "pwsh -NoProfile -File scripts/vision/build-web.ps1"
+      },
+      "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2"
+    },
+    "nativeBinary": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-project-integration\\dist\\native\\win32-x64\\lsdpd.exe",
+    "nativeSha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448",
+    "nativeManifest": {
+      "schema": "solar.native-server.v1",
+      "wire": "LSDP-TCP/2.0-draft2",
+      "source_revision": "4d197aefbde76cacc8ffd70cb84edec031575f5b",
+      "binaries": {
+        "win32-x64": {
+          "file": "win32-x64/lsdpd.exe",
+          "sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448"
+        }
+      }
+    },
+    "visionPresenterPath": "src/engine/vision-presenter.ts",
+    "visionPresenterSha256": "f9f5bb8f879558c0a28412ebc09831ab3965b854f79f00abbf98e7c46bb2e382"
+  },
+  "phases": [
+    {
+      "label": "repeat-initial-pixels",
+      "surface": {
+        "label": "repeat-initial",
+        "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-initial.png",
+        "screenshotSha256": "e299a7dc6df65d67a987e808371727b640bef90c1870445bb81939c0ad26dbac",
+        "sha256": "dfb02d74696bbe4ee97b8501a6635013646e37b552b3359be1b367b4e631c925",
+        "dimensions": {
+          "width": 800,
+          "height": 500
+        },
+        "rootRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasVisible": true,
+        "visibility": {
+          "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+          "layerOpacity": 1,
+          "layerDisplay": "block",
+          "layerVisibility": "visible",
+          "canvasOpacity": 1,
+          "canvasDisplay": "block",
+          "canvasVisibility": "visible"
+        },
+        "canvasCount": 2,
+        "brightPixels": 2723,
+        "brightBounds": {
+          "left": 30,
+          "top": 24,
+          "right": 567,
+          "bottom": 268
+        },
+        "brightBands": [
+          {
+            "top": 24,
+            "bottom": 39,
+            "brightPixelRows": 829
+          },
+          {
+            "top": 69,
+            "bottom": 82,
+            "brightPixelRows": 471
+          },
+          {
+            "top": 99,
+            "bottom": 110,
+            "brightPixelRows": 221
+          },
+          {
+            "top": 131,
+            "bottom": 142,
+            "brightPixelRows": 244
+          },
+          {
+            "top": 195,
+            "bottom": 208,
+            "brightPixelRows": 506
+          },
+          {
+            "top": 225,
+            "bottom": 236,
+            "brightPixelRows": 273
+          },
+          {
+            "top": 257,
+            "bottom": 268,
+            "brightPixelRows": 179
+          }
+        ],
+        "diffFromPreviousCapture": null
+      }
+    },
+    {
+      "label": "player-leaf-update",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players/0/score",
+          "value": "19"
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "8e7aff2499763f6ceab3beb11d4a8550"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:247b1084242f8800fbbe1e44020fb8408f7233543a846ec09fc2b46206fe0023",
+      "stateHashAfter": "tree-sha256:d328b7e950b9b534e20a1fd5b9423543ee831857434e80357fe55f0e3bb45b8e",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "8e7aff2499763f6ceab3beb11d4a8550",
+        "target": "scene",
+        "sequence": 1,
+        "stateHash": "tree-sha256:d328b7e950b9b534e20a1fd5b9423543ee831857434e80357fe55f0e3bb45b8e",
+        "render": "document"
+      },
+      "appliedEventsBefore": 0,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    {
+      "label": "repeat-scalar-update-pixels",
+      "surface": {
+        "label": "repeat-scalar-update",
+        "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-scalar-update.png",
+        "screenshotSha256": "19a6e683bbd7012dd5aebc72d2c950366b0082292785cfb0e951bb2003d62b39",
+        "sha256": "b767d7477788172d59eff075e976cd89b5cbe1600a072baadca58acbb2f19dd5",
+        "dimensions": {
+          "width": 800,
+          "height": 500
+        },
+        "rootRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasVisible": true,
+        "visibility": {
+          "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+          "layerOpacity": 1,
+          "layerDisplay": "block",
+          "layerVisibility": "visible",
+          "canvasOpacity": 1,
+          "canvasDisplay": "block",
+          "canvasVisibility": "visible"
+        },
+        "canvasCount": 2,
+        "brightPixels": 2745,
+        "brightBounds": {
+          "left": 30,
+          "top": 24,
+          "right": 567,
+          "bottom": 268
+        },
+        "brightBands": [
+          {
+            "top": 24,
+            "bottom": 39,
+            "brightPixelRows": 829
+          },
+          {
+            "top": 69,
+            "bottom": 82,
+            "brightPixelRows": 471
+          },
+          {
+            "top": 99,
+            "bottom": 110,
+            "brightPixelRows": 243
+          },
+          {
+            "top": 131,
+            "bottom": 142,
+            "brightPixelRows": 244
+          },
+          {
+            "top": 195,
+            "bottom": 208,
+            "brightPixelRows": 506
+          },
+          {
+            "top": 225,
+            "bottom": 236,
+            "brightPixelRows": 273
+          },
+          {
+            "top": 257,
+            "bottom": 268,
+            "brightPixelRows": 179
+          }
+        ],
+        "diffFromPreviousCapture": {
+          "changedPixels": 92,
+          "bounds": {
+            "left": 460,
+            "top": 98,
+            "right": 469,
+            "bottom": 111
+          }
+        }
+      }
+    },
+    {
+      "label": "outer-team-reorder",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams",
+          "value": [
+            {
+              "id": "blue",
+              "name": "BLUE TEAM",
+              "code": "B",
+              "players": [
+                {
+                  "id": "b-d",
+                  "name": "DANA",
+                  "score": "44"
+                },
+                {
+                  "id": "b-e",
+                  "name": "ELI",
+                  "score": "55"
+                },
+                {
+                  "id": "b-f",
+                  "name": "FOX",
+                  "score": "66"
+                }
+              ]
+            },
+            {
+              "id": "red",
+              "name": "RED TEAM",
+              "code": "R",
+              "players": [
+                {
+                  "id": "r-a",
+                  "name": "ALICE",
+                  "score": "11"
+                },
+                {
+                  "id": "r-b",
+                  "name": "BOB",
+                  "score": "22"
+                },
+                {
+                  "id": "r-c",
+                  "name": "CARA",
+                  "score": "33"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "f317ace88971ceba2d13ccb45d17bafa"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:d328b7e950b9b534e20a1fd5b9423543ee831857434e80357fe55f0e3bb45b8e",
+      "stateHashAfter": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "f317ace88971ceba2d13ccb45d17bafa",
+        "target": "scene",
+        "sequence": 2,
+        "stateHash": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+        "render": "patch",
+        "presentation": {
+          "throughSequence": 2,
+          "stateHash": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+          "mutationCount": 1
+        }
+      },
+      "appliedEventsBefore": 1,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    {
+      "label": "repeat-team-reordered-pixels",
+      "surface": {
+        "label": "repeat-team-reordered",
+        "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-team-reordered.png",
+        "screenshotSha256": "47e55644701264595fd28d4e4bdd0535affa1b49a415e74257e6670b815f59eb",
+        "sha256": "c5780dd2ad7824c59dc95da276785d5673a874dad78939568b491dd1fdd946d2",
+        "dimensions": {
+          "width": 800,
+          "height": 500
+        },
+        "rootRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasVisible": true,
+        "visibility": {
+          "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+          "layerOpacity": 1,
+          "layerDisplay": "block",
+          "layerVisibility": "visible",
+          "canvasOpacity": 1,
+          "canvasDisplay": "block",
+          "canvasVisibility": "visible"
+        },
+        "canvasCount": 2,
+        "brightPixels": 2723,
+        "brightBounds": {
+          "left": 30,
+          "top": 24,
+          "right": 567,
+          "bottom": 268
+        },
+        "brightBands": [
+          {
+            "top": 24,
+            "bottom": 39,
+            "brightPixelRows": 829
+          },
+          {
+            "top": 69,
+            "bottom": 82,
+            "brightPixelRows": 506
+          },
+          {
+            "top": 99,
+            "bottom": 110,
+            "brightPixelRows": 273
+          },
+          {
+            "top": 131,
+            "bottom": 142,
+            "brightPixelRows": 179
+          },
+          {
+            "top": 195,
+            "bottom": 208,
+            "brightPixelRows": 471
+          },
+          {
+            "top": 225,
+            "bottom": 236,
+            "brightPixelRows": 221
+          },
+          {
+            "top": 257,
+            "bottom": 268,
+            "brightPixelRows": 244
+          }
+        ],
+        "diffFromPreviousCapture": {
+          "changedPixels": 4307,
+          "bounds": {
+            "left": 42,
+            "top": 69,
+            "right": 568,
+            "bottom": 269
+          }
+        }
+      }
+    },
+    {
+      "label": "scoped-player-addition",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players",
+          "value": [
+            {
+              "id": "b-i",
+              "name": "IVY",
+              "score": "99"
+            },
+            {
+              "id": "b-d",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "b-e",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "62904536cdeb594ed7dbcbcd7b87de82"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashAfter": "tree-sha256:cca56a009fa50fd494411dba3e6d72c90dec7d6933ef59cbed3171a9140895e9",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "62904536cdeb594ed7dbcbcd7b87de82",
+        "target": "scene",
+        "sequence": 3,
+        "stateHash": "tree-sha256:cca56a009fa50fd494411dba3e6d72c90dec7d6933ef59cbed3171a9140895e9",
+        "render": "document"
+      },
+      "appliedEventsBefore": 2,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    {
+      "label": "repeat-player-added-pixels",
+      "surface": {
+        "label": "repeat-player-added",
+        "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-player-added.png",
+        "screenshotSha256": "825330bb2f17eb51ed634df0b00a045d4d3d9cfb205178e61932792334671ffd",
+        "sha256": "48aeae9c2885c468f570afd76a7e634c559a9203394c23532c7afe1d81e3b94c",
+        "dimensions": {
+          "width": 800,
+          "height": 500
+        },
+        "rootRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasVisible": true,
+        "visibility": {
+          "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+          "layerOpacity": 1,
+          "layerDisplay": "block",
+          "layerVisibility": "visible",
+          "canvasOpacity": 1,
+          "canvasDisplay": "block",
+          "canvasVisibility": "visible"
+        },
+        "canvasCount": 2,
+        "brightPixels": 2734,
+        "brightBounds": {
+          "left": 30,
+          "top": 24,
+          "right": 567,
+          "bottom": 268
+        },
+        "brightBands": [
+          {
+            "top": 24,
+            "bottom": 39,
+            "brightPixelRows": 829
+          },
+          {
+            "top": 69,
+            "bottom": 82,
+            "brightPixelRows": 506
+          },
+          {
+            "top": 99,
+            "bottom": 110,
+            "brightPixelRows": 190
+          },
+          {
+            "top": 131,
+            "bottom": 142,
+            "brightPixelRows": 273
+          },
+          {
+            "top": 195,
+            "bottom": 208,
+            "brightPixelRows": 471
+          },
+          {
+            "top": 225,
+            "bottom": 236,
+            "brightPixelRows": 221
+          },
+          {
+            "top": 257,
+            "bottom": 268,
+            "brightPixelRows": 244
+          }
+        ],
+        "diffFromPreviousCapture": {
+          "changedPixels": 1178,
+          "bounds": {
+            "left": 49,
+            "top": 98,
+            "right": 473,
+            "bottom": 143
+          }
+        }
+      }
+    },
+    {
+      "label": "scoped-player-removal",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players",
+          "value": [
+            {
+              "id": "b-d",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "b-e",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "ebe31293735fb3f32640151e1fb5ea55"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:cca56a009fa50fd494411dba3e6d72c90dec7d6933ef59cbed3171a9140895e9",
+      "stateHashAfter": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "ebe31293735fb3f32640151e1fb5ea55",
+        "target": "scene",
+        "sequence": 4,
+        "stateHash": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+        "render": "document"
+      },
+      "appliedEventsBefore": 3,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    {
+      "label": "repeat-player-removed-pixels",
+      "surface": {
+        "label": "repeat-player-removed",
+        "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-player-removed.png",
+        "screenshotSha256": "47e55644701264595fd28d4e4bdd0535affa1b49a415e74257e6670b815f59eb",
+        "sha256": "c5780dd2ad7824c59dc95da276785d5673a874dad78939568b491dd1fdd946d2",
+        "dimensions": {
+          "width": 800,
+          "height": 500
+        },
+        "rootRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasVisible": true,
+        "visibility": {
+          "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+          "layerOpacity": 1,
+          "layerDisplay": "block",
+          "layerVisibility": "visible",
+          "canvasOpacity": 1,
+          "canvasDisplay": "block",
+          "canvasVisibility": "visible"
+        },
+        "canvasCount": 2,
+        "brightPixels": 2723,
+        "brightBounds": {
+          "left": 30,
+          "top": 24,
+          "right": 567,
+          "bottom": 268
+        },
+        "brightBands": [
+          {
+            "top": 24,
+            "bottom": 39,
+            "brightPixelRows": 829
+          },
+          {
+            "top": 69,
+            "bottom": 82,
+            "brightPixelRows": 506
+          },
+          {
+            "top": 99,
+            "bottom": 110,
+            "brightPixelRows": 273
+          },
+          {
+            "top": 131,
+            "bottom": 142,
+            "brightPixelRows": 179
+          },
+          {
+            "top": 195,
+            "bottom": 208,
+            "brightPixelRows": 471
+          },
+          {
+            "top": 225,
+            "bottom": 236,
+            "brightPixelRows": 221
+          },
+          {
+            "top": 257,
+            "bottom": 268,
+            "brightPixelRows": 244
+          }
+        ],
+        "diffFromPreviousCapture": {
+          "changedPixels": 1178,
+          "bounds": {
+            "left": 49,
+            "top": 98,
+            "right": 473,
+            "bottom": 143
+          }
+        }
+      }
+    },
+    {
+      "label": "duplicate-key-rejection",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players",
+          "value": [
+            {
+              "id": "duplicate",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "duplicate",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "03b4cf9f81e5244d46da2a7f3410be51"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashAfter": "tree-sha256:1922dc788798b0cdfaf15e88be7ba1f7db84a3e5044af8db84ca03bb10c3b366",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "error",
+        "message": "[solar] INTERNAL: Native LSDP: Vision load: repeat at $layout.children[0].children[1].template[0].children[0].children[1] contains duplicate key \"duplicate\" (recoverable)"
+      },
+      "appliedEventsBefore": 4,
+      "errorEventsBefore": 0,
+      "pageErrors": [],
+      "acceptedNativeReceiptBeforeRenderRefusal": true,
+      "solarAppliedEventCountAfterRequest": 4,
+      "nativeStateContainsDuplicateKeys": true,
+      "solarErrorEventsAfterRequest": 1,
+      "nativeAuthorityRemainsMalformedUntilShutdown": true
+    },
+    {
+      "label": "repeat-duplicate-key-rejected-pixels",
+      "surface": {
+        "label": "repeat-duplicate-key-rejected",
+        "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-duplicate-key-rejected.png",
+        "screenshotSha256": "e106c1ef80866861797b145aa658b291c64001b8d65f92bfc2a823469deeb615",
+        "sha256": "c5780dd2ad7824c59dc95da276785d5673a874dad78939568b491dd1fdd946d2",
+        "dimensions": {
+          "width": 800,
+          "height": 500
+        },
+        "rootRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasRect": {
+          "x": 0,
+          "y": 0,
+          "width": 1100,
+          "height": 650
+        },
+        "frontCanvasVisible": false,
+        "visibility": {
+          "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+          "layerOpacity": 0,
+          "layerDisplay": "block",
+          "layerVisibility": "visible",
+          "canvasOpacity": 1,
+          "canvasDisplay": "block",
+          "canvasVisibility": "visible"
+        },
+        "canvasCount": 2,
+        "brightPixels": 2723,
+        "brightBounds": {
+          "left": 30,
+          "top": 24,
+          "right": 567,
+          "bottom": 268
+        },
+        "brightBands": [
+          {
+            "top": 24,
+            "bottom": 39,
+            "brightPixelRows": 829
+          },
+          {
+            "top": 69,
+            "bottom": 82,
+            "brightPixelRows": 506
+          },
+          {
+            "top": 99,
+            "bottom": 110,
+            "brightPixelRows": 273
+          },
+          {
+            "top": 131,
+            "bottom": 142,
+            "brightPixelRows": 179
+          },
+          {
+            "top": 195,
+            "bottom": 208,
+            "brightPixelRows": 471
+          },
+          {
+            "top": 225,
+            "bottom": 236,
+            "brightPixelRows": 221
+          },
+          {
+            "top": 257,
+            "bottom": 268,
+            "brightPixelRows": 244
+          }
+        ],
+        "diffFromPreviousCapture": {
+          "changedPixels": 0,
+          "bounds": null
+        }
+      }
+    }
+  ],
+  "prismSerializerEnvironment": {
+    "optionalUiDependency": "isolated in a scratch-only shim; not part of importer/exporter calls"
+  },
+  "process": {
+    "nativeHostPid": 21680,
+    "nativePid": 7024,
+    "browser": "154.0.8037.98",
+    "nativeHostExited": true,
+    "nativeProcessExited": true
+  },
+  "initialSurface": {
+    "sha256": "dfb02d74696bbe4ee97b8501a6635013646e37b552b3359be1b367b4e631c925",
+    "dimensions": {
+      "width": 800,
+      "height": 500
+    },
+    "rootRect": {
+      "x": 0,
+      "y": 0,
+      "width": 1100,
+      "height": 650
+    },
+    "frontCanvasRect": {
+      "x": 0,
+      "y": 0,
+      "width": 1100,
+      "height": 650
+    },
+    "frontCanvasVisible": true,
+    "visibility": {
+      "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+      "layerOpacity": 1,
+      "layerDisplay": "block",
+      "layerVisibility": "visible",
+      "canvasOpacity": 1,
+      "canvasDisplay": "block",
+      "canvasVisibility": "visible"
+    },
+    "canvasCount": 2,
+    "brightPixels": 2723,
+    "brightBounds": {
+      "left": 30,
+      "top": 24,
+      "right": 567,
+      "bottom": 268
+    },
+    "brightBands": [
+      {
+        "top": 24,
+        "bottom": 39,
+        "brightPixelRows": 829
+      },
+      {
+        "top": 69,
+        "bottom": 82,
+        "brightPixelRows": 471
+      },
+      {
+        "top": 99,
+        "bottom": 110,
+        "brightPixelRows": 221
+      },
+      {
+        "top": 131,
+        "bottom": 142,
+        "brightPixelRows": 244
+      },
+      {
+        "top": 195,
+        "bottom": 208,
+        "brightPixelRows": 506
+      },
+      {
+        "top": 225,
+        "bottom": 236,
+        "brightPixelRows": 273
+      },
+      {
+        "top": 257,
+        "bottom": 268,
+        "brightPixelRows": 179
+      }
+    ],
+    "diffFromPreviousCapture": null
+  },
+  "initialNativeState": {
+    "value": {
+      "defaults": {
+        "__lit.heading": "LIVE ROSTER",
+        "teams": [
+          {
+            "code": "R",
+            "id": "red",
+            "name": "RED TEAM",
+            "players": [
+              {
+                "id": "r-a",
+                "name": "ALICE",
+                "score": "11"
+              },
+              {
+                "id": "r-b",
+                "name": "BOB",
+                "score": "22"
+              },
+              {
+                "id": "r-c",
+                "name": "CARA",
+                "score": "33"
+              }
+            ]
+          },
+          {
+            "code": "B",
+            "id": "blue",
+            "name": "BLUE TEAM",
+            "players": [
+              {
+                "id": "b-d",
+                "name": "DANA",
+                "score": "44"
+              },
+              {
+                "id": "b-e",
+                "name": "ELI",
+                "score": "55"
+              },
+              {
+                "id": "b-f",
+                "name": "FOX",
+                "score": "66"
+              }
+            ]
+          }
+        ]
+      },
+      "layout": {
+        "background": "#0a0f16",
+        "children": [
+          {
+            "children": [
+              {
+                "bind": {
+                  "value": "__lit.heading"
+                },
+                "id": "roster-heading",
+                "kind": "text",
+                "size": {
+                  "h": 30,
+                  "w": 740
+                },
+                "style": {
+                  "color": "#ffffff",
+                  "fontFamily": "Figtree",
+                  "fontSize": 24,
+                  "fontWeight": 700
+                }
+              },
+              {
+                "bind": {
+                  "items": "teams"
+                },
+                "id": "teams-repeat",
+                "key": "{team}.id",
+                "kind": "repeat",
+                "scope": "team",
+                "template": {
+                  "background": "#142438",
+                  "children": [
+                    {
+                      "children": [
+                        {
+                          "bind": {
+                            "value": "{team}.name"
+                          },
+                          "id": "team-name",
+                          "kind": "text",
+                          "size": {
+                            "h": 24,
+                            "w": 700
+                          },
+                          "style": {
+                            "color": "#ffffff",
+                            "fontFamily": "Figtree",
+                            "fontSize": 20,
+                            "fontWeight": 700
+                          }
+                        },
+                        {
+                          "bind": {
+                            "items": "{team}.players"
+                          },
+                          "id": "players-repeat",
+                          "key": "{player}.id",
+                          "kind": "repeat",
+                          "limit": 2,
+                          "scope": "player",
+                          "template": {
+                            "background": "#203850",
+                            "children": [
+                              {
+                                "children": [
+                                  {
+                                    "bind": {
+                                      "value": "{player}.name"
+                                    },
+                                    "id": "player-name",
+                                    "kind": "text",
+                                    "size": {
+                                      "h": 24,
+                                      "w": 390
+                                    },
+                                    "style": {
+                                      "color": "#ffffff",
+                                      "fontFamily": "Figtree",
+                                      "fontSize": 18,
+                                      "fontWeight": 600
+                                    }
+                                  },
+                                  {
+                                    "bind": {
+                                      "value": "{player}.score"
+                                    },
+                                    "id": "player-score",
+                                    "kind": "text",
+                                    "size": {
+                                      "h": 24,
+                                      "w": 90
+                                    },
+                                    "style": {
+                                      "color": "#ffffff",
+                                      "fontFamily": "Figtree",
+                                      "fontSize": 18,
+                                      "fontWeight": 600
+                                    }
+                                  },
+                                  {
+                                    "bind": {
+                                      "value": "{team}.code"
+                                    },
+                                    "id": "team-code",
+                                    "kind": "text",
+                                    "size": {
+                                      "h": 24,
+                                      "w": 40
+                                    },
+                                    "style": {
+                                      "color": "#ffffff",
+                                      "fontFamily": "Figtree",
+                                      "fontSize": 18,
+                                      "fontWeight": 600
+                                    }
+                                  }
+                                ],
+                                "direction": "horizontal",
+                                "gap": 16,
+                                "id": "player-row",
+                                "kind": "stack",
+                                "position": {
+                                  "x": 8,
+                                  "y": 2
+                                },
+                                "size": {
+                                  "h": 24,
+                                  "w": 680
+                                }
+                              }
+                            ],
+                            "id": "player-template",
+                            "kind": "frame",
+                            "size": {
+                              "h": 28,
+                              "w": 700
+                            }
+                          }
+                        }
+                      ],
+                      "direction": "vertical",
+                      "gap": 4,
+                      "id": "team-content",
+                      "kind": "stack",
+                      "position": {
+                        "x": 10,
+                        "y": 8
+                      },
+                      "size": {
+                        "h": 102,
+                        "w": 720
+                      }
+                    }
+                  ],
+                  "id": "team-template",
+                  "kind": "frame",
+                  "size": {
+                    "h": 118,
+                    "w": 740
+                  }
+                }
+              }
+            ],
+            "direction": "vertical",
+            "gap": 8,
+            "id": "roster-content",
+            "kind": "stack",
+            "position": {
+              "x": 28,
+              "y": 20
+            },
+            "size": {
+              "h": 460,
+              "w": 744
+            }
+          }
+        ],
+        "id": "roster-root",
+        "kind": "frame",
+        "size": {
+          "h": 500,
+          "w": 800
+        }
+      },
+      "lsml": "1.1",
+      "scene_id": "repeat-runtime-proof",
+      "scene_version": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325"
+    },
+    "stateHash": "tree-sha256:247b1084242f8800fbbe1e44020fb8408f7233543a846ec09fc2b46206fe0023"
+  },
+  "initialSolarEvents": [],
+  "visibilityInstrumentation": {
+    "setup": {
+      "installed": true,
+      "mechanism": "css-style-set-property-fallback",
+      "layerVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+      "initialOpacity": "1"
+    },
+    "errorWrites": [
+      {
+        "before": "1",
+        "after": "0",
+        "stack": "Error: Solar scene layer opacity write\n    at CSSStyleDeclaration.set [as opacity] (eval at evaluate (:302:30), <anonymous>:42:22)\n    at gs (http://127.0.0.1:51471/assets/host-CJCFYX3Y.js:1:90589)"
+      }
+    ]
+  },
+  "result": {
+    "passed": false,
+    "status": "partial-with-malformed-state-recovery-gap",
+    "validMultiItemRenderingQualified": true,
+    "malformedUpdateBehavior": {
+      "nativeReceiverAcceptedMalformedCollection": true,
+      "visionRejectedDuringLoad": true,
+      "solarAppliedEventCountDidNotAdvance": true,
+      "retainedCanvasBackingPixelsUnchanged": true,
+      "lastValidFrameRemainedVisible": false,
+      "screenshotSha256": "e106c1ef80866861797b145aa658b291c64001b8d65f92bfc2a823469deeb615"
+    },
+    "oneSceneIdentityPreserved": true,
+    "sceneVersionPreservedAcrossLiveUpdates": true,
+    "updateTypes": [
+      "nested-scope text leaf",
+      "outer keyed collection reorder",
+      "inner scoped collection insertion under limit 2",
+      "inner scoped collection removal under limit 2",
+      "duplicate-key collection rejected by Vision after native acceptance; retained canvas pixels stayed cached but Solar hid the layer"
+    ],
+    "initialCanvas": {
+      "label": "repeat-initial",
+      "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-initial.png",
+      "screenshotSha256": "e299a7dc6df65d67a987e808371727b640bef90c1870445bb81939c0ad26dbac",
+      "sha256": "dfb02d74696bbe4ee97b8501a6635013646e37b552b3359be1b367b4e631c925",
+      "dimensions": {
+        "width": 800,
+        "height": 500
+      },
+      "rootRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasVisible": true,
+      "visibility": {
+        "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+        "layerOpacity": 1,
+        "layerDisplay": "block",
+        "layerVisibility": "visible",
+        "canvasOpacity": 1,
+        "canvasDisplay": "block",
+        "canvasVisibility": "visible"
+      },
+      "canvasCount": 2,
+      "brightPixels": 2723,
+      "brightBounds": {
+        "left": 30,
+        "top": 24,
+        "right": 567,
+        "bottom": 268
+      },
+      "brightBands": [
+        {
+          "top": 24,
+          "bottom": 39,
+          "brightPixelRows": 829
+        },
+        {
+          "top": 69,
+          "bottom": 82,
+          "brightPixelRows": 471
+        },
+        {
+          "top": 99,
+          "bottom": 110,
+          "brightPixelRows": 221
+        },
+        {
+          "top": 131,
+          "bottom": 142,
+          "brightPixelRows": 244
+        },
+        {
+          "top": 195,
+          "bottom": 208,
+          "brightPixelRows": 506
+        },
+        {
+          "top": 225,
+          "bottom": 236,
+          "brightPixelRows": 273
+        },
+        {
+          "top": 257,
+          "bottom": 268,
+          "brightPixelRows": 179
+        }
+      ],
+      "diffFromPreviousCapture": null
+    },
+    "scalarCanvas": {
+      "label": "repeat-scalar-update",
+      "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-scalar-update.png",
+      "screenshotSha256": "19a6e683bbd7012dd5aebc72d2c950366b0082292785cfb0e951bb2003d62b39",
+      "sha256": "b767d7477788172d59eff075e976cd89b5cbe1600a072baadca58acbb2f19dd5",
+      "dimensions": {
+        "width": 800,
+        "height": 500
+      },
+      "rootRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasVisible": true,
+      "visibility": {
+        "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+        "layerOpacity": 1,
+        "layerDisplay": "block",
+        "layerVisibility": "visible",
+        "canvasOpacity": 1,
+        "canvasDisplay": "block",
+        "canvasVisibility": "visible"
+      },
+      "canvasCount": 2,
+      "brightPixels": 2745,
+      "brightBounds": {
+        "left": 30,
+        "top": 24,
+        "right": 567,
+        "bottom": 268
+      },
+      "brightBands": [
+        {
+          "top": 24,
+          "bottom": 39,
+          "brightPixelRows": 829
+        },
+        {
+          "top": 69,
+          "bottom": 82,
+          "brightPixelRows": 471
+        },
+        {
+          "top": 99,
+          "bottom": 110,
+          "brightPixelRows": 243
+        },
+        {
+          "top": 131,
+          "bottom": 142,
+          "brightPixelRows": 244
+        },
+        {
+          "top": 195,
+          "bottom": 208,
+          "brightPixelRows": 506
+        },
+        {
+          "top": 225,
+          "bottom": 236,
+          "brightPixelRows": 273
+        },
+        {
+          "top": 257,
+          "bottom": 268,
+          "brightPixelRows": 179
+        }
+      ],
+      "diffFromPreviousCapture": {
+        "changedPixels": 92,
+        "bounds": {
+          "left": 460,
+          "top": 98,
+          "right": 469,
+          "bottom": 111
+        }
+      }
+    },
+    "reorderedCanvas": {
+      "label": "repeat-team-reordered",
+      "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-team-reordered.png",
+      "screenshotSha256": "47e55644701264595fd28d4e4bdd0535affa1b49a415e74257e6670b815f59eb",
+      "sha256": "c5780dd2ad7824c59dc95da276785d5673a874dad78939568b491dd1fdd946d2",
+      "dimensions": {
+        "width": 800,
+        "height": 500
+      },
+      "rootRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasVisible": true,
+      "visibility": {
+        "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+        "layerOpacity": 1,
+        "layerDisplay": "block",
+        "layerVisibility": "visible",
+        "canvasOpacity": 1,
+        "canvasDisplay": "block",
+        "canvasVisibility": "visible"
+      },
+      "canvasCount": 2,
+      "brightPixels": 2723,
+      "brightBounds": {
+        "left": 30,
+        "top": 24,
+        "right": 567,
+        "bottom": 268
+      },
+      "brightBands": [
+        {
+          "top": 24,
+          "bottom": 39,
+          "brightPixelRows": 829
+        },
+        {
+          "top": 69,
+          "bottom": 82,
+          "brightPixelRows": 506
+        },
+        {
+          "top": 99,
+          "bottom": 110,
+          "brightPixelRows": 273
+        },
+        {
+          "top": 131,
+          "bottom": 142,
+          "brightPixelRows": 179
+        },
+        {
+          "top": 195,
+          "bottom": 208,
+          "brightPixelRows": 471
+        },
+        {
+          "top": 225,
+          "bottom": 236,
+          "brightPixelRows": 221
+        },
+        {
+          "top": 257,
+          "bottom": 268,
+          "brightPixelRows": 244
+        }
+      ],
+      "diffFromPreviousCapture": {
+        "changedPixels": 4307,
+        "bounds": {
+          "left": 42,
+          "top": 69,
+          "right": 568,
+          "bottom": 269
+        }
+      }
+    },
+    "addedCanvas": {
+      "label": "repeat-player-added",
+      "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-player-added.png",
+      "screenshotSha256": "825330bb2f17eb51ed634df0b00a045d4d3d9cfb205178e61932792334671ffd",
+      "sha256": "48aeae9c2885c468f570afd76a7e634c559a9203394c23532c7afe1d81e3b94c",
+      "dimensions": {
+        "width": 800,
+        "height": 500
+      },
+      "rootRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasVisible": true,
+      "visibility": {
+        "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+        "layerOpacity": 1,
+        "layerDisplay": "block",
+        "layerVisibility": "visible",
+        "canvasOpacity": 1,
+        "canvasDisplay": "block",
+        "canvasVisibility": "visible"
+      },
+      "canvasCount": 2,
+      "brightPixels": 2734,
+      "brightBounds": {
+        "left": 30,
+        "top": 24,
+        "right": 567,
+        "bottom": 268
+      },
+      "brightBands": [
+        {
+          "top": 24,
+          "bottom": 39,
+          "brightPixelRows": 829
+        },
+        {
+          "top": 69,
+          "bottom": 82,
+          "brightPixelRows": 506
+        },
+        {
+          "top": 99,
+          "bottom": 110,
+          "brightPixelRows": 190
+        },
+        {
+          "top": 131,
+          "bottom": 142,
+          "brightPixelRows": 273
+        },
+        {
+          "top": 195,
+          "bottom": 208,
+          "brightPixelRows": 471
+        },
+        {
+          "top": 225,
+          "bottom": 236,
+          "brightPixelRows": 221
+        },
+        {
+          "top": 257,
+          "bottom": 268,
+          "brightPixelRows": 244
+        }
+      ],
+      "diffFromPreviousCapture": {
+        "changedPixels": 1178,
+        "bounds": {
+          "left": 49,
+          "top": 98,
+          "right": 473,
+          "bottom": 143
+        }
+      }
+    },
+    "removedCanvas": {
+      "label": "repeat-player-removed",
+      "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-player-removed.png",
+      "screenshotSha256": "47e55644701264595fd28d4e4bdd0535affa1b49a415e74257e6670b815f59eb",
+      "sha256": "c5780dd2ad7824c59dc95da276785d5673a874dad78939568b491dd1fdd946d2",
+      "dimensions": {
+        "width": 800,
+        "height": 500
+      },
+      "rootRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasVisible": true,
+      "visibility": {
+        "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+        "layerOpacity": 1,
+        "layerDisplay": "block",
+        "layerVisibility": "visible",
+        "canvasOpacity": 1,
+        "canvasDisplay": "block",
+        "canvasVisibility": "visible"
+      },
+      "canvasCount": 2,
+      "brightPixels": 2723,
+      "brightBounds": {
+        "left": 30,
+        "top": 24,
+        "right": 567,
+        "bottom": 268
+      },
+      "brightBands": [
+        {
+          "top": 24,
+          "bottom": 39,
+          "brightPixelRows": 829
+        },
+        {
+          "top": 69,
+          "bottom": 82,
+          "brightPixelRows": 506
+        },
+        {
+          "top": 99,
+          "bottom": 110,
+          "brightPixelRows": 273
+        },
+        {
+          "top": 131,
+          "bottom": 142,
+          "brightPixelRows": 179
+        },
+        {
+          "top": 195,
+          "bottom": 208,
+          "brightPixelRows": 471
+        },
+        {
+          "top": 225,
+          "bottom": 236,
+          "brightPixelRows": 221
+        },
+        {
+          "top": 257,
+          "bottom": 268,
+          "brightPixelRows": 244
+        }
+      ],
+      "diffFromPreviousCapture": {
+        "changedPixels": 1178,
+        "bounds": {
+          "left": 49,
+          "top": 98,
+          "right": 473,
+          "bottom": 143
+        }
+      }
+    },
+    "rejectedCanvas": {
+      "label": "repeat-duplicate-key-rejected",
+      "screenshot": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\build\\repeat-runtime\\20261015T165221Z\\20261015T165221Z-repeat-duplicate-key-rejected.png",
+      "screenshotSha256": "e106c1ef80866861797b145aa658b291c64001b8d65f92bfc2a823469deeb615",
+      "sha256": "c5780dd2ad7824c59dc95da276785d5673a874dad78939568b491dd1fdd946d2",
+      "dimensions": {
+        "width": 800,
+        "height": 500
+      },
+      "rootRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasRect": {
+        "x": 0,
+        "y": 0,
+        "width": 1100,
+        "height": 650
+      },
+      "frontCanvasVisible": false,
+      "visibility": {
+        "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+        "layerOpacity": 0,
+        "layerDisplay": "block",
+        "layerVisibility": "visible",
+        "canvasOpacity": 1,
+        "canvasDisplay": "block",
+        "canvasVisibility": "visible"
+      },
+      "canvasCount": 2,
+      "brightPixels": 2723,
+      "brightBounds": {
+        "left": 30,
+        "top": 24,
+        "right": 567,
+        "bottom": 268
+      },
+      "brightBands": [
+        {
+          "top": 24,
+          "bottom": 39,
+          "brightPixelRows": 829
+        },
+        {
+          "top": 69,
+          "bottom": 82,
+          "brightPixelRows": 506
+        },
+        {
+          "top": 99,
+          "bottom": 110,
+          "brightPixelRows": 273
+        },
+        {
+          "top": 131,
+          "bottom": 142,
+          "brightPixelRows": 179
+        },
+        {
+          "top": 195,
+          "bottom": 208,
+          "brightPixelRows": 471
+        },
+        {
+          "top": 225,
+          "bottom": 236,
+          "brightPixelRows": 221
+        },
+        {
+          "top": 257,
+          "bottom": 268,
+          "brightPixelRows": 244
+        }
+      ],
+      "diffFromPreviousCapture": {
+        "changedPixels": 0,
+        "bounds": null
+      }
+    },
+    "scalarMutation": {
+      "label": "player-leaf-update",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players/0/score",
+          "value": "19"
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "8e7aff2499763f6ceab3beb11d4a8550"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:247b1084242f8800fbbe1e44020fb8408f7233543a846ec09fc2b46206fe0023",
+      "stateHashAfter": "tree-sha256:d328b7e950b9b534e20a1fd5b9423543ee831857434e80357fe55f0e3bb45b8e",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "8e7aff2499763f6ceab3beb11d4a8550",
+        "target": "scene",
+        "sequence": 1,
+        "stateHash": "tree-sha256:d328b7e950b9b534e20a1fd5b9423543ee831857434e80357fe55f0e3bb45b8e",
+        "render": "document"
+      },
+      "appliedEventsBefore": 0,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    "reorderMutation": {
+      "label": "outer-team-reorder",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams",
+          "value": [
+            {
+              "id": "blue",
+              "name": "BLUE TEAM",
+              "code": "B",
+              "players": [
+                {
+                  "id": "b-d",
+                  "name": "DANA",
+                  "score": "44"
+                },
+                {
+                  "id": "b-e",
+                  "name": "ELI",
+                  "score": "55"
+                },
+                {
+                  "id": "b-f",
+                  "name": "FOX",
+                  "score": "66"
+                }
+              ]
+            },
+            {
+              "id": "red",
+              "name": "RED TEAM",
+              "code": "R",
+              "players": [
+                {
+                  "id": "r-a",
+                  "name": "ALICE",
+                  "score": "11"
+                },
+                {
+                  "id": "r-b",
+                  "name": "BOB",
+                  "score": "22"
+                },
+                {
+                  "id": "r-c",
+                  "name": "CARA",
+                  "score": "33"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "f317ace88971ceba2d13ccb45d17bafa"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:d328b7e950b9b534e20a1fd5b9423543ee831857434e80357fe55f0e3bb45b8e",
+      "stateHashAfter": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "f317ace88971ceba2d13ccb45d17bafa",
+        "target": "scene",
+        "sequence": 2,
+        "stateHash": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+        "render": "patch",
+        "presentation": {
+          "throughSequence": 2,
+          "stateHash": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+          "mutationCount": 1
+        }
+      },
+      "appliedEventsBefore": 1,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    "addMutation": {
+      "label": "scoped-player-addition",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players",
+          "value": [
+            {
+              "id": "b-i",
+              "name": "IVY",
+              "score": "99"
+            },
+            {
+              "id": "b-d",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "b-e",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "62904536cdeb594ed7dbcbcd7b87de82"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashAfter": "tree-sha256:cca56a009fa50fd494411dba3e6d72c90dec7d6933ef59cbed3171a9140895e9",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "62904536cdeb594ed7dbcbcd7b87de82",
+        "target": "scene",
+        "sequence": 3,
+        "stateHash": "tree-sha256:cca56a009fa50fd494411dba3e6d72c90dec7d6933ef59cbed3171a9140895e9",
+        "render": "document"
+      },
+      "appliedEventsBefore": 2,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    "removeMutation": {
+      "label": "scoped-player-removal",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players",
+          "value": [
+            {
+              "id": "b-d",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "b-e",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "ebe31293735fb3f32640151e1fb5ea55"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:cca56a009fa50fd494411dba3e6d72c90dec7d6933ef59cbed3171a9140895e9",
+      "stateHashAfter": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "applied",
+        "transactionId": "ebe31293735fb3f32640151e1fb5ea55",
+        "target": "scene",
+        "sequence": 4,
+        "stateHash": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+        "render": "document"
+      },
+      "appliedEventsBefore": 3,
+      "errorEventsBefore": 0,
+      "pageErrors": []
+    },
+    "rejectedMutation": {
+      "label": "duplicate-key-rejection",
+      "operations": [
+        {
+          "op": "replace",
+          "path": "/defaults/teams/0/players",
+          "value": [
+            {
+              "id": "duplicate",
+              "name": "DANA",
+              "score": "44"
+            },
+            {
+              "id": "duplicate",
+              "name": "ELI",
+              "score": "55"
+            },
+            {
+              "id": "b-f",
+              "name": "FOX",
+              "score": "66"
+            }
+          ]
+        }
+      ],
+      "httpStatus": 200,
+      "response": {
+        "receipt": {
+          "level": "applied",
+          "target": "scene",
+          "transactionId": "03b4cf9f81e5244d46da2a7f3410be51"
+        },
+        "persistence": "memory-only"
+      },
+      "stateHashBefore": "tree-sha256:f046cd39fc5863ee6083fd118c5afd0c21749c8fc482c76fbe5ac4c2209ca28d",
+      "stateHashAfter": "tree-sha256:1922dc788798b0cdfaf15e88be7ba1f7db84a3e5044af8db84ca03bb10c3b366",
+      "stateHashChanged": true,
+      "solarEvent": {
+        "type": "error",
+        "message": "[solar] INTERNAL: Native LSDP: Vision load: repeat at $layout.children[0].children[1].template[0].children[0].children[1] contains duplicate key \"duplicate\" (recoverable)"
+      },
+      "appliedEventsBefore": 4,
+      "errorEventsBefore": 0,
+      "pageErrors": [],
+      "acceptedNativeReceiptBeforeRenderRefusal": true,
+      "solarAppliedEventCountAfterRequest": 4,
+      "nativeStateContainsDuplicateKeys": true,
+      "solarErrorEventsAfterRequest": 1,
+      "nativeAuthorityRemainsMalformedUntilShutdown": true
+    },
+    "finalAuthoritativeScene": {
+      "sceneId": "repeat-runtime-proof",
+      "sceneVersion": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+      "stateHash": "tree-sha256:1922dc788798b0cdfaf15e88be7ba1f7db84a3e5044af8db84ca03bb10c3b366",
+      "duplicateKeysRemainInPrivateServerUntilShutdown": true
+    },
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "[solar] INTERNAL: Native LSDP: Vision load: repeat at $layout.children[0].children[1].template[0].children[0].children[1] contains duplicate key \"duplicate\" (recoverable)"
+    ],
+    "limits": [
+      "Vision's opaque WASM implementation was exercised through Solar; no decompilation or rebuild occurred.",
+      "Nested team/player scopes and the inner limit of 2 were exercised; other scope grammars were not exhaustively tested.",
+      "Keyed reorder was observed in pixels; internal retained node ids are not exposed by Solar's public host.",
+      "Canvas pixels and computed CSS visibility are measured separately; screenshots capture the page-level composition, but do not prove physical display scanout.",
+      "The duplicate-key request changed only this private Rust receiver's RAM before Vision refused the state; the retained front-canvas buffer stayed unchanged, but Solar made that layer invisible and the screenshot is blank. The private receiver is stopped in cleanup."
+    ]
+  },
+  "evidence": {
+    "directory": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-repeat-runtime-proof\\evidence\\local-20261015-repeat-runtime-proof\\eleven",
+    "files": [
+      "20261015T165221Z-repeat-initial.png",
+      "20261015T165221Z-repeat-scalar-update.png",
+      "20261015T165221Z-repeat-team-reordered.png",
+      "20261015T165221Z-repeat-player-added.png",
+      "20261015T165221Z-repeat-player-removed.png",
+      "20261015T165221Z-repeat-duplicate-key-rejected.png",
+      "20261015T165221Z-repeat-prism-export.lsml",
+      "20261015T165221Z-repeat-prism-rebuild.lsml",
+      "20261015T165221Z-prism-repeat.lsmlz",
+      "20261015T165221Z-repeat-report.json"
+    ]
+  }
+}

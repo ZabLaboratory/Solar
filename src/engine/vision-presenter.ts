@@ -940,7 +940,8 @@ async function mountVisionSceneNow(
     } else {
       session.onMessage = () => {};
       presenter?.postMessage({ type: "clear-scene", seq: ++session.sequence });
-      layer.style.opacity = "0";
+      // Keep the layer's previous visibility: its front canvas is the last
+      // accepted frame. New and prewarmed layers already start hidden.
     }
     throw error;
   }

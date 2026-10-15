@@ -1,0 +1,71 @@
+{
+  "captured_utc": "20261015T162603Z",
+  "integration_head": "bd84d408b6144bb15151bca19be00b25f2573a3e",
+  "scope": "Supplement to35 worktree/5 native inventory: local branches without attached worktrees. No remote fetch or foreign worktree mutation.",
+  "solar_unattached_source_branches": [
+    {
+      "branch": "codex/local-20260923-roster-images",
+      "head": "c97f45a13dfcead0019d4fcc70686d99c6545968",
+      "cherry_vs_integration": [
+        "+ 86385a103451bfebd6b7a459834cc5559d210cc5",
+        "+ c3b6c9e5d7bd9d52bc7a41c10f7eae5f10da8913",
+        "+ c97f45a13dfcead0019d4fcc70686d99c6545968"
+      ],
+      "disposition": "Integrated squash d8d28f7 is an ancestor. Current receive-only roster patch persists at scripts/peer-viewer/roster.mjs; slot assignments retain newer explicit-null semantics. Legacy compiled renderer/predecode flags are superseded by current native LSDP/Vision runtime and must not be restored."
+    },
+    {
+      "branch": "codex/solar-native-base64",
+      "head": "c12bddc2754135b67f3e082ca9070b9f98d15803",
+      "cherry_vs_integration": [
+        "- c12bddc2754135b67f3e082ca9070b9f98d15803"
+      ],
+      "disposition": "git cherry marks source commit patch-equivalent to an integrated ancestor; former render-asset-wire was subsequently removed with compiled scene renderer. Do not restore obsolete rendering pipeline."
+    },
+    {
+      "branch": "codex/solar-render-asset-sites-20260928",
+      "head": "2cf1defdec51f2571256ed38fbaf8b3c9f69ef40",
+      "cherry_vs_integration": [
+        "- 2cf1defdec51f2571256ed38fbaf8b3c9f69ef40"
+      ],
+      "disposition": "git cherry marks source commit patch-equivalent to an integrated ancestor; former render-asset-wire was subsequently removed with compiled scene renderer. Do not restore obsolete rendering pipeline."
+    },
+    {
+      "branch": "local-20260927-solar-render-asset-batch",
+      "head": "3dcbcb135173c414883f0fb14dfc3df76027e517",
+      "cherry_vs_integration": [
+        "- 3dcbcb135173c414883f0fb14dfc3df76027e517"
+      ],
+      "disposition": "git cherry marks source commit patch-equivalent to an integrated ancestor; former render-asset-wire was subsequently removed with compiled scene renderer. Do not restore obsolete rendering pipeline."
+    }
+  ],
+  "native_all_local_branches": [
+    {
+      "branch": "codex/server-addons-20261004",
+      "native_source_commits_not_ancestors": []
+    },
+    {
+      "branch": "codex/standalone-server-20261004",
+      "native_source_commits_not_ancestors": []
+    },
+    {
+      "branch": "eleven/local-20261015-native-integration",
+      "native_source_commits_not_ancestors": []
+    },
+    {
+      "branch": "eleven/local-20261015-subscriber-throughput",
+      "native_source_commits_not_ancestors": []
+    },
+    {
+      "branch": "forge/local-20261013-transport-budgets",
+      "native_source_commits_not_ancestors": []
+    },
+    {
+      "branch": "main",
+      "native_source_commits_not_ancestors": []
+    },
+    {
+      "branch": "research/local-20261012-native-adoption",
+      "native_source_commits_not_ancestors": []
+    }
+  ]
+}
