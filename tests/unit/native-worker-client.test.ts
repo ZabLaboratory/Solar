@@ -226,7 +226,13 @@ describe("isolated native transport lifecycle", () => {
         throw new Error("failure handler failed");
       },
     );
-    const onClose = vi.fn((_error: Error) => {});
+    const closeCallbackError = new Error("close callback failed");
+    const onClose = vi.fn((_error: Error) => {
+      throw closeCallbackError;
+    });
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
     const onTransaction = vi.fn(async (value: unknown) => {
       if (value === 1)
         throw Object.assign(new Error("native transaction failed"), {
@@ -273,6 +279,10 @@ describe("isolated native transport lifecycle", () => {
     expect(onClose.mock.calls[0]?.[0]).toMatchObject({
       message: "failure handler failed",
     });
+    expect(consoleError).toHaveBeenCalledWith(
+      "Native worker onClose callback failed.",
+      closeCallbackError,
+    );
     client.close();
   });
   it("can cancel a transaction during connection establishment", async () => {

@@ -33,6 +33,13 @@ const measureStage = (
     // Instrumentation must not change transaction delivery behavior.
   }
 };
+const reportObserverFailure = (callback: string, error: unknown): void => {
+  try {
+    console.error(`Native worker ${callback} callback failed.`, error);
+  } catch {
+    // A broken diagnostic sink must not change the transaction queue either.
+  }
+};
 export const verifiedNativeWorkerState = (
   context: IncomingContext,
 ): VerifiedWorkerState | undefined => verifiedStates.get(context);
@@ -196,11 +203,16 @@ export class NativeWorkerClient {
               // The original transaction failure has already been returned to
               // the worker. Report the lifecycle-hook failure separately so it
               // cannot become a success receipt or reject the ordered queue.
-              options?.onClose?.(
+              const diagnosticError =
                 callbackError instanceof Error
                   ? callbackError
-                  : new Error(String(callbackError)),
-              );
+                  : new Error(String(callbackError));
+              try {
+                if (options?.onClose) options.onClose(diagnosticError);
+                else reportObserverFailure("onIncomingFailed", diagnosticError);
+              } catch (closeCallbackError) {
+                reportObserverFailure("onClose", closeCallbackError);
+              }
             }
           } finally {
             releaseQueueSlot();

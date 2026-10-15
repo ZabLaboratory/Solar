@@ -48,8 +48,9 @@ Worker timing is best-effort: missing or throwing Performance APIs drop only the
 sample and cannot block a transaction receipt. A failed transaction is returned
 to the worker as an error before `onIncomingFailed` runs; if that lifecycle hook
 throws and an `onClose` handler is registered, its exception is forwarded through
-that lifecycle path without turning the original transaction failure into a
-successful receipt.
+that lifecycle path. Exceptions from either observer are reported to the console
+and cannot turn the original transaction failure into a successful receipt or
+poison the ordered delivery queue.
 `tests/unit/native-worker.test.ts` exercises the worker callback itself: scalar
 receipts stay pending until main admission, and a refused admission propagates
 its typed error. The transport is mocked; this does not measure native window
