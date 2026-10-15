@@ -1,0 +1,125 @@
+{
+  "schema": "solar.gpu-context-recovery-provenance.v1",
+  "evidenceUtc": "20261015T153352Z",
+  "solar": {
+    "worktree": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-gpu-recovery",
+    "pinManifest": {
+      "files": {
+        "ui/mainpresenter.mjs": {
+          "bytes": 27634,
+          "sha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
+        },
+        "ui/fonts.mjs": {
+          "bytes": 1977,
+          "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+        },
+        "pkg/lumencast_vision_web.js": {
+          "bytes": 152321,
+          "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d"
+        },
+        "pkg/lumencast_vision_web_bg.wasm": {
+          "bytes": 10491253,
+          "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd"
+        }
+      },
+      "baseRevision": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+      "sourceState": "Signed Vision instance-runtime source 728e1247 built as release WASM and pinned with its exact main presenter. Native GPU semantics and a private Solar browser path pass exact root/child acquisition, four fit pixel modes, embedded WOFF2/PNG, bindParams mutation, WebGL restoration and missing-child refusal with active-frame preservation. ZabCanvas HTTP, remote assets, shared runtime admission and public output are not qualified.",
+      "wasmSourceRevision": "728e1247a830fec777b4a234af5d8cd9d20dc311",
+      "sha256": "791439d70d1f1eff864c49bb56c5d1ac60b66426d7a90d64ccc12ea613529e2c",
+      "path": "public/vision/vision-assets.json"
+    },
+    "head": "411461bbaddcf3dec45bff5de1c3c965d430d801",
+    "testedRendererFiles": {
+      "public/vision/ui/mainpresenter.mjs": "same SHA-256 as the pinned Vision source at inspected HEAD",
+      "src/engine/vision-presenter.ts": "Solar calls Vision createMainThreadPresenter"
+    },
+    "branch": "eleven/local-20261015-gpu-recovery"
+  },
+  "vision": {
+    "worktree": "D:\\Documents\\Lumencast\\lumencast-vision\\.worktrees\\eleven-local-20261015-vision3d-integration",
+    "head": "64d716dee2f33f0883940018712dee21941e7973",
+    "sourceProvenanceMatches": {
+      "crates/vision-gpu/src/renderer.rs": {
+        "expectedSha256": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
+        "matches": true,
+        "actualSha256": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222"
+      },
+      "crates/vision-gpu/src/renderer/composition_cache.rs": {
+        "expectedSha256": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b",
+        "matches": true,
+        "actualSha256": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b"
+      },
+      "crates/vision-web/src/lib.rs": {
+        "expectedSha256": "24d89fd2c40ab866d9aa4b9853f3470c1a2f58015e9fb006b9edbd162e120b27",
+        "matches": true,
+        "actualSha256": "24d89fd2c40ab866d9aa4b9853f3470c1a2f58015e9fb006b9edbd162e120b27"
+      },
+      "README.md": {
+        "expectedSha256": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca",
+        "matches": true,
+        "actualSha256": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca"
+      },
+      "crates/vision-web/ui/mainpresenter.mjs": {
+        "expectedSha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7",
+        "matches": true,
+        "actualSha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
+      },
+      "crates/vision-gpu-scene/src/lib.rs": {
+        "expectedSha256": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15",
+        "matches": true,
+        "actualSha256": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15"
+      },
+      "crates/vision-web/src/instances.rs": {
+        "expectedSha256": "865106569a8c99bd60a20f376105b9421e13ff305459534831fe51ab5d1abce9",
+        "matches": true,
+        "actualSha256": "865106569a8c99bd60a20f376105b9421e13ff305459534831fe51ab5d1abce9"
+      },
+      "crates/vision-web/README.md": {
+        "expectedSha256": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54",
+        "matches": true,
+        "actualSha256": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54"
+      },
+      "crates/vision-render/src/image.rs": {
+        "expectedSha256": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f",
+        "matches": true,
+        "actualSha256": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f"
+      },
+      "crates/vision-web/ui/tests/mainpresenter.test.mjs": {
+        "expectedSha256": "bb8bb601880af507f68f1e0700818d3e7c2bb7b5ab2411a466668da898869904",
+        "matches": true,
+        "actualSha256": "bb8bb601880af507f68f1e0700818d3e7c2bb7b5ab2411a466668da898869904"
+      }
+    }
+  },
+  "browser": {
+    "pageErrors": [],
+    "version": "154.0.8037.98",
+    "contextDiagnostics": {
+      "beforeLoss": false,
+      "afterLoss": true,
+      "afterRestore": false
+    },
+    "node": "v24.16.0",
+    "errors": [],
+    "boundary": "same active Solar/Vision scene only; private WebGL loss and restoration; no scene switch or live source",
+    "dimensions": {
+      "gpu": [
+        200,
+        80
+      ],
+      "front": [
+        200,
+        80
+      ]
+    }
+  },
+  "dependencies": {
+    "nodeModulesTarget": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-project-integration\\node_modules",
+    "access": "owned-worktree junction; target verified as a physical directory before linking; no install or target writes"
+  },
+  "noBuilds": [
+    "No Cargo build",
+    "No WASM build",
+    "No Vision pin or public asset change"
+  ]
+}

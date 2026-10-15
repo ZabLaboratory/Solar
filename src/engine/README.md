@@ -136,6 +136,15 @@ late work and callbacks from the retired lifetime cannot attach to or retire it.
 Disposing a scene handle or switching scenes remains nonterminal and retains the
 single host presenter.
 Explicit WebGL context-loss recovery remains distinct from a scene switch.
+Solar's host path uses Vision's desynchronized WebGL2 main-thread presenter; it
+does not automatically switch to Vision's standalone WebGPU worker or its
+separate software renderer. On a recoverable loss, Vision retains accepted scene
+state, recreates the WebGL projection and re-registers its active images. Solar
+keeps the last submitted front canvas until the restored frame is submitted. A
+failed restoration is reported as a `context` presenter error and reaches the
+host error callback when no request waiter owns it. The private
+`qualify-instance-runtime.mjs --context-only true` mode exercises loss, restore
+and same-scene pixels without preparing a second scene.
 Absolute native assignments compare accepted
 documents before rendering, so finalization does not mount the prepared scene again.
 Preparation carries the current and candidate sources; compact commit/finalize
