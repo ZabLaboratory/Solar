@@ -1,0 +1,44 @@
+{
+  "schema": "solar.native-burst-browser-qualification.v1",
+  "scenario": "paced",
+  "startedAt": "2026-10-15T14:50:31.184Z",
+  "scope": {
+    "operations": 512,
+    "scene": "native-burst-qualification",
+    "source": "real private Rust LSDP daemon + Solar host dist + pinned Vision dist",
+    "browser": "private headless Chrome; no CEF, no physical camera, no audio, no scene switch",
+    "publication": "none",
+    "presentationBoundary": "Vision frame-submitted followed by Solar CanvasPresentation retained-front-canvas copy; no GPU-completion or physical-scanout claim"
+  },
+  "artifacts": {
+    "resultPath": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\evidence\\local-20261015-native-burst-qualification\\eleven\\20261015T145031Z-native-burst-sustained.json",
+    "pixelsPath": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\evidence\\local-20261015-native-burst-qualification\\eleven\\20261015T145031Z-native-burst-sustained-pixels.png",
+    "scene": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\fixtures\\native-burst\\native-burst.lsmlz",
+    "nativeBinary": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\dist\\native\\win32-x64\\lsdpd.exe"
+  },
+  "serverLogs": {
+    "stdout": [
+      "{\"solar\":\"http://127.0.0.1:57590/\",\"native\":\"ws://127.0.0.1:64615/lsdp\",\"nativePid\":20444,\"sceneId\":\"native-burst-qualification\",\"archiveDigest\":\"sha256:cd7e20ebed5887bd867b6afa81d0f0371d8210705797e2a953c1fd5ade8cda5e\",\"persistence\":\"memory-only\"}"
+    ],
+    "stderr": []
+  },
+  "producerLogs": {
+    "stdout": [],
+    "stderr": []
+  },
+  "failures": [
+    "page.waitForFunction: Timeout 60000ms exceeded.\n    at main (D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\scripts\\proof\\qualify-native-burst.mjs:412:14)\n    at async file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-native-burst-qualification/scripts/proof/qualify-native-burst.mjs:607:3"
+  ],
+  "progressCallbacks": [],
+  "server": {
+    "ready": true,
+    "solar": "http://127.0.0.1:57590/",
+    "nativeUrl": "ws://127.0.0.1:64615/lsdp",
+    "nativePid": 20444,
+    "sceneId": "native-burst-qualification",
+    "archiveDigest": "sha256:cd7e20ebed5887bd867b6afa81d0f0371d8210705797e2a953c1fd5ade8cda5e",
+    "port": 57590
+  },
+  "passed": false,
+  "completedAt": "2026-10-15T14:51:33.021Z"
+}

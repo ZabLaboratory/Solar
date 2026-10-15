@@ -62,6 +62,41 @@ shipped binary, verifies SHA-256 and needs no source checkout/build tools.
 `--camera "<physical-camera-label>"` optionally maps the existing
 `obs-virtual-camera` authored reference in this test scene to a host camera.
 
+## Private sustained and burst browser qualification
+
+`scripts/proof/qualify-native-burst.mjs` drives 512 distinct default mutations
+through the copied Rust binary, Solar's real native receiver and a private
+headless Chrome page using the exact Solar/Vision host assets in the same
+worktree. It runs the sustained case with a 3,900 ms deadline schedule (the
+achieved rate is calculated from captured send/ACK timestamps) and the burst
+case without intentional pacing:
+
+```powershell
+node scripts/proof/qualify-native-burst.mjs --mode paced --duration 3900 --playwright-root D:\Documents\Zab\Prism
+node scripts/proof/qualify-native-burst.mjs --mode burst --playwright-root D:\Documents\Zab\Prism
+```
+
+Each run records every producer transaction ID and expected state hash, Solar
+receive/applied identities and hashes, frame coverage/coalescing, resync reasons,
+bounded worker/frame-patch queue telemetry, native final-state readback, errors,
+and the text recognized from the retained front canvas copied after Vision's
+`frame-submitted` response. A native ACK does not count as a browser application;
+the retained canvas does not prove GPU completion or physical scanout. Missing
+per-transaction hashes, dropped event records, or an incomplete resync drain stay
+unknown or failed in the report rather than being filled with zeroes. The fixture
+has one bound text field and does not exercise a scene switch, camera, audio,
+Meet, CEF, or shared development process.
+
+The report includes nearest-rank p50/p95/max for the interval from Solar's
+`solar:lsdp-received` event to its `solar:lsdp-applied` event. The latter follows
+Vision's `frame-submitted` response and the retained-canvas copy, so this is a
+combined receive-to-submission observation; Solar does not expose separate
+application-to-submission timestamps. Covering submissions are logical mutation
+coverage, not display-frame counts. Retained-canvas poll count, distinct sampled
+pixel hashes and OCR attempts are reported separately; physical display-frame
+sampling is unavailable. Error observations carry capture phases and timestamps,
+and private Chrome closes before its daemon to keep teardown failures separate.
+
 Apply ordinary add/remove/replace/test JSON Pointer operations:
 
 ```powershell
