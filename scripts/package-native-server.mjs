@@ -1,7 +1,8 @@
 import { createHash } from "node:crypto";
-import { copyFile, chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { parseArgs } from "node:util";
+
 const { values } = parseArgs({
   options: {
     binary: { type: "string" },
@@ -9,31 +10,74 @@ const { values } = parseArgs({
     revision: { type: "string" },
   },
 });
+const platformPattern = /^(win32|linux|darwin)-(x64|arm64)$/;
+const revisionPattern = /^[a-f0-9]{40}$/;
+const digestPattern = /^[a-f0-9]{64}$/;
 if (
-  !values.binary ||
-  !/^(win32|linux|darwin)-(x64|arm64)$/.test(values.platform ?? "") ||
-  !/^[a-f0-9]{40}$/.test(values.revision ?? "")
+  !values.binary?.trim() ||
+  !platformPattern.test(values.platform ?? "") ||
+  !revisionPattern.test(values.revision ?? "")
 )
   throw new Error(
     "Usage: package-native-server --binary <lsdpd> --platform <win32-x64> --revision <source-sha>",
   );
-const key = values.platform,
-  name = key.startsWith("win32-") ? "lsdpd.exe" : "lsdpd";
-const target = resolve("dist/native", key, name);
-await mkdir(dirname(target), { recursive: true });
-await copyFile(resolve(values.binary), target);
-await chmod(target, 0o755);
-const manifestPath = resolve("dist/native/manifest.json");
+
+const key = values.platform;
+const name = key.startsWith("win32-") ? "lsdpd.exe" : "lsdpd";
+const binary = await readFile(resolve(values.binary));
+const root = resolve("dist/native");
+const manifestPath = resolve(root, "manifest.json");
 let previous;
 try {
   previous = JSON.parse(await readFile(manifestPath, "utf8"));
 } catch (error) {
   if (error.code !== "ENOENT") throw error;
 }
-if (previous && previous.source_revision !== values.revision)
-  throw new Error(
-    "All packaged platforms must use the same native source revision.",
-  );
+
+if (previous !== undefined) {
+  if (
+    !previous ||
+    typeof previous !== "object" ||
+    Array.isArray(previous) ||
+    previous.schema !== "solar.native-server.v1" ||
+    previous.wire !== "LSDP-TCP/2.0-draft2" ||
+    !revisionPattern.test(previous.source_revision ?? "") ||
+    !previous.binaries ||
+    typeof previous.binaries !== "object" ||
+    Array.isArray(previous.binaries) ||
+    Object.keys(previous.binaries).length === 0
+  )
+    throw new Error("Invalid existing native package manifest.");
+
+  if (previous.source_revision !== values.revision)
+    throw new Error(
+      "All packaged platforms must use the same native source revision.",
+    );
+
+  for (const [platform, entry] of Object.entries(previous.binaries)) {
+    const filename = platform.startsWith("win32-") ? "lsdpd.exe" : "lsdpd";
+    if (
+      !platformPattern.test(platform) ||
+      !entry ||
+      typeof entry !== "object" ||
+      Array.isArray(entry) ||
+      entry.file !== platform + "/" + filename ||
+      !digestPattern.test(entry.sha256 ?? "")
+    )
+      throw new Error("Invalid existing native package manifest.");
+
+    const packagedBytes = await readFile(resolve(root, entry.file));
+    const actualDigest = createHash("sha256")
+      .update(packagedBytes)
+      .digest("hex");
+    if (actualDigest !== entry.sha256)
+      throw new Error(
+        "Existing native binary digest mismatch for " + platform + ".",
+      );
+  }
+}
+
+const target = resolve(root, key, name);
 const manifest = {
   schema: "solar.native-server.v1",
   wire: "LSDP-TCP/2.0-draft2",
@@ -41,13 +85,15 @@ const manifest = {
   binaries: {
     ...previous?.binaries,
     [key]: {
-      file: `${key}/${name}`,
-      sha256: createHash("sha256")
-        .update(await readFile(target))
-        .digest("hex"),
+      file: key + "/" + name,
+      sha256: createHash("sha256").update(binary).digest("hex"),
     },
   },
 };
+
+await mkdir(dirname(target), { recursive: true });
+await writeFile(target, binary);
+await chmod(target, 0o755);
 await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + "\n");
 console.log(
   JSON.stringify({
