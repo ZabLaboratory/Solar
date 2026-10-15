@@ -1,0 +1,11 @@
+{
+  "before_audio_calls": 8153,
+  "after_audio_calls": 821,
+  "reduction_percent": 89.93008708450877,
+  "before_rate": 53.981106612674814,
+  "after_rate": 53.15059334781882,
+  "queued_at_start": 55,
+  "isolated_audio_off_rate": 53.076220386346755,
+  "largest_observed_gpu_stall_ms": 1774.2999999970198,
+  "native_browser_boundary": "Dedicated Chrome CPU profile and frame submissions; actual Codex/OS symptom requires user comparison; no physical audio/display deadline qualification"
+}

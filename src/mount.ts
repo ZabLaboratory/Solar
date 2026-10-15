@@ -10,5 +10,11 @@ export function mount(options: MountOptions): SolarHandle {
   return {
     disconnect: () => runtime.disconnect(),
     setToken: (token) => runtime.setToken(token),
+    audio: {
+      resume: () => runtime.resumeAudio(),
+      stream: () => runtime.audioStream(),
+      status: () => runtime.audioStatus(),
+      render: (animationId) => runtime.renderAudio(animationId),
+    },
   };
 }

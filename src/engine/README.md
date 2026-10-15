@@ -1,5 +1,10 @@
 # LSDP and Vision runtime
 
+[`sound/`](sound/README.md) owns authored scene audio: hash-pinned packaged clips,
+composed cues, routed DSP buses, live mix mutations, shared motion transport and
+offline PCM. This experimental browser extension is enabled by `sceneAudio`;
+it does not add a native Rust audio-device backend to Vision.
+
 `animations.ts` owns catalogue validation, easing and the local playback clock.
 Translation, rotation, opacity and blur patch private bindings in the active Vision
 scene. Translation adds the sampled offset to the current authored/bound position;

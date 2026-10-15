@@ -1,7 +1,17 @@
 # Solar maintenance and qualification tools
 
+[`kumiki-motion/`](kumiki-motion/README.md) authors the original vector motion study.
+[`sound-design/`](sound-design/README.md) extends it with original music/sound assets,
+LSML cue composition and a real native canvas/live audio qualification capture.
+
 [`sponsor-motion/`](sponsor-motion/README.md) creates and plays the local sponsor
 LSML fixture, captures the real Solar front canvas and checks retained-scene replay.
+
+[`kumiki-motion/`](kumiki-motion/README.md) authors an original five-act vector
+choreography of the canonical Kumiki mark and reuses the native motion reader.
+
+[`z-bug/`](z-bug/README.md) traces the confirmed landing Z into two vector arrows
+and authors a transparent stream-corner animation through that same reader.
 
 Owner: Solar build/installation/qualification. Package commands and the following CLI tools
 are active entrypoints. Helpers belong to their nearest README. They are not renderer code.

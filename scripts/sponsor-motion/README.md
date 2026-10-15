@@ -4,6 +4,14 @@ Local LSML fixture using the two supplied sponsor images, 12 clipping slots and
 35 concurrent animation tracks. `generate.mjs` writes explicit LSML/LSMLZ outputs;
 the original PNGs remain unchanged in `fixtures/sponsor-motion`.
 
+The reader also consumes the [Kumiki choreography](../kumiki-motion/README.md).
+`storyboard.mjs <evidence-directory> '[0,3000,15000]'` accepts optional explicit
+seek positions and waits for matching presentation receipts before capture.
+`controls.mjs <evidence-directory>` accepts an explicit output directory and
+derives the alternate-iteration seek from the current fixture duration.
+The reader accepts `?autoplay=1&loop=1` for an automatically playing local preview;
+this submits the same native play command after Solar reports its live state.
+
 Run `node scripts/sponsor-motion/generate.mjs <output-directory>` then serve the
 archive with `scripts/native-lsdp-local.mjs`. Commands are submitted as one native
 LSDP transaction containing `/defaults/__animation.<id>` entries. Solar owns the

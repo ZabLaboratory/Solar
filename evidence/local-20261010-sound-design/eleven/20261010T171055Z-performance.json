@@ -1,0 +1,124 @@
+[
+  {
+    "mode": "on",
+    "queuedAtStart": 55,
+    "rate": 53.15059334781882,
+    "p95": 28.899999991059303,
+    "max": 96,
+    "frames": 796,
+    "perf": {
+      "long": [],
+      "audioCalls": {
+        "setValueAtTime": 395,
+        "linearRampToValueAtTime": 426
+      }
+    },
+    "sound": {
+      "state": "paused",
+      "assets": 7,
+      "voices": 0,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 7.7824657024837e-12,
+      "peak": 2.038405902404783e-11,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 15000,
+          "phase": 15000,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": true,
+          "running": false
+        }
+      ]
+    },
+    "errors": [],
+    "hot": [
+      [
+        "(idle) :-1",
+        6563553
+      ],
+      [
+        " host-B05M75gk.js:0",
+        852997
+      ],
+      [
+        "(program) :-1",
+        775494
+      ],
+      [
+        "wasm-function[612] lumencast_vision_web_bg.wasm:0",
+        627499
+      ],
+      [
+        "wasm-function[6325] lumencast_vision_web_bg.wasm:0",
+        593038
+      ],
+      [
+        "wasm-function[796] lumencast_vision_web_bg.wasm:0",
+        259256
+      ],
+      [
+        "wn host-B05M75gk.js:0",
+        171227
+      ],
+      [
+        "wasm-to-js :0",
+        128131
+      ],
+      [
+        "framebufferTexture2D :-1",
+        111532
+      ],
+      [
+        "sample host-B05M75gk.js:0",
+        93196
+      ],
+      [
+        "drawImage :-1",
+        91269
+      ],
+      [
+        "wasm-function[620] lumencast_vision_web_bg.wasm:0",
+        90716
+      ],
+      [
+        "o host-B05M75gk.js:0",
+        87549
+      ],
+      [
+        "wasm-function[1993] lumencast_vision_web_bg.wasm:0",
+        86034
+      ],
+      [
+        "wasm-function[670] lumencast_vision_web_bg.wasm:0",
+        84684
+      ],
+      [
+        "disable :-1",
+        76624
+      ],
+      [
+        "wasm-function[3904] lumencast_vision_web_bg.wasm:0",
+        72183
+      ],
+      [
+        "wasm-function[694] lumencast_vision_web_bg.wasm:0",
+        70753
+      ],
+      [
+        "wasm-function[1475] lumencast_vision_web_bg.wasm:0",
+        69155
+      ],
+      [
+        "wasm-function[869] lumencast_vision_web_bg.wasm:0",
+        68959
+      ]
+    ],
+    "boundary": "Native Vision frame submissions; no video encoder; audio mode probe only in owned browser"
+  }
+]

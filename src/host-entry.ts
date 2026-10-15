@@ -116,7 +116,7 @@ if (!(target instanceof HTMLElement)) {
 
 const canvasOptions = { apiUrl: canvasApiUrl, token: canvasToken };
 const upstream = createCanvasSceneSourceProvider(canvasOptions);
-mount({
+const handle = mount({
   sceneImageAssetsProvider: globalThis.__ZAB_RENDER_ASSET_ENDPOINT__
     ? createLocalImageAssetsProvider(globalThis.__ZAB_RENDER_ASSET_ENDPOINT__)
     : undefined,
@@ -142,6 +142,7 @@ mount({
     ? () => installationFontBatches(config.installationFontCatalog!)
     : undefined,
   liveAudio: mode === "broadcast" || mode === "test",
+  sceneAudio: mode === "broadcast" || mode === "test",
   onError: (error) => {
     console.error(
       `[solar] ${error.code}: ${error.message}` +
@@ -152,8 +153,23 @@ mount({
     document.documentElement.dataset.solarStatus = status;
   },
 });
+// Trusted embedding hosts can unlock audio and capture the scene mix independently of camera audio.
+globalThis.__SOLAR_AUDIO__ = handle.audio;
+window.addEventListener("message", (event) => {
+  if (
+    event.source !== parent ||
+    !document.referrer ||
+    event.origin !== new URL(document.referrer).origin ||
+    event.data?.type !== "solar-unlock-audio"
+  )
+    return;
+  void handle.audio
+    ?.resume()
+    .catch((error) => console.error("[solar] Sound unlock failed", error));
+});
 
 declare global {
+  var __SOLAR_AUDIO__: import("./types").SolarHandle["audio"] | undefined;
   var __ZAB_RENDER_ASSET_ENDPOINT__: LocalRenderAssetEndpoint | undefined;
   // Set by the trusted embedding host before this module loads. Scene identity
   // always comes from LSDP snapshots; this config contains source API access only.

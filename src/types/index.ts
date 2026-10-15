@@ -30,6 +30,7 @@ export type SolarErrorCode =
   | "SOURCE_INTEGRITY_FAILED"
   | "VISION_INIT_FAILED"
   | "VISION_PATCH_FAILED"
+  | "SOUND_FAILED"
   | "CAMERA_CAPTURE_FAILED";
 
 export interface SolarError {
@@ -59,6 +60,8 @@ export interface MountOptions {
   onStatus?: (status: SolarStatus) => void;
   /** Unmute receive-only peer audio in the on-air/recording page mix. */
   liveAudio?: boolean;
+  /** Enable LSML scene sound. Control hosts remain silent unless explicitly enabled. */
+  sceneAudio?: boolean;
   /** Maps validated local LSML device references to host-owned capture IDs. */
   resolveCaptureDevice?: ResolveCaptureDevice;
 }
@@ -81,4 +84,10 @@ export type ResolveCaptureDevice = (
 export interface SolarHandle {
   disconnect: () => void;
   setToken: (token: SolarToken) => void;
+  audio?: {
+    resume: () => Promise<void>;
+    stream: () => MediaStream | null;
+    status: () => import("../engine/sound/controller").SoundStatus;
+    render: (animationId: string) => Promise<AudioBuffer>;
+  };
 }

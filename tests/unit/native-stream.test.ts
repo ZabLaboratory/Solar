@@ -71,6 +71,7 @@ describe("worker native LSML integrity", () => {
     for (const path of [
       "/defaults/__cam.slot",
       "/defaults/__animation.target",
+      "/defaults/__audio.mix",
       "/layout/children",
       "/defaults/nested/x",
     ])

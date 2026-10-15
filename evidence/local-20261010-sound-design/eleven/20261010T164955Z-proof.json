@@ -1,0 +1,928 @@
+{
+  "before": {
+    "state": "ready",
+    "assets": 7,
+    "voices": 0,
+    "scheduled": 0,
+    "sampleRate": 48000,
+    "rms": 0,
+    "peak": 0,
+    "transports": []
+  },
+  "offline": {
+    "frames": 792000,
+    "sampleRate": 48000,
+    "rms": 0.04571920377016334,
+    "peak": 0.5281481742858887,
+    "finite": true,
+    "seconds": 16.5,
+    "windows": [
+      0.006946101899547174,
+      0.020798750483407055,
+      0.024200130236114146,
+      0.11889065354419485,
+      0.03179505438751143,
+      0.03661402628398119,
+      0.03692010011749625,
+      0.03510989738691251,
+      0.033818729462307386,
+      0.05575414253591552,
+      0.04212434376279835,
+      0.08612142057504349,
+      0.026577704228374487,
+      0.013645756190456541,
+      0.0020247781811557086
+    ],
+    "sha256": "3c341365f45176b42bd3032475ef5c3b8099b4dbb686d599a71597fde5d5a74b"
+  },
+  "live": [
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 3,
+      "sampleRate": 48000,
+      "rms": 0.003425740137001906,
+      "peak": 0.008261395618319511,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 565.2000000029802,
+          "phase": 565.2000000029802,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 4,
+      "sampleRate": 48000,
+      "rms": 0.01370826246990243,
+      "peak": 0.039488136768341064,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 1081.4000000059605,
+          "phase": 1081.4000000059605,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 4,
+      "sampleRate": 48000,
+      "rms": 0.026661897271944856,
+      "peak": 0.047762587666511536,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 1601.6000000089407,
+          "phase": 1601.6000000089407,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 1,
+      "scheduled": 4,
+      "sampleRate": 48000,
+      "rms": 0.028575408876986032,
+      "peak": 0.07796891033649445,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 2121.2000000029802,
+          "phase": 2121.2000000029802,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 1,
+      "scheduled": 4,
+      "sampleRate": 48000,
+      "rms": 0.01712572744952155,
+      "peak": 0.0421096570789814,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 2634.5,
+          "phase": 2634.5,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 12,
+      "scheduled": 15,
+      "sampleRate": 48000,
+      "rms": 0.0384493283924833,
+      "peak": 0.14536558091640472,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 3149,
+          "phase": 3149,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 14,
+      "scheduled": 31,
+      "sampleRate": 48000,
+      "rms": 0.11786408787271743,
+      "peak": 0.39616960287094116,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 3659.9000000059605,
+          "phase": 3659.9000000059605,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 8,
+      "scheduled": 43,
+      "sampleRate": 48000,
+      "rms": 0.02993088051015957,
+      "peak": 0.10012341290712357,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 4175.9000000059605,
+          "phase": 4175.9000000059605,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 44,
+      "sampleRate": 48000,
+      "rms": 0.019739811086805188,
+      "peak": 0.04082908108830452,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 4690.79999999702,
+          "phase": 4690.79999999702,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 45,
+      "sampleRate": 48000,
+      "rms": 0.026805148752442186,
+      "peak": 0.07191724330186844,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 5199.79999999702,
+          "phase": 5199.79999999702,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 45,
+      "sampleRate": 48000,
+      "rms": 0.03493195117178907,
+      "peak": 0.1071261614561081,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 5714.9000000059605,
+          "phase": 5714.9000000059605,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 4,
+      "scheduled": 46,
+      "sampleRate": 48000,
+      "rms": 0.027508943155806032,
+      "peak": 0.08144862204790115,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 6232,
+          "phase": 6232,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 46,
+      "sampleRate": 48000,
+      "rms": 0.034208020373061164,
+      "peak": 0.11391004920005798,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 6747.79999999702,
+          "phase": 6747.79999999702,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 46,
+      "sampleRate": 48000,
+      "rms": 0.028546165117474535,
+      "peak": 0.0910792201757431,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 7263.4000000059605,
+          "phase": 7263.4000000059605,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 47,
+      "sampleRate": 48000,
+      "rms": 0.030290269336892356,
+      "peak": 0.10221131891012192,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 7781.70000000298,
+          "phase": 7781.70000000298,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 47,
+      "sampleRate": 48000,
+      "rms": 0.03021269816071304,
+      "peak": 0.0970773845911026,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 8296.10000000894,
+          "phase": 8296.10000000894,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 47,
+      "sampleRate": 48000,
+      "rms": 0.024203172197404463,
+      "peak": 0.05697137862443924,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 8812.90000000596,
+          "phase": 8812.90000000596,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 48,
+      "sampleRate": 48000,
+      "rms": 0.029779990932760767,
+      "peak": 0.09514373540878296,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 9370.29999999702,
+          "phase": 9370.29999999702,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 48,
+      "sampleRate": 48000,
+      "rms": 0.05989490592373106,
+      "peak": 0.24373653531074524,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 9925.79999999702,
+          "phase": 9925.79999999702,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 1,
+      "scheduled": 48,
+      "sampleRate": 48000,
+      "rms": 0.026249958710033473,
+      "peak": 0.06826348602771759,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 10481.40000000596,
+          "phase": 10481.40000000596,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 49,
+      "sampleRate": 48000,
+      "rms": 0.02560381960273143,
+      "peak": 0.06312078982591629,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 10998.10000000894,
+          "phase": 10998.10000000894,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 5,
+      "scheduled": 52,
+      "sampleRate": 48000,
+      "rms": 0.05999685346527338,
+      "peak": 0.14157593250274658,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 11530.90000000596,
+          "phase": 11530.90000000596,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 8,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 0.03568178191452271,
+      "peak": 0.0913790836930275,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 12039,
+          "phase": 12039,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 4,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 0.027279209698184575,
+      "peak": 0.06507322192192078,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 12549.5,
+          "phase": 12549.5,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 0.02350568898862133,
+      "peak": 0.06509837508201599,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 13066.60000000894,
+          "phase": 13066.60000000894,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 1,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 0.010419911404702277,
+      "peak": 0.025293678045272827,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 13579.79999999702,
+          "phase": 13579.79999999702,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 1,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 0.003829254422823748,
+      "peak": 0.008331192657351494,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 14096.10000000894,
+          "phase": 14096.10000000894,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "playing",
+      "assets": 7,
+      "voices": 1,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 0.0008102440536629932,
+      "peak": 0.001742539112456143,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 14609.60000000894,
+          "phase": 14609.60000000894,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "state": "paused",
+      "assets": 7,
+      "voices": 0,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 1.6663437988900275e-11,
+      "peak": 4.85045961728936e-11,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 15000,
+          "phase": 15000,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": true,
+          "running": false
+        }
+      ]
+    },
+    {
+      "state": "paused",
+      "assets": 7,
+      "voices": 0,
+      "scheduled": 55,
+      "sampleRate": 48000,
+      "rms": 6.011001548935937e-13,
+      "peak": 1.521305000376505e-12,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 1,
+          "time": 15000,
+          "phase": 15000,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": true,
+          "running": false
+        }
+      ]
+    }
+  ],
+  "controls": [
+    {
+      "action": "pause",
+      "state": "paused",
+      "assets": 7,
+      "voices": 0,
+      "scheduled": 59,
+      "sampleRate": 48000,
+      "rms": 0,
+      "peak": 0,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 3,
+          "time": 1647.2000000029802,
+          "phase": 1647.2000000029802,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": true,
+          "running": false
+        }
+      ]
+    },
+    {
+      "action": "seek-paused",
+      "state": "paused",
+      "assets": 7,
+      "voices": 0,
+      "scheduled": 59,
+      "sampleRate": 48000,
+      "rms": 0,
+      "peak": 0,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 4,
+          "time": 6300,
+          "phase": 6300,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": true,
+          "running": false
+        }
+      ]
+    },
+    {
+      "action": "resume",
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 63,
+      "sampleRate": 48000,
+      "rms": 0.03310863798015963,
+      "peak": 0.10739970207214355,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 5,
+          "time": 6743,
+          "phase": 6743,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 1,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "action": "speed",
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 67,
+      "sampleRate": 48000,
+      "rms": 0.023650487929387617,
+      "peak": 0.061876822263002396,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 6,
+          "time": 7543.300000011921,
+          "phase": 7543.300000011921,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": 2,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "action": "reverse",
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 71,
+      "sampleRate": 48000,
+      "rms": 0.034951680827819694,
+      "peak": 0.12974797189235687,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 7,
+          "time": 6966.100000023842,
+          "phase": 6966.100000023842,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": -2,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "action": "mute",
+      "state": "playing",
+      "assets": 7,
+      "voices": 3,
+      "scheduled": 72,
+      "sampleRate": 48000,
+      "rms": 0,
+      "peak": 0,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 7,
+          "time": 6005.5,
+          "phase": 6005.5,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": -2,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "action": "effect-mix",
+      "state": "playing",
+      "assets": 7,
+      "voices": 2,
+      "scheduled": 72,
+      "sampleRate": 48000,
+      "rms": 0.012206016186269937,
+      "peak": 0.03011627495288849,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 7,
+          "time": 5025.300000011921,
+          "phase": 5025.300000011921,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": -2,
+          "paused": false,
+          "running": true
+        }
+      ]
+    },
+    {
+      "action": "stop",
+      "state": "paused",
+      "assets": 7,
+      "voices": 0,
+      "scheduled": 72,
+      "sampleRate": 48000,
+      "rms": 0,
+      "peak": 0,
+      "transports": [
+        {
+          "id": "show",
+          "revision": 8,
+          "time": 0,
+          "phase": 0,
+          "duration": 15000,
+          "iteration": 0,
+          "iterations": 1,
+          "speed": -2,
+          "paused": true,
+          "running": false
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "loads": 1,
+  "policy": "normal browser autoplay policy; actual user click",
+  "boundary": "Actual native Vision canvas + live scene-audio MediaStream; offline PCM is separately exported; no Pulsar/Program qualification"
+}
