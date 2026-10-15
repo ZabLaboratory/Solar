@@ -66,80 +66,82 @@ export class NativeSceneFrames {
     }
     this.measure("source", started, { sceneId: document.scene_id });
     started = performance.now();
-    const [renderPackage, hostFonts, instances] = await Promise.all([
-      assets
-        .renderPackage(
-          document,
-          signal,
-          this.options.nativeComposition,
-          true,
-          true,
-        )
-        .then((result) => {
-          this.measure("package", started, { sceneId: document.scene_id });
-          return result;
-        }),
-      Promise.resolve(this.options.fontAssetsProvider?.(signal)).then(
-        (result) => {
-          this.measure("fonts", started, { sceneId: document.scene_id });
-          return result;
-        },
-      ),
-      acquireInstanceSources(
+    const instanceSources = acquireInstanceSources(
+      document,
+      this.options.sceneSourceProvider,
+      signal,
+    );
+    const renderPackagePromise = assets
+      .renderPackage(
         document,
-        this.options.sceneSourceProvider,
         signal,
-      ),
-    ]);
-    check();
+        this.options.nativeComposition,
+        true,
+        true,
+        instanceSources,
+      )
+      .then((result) => {
+        this.measure("package", started, { sceneId: document.scene_id });
+        return result;
+      });
+    const hostFontsPromise = Promise.resolve(
+      this.options.fontAssetsProvider?.(signal),
+    ).then((result) => {
+      this.measure("fonts", started, { sceneId: document.scene_id });
+      return result;
+    });
+    let renderPackage: Awaited<typeof renderPackagePromise>;
+    let hostFonts: Awaited<typeof hostFontsPromise>;
+    try {
+      [renderPackage, hostFonts] = await Promise.all([
+        renderPackagePromise,
+        hostFontsPromise,
+      ]);
+    } catch (error) {
+      void renderPackagePromise.then(
+        (result) => result.release?.(),
+        () => {},
+      );
+      throw error;
+    }
     started = performance.now();
     let scene: VisionSceneHandle | null = null;
-    scene = await mountVisionScene(
-      this.options.target,
-      assets.origin,
-      {},
-      () => {
-        if (scene) this.onMedia(scene);
-      },
-      this.onError,
-      {
-        ...renderPackage,
-        instances: instances.map((source) => ({
-          sceneId: source.sceneId,
-          sceneVersion: source.sceneVersion,
-          packageBytes: source.data,
-          ...(source.format === "lsml"
-            ? {
-                assets: [...source.assets].map(([path, bytes]) => ({
-                  path,
-                  bytes,
-                })),
-              }
-            : {}),
-        })),
-        hostFonts: [...(renderPackage.hostFonts ?? []), ...(hostFonts ?? [])],
-        installationFonts: this.options.installationFonts,
-        requiredFontDigests:
-          "provenance" in assets.origin ? assets.origin.fontDigests : [],
-        resolveImages: (patch) =>
-          assets!.prepareImagePatch(
-            patch,
-            renderPackage.imageBindings,
-            document,
-            this.signal(),
-          ),
-      },
-      true,
-    );
     try {
+      check();
+      scene = await mountVisionScene(
+        this.options.target,
+        assets.origin,
+        {},
+        () => {
+          if (scene) this.onMedia(scene);
+        },
+        this.onError,
+        {
+          ...renderPackage,
+          hostFonts: [...(renderPackage.hostFonts ?? []), ...(hostFonts ?? [])],
+          installationFonts: this.options.installationFonts,
+          requiredFontDigests:
+            "provenance" in assets.origin ? assets.origin.fontDigests : [],
+          resolveImages: (patch) =>
+            assets!.prepareImagePatch(
+              patch,
+              renderPackage.imageBindings,
+              document,
+              this.signal(),
+            ),
+        },
+        true,
+      );
       check();
       await scene.flush?.();
       this.measure("vision", started, { sceneId: document.scene_id });
       check();
       return { scene, assets };
     } catch (error) {
-      scene.dispose();
+      scene?.dispose();
       throw error;
+    } finally {
+      renderPackage.release?.();
     }
   }
 }

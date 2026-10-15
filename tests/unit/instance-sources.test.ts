@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { bundleAddress, canonicalize } from "@lumencast/canonical";
 import { sha1 } from "@noble/hashes/sha1";
 import { sha256 } from "@noble/hashes/sha256";
@@ -14,6 +14,8 @@ import { nativeManifest } from "../helpers/native-source";
 import { NativeSceneFrames } from "../../src/engine/native-scene-frames";
 import { requireLSML } from "../../src/scenes/native-document";
 import { mountVisionScene } from "../../src/engine/vision-presenter";
+import { NativeSceneAssets } from "../../src/scenes/native-document";
+import { prepareInstanceImages } from "../../src/scenes/instance-images";
 
 vi.mock("../../src/engine/vision-presenter", () => ({
   mountVisionScene: vi.fn(async () => ({
@@ -21,6 +23,8 @@ vi.mock("../../src/engine/vision-presenter", () => ({
     flush: vi.fn(async () => {}),
   })),
 }));
+
+afterEach(() => vi.unstubAllGlobals());
 
 const hash = (bytes: Uint8Array) => `sha256:${bytesToHex(sha256(bytes))}`;
 const rootVersion = `sha256:${"a".repeat(64)}`;
@@ -41,12 +45,14 @@ async function source(
   layout: unknown = { kind: "frame", children: [] },
   format: "lsml" | "lsmlz" = "lsml",
   assets: ReadonlyMap<string, Uint8Array> = new Map(),
+  documentFields: Record<string, unknown> = {},
 ): Promise<SceneSourceDelivery> {
   const document = {
     lsml: "1.1",
     scene_id: sceneId,
     scene_version: "",
     layout,
+    ...documentFields,
   };
   document.scene_version = await bundleAddress(document);
   const bytes = strToU8(canonicalize(document));
@@ -83,6 +89,269 @@ function provider(sources: SceneSourceDelivery[]) {
 }
 
 describe("active exact-version instance acquisition", () => {
+  it("localizes child HTTP images through the active image owner and keeps a bound child image mutable", async () => {
+    vi.mocked(mountVisionScene).mockClear();
+    const originalImage = Uint8Array.from([11, 22, 33]);
+    const initialImage = Uint8Array.from([44, 55, 66]);
+    const nextImage = Uint8Array.from([77, 88, 99]);
+    const imageResponses = new Map([
+      ["https://images.example/static.png", originalImage],
+      ["https://images.example/initial.png", initialImage],
+      ["https://images.example/next.png", nextImage],
+    ]);
+    const fetchImage = vi.fn(async (input: RequestInfo | URL) => {
+      const bytes = imageResponses.get(String(input));
+      if (!bytes) return new Response("missing", { status: 404 });
+      return new Response(bytes, {
+        headers: { "content-type": "image/png" },
+      });
+    });
+    vi.stubGlobal("fetch", fetchImage);
+
+    const child = await source(
+      "remote-child",
+      {
+        kind: "frame",
+        children: [
+          {
+            kind: "image",
+            id: "static-remote",
+            src: "https://images.example/static.png",
+            size: { w: 12, h: 12 },
+          },
+          {
+            kind: "image",
+            id: "mutable-remote",
+            bind: { src: "__params.logo" },
+            size: { w: 12, h: 12 },
+          },
+        ],
+      },
+      "lsml",
+      new Map(),
+      { assets: { allowedHosts: ["images.example"] } },
+    );
+    const rootImageUrl = "https://images.example/initial.png";
+    const parent = await source(
+      "remote-parent",
+      {
+        kind: "frame",
+        size: { w: 64, h: 48 },
+        children: [
+          {
+            ...ref(child),
+            id: "remote-child-instance",
+            bindParams: { logo: "game.logo" },
+          },
+        ],
+      },
+      "lsmlz",
+      new Map(),
+      {
+        defaults: { "game.logo": rootImageUrl },
+        assets: { allowedHosts: ["images.example"] },
+      },
+    );
+    const immutableChildBytes = child.data.slice();
+    const immutableParentBytes = parent.data.slice();
+    const store = provider([parent, child]);
+    const controller = new AbortController();
+    const frames = new NativeSceneFrames(
+      {
+        target: document.createElement("div"),
+        nativeLSDP: { url: "ws://localhost:1", resource: "scene" },
+        sceneSourceProvider: store,
+        token: "",
+        mode: "control",
+      },
+      () => {},
+      () => {},
+      () => controller.signal,
+      () => {},
+    );
+    const parentDocument = requireLSML(
+      verifySceneSource(parent, { requireOfflineReady: false }).document,
+    );
+
+    await frames.prepare(parentDocument, () => {}, controller.signal, null);
+
+    expect(fetchImage).toHaveBeenCalledTimes(2);
+    const renderPackage = vi.mocked(mountVisionScene).mock.calls.at(-1)?.[5];
+    expect(renderPackage?.instances).toHaveLength(1);
+    const runtimeInstance = renderPackage!.instances![0]!;
+    expect(runtimeInstance.sceneVersion).not.toBe(child.sceneVersion);
+    const runtimeChild = JSON.parse(
+      new TextDecoder().decode(runtimeInstance.packageBytes),
+    );
+    const staticPath = runtimeChild.layout.children[0].src as string;
+    expect(staticPath).toMatch(/^assets\/solar-[a-f0-9]{64}\.png$/);
+    expect(runtimeChild.scene_version).toBe(runtimeInstance.sceneVersion);
+    expect(runtimeInstance.assets).toContainEqual({
+      path: staticPath,
+      bytes: originalImage,
+    });
+
+    const rootVariant = JSON.parse(
+      new TextDecoder().decode(renderPackage!.data),
+    );
+    const mutablePath = renderPackage!.imageBindings?.["game.logo"];
+    expect(mutablePath).toBeTruthy();
+    expect(rootVariant.defaults[mutablePath!]).toMatch(
+      /^assets\/solar-[a-f0-9]{64}\.png$/,
+    );
+    expect(rootVariant.layout.children[0].scene_version).toBe(
+      runtimeInstance.sceneVersion,
+    );
+    expect(rootVariant.layout.children[0].bindParams.logo).toBe(mutablePath);
+    expect(renderPackage!.assets).toContainEqual({
+      path: rootVariant.defaults[mutablePath!],
+      bytes: initialImage,
+    });
+
+    const staged = await renderPackage!.resolveImages!({
+      "game.logo": "https://images.example/next.png",
+    });
+    expect(staged.values["game.logo"]).toMatch(
+      /^assets\/solar-[a-f0-9]{64}\.png$/,
+    );
+    expect(staged.assets).toContainEqual({
+      path: staged.values["game.logo"],
+      bytes: nextImage,
+    });
+    staged.release?.();
+
+    expect(child.data).toEqual(immutableChildBytes);
+    expect(parent.data).toEqual(immutableParentBytes);
+    const originalChildLayout = requireLSML(
+      verifySceneSource(child, { requireOfflineReady: false }).document,
+    ).layout as { children: Array<{ src: unknown }> };
+    expect(
+      originalChildLayout.children[0]?.src,
+    ).toBe("https://images.example/static.png");
+    vi.unstubAllGlobals();
+  });
+
+  it("retries a child HTTP image after 404 without retaining the failed URL", async () => {
+    const child = await source(
+      "retry-child",
+      { kind: "image", src: "https://images.example/retry.png" },
+      "lsml",
+      new Map(),
+      { assets: { allowedHosts: ["images.example"] } },
+    );
+    const parent = await source("retry-parent", {
+      kind: "frame",
+      children: [ref(child)],
+    });
+    const parentDocument = verifySceneSource(parent, {
+      requireOfflineReady: false,
+    }).document as ReturnType<typeof requireLSML>;
+    const fetchImage = vi.fn(async () => {
+      if (fetchImage.mock.calls.length === 1)
+        return new Response("not found", { status: 404 });
+      return new Response(Uint8Array.from([7, 8, 9]), {
+        headers: { "content-type": "image/png" },
+      });
+    });
+    const assets = new NativeSceneAssets(
+      parent,
+      fetchImage as unknown as typeof fetch,
+    );
+    const prepare = () =>
+      assets.renderPackage(
+        parentDocument,
+        undefined,
+        undefined,
+        true,
+        true,
+        Promise.resolve([child]),
+      );
+    await expect(prepare()).rejects.toThrow("fetch failed (404)");
+    const recovered = await prepare();
+    expect(fetchImage).toHaveBeenCalledTimes(2);
+    expect(recovered.instances).toHaveLength(1);
+    recovered.release?.();
+  });
+
+  it("waits for sibling image leases before releasing after one child image fails", async () => {
+    const failedChild = await source("failed-image-child", {
+      kind: "image",
+      src: "https://images.example/failed.png",
+    });
+    const delayedChild = await source("delayed-image-child", {
+      kind: "image",
+      src: "https://images.example/delayed.png",
+    });
+    const parent = await source("parallel-image-parent", {
+      kind: "frame",
+      children: [ref(failedChild), ref(delayedChild)],
+    });
+    const rootDocument = requireLSML(
+      verifySceneSource(parent, { requireOfflineReady: false }).document,
+    );
+    let markDelayedStarted!: () => void;
+    const delayedStarted = new Promise<void>((resolve) => {
+      markDelayedStarted = resolve;
+    });
+    let markBothStarted!: () => void;
+    const bothStarted = new Promise<void>((resolve) => {
+      markBothStarted = resolve;
+    });
+    let startedCount = 0;
+    let resolveDelayed!: (image: {
+      path: string;
+      bytes: Uint8Array;
+      release: () => void;
+    }) => void;
+    let released = 0;
+    const resolveImage = vi.fn(async (value: unknown) => {
+      startedCount++;
+      if (startedCount === 2) markBothStarted();
+      if (value === "https://images.example/failed.png")
+        throw new Error("HTTP 404");
+      markDelayedStarted();
+      return await new Promise<{
+        path: string;
+        bytes: Uint8Array;
+        release: () => void;
+      }>((resolve) => {
+        resolveDelayed = resolve;
+      });
+    });
+    const preparing = prepareInstanceImages(
+      rootDocument,
+      [failedChild, delayedChild],
+      {},
+      Object.create(null) as Record<string, string>,
+      Object.create(null) as Record<string, string>,
+      resolveImage,
+      signal(),
+    );
+    let settled = false;
+    void preparing.then(
+      () => {
+        settled = true;
+      },
+      () => {
+        settled = true;
+      },
+    );
+
+    await Promise.all([bothStarted, delayedStarted]);
+    for (let turn = 0; turn < 12 && !settled; turn++)
+      await Promise.resolve();
+    expect(settled).toBe(false);
+    resolveDelayed({
+      path: "assets/solar-delayed.png",
+      bytes: Uint8Array.from([1, 2, 3]),
+      release: () => {
+        released++;
+      },
+    });
+    await expect(preparing).rejects.toThrow("HTTP 404");
+    expect(released).toBe(1);
+  });
+
   it("passes verified dependencies through real scene preparation and refuses missing children before Vision load", async () => {
     vi.mocked(mountVisionScene).mockClear();
     const legacyFont = strToU8("legacy sha1 child font");
