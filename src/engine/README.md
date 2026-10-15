@@ -135,6 +135,13 @@ removes its abort listener. A later explicit mount starts a fresh lifetime, whil
 late work and callbacks from the retired lifetime cannot attach to or retire it.
 Disposing a scene handle or switching scenes remains nonterminal and retains the
 single host presenter.
+If a replacement `load` fails, Solar reports the Vision error, clears the failed
+engine scene, and leaves the layer's existing opacity unchanged. The retained
+front canvas is not cleared by that engine request, so an active scene keeps its
+last submitted frame visible; a first load or empty prewarm remains hidden because
+its layer starts hidden. The rejected transaction still has no applied-presentation
+receipt. A later valid snapshot reloads the same engine and the next valid mutation
+can resume normal presentation.
 Explicit WebGL context-loss recovery remains distinct from a scene switch.
 Solar's host path uses Vision's desynchronized WebGL2 main-thread presenter; it
 does not automatically switch to Vision's standalone WebGPU worker or its
