@@ -266,3 +266,13 @@ initial opacity-zero staging rule to the active layer. This also avoids detachin
 and reattaching its GPU/front canvases during ordinary document replacement.
 
 The pinned Vision engine accepts live text style leaves and stroke.width/stroke.color. Glyph outlines are tessellated by Rust in positioned scene pixels; Solar transports these as ordinary LSDP mutations.
+
+`scripts/qualify-meet-framing.mjs --out <directory> --playwright-root <existing-Prism-checkout>`
+is a retained development qualification for the committed Vision package. It owns
+a private ephemeral loopback server and Chrome instance, closes both, and drives
+the real `LiveMediaController` with a synthetic canvas `MediaStream`. The browser
+fixture in `tests/browser/meet-framing.html` checks literal pixel expectations for
+contain, fill and horizontal/vertical crop mutations in one Vision engine. This
+qualifies bitmap fitting and descriptor hot patches; it does not exercise LSDP,
+Meet signaling, physical capture, CEF, 1080p60 or switch timing. The caller owns
+the explicit output directory; no shared development session is attached.

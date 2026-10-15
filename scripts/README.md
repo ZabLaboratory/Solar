@@ -49,15 +49,16 @@ lifecycle remains a separate Prism task. See [qualification](../docs/runbooks/qu
 
 ## Scene/camera/producer qualification
 
-| File                             | Responsibility                                                                         |
-| -------------------------------- | -------------------------------------------------------------------------------------- |
-| `prove-native-cef.py`            | Native LSML mutations plus real owned Pulsar CEF scene                                 |
-| `prove-scene-control-cef.py`     | Two lanes, coordinated transitions and compensation                                    |
-| `prove-cold-start-cef.py`        | Complete shutdown/restart, immutable capsules, explicit real-admission or fixture mode |
-| `prove-peer-camera-cef.py`       | Actual Meet, physical publisher and receive-only CEF viewers                           |
-| `prove-authenticated-canvas.mjs` | Identity/source route/broker-locator probe with separate boundary verdicts             |
-| `prove-read-query-gateway.mjs`   | Authoritative query/gateway diagnostic; operator denial is not broker artifact absence |
-| `proof/`                         | [Capture, producer and analysis helpers](proof/README.md)                              |
+| File                             | Responsibility                                                                                                                                                       |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prove-native-cef.py`            | Native LSML mutations plus real owned Pulsar CEF scene                                                                                                               |
+| `prove-scene-control-cef.py`     | Two lanes, coordinated transitions and compensation                                                                                                                  |
+| `prove-cold-start-cef.py`        | Complete shutdown/restart, immutable capsules, explicit real-admission or fixture mode                                                                               |
+| `prove-peer-camera-cef.py`       | Actual Meet, physical publisher and receive-only CEF viewers                                                                                                         |
+| `qualify-meet-framing.mjs`       | Private Chrome, Solar controller and Vision WASM pixels for a synthetic peer; `--out build/meet-framing --playwright-root <Prism>`; excludes LSDP, real Meet and CEF |
+| `prove-authenticated-canvas.mjs` | Identity/source route/broker-locator probe with separate boundary verdicts                                                                                           |
+| `prove-read-query-gateway.mjs`   | Authoritative query/gateway diagnostic; operator denial is not broker artifact absence                                                                               |
+| `proof/`                         | [Capture, producer and analysis helpers](proof/README.md)                                                                                                            |
 
 Pass `--help` to Python drivers; Node diagnostic headers document their arguments. Each run
 records its specific admitted source, receipt/pixel boundary, errors and owned-process cleanup.

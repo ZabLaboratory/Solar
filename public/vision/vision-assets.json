@@ -1,8 +1,8 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "e5b2720589e30820bd6b70b89cc78fec0ab6153a",
-  "source_state": "Qualified full-resolution live media textures, carrying forward qualified source-box contentBox scalar support.",
+  "base_revision": "e28dc8ee3effeac0ca781ddba2afa569f7b29c37",
+  "source_state": "Committed Meet framing candidate; targeted Rust tests, canonical release WASM build and four synthetic-peer framing pixel states pass in private Chrome through Solar. Real Meet, LSDP, CEF and common runtime admission remain unqualified.",
   "files": {
     "ui/mainpresenter.mjs": {
       "bytes": 26045,
@@ -14,25 +14,25 @@
     },
     "pkg/lumencast_vision_web.js": {
       "bytes": 148483,
-      "sha256": "b9175e0eae61977925f6600398bfe4001f47875c3bec469439c36f928b6aea5a"
+      "sha256": "347c722f47f165b36cf32ba2f5561fcf70493c0a3eb920a605c08d5ae055c4a1"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10316335,
-      "sha256": "b990a76e55c0fa6c60f252ecb9cfb18f453759022be4308c15be82b40246626e"
+      "bytes": 10329142,
+      "sha256": "5a75fc0cb4bb1c22d4e5ce564aeb2211c4469277fe5ebe33f1449247b105498a"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_base": "ea8a2088bc7dc521e7bd72ab319082b0b3648d2c",
-    "engine_branch": "eleven/local-20261014-media-texture-quality",
-    "engine_evidence": "evidence/local-20261014-media-texture-quality/eleven/20261014T170339Z-qualification.json",
+    "engine_base": "e28dc8ee3effeac0ca781ddba2afa569f7b29c37",
+    "engine_branch": "eleven/local-20261015-meet-framing",
+    "engine_evidence": "evidence/local-20261015-meet-framing/eleven/20261015T093056Z-agent-report.md",
     "source_files": {
-      "README.md": "7d55645a432b831059d22de750fbc42a831e0455c632b94c3f1ab3b121d817bb",
-      "crates/vision-web/src/lib.rs": "df179450805f36a3c33d068579b50c3947cd399003ecdca91639b6d5c816a2dc",
+      "README.md": "f08c3fec994039fbee49963c197a17d5045b5b378677d2437b60fe7e93b81259",
+      "crates/vision-web/src/lib.rs": "1901b43e5084ffa97ff68437ccded699e5b5d4aba774de714f05d105b4d13bb5",
       "crates/vision-gpu-scene/src/lib.rs": "ed312ffc1ffee5a243585caf06602469e13f4c10715466b4221ff3a6a09836ee",
-      "crates/vision-render/src/image.rs": "2a1ccebc068993eef0211a1760716ccdca71882a012c31c46a57270210c60340"
+      "crates/vision-render/src/image.rs": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f"
     },
-    "uncommitted_qualified_source": true
+    "uncommitted_qualified_source": false
   },
-  "source_revision": "ea8a2088bc7dc521e7bd72ab319082b0b3648d2c"
+  "source_revision": "e28dc8ee3effeac0ca781ddba2afa569f7b29c37"
 }
