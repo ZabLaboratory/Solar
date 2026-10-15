@@ -96,17 +96,29 @@ export async function acquireInstanceSources(
         try {
           delivery = await provider.get(ref.scene_id, {
             sceneVersion: ref.scene_version,
-            format: "lsmlz",
+            // Plain LSML keeps the existing exact-revision Canvas asset fetch
+            // path available for package files referenced by child documents.
+            format: "lsml",
             signal,
           });
-        } catch {
+        } catch (error) {
           signal.throwIfAborted();
+          if (error instanceof SceneSourceError) {
+            if (error.code === "SOURCE_RESOURCE_LIMIT")
+              throw new InstanceSourceError("INSTANCE_RESOURCE_LIMIT");
+            if (
+              error.code === "SOURCE_INTEGRITY_FAILED" ||
+              error.code === "SOURCE_DESCRIPTOR_INVALID"
+            )
+              throw new InstanceSourceError("INSTANCE_SOURCE_INVALID");
+          }
           throw new InstanceSourceError("BUNDLE_FETCH_FAILED");
         }
         signal.throwIfAborted();
         if (
           delivery.sceneId !== ref.scene_id ||
-          delivery.sceneVersion !== ref.scene_version
+          delivery.sceneVersion !== ref.scene_version ||
+          delivery.format !== "lsml"
         )
           throw new InstanceSourceError("INSTANCE_SOURCE_INVALID");
         admitted.set(identity, delivery);

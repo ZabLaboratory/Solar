@@ -20,23 +20,23 @@ No tool implicitly publishes, deploys or edits Prism. Host/camera probes launch 
 
 ## Build, guards and installation
 
-| File                          | Invocation / responsibility                                                                                                      |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `build-host-html.mjs`         | Build's versioned relative CEF HTML entry                                                                                        |
-| `build-server.mjs`            | `npm run build:server`; Node reception package and declarations                                                                  |
-| `check-host-bundle.mjs`       | `npm run check:bundle`; actual emitted source maps and self-contained imports                                                    |
-| `check-runtime-layout.mjs`    | `npm run check:layout`; unique assets and installed-root collisions                                                              |
-| `check-vision-assets.mjs`     | Build and bundle; immutable Vision file SHA-256/size pins                                                                        |
-| `check-native-client.mjs`     | `npm run check:native-client`; upstream client/license/vector pins                                                               |
-| `check-native-package.mjs`    | `npm run check:native-package`; packaged native manifest/binary hashes                                                           |
-| `check-source-usage.mjs`      | `npm run check:source-usage`; product module/export/dependency graph                                                             |
-| `check-documentation.mjs`     | `npm run check:docs`; local current links/paths/commands and tool ownership                                                      |
-| `check_file_sizes.py`         | `python scripts/check_file_sizes.py`; per-file size policy and self-tests                                                        |
+| File                          | Invocation / responsibility                                                                                                                    |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `build-host-html.mjs`         | Build's versioned relative CEF HTML entry                                                                                                      |
+| `build-server.mjs`            | `npm run build:server`; Node reception package and declarations                                                                                |
+| `check-host-bundle.mjs`       | `npm run check:bundle`; actual emitted source maps and self-contained imports                                                                  |
+| `check-runtime-layout.mjs`    | `npm run check:layout`; unique assets and installed-root collisions                                                                            |
+| `check-vision-assets.mjs`     | Build and bundle; immutable Vision file SHA-256/size pins                                                                                      |
+| `check-native-client.mjs`     | `npm run check:native-client`; upstream client/license/vector pins                                                                             |
+| `check-native-package.mjs`    | `npm run check:native-package`; packaged native manifest/binary hashes                                                                         |
+| `check-source-usage.mjs`      | `npm run check:source-usage`; product module/export/dependency graph                                                                           |
+| `check-documentation.mjs`     | `npm run check:docs`; local current links/paths/commands and tool ownership                                                                    |
+| `check_file_sizes.py`         | `python scripts/check_file_sizes.py`; per-file size policy and self-tests                                                                      |
 | `package-native-server.mjs`   | `npm run package:native -- --binary <path> --platform <platform> --revision <sha>`; validates arguments and the existing package before writes |
-| `create-runtime-manifest.mjs` | Release only; archive/version/repository/tag/output arguments, both native platforms required                                    |
-| `patch-peer-viewer.mjs`       | Package postinstall; [receive-only compatibility](peer-viewer/README.md)                                                         |
-| `test-peer-install.mjs`       | `npm run test:peer-install -- <runtime.tgz> <protocol.tgz>`; fresh lock-pinned hoisted deps, exact three targets and idempotence |
-| `code/`                       | [Derived discovery and docs guard](code/README.md); `npm run code:read -- <query>`                                               |
+| `create-runtime-manifest.mjs` | Release only; archive/version/repository/tag/output arguments, both native platforms required                                                  |
+| `patch-peer-viewer.mjs`       | Package postinstall; [receive-only compatibility](peer-viewer/README.md)                                                                       |
+| `test-peer-install.mjs`       | `npm run test:peer-install -- <runtime.tgz> <protocol.tgz>`; fresh lock-pinned hoisted deps, exact three targets and idempotence               |
+| `code/`                       | [Derived discovery and docs guard](code/README.md); `npm run code:read -- <query>`                                                             |
 
 The `.github/workflows/release.yml` source declares the actual release checks. A configured
 runner or binary path does not prove provisioning, publication, deployment or application startup.
@@ -62,17 +62,17 @@ lifecycle remains a separate Prism task. See [qualification](../docs/runbooks/qu
 
 ## Scene/camera/producer qualification
 
-| File                             | Responsibility                                                                                                                                                       |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `prove-native-cef.py`            | Native LSML mutations plus real owned Pulsar CEF scene                                                                                                               |
-| `prove-scene-control-cef.py`     | Two lanes, coordinated transitions and compensation                                                                                                                  |
-| `prove-cold-start-cef.py`        | Complete shutdown/restart, immutable capsules, explicit real-admission or fixture mode                                                                               |
-| `prove-peer-camera-cef.py`       | Actual Meet, physical publisher and receive-only CEF viewers                                                                                                         |
-| `qualify-meet-framing.mjs`       | Private Chrome, Solar controller and Vision WASM pixels for a synthetic peer; `--out build/meet-framing --playwright-root <Prism>`; excludes LSDP, real Meet and CEF |
-| `qualify-instance-runtime.mjs`   | `node scripts/qualify-instance-runtime.mjs --out <private-output> --playwright-root <Prism>`; offline exact-source root/children through Solar's persistent Vision WASM/WebGL path |
-| `prove-authenticated-canvas.mjs` | Identity/source route/broker-locator probe with separate boundary verdicts                                                                                           |
-| `prove-read-query-gateway.mjs`   | Authoritative query/gateway diagnostic; operator denial is not broker artifact absence                                                                               |
-| `proof/`                         | [Capture, producer and analysis helpers](proof/README.md)                                                                                                            |
+| File                             | Responsibility                                                                                                                                                                                                                  |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prove-native-cef.py`            | Native LSML mutations plus real owned Pulsar CEF scene                                                                                                                                                                          |
+| `prove-scene-control-cef.py`     | Two lanes, coordinated transitions and compensation                                                                                                                                                                             |
+| `prove-cold-start-cef.py`        | Complete shutdown/restart, immutable capsules, explicit real-admission or fixture mode                                                                                                                                          |
+| `prove-peer-camera-cef.py`       | Actual Meet, physical publisher and receive-only CEF viewers                                                                                                                                                                    |
+| `qualify-meet-framing.mjs`       | Private Chrome, Solar controller and Vision WASM pixels for a synthetic peer; `--out build/meet-framing --playwright-root <Prism>`; excludes LSDP, real Meet and CEF                                                            |
+| `qualify-instance-runtime.mjs`   | `node scripts/qualify-instance-runtime.mjs --out <private-output> --playwright-root <Prism>`; offline LSMLZ root and injected exact plain-LSML child fixture, including named/SHA-1 assets, through Solar's persistent Vision WASM/WebGL path; Canvas HTTP separately serves SHA-256-addressed assets only |
+| `prove-authenticated-canvas.mjs` | Identity/source route/broker-locator probe with separate boundary verdicts                                                                                                                                                      |
+| `prove-read-query-gateway.mjs`   | Authoritative query/gateway diagnostic; operator denial is not broker artifact absence                                                                                                                                          |
+| `proof/`                         | [Capture, producer and analysis helpers](proof/README.md)                                                                                                                                                                       |
 
 Pass `--help` to Python drivers; Node diagnostic headers document their arguments. Each run
 records its specific admitted source, receipt/pixel boundary, errors and owned-process cleanup.

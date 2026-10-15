@@ -42,7 +42,7 @@ export interface SceneSourceDelivery {
   sourceDigest: string;
   format: "lsml" | "lsmlz";
   data: Uint8Array;
-  /** Plain LSML's local assets; LSMLZ contains them in data instead. */
+  /** Plain LSML package files; LSMLZ contains them in data instead. */
   assets: ReadonlyMap<string, Uint8Array>;
   /** Validation-pinned declarations and Blue binding closure for local reuse. */
   blueManifest: SceneBlueManifest;

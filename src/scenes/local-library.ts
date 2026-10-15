@@ -1,4 +1,4 @@
-import { decodeSceneSource } from "./cache";
+import { asPlainSceneSource, decodeSceneSource } from "./cache";
 import type { SceneSourceProvider } from "./types";
 
 /** Local immutable source transport; a miss falls back to Canvas authorization. */
@@ -22,7 +22,7 @@ export function createLocalSceneSourceProvider(
     async get(sceneId, request = {}) {
       if (
         !request.sceneVersion ||
-        (request.format && request.format !== "lsmlz")
+        (request.format && !["lsml", "lsmlz"].includes(request.format))
       )
         return upstream.get(sceneId, request);
       const url = new URL(base.href);
@@ -71,7 +71,8 @@ export function createLocalSceneSourceProvider(
         source.format !== "lsmlz"
       )
         throw new Error("SOURCE_CACHE_IDENTITY_MISMATCH");
-      return source;
+      request.signal?.throwIfAborted();
+      return request.format === "lsml" ? asPlainSceneSource(source) : source;
     },
   };
 }
