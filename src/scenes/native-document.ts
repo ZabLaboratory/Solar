@@ -396,7 +396,9 @@ export class NativeSceneAssets {
     );
     const geometryBindings = prepareEditableBindings(variant);
     const animationBindings = prepareAnimationBindings(variant);
-    if (nativeComposition) prepareNativeComposition(variant, nativeComposition);
+    const surface = nativeComposition
+      ? prepareNativeComposition(variant, nativeComposition)
+      : undefined;
     const textBindings = prepareTextBindings(variant);
     const imageBindings = await this.prepareImageBindings(
       variant,
@@ -460,14 +462,7 @@ export class NativeSceneAssets {
       animationBindings,
       geometryBindings,
       ...(separateFonts ? { hostFonts: fonts } : {}),
-      ...(nativeComposition
-        ? {
-            surface: {
-              width: nativeComposition.width,
-              height: (variant.layout as { size: { h: number } }).size.h,
-            },
-          }
-        : {}),
+      ...(surface ? { surface } : {}),
     };
   }
 }

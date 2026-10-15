@@ -17,6 +17,7 @@ const mocks = vi.hoisted(() => ({
     transaction: ReturnType<typeof vi.fn>;
   }>,
   mount: vi.fn(),
+  prewarm: vi.fn(async () => {}),
   disconnectSession: vi.fn(),
   activate: vi.fn(),
   feedback: vi.fn(
@@ -74,6 +75,7 @@ vi.mock("../../src/engine/control-feedback", () => ({
 }));
 vi.mock("../../src/engine/vision-presenter", () => ({
   mountVisionScene: mocks.mount,
+  prewarmVisionSession: mocks.prewarm,
   disconnectVisionSession: mocks.disconnectSession,
   activateVisionScene: mocks.activate,
 }));
@@ -355,6 +357,11 @@ describe("native Solar subscriber", () => {
   });
   it("subscribes to an unselected resource and renders the first real LSML received", async () => {
     const { runtime, peer, receive, context, options } = await setup(null);
+    expect(mocks.prewarm).toHaveBeenCalledWith(
+      options.target,
+      expect.any(Function),
+      options.installationFonts,
+    );
     expect(mocks.mount).not.toHaveBeenCalled();
     expect(options.onError).not.toHaveBeenCalled();
     expect(peer.transaction).toHaveBeenCalledWith(
@@ -742,9 +749,14 @@ describe("coordinated physical lane presentation", () => {
     });
     ready.runtime.disconnect();
   });
-  async function staged() {
+  async function staged(
+    resource = "solar/program",
+    lane?: "program" | "preview",
+    candidate = true,
+  ) {
+    vi.clearAllMocks();
     const initial = structuredClone(document);
-    const ready = await setup(initial, undefined, "solar/program");
+    const ready = await setup(initial, undefined, resource);
     const next = {
       ...ready.scene,
       applyPatch: vi.fn(async () => {}),
@@ -752,24 +764,27 @@ describe("coordinated physical lane presentation", () => {
       activate: vi.fn(),
       deactivate: vi.fn(),
     };
-    mocks.mount.mockResolvedValueOnce(next);
+    if (candidate) mocks.mount.mockResolvedValueOnce(next);
     let state: unknown = initial,
       sequence = 0;
     const deliver = async (phase: string, id = "selection-a") => {
       const value =
-        phase === "cleanup"
-          ? { ...initial, defaults: { "__lit.text.title": "candidate" } }
-          : {
-              ...initial,
-              "x-solar-transition": {
-                request_id: id,
-                phase,
-                source: {
-                  ...initial,
-                  defaults: { "__lit.text.title": "candidate" },
+        phase === "clear"
+          ? null
+          : phase === "cleanup"
+            ? { ...initial, defaults: { "__lit.text.title": "candidate" } }
+            : {
+                ...initial,
+                "x-solar-transition": {
+                  request_id: id,
+                  phase,
+                  ...(lane ? { lane } : {}),
+                  source: {
+                    ...initial,
+                    defaults: { "__lit.text.title": "candidate" },
+                  },
                 },
-              },
-            };
+              };
       const transactionId = String(++sequence).padStart(32, "0");
       const event = {
         kind: "applied_change",
@@ -777,17 +792,81 @@ describe("coordinated physical lane presentation", () => {
         mutation: {
           format: "lsdp.apply/1",
           id: transactionId,
-          target: "solar/program",
+          target: resource,
           beforeHash: nativeTreeHash(state),
           operations: [{ op: "replace", path: "", value }],
         },
-        receipt: { target: "solar/program", transactionId, level: "applied" },
+        receipt: { target: resource, transactionId, level: "applied" },
       };
       await ready.receive(event, ready.context("lsdp.state.subscription/1"));
       state = value;
     };
     return { ...ready, next, deliver };
   }
+  it.each([
+    ["solar/lane-a", "preview"],
+    ["solar/lane-a", "program"],
+    ["solar/lane-b", "preview"],
+    ["solar/lane-b", "program"],
+  ] as const)(
+    "acknowledges preparation, commit and abort on %s as %s",
+    async (resource, lane) => {
+      const ready = await staged(resource, lane);
+      try {
+        await ready.deliver("prepare");
+        expect(mocks.feedback.mock.calls.at(-1)?.slice(1, 3)).toEqual([
+          lane,
+          expect.objectContaining({
+            phase: "prepared",
+            request_id: "selection-a",
+          }),
+        ]);
+        expect(ready.next.activate).not.toHaveBeenCalled();
+        await ready.deliver("commit");
+        expect(ready.next.activate).toHaveBeenCalledOnce();
+        expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+          phase: "committed",
+        });
+        await ready.deliver("abort");
+        expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+          phase: "aborted",
+        });
+        expect(ready.next.dispose).toHaveBeenCalledOnce();
+      } finally {
+        ready.runtime.disconnect();
+      }
+    },
+  );
+  it.each(["solar/lane-a", "solar/lane-b"])(
+    "finalizes and retires the previous frame on %s",
+    async (resource) => {
+      const ready = await staged(resource, "preview");
+      try {
+        await ready.deliver("prepare");
+        await ready.deliver("commit");
+        await ready.deliver("finalize");
+        expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+          phase: "active",
+        });
+        await ready.deliver("cleanup");
+        expect(ready.scene.dispose).toHaveBeenCalledOnce();
+        expect(ready.next.dispose).not.toHaveBeenCalled();
+      } finally {
+        ready.runtime.disconnect();
+      }
+    },
+  );
+  it("rejects a physical transition without an explicit logical role", async () => {
+    const ready = await staged("solar/lane-b", undefined, false);
+    try {
+      await expect(ready.deliver("prepare")).rejects.toThrow(
+        "SOLAR_TRANSITION_INVALID",
+      );
+      expect(mocks.feedback).not.toHaveBeenCalled();
+    } finally {
+      ready.runtime.disconnect();
+    }
+  });
   it("prepares invisibly, commits while retaining old frame, and aborts without recreating it", async () => {
     const ready = await staged();
     await ready.deliver("prepare");
@@ -826,6 +905,45 @@ describe("coordinated physical lane presentation", () => {
     expect(ready.next.dispose).not.toHaveBeenCalled();
     ready.runtime.disconnect();
     expect(ready.scene.dispose).toHaveBeenCalledOnce();
+  });
+  it("keeps a committed presentation alive through a null coordinator seed", async () => {
+    vi.clearAllMocks();
+    const ready = await staged();
+    await ready.deliver("prepare");
+    await ready.deliver("commit");
+    const mounts = mocks.mount.mock.calls.length;
+    const acquisitions = vi.mocked(ready.options.sceneSourceProvider.get).mock
+      .calls.length;
+    await ready.deliver("clear");
+    expect(ready.next.dispose).not.toHaveBeenCalled();
+    expect(mocks.media.dispose).not.toHaveBeenCalled();
+    await ready.deliver("finalize");
+    expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+      phase: "active",
+      scene_id: document.scene_id,
+      scene_version: document.scene_version,
+    });
+    await ready.deliver("cleanup");
+    expect(mocks.mount).toHaveBeenCalledTimes(mounts);
+    expect(ready.options.sceneSourceProvider.get).toHaveBeenCalledTimes(
+      acquisitions,
+    );
+    expect(ready.next.dispose).not.toHaveBeenCalled();
+    expect(ready.scene.dispose).toHaveBeenCalledOnce();
+    ready.runtime.disconnect();
+  });
+  it("honors a null authoritative clear after coordinated finalization", async () => {
+    vi.clearAllMocks();
+    const ready = await staged();
+    await ready.deliver("prepare");
+    await ready.deliver("commit");
+    await ready.deliver("finalize");
+    await ready.deliver("clear");
+    expect(ready.next.dispose).toHaveBeenCalledOnce();
+    expect(ready.scene.dispose).toHaveBeenCalledOnce();
+    expect(mocks.media.dispose).toHaveBeenCalledOnce();
+    ready.runtime.disconnect();
+    expect(ready.next.dispose).toHaveBeenCalledOnce();
   });
   it("can compensate finalization while its receipt or cleanup is unresolved", async () => {
     const ready = await staged();

@@ -98,8 +98,8 @@ transaction gets a presentation event after its covering submission, carrying
 This permits intermediate values to be overwritten without discarding mutations
 or claiming every intermediate state was visible. Structural edits, commands
 and lane transitions drain that queue and retain synchronous applied receipts.
-Camera images and state can share a submission. Camera-only work allows at most
-8.33 ms for a patch to arrive; state and explicit barriers bypass that grace.
+Camera images and state can share a submission. Camera-only work schedules the
+same immediate MessageChannel task, without a fixed delay waiting for a patch.
 `scripts/proof/analyse-render-cadence.py` counts native ACKs, sequential LSML
 reception and completed distinct mutation frames in fixed 100/1000 ms windows.
 The latter requires the Vision submission and completed front-canvas copy,

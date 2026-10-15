@@ -11,8 +11,8 @@ a browser RAF heartbeat counts as a new rendered mutation state.
 `src/engine/frame-patches.ts` preserves every transaction identity while merging
 scalar values through a microtask. `src/engine/vision-frames.ts` owns one actual
 submission in flight, scheduled by MessageChannel rather than a 60 Hz RAF.
-Camera-only work waits at most 8.33 ms for state to join; a state patch or lifecycle
-barrier bypasses that grace. `vision-media-bridge.ts` uploads the latest owned
+Camera-only work schedules the same immediate MessageChannel task as state.
+Arrivals before that task share a submission without a fixed timer delay. `vision-media-bridge.ts` uploads the latest owned
 camera image before the same state submission. Errors reject the covered callers;
 scene transitions and ordered commands drain pending presentation first.
 
@@ -27,12 +27,13 @@ paint keep the full path. The native GPU oracle compares 40 incremental outputs
 with a fresh compositor whose new composition cache is disabled.
 
 The exact local engine bytes and source provenance are recorded in
-`public/vision/vision-assets.json`. The qualified source is commit `f86fa436d3065402d23bbf06de8e309e8e954ea3`, merged
-in Vision PR #1 as `4feaca8822400de4a201a8768334578918d9d949`. The manifest
-resolves the source diff relative to that immutable repository tree; the completed
-Vision worktree has been removed. The preserved archive is recorded beside it.
-The WASM/glue bytes in Solar remain identical to the CEF-qualified candidate;
-checks compare their hashes with the emitted host. The native LSDP source and binary stay unchanged.
+`public/vision/vision-assets.json`. The retained-rendering predecessor was merged
+in Vision PR #1. The current manifest identifies the full-resolution media
+qualification worktree, its immutable base and source-file hashes, including
+the already qualified contentBox scalar support. Generated WASM and glue are
+qualified and installed together; internal closure indices can change while
+the public API stays equivalent. Host checks compare the emitted assets with
+all four pins. The native LSDP source and binary stay unchanged.
 
 ## Proof contract
 

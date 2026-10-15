@@ -4,9 +4,24 @@ import type { LSMLDocument } from "./native-document";
 export function prepareNativeComposition(
   document: LSMLDocument,
   viewport: { width: number; height: number },
-): void {
+): { width: number; height: number } {
   const root = document.layout as Record<string, unknown>;
+  // Older published roots omit size. Vision's render document requires it;
+  // fill it only on this private projection, preserving explicit design size.
+  root.size ??= { w: viewport.width, h: viewport.height };
   const children = Array.isArray(root.children) ? root.children : [];
+  // Historical attestation fixtures used an empty stack without its required
+  // direction. No children means no placement semantics to infer. Keep this
+  // compatibility strictly on the private root projection; Vision still rejects
+  // a malformed authored direction or a non-empty stack missing its axis.
+  if (
+    root.kind === "stack" &&
+    root.direction === undefined &&
+    Array.isArray(root.children) &&
+    root.children.length === 0
+  ) {
+    root.direction = "vertical";
+  }
   const bands: unknown[][] = [[]];
   const replaceCaptures = (value: unknown): void => {
     if (!value || typeof value !== "object") return;
@@ -50,7 +65,7 @@ export function prepareNativeComposition(
   while (bands.length > 1 && bands.at(-1)!.length === 0) bands.pop();
   if (bands.length === 1) {
     root.children = bands[0];
-    return;
+    return { width: viewport.width, height: viewport.height };
   }
   document.layout = {
     kind: "frame",
@@ -86,6 +101,7 @@ export function prepareNativeComposition(
       };
     }),
   };
+  return { width: viewport.width, height: viewport.height * bands.length };
 }
 
 /** Runtime-only projection of the former DOM wrapper vocabulary to Vision LSML. */

@@ -9,6 +9,7 @@ export default tseslint.config(
       "dist",
       // Generated builds, proof environments and isolated installation fixtures.
       "build",
+      ".cache",
       "node_modules",
       "public/vision",
       // Byte-pinned Apache-2.0 upstream browser client, checked separately.

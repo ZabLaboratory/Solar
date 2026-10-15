@@ -152,6 +152,278 @@ describe("Vision live camera textures", () => {
     expect(stopTrack).toHaveBeenCalledOnce();
   });
 
+  it("keeps one video-frame callback chain when play and loadeddata both report readiness", async () => {
+    const callbacks = new Map<number, VideoFrameRequestCallback>();
+    let nextHandle = 0;
+    const request = vi.fn((callback: VideoFrameRequestCallback) => {
+      const handle = ++nextHandle;
+      callbacks.set(handle, callback);
+      return handle;
+    });
+    const cancel = vi.fn((handle: number) => callbacks.delete(handle));
+    Object.defineProperty(HTMLVideoElement.prototype, "requestVideoFrameCallback", { configurable: true, value: request });
+    Object.defineProperty(HTMLVideoElement.prototype, "cancelVideoFrameCallback", { configurable: true, value: cancel });
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    controller.update([localCamera]);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    document.querySelector("video")!.dispatchEvent(new Event("loadeddata"));
+    expect(request).toHaveBeenCalledOnce();
+    const callback = callbacks.get(1)!;
+    callbacks.delete(1);
+    callback(0, {} as VideoFrameCallbackMetadata);
+    expect(callbacks.size).toBe(1);
+    expect(request).toHaveBeenCalledTimes(2);
+    controller.dispose();
+    expect(cancel).toHaveBeenCalledWith(2);
+    expect(callbacks.size).toBe(0);
+  });
+
+  it("keeps one fallback frame watcher and cancels both watcher and upload at disposal", async () => {
+    Object.defineProperty(HTMLVideoElement.prototype, "requestVideoFrameCallback", { configurable: true, value: undefined });
+    const pending = new Map<number, FrameRequestCallback>();
+    let next = 0;
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+      pending.set(++next, callback);
+      return next;
+    });
+    vi.stubGlobal("cancelAnimationFrame", (handle: number) => pending.delete(handle));
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(), onError: vi.fn(), getScene: () => makeScene(),
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(pending.size).toBe(1));
+      document.querySelector("video")!.dispatchEvent(new Event("loadeddata"));
+      expect(pending.size).toBe(1);
+    } finally { controller.dispose(); }
+    expect(pending.size).toBe(0);
+  });
+
+  it("stops a pending watcher when a peer stream disappears and restarts on its return", async () => {
+    let callback: VideoFrameRequestCallback | undefined;
+    let requestCount = 0;
+    const request = vi.fn((next: VideoFrameRequestCallback) => { callback = next; return ++requestCount; });
+    Object.defineProperty(HTMLVideoElement.prototype, "requestVideoFrameCallback", { configurable: true, value: request });
+    const scene = makeScene();
+    const peers = peerSources();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => null, peers,
+      onError: vi.fn(), getScene: () => scene,
+    });
+    const stream = { getTracks: () => [] } as unknown as MediaStream;
+    controller.update([remoteCamera]);
+    peers.publish("caster-slot", stream);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledOnce());
+    peers.publish("caster-slot", null);
+    callback!(0, {} as VideoFrameCallbackMetadata);
+    expect(request).toHaveBeenCalledOnce();
+    peers.publish("caster-slot", stream);
+    await vi.waitFor(() => expect(request).toHaveBeenCalledTimes(2));
+    controller.dispose();
+  });
+
+  it("does not reupload a stale frame after video error and resumes on new loadeddata", async () => {
+    Object.defineProperty(HTMLVideoElement.prototype, "requestVideoFrameCallback", { configurable: true, value: undefined });
+    const pending = new Map<number, FrameRequestCallback>();
+    let next = 0;
+    vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => { pending.set(++next, callback); return next; });
+    vi.stubGlobal("cancelAnimationFrame", (handle: number) => pending.delete(handle));
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      scene.updateMedia.mockClear();
+      const video = document.querySelector("video")!;
+      video.dispatchEvent(new Event("loadeddata"));
+      video.dispatchEvent(new Event("error"));
+      for (const [handle, callback] of [...pending]) {
+        pending.delete(handle);
+        callback(0);
+      }
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(scene.updateMedia).not.toHaveBeenCalled();
+      expect(pending.size).toBe(0);
+      expect(scene.clearMedia).toHaveBeenCalled();
+      video.dispatchEvent(new Event("loadeddata"));
+      expect(pending.size).toBe(1);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      video.dispatchEvent(new Event("error"));
+      expect(scene.clearMedia.mock.calls.length).toBe(2);
+    } finally {
+      controller.dispose();
+    }
+  });
+
+  it("discards an in-flight bitmap from before a decode error even if the stream recovers first", async () => {
+    let finishOld!: (bitmap: ImageBitmap) => void;
+    const oldClose = vi.fn();
+    const freshClose = vi.fn();
+    vi.mocked(createImageBitmap)
+      .mockImplementationOnce(() => new Promise<ImageBitmap>((resolve) => { finishOld = resolve; }))
+      .mockResolvedValue({ close: freshClose, number: 222 } as unknown as ImageBitmap);
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(createImageBitmap).toHaveBeenCalledOnce());
+      const video = document.querySelector("video")!;
+      video.dispatchEvent(new Event("error"));
+      video.dispatchEvent(new Event("loadeddata"));
+      finishOld({ close: oldClose, number: 111 } as unknown as ImageBitmap);
+      await vi.waitFor(() => expect(createImageBitmap).toHaveBeenCalledTimes(2));
+      await vi.waitFor(() => expect(freshClose).toHaveBeenCalledOnce());
+      expect(scene.updateMedia).toHaveBeenCalledOnce();
+      expect((scene.updateMedia.mock.calls[0]?.[0][0]?.bitmap as unknown as { number: number }).number).toBe(222);
+      expect(oldClose).toHaveBeenCalledOnce();
+    } finally { controller.dispose(); }
+  });
+
+  it("ignores play completion from a stream invalidated by a video error", async () => {
+    let finishPlay!: () => void;
+    vi.mocked(HTMLMediaElement.prototype.play).mockImplementationOnce(
+      () => new Promise<void>((resolve) => { finishPlay = resolve; }),
+    );
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(finishPlay).toBeDefined());
+      document.querySelector("video")!.dispatchEvent(new Event("error"));
+      finishPlay();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(scene.updateMedia).not.toHaveBeenCalled();
+      expect(createImageBitmap).not.toHaveBeenCalled();
+      document.querySelector("video")!.dispatchEvent(new Event("loadeddata"));
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+    } finally { controller.dispose(); }
+  });
+
+  it("ignores a rejected play promise after its peer stream has been replaced", async () => {
+    let rejectOld!: (error: Error) => void;
+    vi.mocked(HTMLMediaElement.prototype.play).mockImplementationOnce(
+      () => new Promise<void>((_resolve, reject) => { rejectOld = reject; }),
+    );
+    const peers = peerSources();
+    const scene = makeScene();
+    const onError = vi.fn();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => null,
+      peers, onError, getScene: () => scene,
+    });
+    try {
+      controller.update([remoteCamera]);
+      peers.publish("caster-slot", { getTracks: () => [] } as unknown as MediaStream);
+      peers.publish("caster-slot", { getTracks: () => [] } as unknown as MediaStream);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      rejectOld(new Error("replaced stream"));
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(onError).not.toHaveBeenCalled();
+    } finally { controller.dispose(); }
+  });
+
+  it("keeps the capture track while its texture size and fitting change", async () => {
+    const scene = makeScene();
+    const resolveCaptureDevice = vi.fn(async () => ({ deviceId: "device-1" }));
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice,
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      const video = document.querySelector("video")!;
+      controller.update([{ ...localCamera, width: 800, height: 600, fit: "contain" }]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledTimes(2));
+      expect(document.querySelector("video")).toBe(video);
+      expect(getUserMedia).toHaveBeenCalledOnce();
+      expect(resolveCaptureDevice).toHaveBeenCalledOnce();
+      expect(stopTrack).not.toHaveBeenCalled();
+      expect(scene.clearMedia).not.toHaveBeenCalled();
+      // A 1280x720 stream is contained in the new 800x600 texture.
+      expect(contexts.drawImage).toHaveBeenLastCalledWith(video, 0, 75, 800, 450);
+    } finally { controller.dispose(); }
+    expect(stopTrack).toHaveBeenCalledOnce();
+  });
+
+  it("replaces the capture track when the actual source identity changes", async () => {
+    const scene = makeScene();
+    const resolveCaptureDevice = vi.fn(async (ref: string) => ({ deviceId: ref }));
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice,
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      const video = document.querySelector("video")!;
+      controller.update([{ ...localCamera, device_ref: "another-camera" }]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledTimes(2));
+      expect(document.querySelector("video")).not.toBe(video);
+      expect(getUserMedia).toHaveBeenCalledTimes(2);
+      expect(stopTrack).toHaveBeenCalledOnce();
+      expect(scene.clearMedia).toHaveBeenCalledOnce();
+    } finally { controller.dispose(); }
+    expect(stopTrack).toHaveBeenCalledTimes(2);
+  });
+
+  it("uploads ready media without waiting for another animation frame", async () => {
+    vi.stubGlobal("requestAnimationFrame", vi.fn(() => 99));
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      expect(requestAnimationFrame).not.toHaveBeenCalled();
+    } finally { controller.dispose(); }
+  });
+
+  it("invalidates queued uploads at pause and disposal without consuming the resumed pump", async () => {
+    const pending: Array<() => void> = [];
+    vi.stubGlobal("queueMicrotask", (callback: () => void) => pending.push(callback));
+    const peers = peerSources();
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => null,
+      peers, onError: vi.fn(), getScene: () => scene,
+    });
+    try {
+      controller.update([remoteCamera]);
+      peers.publish("caster-slot", { getTracks: () => [] } as unknown as MediaStream);
+      await vi.waitFor(() => expect(pending.length).toBe(1));
+      await controller.pause();
+      controller.resume();
+      expect(pending.length).toBe(2);
+      pending.shift()!();
+      expect(createImageBitmap).not.toHaveBeenCalled();
+      pending.shift()!();
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      controller.refresh();
+      expect(pending.length).toBe(1);
+      controller.dispose();
+      pending.shift()!();
+      expect(scene.updateMedia).toHaveBeenCalledOnce();
+    } finally { controller.dispose(); }
+  });
+
   it("shares a camera stream while the next Vision scene is prepared", async () => {
     const pool = new CaptureStreamPool();
     const makeController = (scene: VisionSceneHandle) => new LiveMediaController({

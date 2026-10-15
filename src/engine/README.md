@@ -60,6 +60,11 @@ Solar never queries `orion/state` or waits for Orion for these mutations. Events
 carry native transaction/state identity, without an `x-orion` projection. Only
 explicit scene-selection transition phases use `control-feedback.ts`; this is
 not a mutation application or presentation dependency.
+The physical resources `solar/lane-a` and `solar/lane-b` process these phases
+using the validated `x-solar-transition.lane` role. Either engine can acknowledge
+Preview or Program after Take; its physical name never fixes its logical role.
+Legacy logical resources keep their explicit Program/Preview role. Missing roles
+on physical transition metadata are rejected rather than silently ignored.
 Reserved `__cam.*` leaves stay in native authority, outside Vision defaults;
 positional camera names therefore cannot invalidate Vision's binding grammar.
 Native document replacement pauses video uploads and drains GPU work while
@@ -73,10 +78,23 @@ one generation/session into Vision. Updates to another entry are acknowledged
 without changing the visible scene. Missing or deleted entries clear the
 renderer. The old Orion LSDP/1 client has been removed from Solar.
 
+During an admitted coordinated transition, a null coordinator mirror seed keeps
+the committed presentation and its compensation frame until finalization. It
+does not discard the accepted scene or its active source assets before the
+finalize receipt. A null state after finalization still clears the renderer and
+retires both frames; ordinary clears outside that transition remain authoritative.
+Native runtime tests cover the null seed, cleanup without remount or refetch,
+and an actual clear after finalization.
+
 `vision-presenter.ts` owns one Vision engine, GPU canvas and presentation surface
 per native host target. An empty engine starts once; fresh scene packages use
 Vision's serialized `load` request on that same device/surface. The outgoing
 scene's images, graph, geometry and composition caches are released.
+The native connection starts that empty engine and admits installation fonts
+before reading its first resource snapshot. Both physical hosts therefore warm
+independently of scene selection. Empty prewarm creates no LSML package, scene
+identity, media subscription or visible presentation; the first real load shares
+its lifetime and queue. Host disconnection aborts prewarm and queued admission.
 The engine-owned font registry survives scene replacement: installation fonts
 are preloaded once at engine startup, and additional scene fonts are admitted
 by content digest only when new. Scene-local layout and glyph caches remain fresh.
@@ -91,6 +109,13 @@ transparent; clearing actual live pixels still submits a frame.
 Scene handles close their observers and pending work on retirement without
 terminating the host engine. Stale handles cannot submit into a newer scene.
 Clearing the active scene keeps the engine ready; host disconnect terminates it.
+Each persistent mount captures the current host lifetime before it enters the
+serialized scene-load queue. Terminal disconnect aborts that lifetime immediately,
+including queued mounts and pending presenter/font/frame work; each settled wait
+removes its abort listener. A later explicit mount starts a fresh lifetime, while
+late work and callbacks from the retired lifetime cannot attach to or retire it.
+Disposing a scene handle or switching scenes remains nonterminal and retains the
+single host presenter.
 Explicit WebGL context-loss recovery remains distinct from a scene switch.
 Absolute native assignments compare accepted
 documents before rendering, so finalization does not mount the prepared scene again.
@@ -112,12 +137,12 @@ the broadcast compositor.
 `vision-frames.ts` owns the submission barrier and uses a MessageChannel task
 instead of the host's 60 Hz RAF. Pending scalar values and the latest owned
 bitmap per camera can share one actual frame; every caller waits for completion.
-Camera-only work waits at most one 120 Hz interval for state to join it; a patch
-or explicit lifecycle barrier bypasses that grace. Superseded and consumed
+Camera-only work schedules the same immediate task as state; arrivals before
+that task share a submission without a fixed timer delay. Superseded and consumed
 bitmaps are released, and failure rejects all covered callers. The supported
 `loadWasm` dependency captures the real engine in `vision-media-bridge.ts`,
 allowing camera upload before the same patch submission. This scheduling
-interval is a policy, not evidence that the engine achieves 120 completed
+policy is not evidence that the engine achieves 120 completed
 mutation frames/s; fixed-window CEF measurements establish that separately.
 The retained Vision candidate, independent encoded-counter checks and fixed
 measurement boundaries are documented in
@@ -149,6 +174,34 @@ to its declared texture and sent to Vision as an `ImageBitmap`; disconnects
 clear the texture. Local references are resolved through `sources/capture.ts`;
 peer slots use `sources/peers.ts`. Neither source kind is gated on broadcast
 mode.
+
+Each media session owns one pending video-frame callback, or one animation-frame
+fallback. Repeated readiness from `play()` and `loadeddata` reuses that watcher;
+it cannot create another chain. A consumed callback clears its handle before
+rescheduling. Missing peer streams stop the chain, and a returning stream resumes
+it. Disposal cancels the remaining watcher and pending upload.
+Decode errors clear readiness and pending dirtiness before clearing the texture,
+so a fallback cannot upload stale pixels. Later `loadeddata` events can restart
+the same session after recovery; readiness/error listeners remain active.
+Each stream attachment or decode error advances a session revision. Bitmap
+preparation checks that revision after its asynchronous work and before sending
+the complete batch, so an obsolete image cannot restore a cleared texture after
+the stream has already recovered. Rejected bitmaps are closed locally.
+The asynchronous `play()` completion and rejection also belong to that revision;
+obsolete completion cannot restore readiness, and obsolete rejection cannot report
+an error for a replacement stream. A new attachment clears readiness and dirtiness
+until its own readiness signal arrives.
+Texture size and fitting are presentation properties, not capture identity.
+Changing them resizes/refits the current texture, invalidates obsolete pending
+bitmaps and requests a fresh upload without stopping tracks or resolving the
+device again. A source kind, device reference or peer slot change still replaces
+the session and releases the old capture normally.
+Frame callbacks schedule one coalesced upload microtask instead of waiting for a
+second animation-frame boundary after a render completes. One upload remains in
+flight; dirty state retains only the latest pending video content. Pause and
+disposal invalidate the queued token, so an old callback cannot consume a resumed
+pump. The fallback video watcher still uses animation frames when the browser
+does not support video-frame callbacks.
 
 The active scene record keeps the ZabCanvas Blue manifest pinned to the source
 revision. This is the input needed by the synchronized local scene store; Blue

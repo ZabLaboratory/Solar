@@ -61,6 +61,7 @@ interface MediaSession {
   unsubscribePeer?: () => void;
   videoFrameRequest?: number;
   fallbackFrameRequest?: number;
+  revision: number;
   ready: boolean;
   dirty: boolean;
   disposed: boolean;
@@ -80,7 +81,7 @@ export class LiveMediaController {
   private readonly sessions = new Map<string, MediaSession>();
   private readonly capturePool: CaptureStreamPool;
   private disposed = false;
-  private framePump: number | null = null;
+  private framePump: symbol | null = null;
   private uploadPending = false;
   private paused = false;
   private uploadCompletion: Promise<void> | null = null;
@@ -101,7 +102,6 @@ export class LiveMediaController {
   /** Keep tracks alive while another Vision canvas acquires the GPU context. */
   async pause(): Promise<void> {
     this.paused = true;
-    if (this.framePump !== null) cancelAnimationFrame(this.framePump);
     this.framePump = null;
     await this.uploadCompletion;
   }
@@ -126,6 +126,16 @@ export class LiveMediaController {
     for (const source of sources) {
       const current = this.sessions.get(source.path);
       if (current) {
+        if (current.source.width !== source.width || current.source.height !== source.height ||
+            current.source.fit !== source.fit) {
+          const width = boundedDimension(source.width);
+          const height = boundedDimension(source.height);
+          current.revision += 1;
+          if (current.frameCanvas.width !== width) current.frameCanvas.width = width;
+          if (current.frameCanvas.height !== height) current.frameCanvas.height = height;
+          current.dirty = current.ready;
+          if (current.ready) this.schedulePump();
+        }
         current.source = source;
         continue;
       }
@@ -139,7 +149,6 @@ export class LiveMediaController {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    if (this.framePump !== null) cancelAnimationFrame(this.framePump);
     this.framePump = null;
     for (const session of this.sessions.values()) this.disposeSession(session);
     this.sessions.clear();
@@ -175,9 +184,15 @@ export class LiveMediaController {
       ready: false,
       dirty: false,
       disposed: false,
+      revision: 0,
     };
-    video.addEventListener("loadeddata", () => this.markReady(session), { once: true });
-    video.addEventListener("error", () => this.clear(session), { once: true });
+    video.addEventListener("loadeddata", () => this.markReady(session));
+    video.addEventListener("error", () => {
+      session.revision += 1;
+      session.ready = false;
+      session.dirty = false;
+      this.clear(session);
+    });
     return session;
   }
 
@@ -250,6 +265,9 @@ export class LiveMediaController {
   }
 
   private attachStream(session: MediaSession, stream: MediaStream | null, local: boolean): void {
+    const revision = ++session.revision;
+    session.ready = false;
+    session.dirty = false;
     if (!stream) {
       session.ready = false;
       session.video.srcObject = null;
@@ -259,9 +277,11 @@ export class LiveMediaController {
     session.video.muted = local || !this.options.liveAudio;
     session.video.srcObject = stream;
     void session.video.play().then(
-      () => this.markReady(session),
+      () => {
+        if (session.revision === revision) this.markReady(session);
+      },
       (error: unknown) => {
-        if (!session.disposed) {
+        if (!session.disposed && session.revision === revision) {
           this.options.onError({
             code: "CAMERA_CAPTURE_FAILED",
             message: error instanceof Error ? error.message : "Live video could not start.",
@@ -281,7 +301,8 @@ export class LiveMediaController {
   }
 
   private watchVideo(session: MediaSession): void {
-    if (session.disposed || !session.ready) return;
+    if (session.disposed || !session.ready || session.videoFrameRequest !== undefined ||
+        session.fallbackFrameRequest !== undefined) return;
     const video = session.video;
     const candidate = video as HTMLVideoElement & {
       requestVideoFrameCallback?: (callback: () => void) => number;
@@ -289,7 +310,8 @@ export class LiveMediaController {
     if (candidate.requestVideoFrameCallback) {
       const requestNext = (): void => {
         session.videoFrameRequest = candidate.requestVideoFrameCallback!(() => {
-          if (session.disposed) return;
+          session.videoFrameRequest = undefined;
+          if (session.disposed || !session.ready) return;
           session.dirty = true;
           this.schedulePump();
           requestNext();
@@ -300,7 +322,7 @@ export class LiveMediaController {
       const requestNext = (): void => {
         session.fallbackFrameRequest = requestAnimationFrame(() => {
           session.fallbackFrameRequest = undefined;
-          if (session.disposed) return;
+          if (session.disposed || !session.ready) return;
           session.dirty = true;
           this.schedulePump();
           requestNext();
@@ -312,7 +334,10 @@ export class LiveMediaController {
 
   private schedulePump(): void {
     if (this.disposed || this.paused || this.framePump !== null || this.uploadPending) return;
-    this.framePump = requestAnimationFrame(() => {
+    const token = Symbol();
+    this.framePump = token;
+    queueMicrotask(() => {
+      if (this.framePump !== token) return;
       this.framePump = null;
       const upload = this.uploadFrames();
       this.uploadCompletion = upload;
@@ -329,14 +354,29 @@ export class LiveMediaController {
     );
     if (dirty.length === 0) return;
     this.uploadPending = true;
-    const frames: Array<{ path: string; bitmap: ImageBitmap }> = [];
+    const frames: Array<{ path: string; bitmap: ImageBitmap; session: MediaSession; revision: number }> = [];
     try {
       for (const session of dirty) {
+        if (session.disposed || !session.ready) continue;
+        const revision = session.revision;
         session.dirty = false;
         drawVideo(session);
-        frames.push({ path: session.source.path, bitmap: await createImageBitmap(session.frameCanvas) });
+        const bitmap = await createImageBitmap(session.frameCanvas);
+        if (session.disposed || !session.ready || session.revision !== revision) {
+          bitmap.close();
+          continue;
+        }
+        frames.push({ path: session.source.path, bitmap, session, revision });
       }
-      await scene.updateMedia(frames);
+      // Another stream may change while a later bitmap in this batch is prepared.
+      for (let index = frames.length - 1; index >= 0; index -= 1) {
+        const frame = frames[index]!;
+        if (frame.session.disposed || !frame.session.ready || frame.session.revision !== frame.revision) {
+          frame.bitmap.close();
+          frames.splice(index, 1);
+        }
+      }
+      if (frames.length > 0) await scene.updateMedia(frames.map(({ path, bitmap }) => ({ path, bitmap })));
     } catch (error) {
       for (const frame of frames) frame.bitmap.close();
       if (!this.disposed) {
@@ -390,7 +430,7 @@ export class LiveMediaController {
 }
 
 function signature(source: VisionLiveMediaSource): string {
-  return [source.type, source.source_kind, source.device_ref, source.slot_ref, source.width, source.height, source.fit].join("\u0000");
+  return [source.type, source.source_kind, source.device_ref, source.slot_ref].join("\u0000");
 }
 
 function boundedDimension(value: number): number {

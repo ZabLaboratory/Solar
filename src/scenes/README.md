@@ -1,5 +1,10 @@
 # Scene source and Blue manifest
 
+The native projection supports historical attestation fixtures with an empty root
+`stack` and omitted direction: only that empty root receives `vertical`. The
+source bytes and validation pins stay intact. Non-empty stacks and explicit
+invalid directions retain Vision's strict validation.
+
 `canvas.ts` is Solar's online `SceneSourceProvider`. It looks up a scene by
 identifier in ZabCanvas, obtains the published source descriptor, then downloads
 the exact LSMLZ archive (or LSML plus individually hashed assets) pinned by the
@@ -70,6 +75,14 @@ compose each band with the captures in authored paint order.
 Capture-only trailing bands stay transparent in the browser without allocating
 Vision GPU/front-canvas pixels for them. Inner empty bands retain their offsets
 so capture/overlay paint order remains exact. The atlas contract test covers both.
+
+The composition projection returns its surface dimensions explicitly: one band
+uses the native viewport; multiple bands use viewport height times band count.
+Authored root size is optional and never determines that presentation surface.
+If that root size is absent, the private render projection supplies the viewport
+size required by Vision; explicitly authored sizes and saved sources stay intact.
+Scene packaging tests cover absent root size, smaller authored roots, and
+capture-only scenes without modifying the source document.
 
 `native-document.ts` owns private render aliases and allowed-host image acquisition.
 Solar retains source/assets only for the active scene and its continuous mutations.

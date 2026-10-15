@@ -4,7 +4,7 @@ import { VisionFrames, type VisionFrame } from "../../src/engine/vision-frames";
 const bitmap = () => ({ close: vi.fn() }) as unknown as ImageBitmap;
 
 describe("combined Vision frame submission", () => {
-  it("allows camera coalescing for at most one 120 Hz interval and bypasses it for state", async () => {
+  it("queues camera-only work immediately and coalesces state in the same task", async () => {
     vi.useFakeTimers();
     const post = vi.fn();
     const port1 = { onmessage: null as null | (() => void), close: vi.fn() };
@@ -20,8 +20,9 @@ describe("combined Vision frame submission", () => {
     try {
       const image = bitmap();
       const media = queue.addMedia([{ path: "cam", bitmap: image }]);
-      await vi.advanceTimersByTimeAsync(7);
-      expect(post).not.toHaveBeenCalled();
+      void media.catch(() => {});
+      expect(post).toHaveBeenCalledOnce();
+      expect(vi.getTimerCount()).toBe(0);
       const state = queue.addPatch({ score: 1 });
       expect(post).toHaveBeenCalledOnce();
       expect(vi.getTimerCount()).toBe(0);
@@ -33,8 +34,8 @@ describe("combined Vision frame submission", () => {
         frames: [{ path: "cam", bitmap: image }],
       });
       const next = queue.addMedia([{ path: "cam", bitmap: bitmap() }]);
-      await vi.advanceTimersByTimeAsync(1000 / 120);
       expect(post).toHaveBeenCalledTimes(2);
+      expect(vi.getTimerCount()).toBe(0);
       port1.onmessage!();
       await next;
       expect(submit).toHaveBeenCalledTimes(2);

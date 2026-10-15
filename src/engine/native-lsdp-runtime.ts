@@ -1,4 +1,7 @@
-import { disconnectVisionSession } from "./vision-presenter";
+import {
+  disconnectVisionSession,
+  prewarmVisionSession,
+} from "./vision-presenter";
 import { createPeerViewerFromInjection } from "@lumencast/runtime";
 import type { Operation } from "fast-json-patch";
 import jsonPatch from "fast-json-patch";
@@ -231,6 +234,14 @@ export class NativeLsdpRuntime {
     const abort = new AbortController();
     this.abort = abort;
     try {
+      // Both physical hosts start their engine/font bank before scene admission.
+      // Observe failure immediately even while token acquisition is pending.
+      const engineReady = prewarmVisionSession(
+        this.options.target,
+        (error) => this.report(error),
+        this.options.installationFonts,
+      );
+      void engineReady.catch(() => {});
       const authToken =
         typeof this.token === "string" ? this.token : await this.token.fetch();
       abort.signal.throwIfAborted();
@@ -277,7 +288,7 @@ export class NativeLsdpRuntime {
         },
         (error) => this.fail(peer, error),
       );
-      await peer.ready;
+      await Promise.all([peer.ready, engineReady]);
       abort.signal.throwIfAborted();
       await this.readSubscribe(peer, abort.signal);
       abort.signal.throwIfAborted();
@@ -639,25 +650,33 @@ export class NativeLsdpRuntime {
     signal: AbortSignal,
   ): Promise<boolean> {
     const resource = this.options.nativeLSDP.resource;
-    const lane =
+    const logicalLane =
       resource === "solar/program"
         ? "program"
         : resource === "solar/preview"
           ? "preview"
           : null;
-    if (!lane || !state || typeof state !== "object") return false;
-    const transition = (state as Record<string, unknown>)[
+    const physical = resource === "solar/lane-a" || resource === "solar/lane-b";
+    if (
+      (!logicalLane && !physical) ||
+      (state !== null && typeof state !== "object")
+    )
+      return false;
+    const transition = (state as Record<string, unknown> | null)?.[
       "x-solar-transition"
     ] as
       | {
           request_id: string;
           phase: string;
+          lane?: "program" | "preview";
           source?: unknown;
         }
       | undefined;
     if (!transition) {
       // Orion seeds its admitted mirror while Blue is still behind the gate.
       // Finalization owns the retained compensation frame, not this source seed.
+      // A null mirror seed also retains the committed frame until finalize;
+      // after finalize, null remains an authoritative clear of that frame.
       if (this.presentation?.finalized) {
         const pending = this.presentation;
         if (pending.previous && pending.previous.scene !== this.current?.scene)
@@ -673,7 +692,11 @@ export class NativeLsdpRuntime {
       }
       return false;
     }
+    // Physical engines exchange roles at Take. Orion names the role on each
+    // admitted transition; A/B must never imply Program/Preview permanently.
+    const lane = logicalLane ?? transition.lane;
     if (
+      (lane !== "program" && lane !== "preview") ||
       !/^[a-zA-Z0-9_:-]{1,128}$/.test(transition.request_id) ||
       !["prepare", "commit", "finalize", "abort"].includes(transition.phase)
     )

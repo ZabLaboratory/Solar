@@ -67,6 +67,71 @@ describe("native Merkle hash compatibility", () => {
 });
 
 describe("native LSML mutation and runtime package", () => {
+  it.each([
+    [{ kind: "stack", children: [] }, "vertical"],
+    [{ kind: "stack", direction: "horizontal", children: [] }, "horizontal"],
+    [{ kind: "stack", direction: "diagonal", children: [] }, "diagonal"],
+    [{ kind: "stack", children: [{ kind: "frame", children: [] }] }, undefined],
+  ])(
+    "projects only a legacy empty root with omitted stack direction",
+    async (layout, direction) => {
+      const scene = { ...document, layout };
+      const original = structuredClone(scene);
+      const assets = new NativeSceneAssets({
+        sceneId: scene.scene_id,
+        sceneVersion: version,
+        revision: 1,
+        format: "lsml",
+        data: strToU8(JSON.stringify(scene)),
+        assets: new Map(),
+        sourceDigest: version,
+        blueManifest: nativeManifest(scene.scene_id, version),
+      });
+      const runtime = await assets.renderPackage(scene, undefined, {
+        width: 1920,
+        height: 1080,
+      });
+      const rendering = JSON.parse(
+        strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
+      );
+      expect(rendering.layout.direction).toBe(direction);
+      expect(scene).toEqual(original);
+      expect(rendering.scene_version).toBe(await bundleAddress(rendering));
+    },
+  );
+  it.each([
+    { kind: "frame", children: [] },
+    { kind: "frame", size: { w: 640, h: 360 }, children: [] },
+    { kind: "frame", children: [{ kind: "x-zab.capture", id: "camera" }] },
+  ])(
+    "uses the native viewport for a single-band surface independently of root size",
+    async (layout) => {
+      const scene = { ...document, layout };
+      const original = structuredClone(scene);
+      const assets = new NativeSceneAssets({
+        sceneId: scene.scene_id,
+        sceneVersion: version,
+        revision: 1,
+        format: "lsml",
+        data: strToU8(JSON.stringify(scene)),
+        assets: new Map(),
+        sourceDigest: version,
+        blueManifest: nativeManifest(scene.scene_id, version),
+      });
+      const runtime = await assets.renderPackage(scene, undefined, {
+        width: 1920,
+        height: 1080,
+      });
+      expect(runtime.surface).toEqual({ width: 1920, height: 1080 });
+      const rendering = JSON.parse(
+        strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
+      );
+      expect(rendering.layout.size).toEqual(
+        "size" in layout ? layout.size : { w: 1920, h: 1080 },
+      );
+      expect(scene).toEqual(original);
+    },
+  );
   it("separates fonts only for persistent runtime transfer and keeps source packaging intact", async () => {
     const font = new Uint8Array([1, 2, 3]);
     const origin: SceneSourceDelivery = {

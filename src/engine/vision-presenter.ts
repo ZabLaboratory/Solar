@@ -131,15 +131,117 @@ interface PersistentVisionSession {
   presentation: CanvasPresentation;
   presenter: VisionPresenter | null;
   bridge: VisionMediaBridge;
+  lifetime: PersistentVisionLifetime;
   sequence: number;
   owner: object;
   closed: boolean;
   fontsReady: boolean;
   admittedFonts: Set<string>;
   onMessage: (event: PresenterEvent) => void;
+  retire: (error: Error) => void;
 }
+
+interface PersistentVisionLifetime {
+  closed: boolean;
+  signal: AbortSignal;
+  close(error: Error): void;
+}
+
 const visionSessions = new WeakMap<HTMLElement, PersistentVisionSession>();
 const sceneLoads = new WeakMap<HTMLElement, Promise<void>>();
+const visionLifetimes = new WeakMap<HTMLElement, PersistentVisionLifetime>();
+
+function disconnectedError(): Error {
+  const error = new Error("Vision host session disconnected.");
+  error.name = "AbortError";
+  return error;
+}
+
+function lifetimeFor(target: HTMLElement): PersistentVisionLifetime {
+  const current = visionLifetimes.get(target);
+  if (current && !current.closed) return current;
+
+  const controller = new AbortController();
+  const lifetime: PersistentVisionLifetime = {
+    closed: false,
+    signal: controller.signal,
+    close(error) {
+      if (lifetime.closed) return;
+      lifetime.closed = true;
+      controller.abort(error);
+    },
+  };
+  visionLifetimes.set(target, lifetime);
+  return lifetime;
+}
+
+function isCurrentLifetime(
+  target: HTMLElement,
+  lifetime: PersistentVisionLifetime,
+): boolean {
+  return !lifetime.closed && visionLifetimes.get(target) === lifetime;
+}
+
+function assertCurrentLifetime(
+  target: HTMLElement,
+  lifetime: PersistentVisionLifetime,
+): void {
+  if (!isCurrentLifetime(target, lifetime)) throw disconnectedError();
+}
+
+function awaitLifetime<T>(
+  target: HTMLElement,
+  lifetime: PersistentVisionLifetime | null,
+  pending: Promise<T>,
+): Promise<T> {
+  if (!lifetime) return pending;
+  if (!isCurrentLifetime(target, lifetime)) {
+    void pending.catch(() => {});
+    return Promise.reject(disconnectedError());
+  }
+  return new Promise<T>((resolve, reject) => {
+    let context: {
+      target: HTMLElement;
+      lifetime: PersistentVisionLifetime;
+    } | null = { target, lifetime };
+    let signal: AbortSignal | null = lifetime.signal;
+    let resolveResult: ((value: T) => void) | null = resolve;
+    let rejectResult: ((reason?: unknown) => void) | null = reject;
+    let onAbort: (() => void) | null = null;
+    const cleanup = (): void => {
+      if (signal && onAbort) signal.removeEventListener("abort", onAbort);
+      signal = null;
+      onAbort = null;
+      context = null;
+    };
+    const finish = (succeeded: boolean, value: unknown): void => {
+      if (!context) return;
+      const resolveCurrent = resolveResult;
+      const rejectCurrent = rejectResult;
+      resolveResult = null;
+      rejectResult = null;
+      cleanup();
+      if (succeeded) resolveCurrent?.(value as T);
+      else rejectCurrent?.(value);
+    };
+    onAbort = () => finish(false, signal?.reason ?? disconnectedError());
+    signal.addEventListener("abort", onAbort, { once: true });
+    pending.then(
+      (value) => {
+        const active = context;
+        if (!active) return;
+        try {
+          assertCurrentLifetime(active.target, active.lifetime);
+          finish(true, value);
+        } catch (error) {
+          finish(false, error);
+        }
+      },
+      (error: unknown) => finish(false, error),
+    );
+    if (signal.aborted) onAbort();
+  });
+}
 
 function createSessionPresenter(
   module: PresenterModule,
@@ -166,12 +268,12 @@ function listenToSession(session: PersistentVisionSession): void {
 
 /** End the host session; a scene switch must never call this. */
 export function disconnectVisionSession(target: HTMLElement): void {
+  delete target.dataset.solarEngineReady;
+  visionLifetimes.get(target)?.close(disconnectedError());
   const session = visionSessions.get(target);
   if (!session) return;
   visionSessions.delete(target);
-  session.closed = true;
-  session.presenter?.terminate();
-  session.layer.remove();
+  session.retire(disconnectedError());
 }
 
 /** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
@@ -184,8 +286,8 @@ export async function mountVisionScene(
   renderPackage?: VisionRenderPackage,
   persistent = false,
 ): Promise<VisionSceneHandle> {
-  if (!persistent)
-    return mountVisionSceneNow(
+  if (!persistent) {
+    const scene = await mountVisionSceneNow(
       target,
       delivery,
       initialState,
@@ -193,9 +295,14 @@ export async function mountVisionScene(
       onError,
       renderPackage,
     );
+    if (!scene) throw new Error("Vision scene was not loaded.");
+    return scene;
+  }
+  const lifetime = lifetimeFor(target);
   const preceding = sceneLoads.get(target) ?? Promise.resolve();
-  const load = preceding.then(() =>
-    mountVisionSceneNow(
+  const pending = preceding.then(() => {
+    assertCurrentLifetime(target, lifetime);
+    return mountVisionSceneNow(
       target,
       delivery,
       initialState,
@@ -203,7 +310,55 @@ export async function mountVisionScene(
       onError,
       renderPackage,
       true,
+      lifetime,
+    );
+  });
+  const load = awaitLifetime(target, lifetime, pending);
+  sceneLoads.set(
+    target,
+    load.then(
+      () => {},
+      () => {},
     ),
+  );
+  const scene = await load;
+  if (!scene) throw new Error("Vision scene was not loaded.");
+  return scene;
+}
+
+/** Start the persistent empty engine and its installation font bank without
+ * acquiring, retaining or displaying a scene. Loads share the same queue. */
+export async function prewarmVisionSession(
+  target: HTMLElement,
+  onError: (error: unknown) => void,
+  installationFonts?: () => AsyncIterable<Uint8Array[]>,
+): Promise<void> {
+  const lifetime = lifetimeFor(target);
+  const preceding = sceneLoads.get(target) ?? Promise.resolve();
+  const load = awaitLifetime(
+    target,
+    lifetime,
+    preceding.then(() => {
+      assertCurrentLifetime(target, lifetime);
+      const session = visionSessions.get(target);
+      if (
+        session?.lifetime === lifetime &&
+        !session.closed &&
+        session.fontsReady
+      )
+        return;
+      return mountVisionSceneNow(
+        target,
+        null,
+        {},
+        () => {},
+        onError,
+        undefined,
+        true,
+        lifetime,
+        installationFonts,
+      ).then(() => {});
+    }),
   );
   sceneLoads.set(
     target,
@@ -212,27 +367,42 @@ export async function mountVisionScene(
       () => {},
     ),
   );
-  return load;
+  await load;
+  assertCurrentLifetime(target, lifetime);
+  target.dataset.solarEngineReady = "true";
 }
 
 /** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
 async function mountVisionSceneNow(
   target: HTMLElement,
-  delivery: SceneRenderDelivery,
+  delivery: SceneRenderDelivery | null,
   initialState: Record<string, unknown>,
   onMediaSources: (sources: readonly VisionLiveMediaSource[]) => void,
   onError: (error: unknown) => void,
   renderPackage?: VisionRenderPackage,
   persistent = false,
-): Promise<VisionSceneHandle> {
-  if (delivery.format !== "lsmlz" && !renderPackage) {
+  lifetime: PersistentVisionLifetime | null = null,
+  installationFonts?: () => AsyncIterable<Uint8Array[]>,
+): Promise<VisionSceneHandle | null> {
+  if (persistent) {
+    if (!lifetime) throw new Error("Persistent Vision lifetime is missing.");
+    assertCurrentLifetime(target, lifetime);
+  }
+  if (
+    (!delivery && !persistent) ||
+    (delivery && delivery.format !== "lsmlz" && !renderPackage)
+  ) {
     throw new Error("Vision scene delivery must be an LSMLZ archive.");
   }
 
-  const existing = persistent ? visionSessions.get(target) : undefined;
+  const currentSession = persistent ? visionSessions.get(target) : undefined;
+  const existing =
+    currentSession?.lifetime === lifetime && !currentSession.closed
+      ? currentSession
+      : undefined;
   const owner = {};
   const layer = existing?.layer ?? document.createElement("div");
-  layer.dataset.solarVisionScene = delivery.sceneVersion;
+  if (delivery) layer.dataset.solarVisionScene = delivery.sceneVersion;
   Object.assign(layer.style, {
     position: "absolute",
     inset: "0",
@@ -275,6 +445,16 @@ async function mountVisionSceneNow(
   let removeWindowResize: (() => void) | null = null;
   let termination: Promise<void> | null = null;
   const mediaBridge = existing?.bridge ?? new VisionMediaBridge();
+  let frameQueue: VisionFrames | null = null;
+  const waiters = new Map<
+    number,
+    {
+      resolve: () => void;
+      reject: (error: Error) => void;
+      started?: number;
+      stage?: string;
+    }
+  >();
   const session: PersistentVisionSession | null = persistent
     ? (existing ?? {
         layer,
@@ -282,26 +462,42 @@ async function mountVisionSceneNow(
         presentation,
         presenter: null,
         bridge: mediaBridge,
+        lifetime: lifetime!,
         sequence: 0,
         owner,
         closed: false,
         fontsReady: false,
         admittedFonts: new Set<string>(),
         onMessage: () => {},
+        retire: () => {},
       })
     : null;
   if (session) {
     session.owner = owner;
+    session.retire = (error) => {
+      if (session.closed) return;
+      session.closed = true;
+      session.onMessage = () => {};
+      try {
+        frameQueue?.close();
+      } catch {
+        // Host teardown must still release the renderer and pending callers.
+      }
+      resizeObserver?.disconnect();
+      removeWindowResize?.();
+      const retiringPresenter = session.presenter ?? presenter;
+      session.presenter = null;
+      presenter = null;
+      try {
+        retiringPresenter?.terminate();
+      } finally {
+        layer.remove();
+        for (const waiter of waiters.values()) waiter.reject(error);
+        waiters.clear();
+      }
+    };
     visionSessions.set(target, session);
   }
-  let frameQueue: VisionFrames | null = null;
-  const waiters = new Map<
-    number,
-    {
-      resolve: () => void;
-      reject: (error: Error) => void;
-    }
-  >();
 
   const presentError = (message: VisionPresenterMessage): Error => {
     const error = new Error(
@@ -311,7 +507,12 @@ async function mountVisionSceneNow(
     return error;
   };
   const onMessage = (event: PresenterEvent): void => {
-    if (disposed) return;
+    if (
+      disposed ||
+      session?.closed ||
+      (lifetime && !isCurrentLifetime(target, lifetime))
+    )
+      return;
     const message = event.data;
     if (message.mediaSources) {
       mediaSources = message.mediaSources;
@@ -350,6 +551,14 @@ async function mountVisionSceneNow(
     const waiter = waiters.get(message.seq);
     if (waiter) {
       waiters.delete(message.seq);
+      if (waiter.started !== undefined) {
+        if (performance.getEntriesByName("solar:vision-stage").length >= 64)
+          performance.clearMeasures("solar:vision-stage");
+        performance.measure("solar:vision-stage", {
+          start: waiter.started,
+          detail: { stage: waiter.stage, sceneId: delivery?.sceneId },
+        });
+      }
       waiter.resolve();
     }
   };
@@ -358,12 +567,22 @@ async function mountVisionSceneNow(
     if (
       !presenter ||
       disposed ||
+      (lifetime && !isCurrentLifetime(target, lifetime)) ||
       (session && (session.closed || session.owner !== owner))
     )
       return Promise.reject(new Error("Vision scene is disconnected."));
     const seq = session ? ++session.sequence : ++sequence;
     return new Promise<void>((resolve, reject) => {
-      waiters.set(seq, { resolve, reject });
+      const measured = ["init-empty", "preload-fonts", "load"].includes(
+        String(request.type),
+      );
+      waiters.set(seq, {
+        resolve,
+        reject,
+        ...(measured
+          ? { started: performance.now(), stage: String(request.type) }
+          : {}),
+      });
       presenter!.postMessage({ ...request, seq });
     });
   };
@@ -373,8 +592,10 @@ async function mountVisionSceneNow(
       "vision/ui/mainpresenter.mjs",
       document.baseURI,
     );
-    const presenterModule = (await import(
-      /* @vite-ignore */ presenterUrl.href
+    const presenterModule = (await awaitLifetime(
+      target,
+      lifetime,
+      import(/* @vite-ignore */ presenterUrl.href),
     )) as PresenterModule;
     if (!presenter)
       presenter = persistent
@@ -386,7 +607,7 @@ async function mountVisionSceneNow(
             ): Promise<Response> => {
               if (String(input) === "/scene") {
                 return new Response(
-                  new Uint8Array(renderPackage?.data ?? delivery.data),
+                  new Uint8Array(renderPackage?.data ?? delivery!.data),
                   {
                     status: 200,
                     headers: { "content-type": "application/zip" },
@@ -451,9 +672,13 @@ async function mountVisionSceneNow(
       if (!session) return;
       // Native WebCrypto avoids WASM SHA compression on every switch. Only
       // digests acknowledged by Rust belong to this engine's font bank.
-      const entries = await Promise.all(
-        fonts.map((font) =>
-          VerifiedFont.isVerified(font) ? font : VerifiedFont.admit(font),
+      const entries = await awaitLifetime(
+        target,
+        lifetime,
+        Promise.all(
+          fonts.map((font) =>
+            VerifiedFont.isVerified(font) ? font : VerifiedFont.admit(font),
+          ),
         ),
       );
       const pending = new Map(
@@ -486,12 +711,32 @@ async function mountVisionSceneNow(
       await submit();
     };
     if (session && !session.fontsReady) {
-      if (renderPackage?.installationFonts) {
-        for await (const fonts of renderPackage.installationFonts())
-          await admitFonts(fonts);
-      } else await admitFonts(await loadHostFonts());
+      const catalog = renderPackage?.installationFonts ?? installationFonts;
+      if (catalog) {
+        const iterator = catalog()[Symbol.asyncIterator]();
+        try {
+          while (true) {
+            const step = await awaitLifetime(
+              target,
+              lifetime,
+              Promise.resolve(iterator.next()),
+            );
+            if (step.done) break;
+            await admitFonts(step.value);
+          }
+        } finally {
+          if (lifetime?.closed && iterator.return) {
+            void Promise.resolve(iterator.return()).catch(() => {});
+          }
+        }
+      } else {
+        await admitFonts(
+          await awaitLifetime(target, lifetime, loadHostFonts()),
+        );
+      }
       session.fontsReady = true;
     }
+    if (!delivery) return null;
     if (persistent) {
       await admitFonts(renderPackage?.hostFonts ?? []);
       for (const digest of renderPackage?.requiredFontDigests ?? [])
@@ -560,7 +805,7 @@ async function mountVisionSceneNow(
         patchJson: JSON.stringify(snapshot),
       });
     }
-    if (disposed)
+    if (disposed || session?.closed)
       throw new Error("Vision scene was disconnected during initialization.");
     frameQueue = new VisionFrames(async (frame) => {
       await presenter!.flush();
@@ -608,7 +853,7 @@ async function mountVisionSceneNow(
     }
     if (!renderPackage?.surface)
       updateSize(target.clientWidth, target.clientHeight);
-    return {
+    const handle: VisionSceneHandle = {
       sceneId: delivery.sceneId,
       sceneVersion: renderPackage?.sceneVersion ?? delivery.sceneVersion,
       get mediaSources() {
@@ -643,11 +888,23 @@ async function mountVisionSceneNow(
         await requestFrame({ type: "resize", width, height });
       },
       activate: () => {
-        if (!disposed && (!session || session.owner === owner))
+        if (
+          !disposed &&
+          (!session ||
+            (!session.closed &&
+              session.owner === owner &&
+              (!lifetime || isCurrentLifetime(target, lifetime))))
+        )
           layer.style.opacity = "1";
       },
       deactivate: () => {
-        if (!disposed && (!session || session.owner === owner))
+        if (
+          !disposed &&
+          (!session ||
+            (!session.closed &&
+              session.owner === owner &&
+              (!lifetime || isCurrentLifetime(target, lifetime))))
+        )
           layer.style.opacity = "0";
       },
       updateMedia: (frames) => {
@@ -675,7 +932,11 @@ async function mountVisionSceneNow(
         if (!session) {
           presenter?.terminate();
           layer.remove();
-        } else if (session.owner === owner) {
+        } else if (
+          !session.closed &&
+          session.owner === owner &&
+          (!lifetime || isCurrentLifetime(target, lifetime))
+        ) {
           layer.style.opacity = "0";
           const seq = ++session.sequence;
           presenter?.postMessage({ type: "clear-scene", seq });
@@ -688,12 +949,19 @@ async function mountVisionSceneNow(
         waiters.clear();
       },
     };
+    if (lifetime) assertCurrentLifetime(target, lifetime);
+    return handle;
   } catch (error) {
     resizeObserver?.disconnect();
     removeWindowResize?.();
     if (!session) {
       presenter?.terminate();
       layer.remove();
+    } else if (
+      session.closed ||
+      (lifetime && !isCurrentLifetime(target, lifetime))
+    ) {
+      session.retire(disconnectedError());
     } else {
       session.onMessage = () => {};
       presenter?.postMessage({ type: "clear-scene", seq: ++session.sequence });

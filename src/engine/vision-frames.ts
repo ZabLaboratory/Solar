@@ -17,7 +17,6 @@ export class VisionFrames {
   private busy = false;
   private closed = false;
   private scheduled = false;
-  private mediaTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly channel = new MessageChannel();
 
   constructor(private readonly submit: (frame: VisionFrame) => Promise<void>) {
@@ -61,26 +60,12 @@ export class VisionFrames {
   private schedule(): void {
     if (this.closed || this.busy || this.scheduled || !this.waiting.length)
       return;
-    if (Object.keys(this.patch).length === 0) {
-      // A camera-only frame may wait one 120 Hz interval for an arriving patch.
-      // Patch arrival or an explicit flush bypasses this bounded media grace.
-      this.mediaTimer ??= setTimeout(() => {
-        this.mediaTimer = null;
-        this.scheduled = true;
-        this.channel.port2.postMessage(null);
-      }, 1000 / 120);
-      return;
-    }
-    if (this.mediaTimer !== null) clearTimeout(this.mediaTimer);
-    this.mediaTimer = null;
     this.scheduled = true;
     // Rendering must not be capped by the host's 60 Hz RAF or nested timer clamp.
     this.channel.port2.postMessage(null);
   }
 
   flush(): Promise<void> {
-    if (this.mediaTimer !== null) clearTimeout(this.mediaTimer);
-    this.mediaTimer = null;
     if (this.busy) return this.running.then(() => this.flush());
     if (this.closed || this.waiting.length === 0) return Promise.resolve();
     const waiting = this.waiting.splice(0);
@@ -118,8 +103,6 @@ export class VisionFrames {
   close(): void {
     if (this.closed) return;
     this.closed = true;
-    if (this.mediaTimer !== null) clearTimeout(this.mediaTimer);
-    this.mediaTimer = null;
     this.channel.port1.close();
     this.channel.port2.close();
     this.frames.forEach((bitmap) => bitmap.close());
