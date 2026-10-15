@@ -27,6 +27,7 @@ const require = createRequire(
   resolve(values["--playwright-root"], "package.json"),
 );
 const { chromium } = require("playwright");
+const contextOnly = values["--context-only"] === "true";
 const server = await createServer({
   configFile: false,
   cacheDir: resolve(out, "vite-cache"),
@@ -52,7 +53,7 @@ try {
   page = await browser.newPage({ viewport: { width: 1100, height: 500 } });
   page.on("pageerror", (error) => pageErrors.push(error.message));
   await page.goto(
-    `http://127.0.0.1:${address.port}/tests/browser/instance-runtime.html`,
+    `http://127.0.0.1:${address.port}/tests/browser/instance-runtime.html${contextOnly ? "?context-only=1" : ""}`,
   );
   await page.waitForFunction(
     () => typeof window.runQualification === "function",
@@ -62,7 +63,10 @@ try {
       window.runQualification(),
       new Promise((_, reject) =>
         setTimeout(
-          () => reject(new Error("Instance runtime qualification exceeded 120 seconds")),
+          () =>
+            reject(
+              new Error("Instance runtime qualification exceeded 120 seconds"),
+            ),
           120000,
         ),
       ),

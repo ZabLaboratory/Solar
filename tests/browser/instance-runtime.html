@@ -460,6 +460,34 @@
     });
     samples.push({ phase: window.qualificationPhase, ...observed });
 
+    if (new URLSearchParams(window.location.search).has("context-only")) {
+      if (
+        window.contextDiagnostics.beforeLoss !== false ||
+        window.contextDiagnostics.afterLoss !== true ||
+        window.contextDiagnostics.afterRestore !== false
+      )
+        throw new Error(
+          `Unexpected WebGL context states: ${JSON.stringify(window.contextDiagnostics)}`,
+        );
+      if (errors.length)
+        throw new Error(
+          `Solar reported renderer errors during successful recovery: ${JSON.stringify(errors)}`,
+        );
+      const { gpu, front } = presentationCanvas();
+      return {
+        passed: true,
+        boundary:
+          "same active Solar/Vision scene only; private WebGL loss and restoration; no scene switch or live source",
+        dimensions: {
+          gpu: [gpu.width, gpu.height],
+          front: [front.width, front.height],
+        },
+        contextDiagnostics: window.contextDiagnostics,
+        samples,
+        errors,
+      };
+    }
+
     window.qualificationPhase =
       "missing dependency refusal preserves active output";
     const missingDocument = requireLSML(

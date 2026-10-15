@@ -10,7 +10,16 @@ const fake = vi.hoisted(() => ({
   heldTypes: new Set<string>(),
   held: [] as Array<{ type: string; deliver: () => void }>,
   listeners: [] as Array<
-    ((event: { data: { type: string; seq: number; timing?: Record<string, unknown> } }) => void) | null
+    | ((event: {
+        data: {
+          type: string;
+          seq: number;
+          timing?: Record<string, unknown>;
+          phase?: string;
+          message?: string;
+        };
+      }) => void)
+    | null
   >,
   created: 0,
   terminated: 0,
@@ -22,7 +31,15 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
   createMainThreadPresenter: (canvas: HTMLCanvasElement) => {
     fake.created++;
     let listener:
-      | ((event: { data: { type: string; seq: number; timing?: Record<string, unknown> } }) => void)
+      | ((event: {
+          data: {
+            type: string;
+            seq: number;
+            timing?: Record<string, unknown>;
+            phase?: string;
+            message?: string;
+          };
+        }) => void)
       | null = null;
     return {
       addEventListener: (_type: string, next: typeof listener) => {
@@ -133,6 +150,32 @@ it("prepares the empty engine and installation fonts before any scene, then reus
   scene.dispose();
 });
 
+it("reports an unclaimed Vision context-restoration error to the host", async () => {
+  const { target, delivery, pack } = setup();
+  const onError = vi.fn();
+  await mountVisionScene(target, delivery, {}, vi.fn(), onError, pack, true);
+
+  const listener = fake.listeners[0];
+  expect(listener).toBeTypeOf("function");
+  listener?.({
+    data: {
+      type: "error",
+      seq: 999,
+      phase: "context",
+      message: "GPU context unavailable after restoration.",
+    },
+  });
+
+  const error = onError.mock.calls[0]?.[0] as
+    | (Error & { phase?: string })
+    | undefined;
+  expect(error).toBeInstanceOf(Error);
+  expect(error?.message).toBe(
+    "Vision context: GPU context unavailable after restoration.",
+  );
+  expect(error?.phase).toBe("context");
+});
+
 it("reports only the presenter's render-call timing with its frame-submitted media receipt", async () => {
   const { target, delivery, pack } = setup();
   const scene = await mountVisionScene(
@@ -146,7 +189,12 @@ it("reports only the presenter's render-call timing with its frame-submitted med
   );
   const onSubmission = vi.fn();
   const update = scene.updateMedia(
-    [{ path: "camera.live", bitmap: { close: vi.fn() } as unknown as ImageBitmap }],
+    [
+      {
+        path: "camera.live",
+        bitmap: { close: vi.fn() } as unknown as ImageBitmap,
+      },
+    ],
     onSubmission,
   );
 
