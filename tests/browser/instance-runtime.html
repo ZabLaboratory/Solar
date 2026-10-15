@@ -11,8 +11,8 @@
   }
   #target {
     position: relative;
-    width: 200px;
-    height: 80px;
+    width: 224px;
+    height: 96px;
     background: #202020;
   }
 </style>
@@ -31,6 +31,8 @@
 
   const encoder = new TextEncoder();
   const hash = (bytes) => `sha256:${bytesToHex(sha256(bytes))}`;
+  const bytesEqual = (left, right) =>
+    left.length === right.length && left.every((byte, index) => byte === right[index]);
   const legacyPath = (bytes, extension) =>
     `assets/${bytesToHex(sha1(bytes))}.${extension}`;
   const target = document.querySelector("#target");
@@ -77,12 +79,12 @@
     };
   }
 
-  async function imageFixture() {
+  async function imageFixture(fill = "#ff8800") {
     const canvas = document.createElement("canvas");
     canvas.width = 12;
     canvas.height = 12;
     const context = canvas.getContext("2d");
-    context.fillStyle = "#ff8800";
+    context.fillStyle = fill;
     context.fillRect(0, 0, 12, 12);
     const blob = await new Promise((resolve, reject) =>
       canvas.toBlob(
@@ -92,6 +94,19 @@
       ),
     );
     return new Uint8Array(await blob.arrayBuffer());
+  }
+
+  async function putImageFixture(name, bytes) {
+    const response = await fetch(
+      `${window.__INSTANCE_IMAGE_ORIGIN__}/${name}`,
+      {
+        method: "PUT",
+        headers: { "content-type": "image/png" },
+        body: bytes,
+      },
+    );
+    if (!response.ok)
+      throw new Error(`Loopback image fixture upload failed: ${response.status}`);
   }
 
   function presentationCanvas() {
@@ -159,6 +174,13 @@
     return null;
   }
 
+  function remoteImagePixels(context) {
+    return {
+      static: pixel(context, 193, 63),
+      mutable: pixel(context, 209, 63),
+    };
+  }
+
   function findEmbeddedFontPixels(context) {
     let count = 0;
     for (let y = 1; y < 20; y++)
@@ -172,6 +194,13 @@
   window.runQualification = async () => {
     window.qualificationPhase = "build exact local sources";
     const imageBytes = await imageFixture();
+    const blueImageBytes = await imageFixture("#0055ff");
+    const imageOrigin = window.__INSTANCE_IMAGE_ORIGIN__;
+    const staticImageUrl = `${imageOrigin}/static.png`;
+    const initialImageUrl = `${imageOrigin}/initial.png`;
+    const retryImageUrl = `${imageOrigin}/retry.png`;
+    await putImageFixture("static.png", imageBytes);
+    await putImageFixture("initial.png", imageBytes);
     const imagePath = "assets/instances/child-image.png";
     const fontResponse = await fetch(
       "/tests/fixtures/instance-runtime/RussoOne-Regular.woff2",
@@ -242,6 +271,34 @@
       },
       { format: "lsml" },
     );
+    const remoteImageChild = await packagedSource(
+      "remote-image-child",
+      {
+        kind: "frame",
+        id: "remote-image-child-root",
+        size: { w: 32, h: 16 },
+        children: [
+          {
+            kind: "image",
+            id: "static-http-image",
+            src: staticImageUrl,
+            position: { x: 0, y: 0 },
+            size: { w: 16, h: 16 },
+          },
+          {
+            kind: "image",
+            id: "mutable-http-image",
+            bind: { src: "__params.logo" },
+            position: { x: 16, y: 0 },
+            size: { w: 16, h: 16 },
+          },
+        ],
+      },
+      {
+        assets: { allowedHosts: ["127.0.0.1"] },
+        format: "lsml",
+      },
+    );
     const fitModes = ["contain", "cover", "fill", "none"];
     const instances = fitModes.map((fit, index) => ({
       kind: "instance",
@@ -262,21 +319,34 @@
       fit: "fill",
       bindParams: { tint: "game.tint" },
     });
+    instances.push({
+      kind: "instance",
+      id: "bound-remote-image-child",
+      scene_id: remoteImageChild.sceneId,
+      scene_version: remoteImageChild.sceneVersion,
+      position: { x: 185, y: 55 },
+      size: { w: 32, h: 16 },
+      fit: "fill",
+      bindParams: { logo: "game.logo" },
+    });
     const rootSource = await packagedSource(
       "instance-root",
       {
         kind: "frame",
         id: "root",
-        size: { w: 200, h: 80 },
+        size: { w: 224, h: 96 },
         background: "#202020",
         children: instances,
       },
-      { defaults: { "game.tint": "#ff0000" } },
+      {
+        defaults: { "game.tint": "#ff0000", "game.logo": initialImageUrl },
+        assets: { allowedHosts: ["127.0.0.1"] },
+      },
     );
     const missingSource = await packagedSource("missing-root", {
       kind: "frame",
       id: "missing-root",
-      size: { w: 200, h: 80 },
+      size: { w: 224, h: 96 },
       children: [
         {
           kind: "instance",
@@ -303,7 +373,7 @@
     );
     const wrongHashRoot = await packagedSource("wrong-hash-root", {
       kind: "frame",
-      size: { w: 200, h: 80 },
+      size: { w: 224, h: 96 },
       children: [
         {
           kind: "instance",
@@ -318,6 +388,7 @@
       rootSource,
       fitChild,
       stateChild,
+      remoteImageChild,
       missingSource,
       wrongHashChild,
       wrongHashRoot,
@@ -352,6 +423,8 @@
     const rootDocument = requireLSML(
       verifySceneSource(rootSource, { requireOfflineReady: false }).document,
     );
+    const immutableRemoteChildBytes = remoteImageChild.data.slice();
+    const immutableRootBytes = rootSource.data.slice();
     const prepared = await frames.prepare(
       rootDocument,
       () => {},
@@ -377,9 +450,16 @@
       const swatch = pixel(context, 166, 67);
       const image = findOrangeImage(context);
       const cyan = findEmbeddedFontPixels(context);
-      if (!closeColor(swatch, [255, 0, 0, 255]) || !image || cyan < 4)
+      const remote = remoteImagePixels(context);
+      if (
+        !closeColor(swatch, [255, 0, 0, 255]) ||
+        !image ||
+        !closeColor(remote.static, [255, 136, 0, 255]) ||
+        !closeColor(remote.mutable, [255, 136, 0, 255]) ||
+        cyan < 4
+      )
         return null;
-      return { rows, swatch, image, embeddedFontPixels: cyan };
+      return { rows, swatch, image, remote, embeddedFontPixels: cyan };
     });
     samples.push({ phase: window.qualificationPhase, ...observed });
 
@@ -444,21 +524,75 @@
       const image = findOrangeImage(context);
       const embeddedFontPixels = findEmbeddedFontPixels(context);
       const rows = verifyFitPixels(context);
+      const remote = remoteImagePixels(context);
       if (
         !closeColor(swatch, [0, 170, 0, 255]) ||
         !image ||
+        !closeColor(remote.static, [255, 136, 0, 255]) ||
+        !closeColor(remote.mutable, [255, 136, 0, 255]) ||
         embeddedFontPixels < 4
       )
         return null;
       return {
         swatch,
         image,
+        remote,
         embeddedFontPixels,
         rows,
         contextLost: gl.isContextLost(),
       };
     });
     samples.push({ phase: window.qualificationPhase, ...observed });
+
+    window.qualificationPhase =
+      "rejected child image URL keeps the accepted pixels and retries";
+    let missingImageMutation;
+    try {
+      await scene.applyPatch({ "game.logo": retryImageUrl });
+    } catch (error) {
+      missingImageMutation = String(error);
+    }
+    if (!missingImageMutation?.includes("fetch failed (404)"))
+      throw new Error(
+        `Expected the missing child image to fail with HTTP 404, got ${missingImageMutation}`,
+      );
+    const retainedAfterImageFailure = await waitFor(
+      "child image after rejected URL",
+      () => {
+        const remote = remoteImagePixels(frontContext());
+        return closeColor(remote.static, [255, 136, 0, 255]) &&
+          closeColor(remote.mutable, [255, 136, 0, 255])
+          ? remote
+          : null;
+      },
+    );
+    await putImageFixture("retry.png", blueImageBytes);
+    await scene.applyPatch({ "game.logo": retryImageUrl });
+    const retriedRemote = await waitFor("retried child image", () => {
+      const remote = remoteImagePixels(frontContext());
+      return closeColor(remote.static, [255, 136, 0, 255]) &&
+        closeColor(remote.mutable, [0, 85, 255, 255])
+        ? remote
+        : null;
+    });
+    samples.push({
+      phase: window.qualificationPhase,
+      rejected: missingImageMutation,
+      retainedAfterImageFailure,
+      retriedRemote,
+    });
+    const originalRemoteDocument = verifySceneSource(remoteImageChild, {
+      requireOfflineReady: false,
+    }).document;
+    if (
+      !bytesEqual(remoteImageChild.data, immutableRemoteChildBytes) ||
+      !bytesEqual(rootSource.data, immutableRootBytes) ||
+      originalRemoteDocument.layout.children[0].src !== staticImageUrl ||
+      originalRemoteDocument.layout.children[1].bind.src !== "__params.logo" ||
+      verifySceneSource(rootSource, { requireOfflineReady: false }).document
+        .defaults["game.logo"] !== initialImageUrl
+    )
+      throw new Error("Solar rewrote the exact child or root source bytes");
 
     if (new URLSearchParams(window.location.search).has("context-only")) {
       if (
@@ -567,10 +701,9 @@
     return {
       passed: true,
       boundary:
-        "Solar NativeSceneFrames exact-source acquisition + Solar persistent presenter + pinned Vision WASM/WebGL; private offline source fixtures only",
+        "Solar exact-source acquisition + active bounded image resolver + Solar persistent presenter + pinned Vision WASM/WebGL; source fixtures and HTTP image bytes served only by private loopback servers",
       exclusions: [
         "ZabCanvas HTTP acquisition (covered by provider tests)",
-        "child-document http(s) image URL rewriting",
         "capture composition",
         "editor asset resolver",
         "runtime/shared-dev admission",
@@ -603,6 +736,15 @@
         path: imagePath,
         sha256: hash(imageBytes),
         bytes: imageBytes.byteLength,
+      },
+      childHttpImages: {
+        staticUrl: staticImageUrl,
+        initialBoundUrl: initialImageUrl,
+        rejectedThenRetriedUrl: retryImageUrl,
+        sourceChildVersion: remoteImageChild.sceneVersion,
+        sourceChildSha256: hash(remoteImageChild.data),
+        rootSourceSha256: hash(rootSource.data),
+        immutableSourceBytes: true,
       },
       samples,
       errors,

@@ -5,6 +5,9 @@ import { unzipSync, zipSync } from "fflate";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
 import type { SceneRenderDelivery, SceneImageAssetsProvider } from "./types";
+import type { SceneSourceDelivery } from "./types";
+import { prepareInstanceImages } from "./instance-images";
+import type { PreparedInstanceSource } from "./instance-images";
 import { prepareAnimationBindings } from "../engine/animations";
 import { compileSound } from "../engine/sound/catalogue";
 import {
@@ -709,9 +712,12 @@ export class NativeSceneAssets {
     nativeComposition?: { width: number; height: number },
     separateFonts = false,
     directParts = false,
+    instanceSources: Promise<SceneSourceDelivery[]> = Promise.resolve([]),
   ): Promise<{
     data: Uint8Array;
     assets?: Array<{ path: string; bytes: Uint8Array }>;
+    instances?: PreparedInstanceSource[];
+    release?: () => void;
     sceneVersion: string;
     lsmlDefaults: true;
     initialDefaults: Record<string, unknown>;
@@ -751,72 +757,100 @@ export class NativeSceneAssets {
       ? prepareNativeComposition(variant, nativeComposition)
       : undefined;
     const textBindings = prepareTextBindings(variant);
-    const preparedImages = await this.prepareImageBindings(
-      variant,
-      document,
-      signal,
-    );
+    const [preparedImages, sources] = await Promise.all([
+      this.prepareImageBindings(variant, document, signal),
+      instanceSources,
+    ]);
     const imageBindings = preparedImages.bindings;
-    const canonical = await canonicalRender(variant);
-    variant.scene_version = canonical.sceneVersion;
-    // Runtime-only transfer: source/import/export files stay intact. Fonts are
-    // admitted to the persistent engine bank before this fresh scene is loaded.
-    const fonts: VerifiedFont[] = [];
-    const files = { ...this.files };
-    for (const { path, bytes } of preparedImages.assets)
-      if (!Object.hasOwn(files, path)) files[path] = bytes;
-    const fontEntries = await Promise.all(
-      Object.entries(this.files).map(async ([path, source]) => {
-        // Other paths remain in the archive, where Vision's package validator
-        // owns path admission. Preserve its SHA-1/SHA-256 address checks here.
-        const match =
-          /^assets\/([a-zA-Z0-9_-]+)\.(ttf|otf|ttc|woff|woff2)$/.exec(path);
-        if (!separateFonts || !match) return null;
-        const address = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(match[1]!)
-          ? match[1]
-          : undefined;
-        let prepared = this.fonts.get(path);
-        if (!prepared) {
-          prepared = VerifiedFont.admit(source, address);
-          this.fonts.set(path, prepared);
-        }
-        const font = await prepared;
-        return { path, font };
-      }),
-    );
-    for (const entry of fontEntries) {
-      if (!entry) continue;
-      fonts.push(entry.font);
-      delete files[entry.path];
-    }
-    return {
-      data: directParts
-        ? canonical.data
-        : zipSync({ ...files, "scene.lsml": canonical.data }, { level: 0 }),
-      ...(directParts
-        ? {
-            assets: Object.entries(files).map(([path, bytes]) => ({
-              path,
-              bytes,
-            })),
+    const instanceImages = sources.length
+      ? await prepareInstanceImages(
+          variant,
+          sources,
+          variant.defaults ?? {},
+          imageBindings,
+          preparedImages.imageAssets,
+          (value, source, imageSignal) =>
+            this.imagePath(value, source, imageSignal),
+          signal,
+        )
+      : {
+          instances: [],
+          rootAssets: [],
+          release: () => {},
+        };
+    try {
+      const canonical = await canonicalRender(variant);
+      variant.scene_version = canonical.sceneVersion;
+      // Runtime-only transfer: source/import/export files stay intact. Fonts are
+      // admitted to the persistent engine bank before this fresh scene is loaded.
+      const fonts: VerifiedFont[] = [];
+      const files = { ...this.files };
+      for (const { path, bytes } of preparedImages.assets)
+        if (!Object.hasOwn(files, path)) files[path] = bytes;
+      for (const { path, bytes } of instanceImages.rootAssets)
+        if (!Object.hasOwn(files, path)) files[path] = bytes;
+      const fontEntries = await Promise.all(
+        Object.entries(this.files).map(async ([path, source]) => {
+          // Other paths remain in the archive, where Vision's package validator
+          // owns path admission. Preserve its SHA-1/SHA-256 address checks here.
+          const match =
+            /^assets\/([a-zA-Z0-9_-]+)\.(ttf|otf|ttc|woff|woff2)$/.exec(path);
+          if (!separateFonts || !match) return null;
+          const address = /^(?:[a-f0-9]{40}|[a-f0-9]{64})$/.test(match[1]!)
+            ? match[1]
+            : undefined;
+          let prepared = this.fonts.get(path);
+          if (!prepared) {
+            prepared = VerifiedFont.admit(source, address);
+            this.fonts.set(path, prepared);
           }
-        : {}),
-      sceneVersion: variant.scene_version,
-      lsmlDefaults: true,
-      initialDefaults: { ...variant.defaults },
-      textBindings,
-      imageBindings,
-      imageAssets: preparedImages.imageAssets,
-      imageValues: Object.fromEntries(
-        Object.entries(imageBindings).map(([path, alias]) => [
-          path,
-          variant.defaults?.[alias],
-        ]),
-      ),
-      animationBindings,
-      geometryBindings,
-      ...(separateFonts ? { hostFonts: fonts } : {}),
-      ...(surface ? { surface } : {}),
-    };
+          const font = await prepared;
+          return { path, font };
+        }),
+      );
+      for (const entry of fontEntries) {
+        if (!entry) continue;
+        fonts.push(entry.font);
+        delete files[entry.path];
+      }
+      return {
+        data: directParts
+          ? canonical.data
+          : zipSync({ ...files, "scene.lsml": canonical.data }, { level: 0 }),
+        ...(directParts
+          ? {
+              assets: Object.entries(files).map(([path, bytes]) => ({
+                path,
+                bytes,
+              })),
+            }
+          : {}),
+        ...(instanceImages.instances.length
+          ? { instances: instanceImages.instances }
+          : {}),
+        ...(instanceImages.instances.length
+          ? { release: instanceImages.release }
+          : {}),
+        sceneVersion: variant.scene_version,
+        lsmlDefaults: true,
+        initialDefaults: { ...variant.defaults },
+        textBindings,
+        imageBindings,
+        imageAssets: preparedImages.imageAssets,
+        imageValues: Object.fromEntries(
+          Object.entries(imageBindings).map(([path, alias]) => [
+            path,
+            variant.defaults?.[alias],
+          ]),
+        ),
+        animationBindings,
+        geometryBindings,
+        ...(separateFonts ? { hostFonts: fonts } : {}),
+        ...(surface ? { surface } : {}),
+      };
+    } catch (error) {
+      instanceImages.release();
+      throw error;
+    }
   }
 }

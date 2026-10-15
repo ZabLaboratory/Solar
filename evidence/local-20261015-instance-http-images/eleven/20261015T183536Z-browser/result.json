@@ -1,0 +1,300 @@
+{
+  "passed": true,
+  "boundary": "Solar exact-source acquisition + active bounded image resolver + Solar persistent presenter + pinned Vision WASM/WebGL; source fixtures and HTTP image bytes served only by private loopback servers",
+  "exclusions": [
+    "ZabCanvas HTTP acquisition (covered by provider tests)",
+    "capture composition",
+    "editor asset resolver",
+    "runtime/shared-dev admission"
+  ],
+  "dimensions": {
+    "gpu": [
+      224,
+      96
+    ],
+    "front": [
+      224,
+      96
+    ]
+  },
+  "sourceIdentity": {
+    "sceneId": "instance-root",
+    "sceneVersion": "sha256:0093cd0c142dfc1d022b644898d882776bb73d533a0f075fa00c68941bda0712",
+    "sourceDigest": "sha256:a7159bf7ce4209e5f278b6ca21e2de39610dc91aea46ffd169bbaa05abcecb64"
+  },
+  "privateRenderPackage": {
+    "sceneId": "instance-root",
+    "sceneVersion": "sha256:3f4758deed3d3db04dad83fe78034c90a902a0e0244b13c4ca33498b7376de40"
+  },
+  "sourcePins": [
+    {
+      "sceneId": "instance-root",
+      "sceneVersion": "sha256:0093cd0c142dfc1d022b644898d882776bb73d533a0f075fa00c68941bda0712",
+      "sourceDigest": "sha256:a7159bf7ce4209e5f278b6ca21e2de39610dc91aea46ffd169bbaa05abcecb64"
+    },
+    {
+      "sceneId": "fit-child",
+      "sceneVersion": "sha256:c555e83fff1e62d5976e383610fa9b92362c5a6045498afd77af17eb9e5b3889",
+      "sourceDigest": "sha256:1f5ef0e7971894aa8f88b8142b02547229c996708b740a445e9a8ebb0f03379c"
+    },
+    {
+      "sceneId": "state-child",
+      "sceneVersion": "sha256:98dab48e81481984be0ee6b2fd448df2c270443438fb788a2803b464933575b1",
+      "sourceDigest": "sha256:481b27ebcb2761f2c2d04b325d906bc92312d3b376d6576e2217aaaf4a3c8762"
+    },
+    {
+      "sceneId": "remote-image-child",
+      "sceneVersion": "sha256:2465f09bf16b61b86379c5eefbd85a356230b5cdf852430cc318970878fb101e",
+      "sourceDigest": "sha256:7c75497f6ca2f1b10e9f5b166e1a74e2a11ed781dd62a43aeb76728540b63c4d"
+    },
+    {
+      "sceneId": "missing-root",
+      "sceneVersion": "sha256:a8019ab5ca523bd808886691149b52ba802f8642d1133c477528d832184dd324",
+      "sourceDigest": "sha256:99001c41865b5e5df46cf675ba5f65251b35da088c5f3c2b89aa420b3057bcee"
+    },
+    {
+      "sceneId": "wrong-hash-child",
+      "sceneVersion": "sha256:673aa8eb16d7d61f07b4b827015326085141add06c9d3933b476d5565c6f9743",
+      "sourceDigest": "sha256:2ee5d8eb5470da6186dfd30248cafdd5cf783a41004fa9bde26965be1fd64730"
+    },
+    {
+      "sceneId": "wrong-hash-root",
+      "sceneVersion": "sha256:ff119722d8a31ee551a0cd30b1c08fec5de1dd9c5e11dd3e7c7336fe7d1f22f7",
+      "sourceDigest": "sha256:8ecff1cbf6b79cecc084d1fd7d240ac3fc2070e51f54dde7a74c6cf71e6c467e"
+    }
+  ],
+  "font": {
+    "path": "assets/db828b56971ee4c696272565e4c621c221ea356f.woff2",
+    "sha1": "db828b56971ee4c696272565e4c621c221ea356f",
+    "sha256": "sha256:a419094441326e38d68a583e78744efe1c0ccbc90b4c87a43f5d619c83a438b1",
+    "bytes": 13500
+  },
+  "image": {
+    "path": "assets/instances/child-image.png",
+    "sha256": "sha256:2d26de4fb677d35619adf780b93162934d11277bf357144e7b244adf9ef2e330",
+    "bytes": 111
+  },
+  "childHttpImages": {
+    "staticUrl": "http://127.0.0.1:59033/static.png",
+    "initialBoundUrl": "http://127.0.0.1:59033/initial.png",
+    "rejectedThenRetriedUrl": "http://127.0.0.1:59033/retry.png",
+    "sourceChildVersion": "sha256:2465f09bf16b61b86379c5eefbd85a356230b5cdf852430cc318970878fb101e",
+    "sourceChildSha256": "sha256:7c75497f6ca2f1b10e9f5b166e1a74e2a11ed781dd62a43aeb76728540b63c4d",
+    "rootSourceSha256": "sha256:c275502926e9e05165c2a2dbe1d777588041a24c8d3d4cb70b29315f6be4a08f",
+    "immutableSourceBytes": true
+  },
+  "samples": [
+    {
+      "phase": "first accepted GPU frame with nested assets",
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "swatch": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "remote": {
+        "static": [
+          255,
+          136,
+          0,
+          255
+        ],
+        "mutable": [
+          255,
+          136,
+          0,
+          255
+        ]
+      },
+      "embeddedFontPixels": 194
+    },
+    {
+      "phase": "live bindParams mutation",
+      "swatch": [
+        0,
+        255,
+        0,
+        255
+      ]
+    },
+    {
+      "phase": "WebGL context restoration",
+      "swatch": [
+        0,
+        170,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "remote": {
+        "static": [
+          255,
+          136,
+          0,
+          255
+        ],
+        "mutable": [
+          255,
+          136,
+          0,
+          255
+        ]
+      },
+      "embeddedFontPixels": 194,
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "contextLost": false
+    },
+    {
+      "phase": "rejected child image URL keeps the accepted pixels and retries",
+      "rejected": "Error: Scene image fetch failed (404): 127.0.0.1",
+      "retainedAfterImageFailure": {
+        "static": [
+          255,
+          136,
+          0,
+          255
+        ],
+        "mutable": [
+          255,
+          136,
+          0,
+          255
+        ]
+      },
+      "retriedRemote": {
+        "static": [
+          255,
+          136,
+          0,
+          255
+        ],
+        "mutable": [
+          0,
+          85,
+          255,
+          255
+        ]
+      }
+    },
+    {
+      "phase": "missing dependency refusal preserves active output",
+      "rejection": {
+        "code": "BUNDLE_FETCH_FAILED",
+        "message": "InstanceSourceError: BUNDLE_FETCH_FAILED"
+      },
+      "preserved": {
+        "swatch": [
+          0,
+          170,
+          0,
+          255
+        ],
+        "image": {
+          "x": 40,
+          "y": 13
+        },
+        "embeddedFontPixels": 194
+      }
+    },
+    {
+      "phase": "wrong SHA-1 child asset refusal preserves active output",
+      "rejection": {
+        "code": "INSTANCE_SOURCE_INVALID",
+        "message": "InstanceSourceError: INSTANCE_SOURCE_INVALID"
+      },
+      "preserved": {
+        "swatch": [
+          0,
+          170,
+          0,
+          255
+        ],
+        "image": {
+          "x": 40,
+          "y": 13
+        },
+        "embeddedFontPixels": 194
+      }
+    }
+  ],
+  "errors": [],
+  "remoteImageRequests": [
+    {
+      "name": "static.png",
+      "status": 200
+    },
+    {
+      "name": "initial.png",
+      "status": 200
+    },
+    {
+      "name": "retry.png",
+      "status": 404
+    },
+    {
+      "name": "retry.png",
+      "status": 200
+    }
+  ],
+  "browser": "154.0.8037.98",
+  "node": "v24.16.0",
+  "pageErrors": []
+}

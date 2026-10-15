@@ -30,11 +30,47 @@ const { chromium } = require("playwright");
 const contextOnly = values["--context-only"] === "true";
 const server = await createServer({
   configFile: false,
-  cacheDir: resolve(out, "vite-cache"),
+  cacheDir: resolve(import.meta.dirname, "../.cache/qualify-instance-runtime"),
   root: resolve(import.meta.dirname, ".."),
   server: { middlewareMode: true, hmr: false },
 });
 const httpServer = createHttpServer(server.middlewares);
+const imageFixtures = new Map();
+const imageRequests = [];
+const imageServer = createHttpServer(async (request, response) => {
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (request.method === "OPTIONS") {
+    response.writeHead(204).end();
+    return;
+  }
+  const name = new URL(request.url ?? "/", "http://127.0.0.1").pathname.slice(1);
+  if (request.method === "PUT") {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(Buffer.from(chunk));
+    imageFixtures.set(name, new Uint8Array(Buffer.concat(chunks)));
+    response.writeHead(204).end();
+    return;
+  }
+  if (request.method === "GET") {
+    const bytes = imageFixtures.get(name);
+    imageRequests.push({ name, status: bytes ? 200 : 404 });
+    if (!bytes) {
+      response.writeHead(404, { "Cache-Control": "no-store" }).end();
+      return;
+    }
+    response
+      .writeHead(200, {
+        "Cache-Control": "no-store",
+        "Content-Length": bytes.byteLength,
+        "Content-Type": "image/png",
+      })
+      .end(bytes);
+    return;
+  }
+  response.writeHead(405).end();
+});
 let browser, page;
 const pageErrors = [];
 try {
@@ -42,6 +78,10 @@ try {
     httpServer.listen(0, "127.0.0.1", resolveListen),
   );
   const address = httpServer.address();
+  await new Promise((resolveListen) =>
+    imageServer.listen(0, "127.0.0.1", resolveListen),
+  );
+  const imageAddress = imageServer.address();
   browser = await chromium.launch({
     channel: "chrome",
     headless: true,
@@ -58,6 +98,9 @@ try {
   await page.waitForFunction(
     () => typeof window.runQualification === "function",
   );
+  await page.evaluate((origin) => {
+    window.__INSTANCE_IMAGE_ORIGIN__ = origin;
+  }, `http://127.0.0.1:${imageAddress.port}`);
   const result = await page.evaluate(() =>
     Promise.race([
       window.runQualification(),
@@ -73,6 +116,7 @@ try {
     ]),
   );
   await page.screenshot({ path: resolve(out, "pixels.png"), fullPage: true });
+  result.remoteImageRequests = imageRequests;
   await writeFile(
     resolve(out, "result.json"),
     JSON.stringify(
@@ -118,4 +162,6 @@ try {
   await browser?.close();
   await server.close();
   await new Promise((resolveClose) => httpServer.close(resolveClose));
+  if (imageServer.listening)
+    await new Promise((resolveClose) => imageServer.close(resolveClose));
 }

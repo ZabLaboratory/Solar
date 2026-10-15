@@ -31,29 +31,38 @@ safe `assets/...` paths permitted by Vision, verifies top-level 40-hex SHA-1 and
 named assets. Duplicate archive entries, unsafe paths and over-budget packages
 fail before Vision load. The verified documents and expanded byte counts are
 reused for traversal instead of parsing an archive again for each occurrence.
-`native-scene-frames.ts` forwards the exact child LSML bytes and explicit asset
-paths/bytes to Vision's instance-aware load message. `scripts/qualify-instance-runtime.mjs`
-drives that real path in a private Chrome/Vite page: LSMLZ root, plain LSML child,
-a legacy SHA-1-addressed WOFF2 font, a named nested PNG, asymmetric pixels for all
+`native-scene-frames.ts` forwards verified child sources and their runtime assets
+to Vision's instance-aware load message. `instance-images.ts` makes a private
+runtime copy of exact child LSML when a child image `src`, image default, or image
+parameter resolves to an HTTP(S) or data-image value. It uses the active
+`NativeSceneAssets` resolver, including the owning document's allowed-host policy,
+bounded fetch/cache admission and image leases. Child-authored URLs use the
+child's policy; values supplied by a root image parameter use the root policy.
+Only the transferred runtime copy receives local asset paths and recomputed
+versions. The original child source bytes, source version and pin remain unchanged.
+Root `bindParams` for child image inputs are projected to a private image binding,
+so later mutations reuse the active scene image resolver rather than introducing
+a second cache or URL path.
+
+`scripts/qualify-instance-runtime.mjs` drives the real source acquisition,
+`NativeSceneAssets`, Solar persistent presenter and pinned Vision WASM/WebGL in a
+private Chrome/Vite page. The fixture covers an LSMLZ root, plain LSML children,
+a legacy SHA-1-addressed WOFF2 font, a named nested PNG, HTTP(S) child static and
+bound images, a 404 followed by a successful retry, asymmetric pixels for all
 four fit modes, a live `bindParams` update, WebGL context loss/restoration, and
 missing-child and wrong-hash failures that leave the accepted frame intact. Its
-result and pixel capture are recorded under the current qualification evidence
-directory; the injected child fixture proves Vision admission and failure
-preservation, not named/SHA-1 delivery from Canvas. Provider tests separately
-exercise Canvas's pinned HTTP source/asset requests and its origin, redirect,
-size, abort, exact revision and digest checks. ZabCanvas's current HTTP descriptor
-lists only `assets/<64 lowercase hex>.<ext>` files; Solar verifies each file
-against that SHA-256 path and the response's `X-Scene-Version`,
-`X-Scene-Revision` and body ETag. The producer's source-delivery contract also
-explicitly refuses legacy SHA-1 local asset paths. Named and SHA-1 assets are
-supported when already present in a verified exact LSMLZ local capsule and
-converted locally, but are unavailable through the current Canvas separated-file
-HTTP contract. Solar does not invent a digest for named URLs or retry a failed
-LSML request as LSMLZ. The package path
-does not rewrite `http(s)` image URLs embedded in child LSML or route them through
-the active scene image provider; those URLs remain outside child package parity.
-Capture composition, editor asset resolution, shared runtime admission and public
-output are also outside this qualification.
+loopback image server is test-only. Provider tests separately exercise Canvas's
+pinned HTTP source/asset requests and its origin, redirect, size, abort, exact
+revision and digest checks. ZabCanvas's current HTTP descriptor lists only
+`assets/<64 lowercase hex>.<ext>` files; Solar verifies each file against that
+SHA-256 path and the response's `X-Scene-Version`, `X-Scene-Revision` and body
+ETag. The producer's source-delivery contract refuses legacy SHA-1 local asset
+paths. Named and SHA-1 assets remain supported when already present in a verified
+exact LSMLZ local capsule, but are unavailable through the current Canvas
+separated-file HTTP contract. Solar does not invent a digest for named package
+files or retry a failed LSML request as LSMLZ. The browser proof does not qualify
+ZabCanvas service behavior, capture composition, editor asset resolution, shared
+runtime admission or public output.
 
 Each delivery carries the ZabCanvas Blue manifest for that same validated
 revision. `blue_manifest` includes the scene's declared Blue bindings and
