@@ -1,0 +1,21 @@
+{
+  "capturedUtc": "20261015T173948Z",
+  "owner": "Main1",
+  "sourceHead": "d69358480eb87d57c0c421fb5ba93f06fa8e4a3c",
+  "fontProofMerge": "638db58aec55cf334fb7f5863119fdf7745436ad",
+  "imageAdoption": "bffbaf1dbcd031c848240b06fc925b36c5279387",
+  "validations": {
+    "diff": "PASS",
+    "bundle": "PASS; quartet pins and layout",
+    "architecture": "PASS; 60 reachable source files, no unused source/exports/dependencies;83 tools,31 docs,175 links;291 text files,3 reviewed exceptions",
+    "focusedTests": "93 passed, four files",
+    "build": "PASS"
+  },
+  "fontRegistration": "evidence/local-20261015-font-coverage-proof/eleven/20261015T173214Z-font-registration.json",
+  "imageProof": "evidence/local-20261015-image-lifetime-adoption/eleven/20261015T173140Z-native-image-lifetime.json",
+  "installed": false,
+  "scope": "Same active-scene mutation/image lifetime only; transition/readiness/switch-duration excluded",
+  "sharedRuntime": "954b449c preserved, no restart",
+  "remaining": "Physical scanout/CEF/memory counters, multi-hour workload and common-package qualification remain separate",
+  "readmeMerge": "Preserved both font drivers and all image-lifetime drivers in proof README"
+}
