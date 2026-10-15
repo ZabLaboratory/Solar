@@ -838,10 +838,14 @@ async function mountVisionSceneNow(
       applyPatch: async (patch) => {
         const filtered = projectState(patch);
         const images = await renderPackage?.resolveImages?.(patch);
-        for (const [path, value] of Object.entries(images?.values ?? {}))
-          filtered[renderPackage!.imageBindings![path]!] = value;
-        if (Object.keys(filtered).length > 0) {
-          await frameQueue!.addPatch(filtered, images?.assets);
+        try {
+          for (const [path, value] of Object.entries(images?.values ?? {}))
+            filtered[renderPackage!.imageBindings![path]!] = value;
+          if (Object.keys(filtered).length > 0) {
+            await frameQueue!.addPatch(filtered, images?.assets);
+          }
+        } finally {
+          images?.release?.();
         }
       },
       resize: async (nextWidth, nextHeight) => {
@@ -877,7 +881,8 @@ async function mountVisionSceneNow(
         if (frames.length === 0) return Promise.resolve();
         return frameQueue!.addMedia(frames, (receipt) => {
           if (receipt) onSubmission?.(receipt);
-          else onSubmission?.({ frameSubmitted: false, renderSubmitCallMs: null });
+          else
+            onSubmission?.({ frameSubmitted: false, renderSubmitCallMs: null });
         });
       },
       clearMedia: (paths) => {

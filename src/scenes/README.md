@@ -135,7 +135,19 @@ Solar retains source/assets only for the active scene and its continuous mutatio
 A scene change acquires the incoming source anew; returning A → B → A fetches A
 again and mounts a fresh Vision frame. Inactive frames are disposed, never cached.
 Independent image requests for the active scene deduplicate by URL and run concurrently.
-Image changes resolve only affected leaves, leaving the source document untouched.
+URL lookup is a 128-entry LRU; decoded response bytes are deduplicated by content
+address and held in a separate 128-image/64 MiB LRU. One image is capped at 8 MiB,
+and at most eight distinct URL requests fetch concurrently. URL retention and the
+request queue each cap at 128; at full concurrency, up to 120 distinct URLs can wait
+in the bounded FIFO, so a batch of small images is not rejected just because it
+contains more than eight leaves. Response chunks reserve their actual byte
+length as they arrive; cached images plus in-flight body bytes stay within 64 MiB.
+When that combined budget is full and every cached image is pinned, the affected
+acquisition fails explicitly rather than waiting on the frame submission that depends
+on it. Staged patch bytes remain pinned until Vision's frame queue accepts or rejects
+them. Eviction removes only Solar's dynamic copy: source-package bytes remain immutable,
+and Vision owns the bytes admitted by its accepted graph. Image changes resolve only
+affected leaves, leaving the source document untouched.
 
 `local-images.ts` adapts Prism's existing authenticated loopback render-asset cache
 to the optional `SceneImageAssetsProvider`. Only the configured gateway's hashed
