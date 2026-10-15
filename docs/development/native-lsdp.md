@@ -46,6 +46,13 @@ npm.cmd run check:native-package
 npm.cmd run native:start -- --scene <original.lsmlz> --port 8099
 ```
 
+The packager validates the source binary and any existing manifest, revision and
+packaged binary hashes before it writes to `dist/native/`. A rejected argument,
+missing source, invalid manifest or revision mismatch leaves the existing package
+bytes unchanged. Additional platform binaries must use the same native source
+revision. The isolated CLI regressions run with
+`node --test tests/tooling/native-package.test.mjs`.
+
 Open `http://127.0.0.1:8099/` as a Pulsar CEF browser source or browser page.
 The launcher serves Solar and the immutable original archive, and starts Rust
 with `--settings -`. Its configuration and original LSML are injected by stdin;

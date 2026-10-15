@@ -1,0 +1,13 @@
+✔ a different source revision refuses before changing the packaged binary or manifest (137.7107ms)
+✔ an invalid existing manifest schema refuses before package mutation (103.876ms)
+✔ invalid arguments refuse without touching an existing package (100.1112ms)
+✔ a missing source binary refuses before changing the packaged files (105.8291ms)
+✔ matching source revision adds another platform and keeps the package verifiable (202.5335ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 790.1293
