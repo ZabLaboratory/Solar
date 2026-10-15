@@ -74,8 +74,8 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
           ensureActive(ticket);
           if (epoch !== restoreEpoch || context?.isContextLost?.()) throw new Error("GPU context was lost again during image restoration.");
         });
-        uploadedAssets.clear();
-        if (sceneLoaded) for (const path of parseJson(engine.required_images_json(), "required_images_json()")) uploadedAssets.add(path);
+        if (sceneLoaded) syncUploadedAssets(engine);
+        else uploadedAssets.clear();
         ensureActive(ticket);
         if (epoch !== restoreEpoch || context?.isContextLost?.()) throw new Error("GPU context was lost again during image restoration.");
         contextLost = false;
@@ -357,6 +357,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     const sceneLoadMs = elapsedSince(startedAt);
     const assetStartedAt = clock.now();
     await registerRequiredImages(engine, { Blob: BlobType, createImageBitmap: createBitmap }, () => ensureActive(ticket));
+    syncUploadedAssets(engine);
     const info = readEngineInfo(engine);
     latestSize = authoredSurfaceSize(info);
     lastAppliedSequence = request.seq;
@@ -400,6 +401,15 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     }
   }
 
+  function syncUploadedAssets(candidate) {
+    const paths = parseJson(candidate.required_images_json(), "required_images_json()");
+    if (!Array.isArray(paths) || paths.some(path => typeof path !== "string" || path.length === 0)) {
+      throw new Error("The Rust engine returned an invalid required image path list.");
+    }
+    uploadedAssets.clear();
+    for (const path of paths) uploadedAssets.add(path);
+  }
+
   async function registerPatchImages(images, ticket) {
     if (images === undefined) return;
     if (!Array.isArray(images) || images.length > 128 || images.some(image =>
@@ -409,8 +419,19 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     }
     const unique = new Map(images.filter(image => !uploadedAssets.has(image.path)).map(image => [image.path, image]));
     if (unique.size === 0) return;
+    const uniqueImages = [...unique.values()];
+    const encodedBytes = uniqueImages.reduce((total, image) => total + image.bytes.byteLength, 0);
+    if (!Number.isSafeInteger(encodedBytes) || encodedBytes > 64 * 1024 * 1024) {
+      throw new Error("Image patch exceeds the 64 MiB encoded staging budget.");
+    }
+    if (typeof engine.admit_image_asset !== "function") throw new Error("Rust GPU engine does not support bounded image admission.");
     if (typeof engine.register_image_asset !== "function") throw new Error("Rust GPU engine does not support retained image admission.");
-    const decoded = await Promise.allSettled([...unique.values()].map(async image => {
+    for (const image of uniqueImages) {
+      ensureActive(ticket);
+      if (contextLost || context?.isContextLost?.()) throw new Error("GPU context unavailable during image admission.");
+      await engine.admit_image_asset(image.path, image.bytes);
+    }
+    const decoded = await Promise.allSettled(uniqueImages.map(async image => {
       ensureActive(ticket);
       const bitmap = await createBitmap(new BlobType([image.bytes]), IMAGE_BITMAP_OPTIONS);
       if (!bitmap || typeof bitmap.close !== "function") throw new Error(`Image asset ${image.path} did not decode to an ImageBitmap.`);
@@ -457,7 +478,10 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       await registerPatchImages(request.images, ticket);
       rawMetadata = await engine.apply_patch(request.patchJson);
       ensureActive(ticket);
+      syncUploadedAssets(engine);
     } catch (error) {
+      engine.prune_unreferenced_image_assets?.();
+      syncUploadedAssets(engine);
       throw withContext(error, "patch", { ...receipt, engineApplyCallMs: elapsedSince(applyStartedAt) });
     }
 
