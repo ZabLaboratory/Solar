@@ -451,7 +451,6 @@ describe("Vision live camera textures", () => {
       controller.update([source]);
       peers.publish("caster-slot", stream);
       await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
-      const video = document.querySelector("video")!;
       const framed = contexts.drawImage.mock.calls.at(-1)!;
       expect(framed.slice(1, 5)).toEqual([320, 180, 640, 360]);
       expect(framed[5]).toBeCloseTo(-96.6667, 3);
@@ -477,6 +476,39 @@ describe("Vision live camera textures", () => {
       expect(moved[8]).toBeCloseTo(150, 3);
       expect(peers.subscribePeerStream).toHaveBeenCalledOnce();
       expect(peers.unsubscribe).not.toHaveBeenCalled();
+    } finally {
+      controller.dispose();
+    }
+  });
+
+  it("keeps a peer session alive when the wire sourceCrop is null", async () => {
+    const scene = makeScene();
+    const peers = peerSources();
+    const onError = vi.fn();
+    const controller = new LiveMediaController({
+      liveAudio: false,
+      resolveCaptureDevice: async () => null,
+      peers,
+      onError,
+      getScene: () => scene,
+    });
+    const stream = { getTracks: () => [] } as unknown as MediaStream;
+    const source = JSON.parse(
+      JSON.stringify({ ...remoteCamera, sourceCrop: null }),
+    ) as VisionLiveMediaSource;
+
+    try {
+      controller.update([source]);
+      peers.publish("caster-slot", stream);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+
+      const video = document.querySelector("video")!;
+      const draw = contexts.drawImage.mock.calls.at(-1)!;
+      expect(draw[0]).toBe(video);
+      expect(draw.slice(1, 5)).toEqual([0, 0, 1280, 720]);
+      expect(draw.slice(5, 9)).toEqual([0, 0, 320, 180]);
+      expect(peers.subscribePeerStream).toHaveBeenCalledOnce();
+      expect(onError).not.toHaveBeenCalled();
     } finally {
       controller.dispose();
     }

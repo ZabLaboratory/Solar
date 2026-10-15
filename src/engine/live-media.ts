@@ -511,12 +511,14 @@ function finitePositive(value: number | undefined, fallback: number): number {
   return number > 0 ? number : fallback;
 }
 
-function normalizeCrop(crop: VisionLiveMediaSource["sourceCrop"] = {}) {
+function normalizeCrop(crop: VisionLiveMediaSource["sourceCrop"] | null = {}) {
+  const value =
+    crop && typeof crop === "object" && !Array.isArray(crop) ? crop : {};
   const normalized = {
-    left: Math.max(0, Math.min(99, finite(crop.left, 0))),
-    top: Math.max(0, Math.min(99, finite(crop.top, 0))),
-    right: Math.max(0, Math.min(99, finite(crop.right, 0))),
-    bottom: Math.max(0, Math.min(99, finite(crop.bottom, 0))),
+    left: Math.max(0, Math.min(99, finite(value.left, 0))),
+    top: Math.max(0, Math.min(99, finite(value.top, 0))),
+    right: Math.max(0, Math.min(99, finite(value.right, 0))),
+    bottom: Math.max(0, Math.min(99, finite(value.bottom, 0))),
   };
   for (const [first, second] of [["left", "right"], ["top", "bottom"]] as const) {
     const total = normalized[first] + normalized[second];
