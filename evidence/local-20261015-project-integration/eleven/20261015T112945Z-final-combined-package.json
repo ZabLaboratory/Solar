@@ -1,0 +1,67 @@
+{
+  "captured_utc": "20261015T112945Z",
+  "solar": {
+    "schema_version": "solar.runtime.manifest.v1",
+    "component": "solar",
+    "version": "3.0.0",
+    "release_tag": "v3.0.0-local-532bf2f489c124ba",
+    "protocol_version": "solar.host.v2",
+    "artifact_url": "file:///D:/Documents/Zab/Prism/.worktrees/eleven-local-20261015-project-integration/.cache/solar-vision-native-consolidated/solar-local.tgz",
+    "artifact_sha256": "532bf2f489c124ba05b7e1ce848bbd8ab71c3a7ac7dfb50c4d1b5d01d0bd7b5e",
+    "source_revision": "cf5561aeff83e7e9c37ee07fd0716aec16c57642"
+  },
+  "vision": {
+    "schema": "solar.vision-assets.v1",
+    "upstream": "Lumencast/lumencast-vision",
+    "base_revision": "66811384f00ac47afa129d7b6e6681f4109c75e4",
+    "source_state": "Committed Vision2D/Vision3D consolidation with persistent host quality. Native GPU suites, release WASM and four private Solar synthetic-peer framing pixel states pass. Real Meet, LSDP-to-CEF, shared runtime admission and WebGL 3D product integration remain unqualified.",
+    "files": {
+      "ui/mainpresenter.mjs": {
+        "bytes": 26045,
+        "sha256": "37fe912a89103c0985d407f5bc993a037cd4b2a8f86d6e95e45d12b7b9977ea0"
+      },
+      "ui/fonts.mjs": {
+        "bytes": 1977,
+        "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+      },
+      "pkg/lumencast_vision_web.js": {
+        "bytes": 148489,
+        "sha256": "b69d3d89c4e493c17b6cf7d0c99f4cfaa398b031e95f39ea5fc19f71e907177e"
+      },
+      "pkg/lumencast_vision_web_bg.wasm": {
+        "bytes": 10409683,
+        "sha256": "5f25d038f0ba310ebfb7a4b5b8ef683ad150d11f795d86ace1fad0137adc2efe"
+      }
+    },
+    "source_provenance": {
+      "repository": "Lumencast/lumencast-vision",
+      "engine_base": "66811384f00ac47afa129d7b6e6681f4109c75e4",
+      "engine_branch": "eleven/local-20261015-vision3d-integration",
+      "engine_evidence": "evidence/local-20261015-vision3d-integration/eleven/20261015T112758Z-release-wasm-manifest.json",
+      "source_files": {
+        "README.md": "daf09adb1d475fd6029edf1f29b74b78bf47cc1994d959cfceefd00e30ea3d49",
+        "crates/vision-web/src/lib.rs": "006c83c2d0ee415699ee15d2fe26d7a6c6930869412530db5611e4ca0080f747",
+        "crates/vision-gpu-scene/src/lib.rs": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15",
+        "crates/vision-render/src/image.rs": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f",
+        "crates/vision-gpu/src/renderer.rs": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
+        "crates/vision-gpu/src/renderer/composition_cache.rs": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b"
+      },
+      "uncommitted_qualified_source": false
+    },
+    "source_revision": "88880da4a70001bf6146842c429b6cef949e0a17"
+  },
+  "native": {
+    "schema": "solar.native-server.v1",
+    "wire": "LSDP-TCP/2.0-draft2",
+    "source_revision": "4d197aefbde76cacc8ffd70cb84edec031575f5b",
+    "binaries": {
+      "win32-x64": {
+        "file": "win32-x64/lsdpd.exe",
+        "sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448"
+      }
+    }
+  },
+  "archive_bytes": 7819939,
+  "qualification": "Private Windows consolidated package, complete build/layout/bundle/native source+SHA checks PASS. Chrome framing four states PASS. No common runtime activation.",
+  "diagnostic": "An initial bundle check ran too early while build was recreating dist/host and correctly failed on missing host/index.html. Root reran it after the build completed; all bundle checks passed. This was validation sequencing, not a waived product failure."
+}
