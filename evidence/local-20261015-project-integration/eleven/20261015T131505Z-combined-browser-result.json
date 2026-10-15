@@ -1,0 +1,178 @@
+{
+  "passed": true,
+  "boundary": "Solar NativeSceneFrames exact-source acquisition + Solar persistent presenter + pinned Vision WASM/WebGL; private offline source fixtures only",
+  "exclusions": [
+    "ZabCanvas HTTP acquisition",
+    "remote child assets",
+    "capture composition",
+    "editor asset resolver",
+    "runtime/shared-dev admission"
+  ],
+  "dimensions": {
+    "gpu": [
+      200,
+      80
+    ],
+    "front": [
+      200,
+      80
+    ]
+  },
+  "sourceIdentity": {
+    "sceneId": "instance-root",
+    "sceneVersion": "sha256:feb7d2bd729fd638239febecc03c2ba600497e277aa52123ce42d31a9ee9e091",
+    "sourceDigest": "sha256:ca4eb31323eecf0e00f7a7faedd2f6951cf6155aa49a765ec801b69803db840e"
+  },
+  "privateRenderPackage": {
+    "sceneId": "instance-root",
+    "sceneVersion": "sha256:d652c0f6ce3b79a7641826a9413f590a1749f152a9c16580016eeb431c186a6e"
+  },
+  "sourcePins": [
+    {
+      "sceneId": "instance-root",
+      "sceneVersion": "sha256:feb7d2bd729fd638239febecc03c2ba600497e277aa52123ce42d31a9ee9e091",
+      "sourceDigest": "sha256:ca4eb31323eecf0e00f7a7faedd2f6951cf6155aa49a765ec801b69803db840e"
+    },
+    {
+      "sceneId": "fit-child",
+      "sceneVersion": "sha256:b1915a0f87e257d788b14358b47d1c0da67ddd613eedcbb78b6e0f405e36404c",
+      "sourceDigest": "sha256:d64f6b30a3758942bea65e27f0f5362971b10d5fbe06f3b3de2526a7518da944"
+    },
+    {
+      "sceneId": "state-child",
+      "sceneVersion": "sha256:98dab48e81481984be0ee6b2fd448df2c270443438fb788a2803b464933575b1",
+      "sourceDigest": "sha256:481b27ebcb2761f2c2d04b325d906bc92312d3b376d6576e2217aaaf4a3c8762"
+    },
+    {
+      "sceneId": "missing-root",
+      "sceneVersion": "sha256:8d3aea660bdd5c1cc80910b855e4ecf1ae421efa9864a28a22baebc6a2cb4206",
+      "sourceDigest": "sha256:3d99cb04fe38db0396bc67c63e0ffd067718a17739a4955be02c14e1ca9c245e"
+    }
+  ],
+  "font": {
+    "path": "assets/a419094441326e38d68a583e78744efe1c0ccbc90b4c87a43f5d619c83a438b1.woff2",
+    "sha256": "sha256:a419094441326e38d68a583e78744efe1c0ccbc90b4c87a43f5d619c83a438b1",
+    "bytes": 13500
+  },
+  "image": {
+    "path": "assets/2d26de4fb677d35619adf780b93162934d11277bf357144e7b244adf9ef2e330.png",
+    "sha256": "sha256:2d26de4fb677d35619adf780b93162934d11277bf357144e7b244adf9ef2e330",
+    "bytes": 111
+  },
+  "samples": [
+    {
+      "phase": "first accepted GPU frame with nested assets",
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "swatch": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "embeddedFontPixels": 194
+    },
+    {
+      "phase": "live bindParams mutation",
+      "swatch": [
+        0,
+        255,
+        0,
+        255
+      ]
+    },
+    {
+      "phase": "WebGL context restoration",
+      "swatch": [
+        0,
+        170,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "embeddedFontPixels": 194,
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "contextLost": false
+    },
+    {
+      "phase": "missing dependency refusal preserves active output",
+      "rejection": {
+        "code": "BUNDLE_FETCH_FAILED",
+        "message": "InstanceSourceError: BUNDLE_FETCH_FAILED"
+      },
+      "preserved": {
+        "swatch": [
+          0,
+          170,
+          0,
+          255
+        ],
+        "image": {
+          "x": 40,
+          "y": 13
+        },
+        "embeddedFontPixels": 194
+      }
+    }
+  ],
+  "errors": [],
+  "browser": "154.0.8037.98",
+  "node": "v24.16.0",
+  "pageErrors": []
+}
