@@ -2,7 +2,7 @@
 // Private browser qualification only; no Prism, shared runtime or live source is attached.
 import { createRequire } from "node:module";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import { createServer } from "vite";
 import { createServer as createHttpServer } from "node:http";
 
@@ -12,13 +12,32 @@ const values = Object.fromEntries(
     return pairs;
   }, []),
 );
-if (!values["--out"] || !values["--playwright-root"])
-  throw Error("--out and --playwright-root are required");
-const out = resolve(values["--out"]);
-await mkdir(out, { recursive: true });
-for (const name of ["result.json", "failure.json", "pixels.png"]) {
+const out = values["--out"] ? resolve(values["--out"]) : undefined;
+const outPrefix = values["--out-prefix"]
+  ? resolve(values["--out-prefix"])
+  : undefined;
+if (
+  !values["--playwright-root"] ||
+  Boolean(out) === Boolean(outPrefix)
+)
+  throw Error(
+    "--playwright-root and exactly one of --out or --out-prefix are required",
+  );
+const outputs = outPrefix
+  ? {
+      result: `${outPrefix}-result.json`,
+      failure: `${outPrefix}-failure.json`,
+      pixels: `${outPrefix}-pixels.png`,
+    }
+  : {
+      result: resolve(out, "result.json"),
+      failure: resolve(out, "failure.json"),
+      pixels: resolve(out, "pixels.png"),
+    };
+await mkdir(dirname(outputs.result), { recursive: true });
+for (const path of Object.values(outputs)) {
   try {
-    await unlink(resolve(out, name));
+    await unlink(path);
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
@@ -115,10 +134,10 @@ try {
       ),
     ]),
   );
-  await page.screenshot({ path: resolve(out, "pixels.png"), fullPage: true });
+  await page.screenshot({ path: outputs.pixels, fullPage: true });
   result.remoteImageRequests = imageRequests;
   await writeFile(
-    resolve(out, "result.json"),
+    outputs.result,
     JSON.stringify(
       {
         ...result,
@@ -136,7 +155,7 @@ try {
       passed: result.passed,
       samples: result.samples.length,
       browser: browser.version(),
-      out,
+      out: outPrefix ?? out,
     }) + "\n",
   );
 } catch (error) {
@@ -150,7 +169,7 @@ try {
     )
     .catch(() => null);
   await writeFile(
-    resolve(out, "failure.json"),
+    outputs.failure,
     JSON.stringify(
       { message: String(error), pageErrors, diagnostics },
       null,

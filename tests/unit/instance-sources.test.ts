@@ -15,6 +15,7 @@ import { NativeSceneFrames } from "../../src/engine/native-scene-frames";
 import { requireLSML } from "../../src/scenes/native-document";
 import { mountVisionScene } from "../../src/engine/vision-presenter";
 import { NativeSceneAssets } from "../../src/scenes/native-document";
+import { prepareInstanceImages } from "../../src/scenes/instance-images";
 
 vi.mock("../../src/engine/vision-presenter", () => ({
   mountVisionScene: vi.fn(async () => ({
@@ -270,6 +271,85 @@ describe("active exact-version instance acquisition", () => {
     expect(fetchImage).toHaveBeenCalledTimes(2);
     expect(recovered.instances).toHaveLength(1);
     recovered.release?.();
+  });
+
+  it("waits for sibling image leases before releasing after one child image fails", async () => {
+    const failedChild = await source("failed-image-child", {
+      kind: "image",
+      src: "https://images.example/failed.png",
+    });
+    const delayedChild = await source("delayed-image-child", {
+      kind: "image",
+      src: "https://images.example/delayed.png",
+    });
+    const parent = await source("parallel-image-parent", {
+      kind: "frame",
+      children: [ref(failedChild), ref(delayedChild)],
+    });
+    const rootDocument = requireLSML(
+      verifySceneSource(parent, { requireOfflineReady: false }).document,
+    );
+    let markDelayedStarted!: () => void;
+    const delayedStarted = new Promise<void>((resolve) => {
+      markDelayedStarted = resolve;
+    });
+    let markBothStarted!: () => void;
+    const bothStarted = new Promise<void>((resolve) => {
+      markBothStarted = resolve;
+    });
+    let startedCount = 0;
+    let resolveDelayed!: (image: {
+      path: string;
+      bytes: Uint8Array;
+      release: () => void;
+    }) => void;
+    let released = 0;
+    const resolveImage = vi.fn(async (value: unknown) => {
+      startedCount++;
+      if (startedCount === 2) markBothStarted();
+      if (value === "https://images.example/failed.png")
+        throw new Error("HTTP 404");
+      markDelayedStarted();
+      return await new Promise<{
+        path: string;
+        bytes: Uint8Array;
+        release: () => void;
+      }>((resolve) => {
+        resolveDelayed = resolve;
+      });
+    });
+    const preparing = prepareInstanceImages(
+      rootDocument,
+      [failedChild, delayedChild],
+      {},
+      Object.create(null) as Record<string, string>,
+      Object.create(null) as Record<string, string>,
+      resolveImage,
+      signal(),
+    );
+    let settled = false;
+    void preparing.then(
+      () => {
+        settled = true;
+      },
+      () => {
+        settled = true;
+      },
+    );
+
+    await Promise.all([bothStarted, delayedStarted]);
+    for (let turn = 0; turn < 12 && !settled; turn++)
+      await Promise.resolve();
+    expect(settled).toBe(false);
+    resolveDelayed({
+      path: "assets/solar-delayed.png",
+      bytes: Uint8Array.from([1, 2, 3]),
+      release: () => {
+        released++;
+      },
+    });
+    await expect(preparing).rejects.toThrow("HTTP 404");
+    expect(released).toBe(1);
   });
 
   it("passes verified dependencies through real scene preparation and refuses missing children before Vision load", async () => {

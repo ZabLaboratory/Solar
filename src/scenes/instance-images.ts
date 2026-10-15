@@ -89,6 +89,14 @@ function parameterName(path: string): string {
   return path.startsWith("__params.") ? path.slice("__params.".length) : path;
 }
 
+async function waitForAll(tasks: readonly Promise<unknown>[]): Promise<void> {
+  const results = await Promise.allSettled(tasks);
+  const failure = results.find(
+    (result): result is PromiseRejectedResult => result.status === "rejected",
+  );
+  if (failure) throw failure.reason;
+}
+
 /**
  * Build runtime-only child packages after exact dependency admission. Remote
  * images use the active scene's resolver and its cache/budget/leases; source
@@ -178,7 +186,7 @@ export async function prepareInstanceImages(
           }),
         );
       });
-      await Promise.all(childPromises);
+      await waitForAll(childPromises);
       for (const { node, child } of childNodes) {
         if (node.scene_version !== child.sceneVersion) {
           node.scene_version = child.sceneVersion;
@@ -266,12 +274,7 @@ export async function prepareInstanceImages(
         }
       }
 
-      const results = await Promise.allSettled(pending);
-      const failure = results.find(
-        (result): result is PromiseRejectedResult =>
-          result.status === "rejected",
-      );
-      if (failure) throw failure.reason;
+      await waitForAll(pending);
 
       const rendered = changed ? await canonicalRender(document) : undefined;
       const sceneVersion = rendered?.sceneVersion ?? source.sceneVersion;
@@ -317,7 +320,7 @@ export async function prepareInstanceImages(
         }),
       );
     });
-    await Promise.all(pendingChildren);
+    await waitForAll(pendingChildren);
 
     for (const { node, child } of rootNodes) {
       if (node.scene_version !== child.sceneVersion)
