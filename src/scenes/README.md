@@ -25,9 +25,17 @@ admission does not require offline Blue readiness, while cache reads/writes keep
 that stricter default. The verified documents and expanded byte counts are reused
 for traversal instead of parsing an archive again for each instance occurrence.
 `native-scene-frames.ts` forwards original child packages/assets to Vision's
-instance-aware load message. This source boundary does not render child layouts
-or project their local state. Full engine/WebGL admission and child HTTP image,
-capture composition and authoring-preview parity require their own qualification.
+instance-aware load message. `scripts/qualify-instance-runtime.mjs` drives that
+real path in a private Chrome/Vite page: local root and child LSMLZ, an embedded
+WOFF2 font and content-addressed PNG, asymmetric pixels for all four fit modes, a
+live `bindParams` update, WebGL context loss/restoration, and a missing exact child
+that leaves the accepted frame intact. Its result and pixel capture are recorded
+under `evidence/local-20261015-instance-sources/eleven/`. This does not qualify
+ZabCanvas HTTP acquisition, remote child assets, capture composition, editor asset
+resolution, shared runtime admission or public output.
+The embedded child-font fixture uses an asset path addressed by its 64-hex SHA-256
+digest. The source verifier still rejects named and legacy SHA-1 asset filenames;
+those remain unsupported rather than bypassing the existing address check.
 
 Each delivery carries the ZabCanvas Blue manifest for that same validated
 revision. `blue_manifest` includes the scene's declared Blue bindings and

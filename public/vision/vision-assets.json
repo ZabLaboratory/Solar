@@ -1,34 +1,38 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "66811384f00ac47afa129d7b6e6681f4109c75e4",
-  "source_state": "Committed Vision2D/Vision3D consolidation with persistent host quality. Native GPU suites, release WASM and four private Solar synthetic-peer framing pixel states pass. Real Meet, LSDP-to-CEF, shared runtime admission and WebGL 3D product integration remain unqualified.",
+  "base_revision": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+  "source_state": "Signed Vision instance-runtime source 728e1247 built as release WASM and pinned with its exact main presenter. Native GPU semantics and a private Solar browser path pass exact root/child acquisition, four fit pixel modes, embedded WOFF2/PNG, bindParams mutation, WebGL restoration and missing-child refusal with active-frame preservation. ZabCanvas HTTP, remote assets, shared runtime admission and public output are not qualified.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "bytes": 26045,
-      "sha256": "37fe912a89103c0985d407f5bc993a037cd4b2a8f86d6e95e45d12b7b9977ea0"
+      "bytes": 27634,
+      "sha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
     },
     "ui/fonts.mjs": {
       "bytes": 1977,
       "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
     },
     "pkg/lumencast_vision_web.js": {
-      "bytes": 148489,
-      "sha256": "b69d3d89c4e493c17b6cf7d0c99f4cfaa398b031e95f39ea5fc19f71e907177e"
+      "bytes": 152321,
+      "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10409683,
-      "sha256": "5f25d038f0ba310ebfb7a4b5b8ef683ad150d11f795d86ace1fad0137adc2efe"
+      "bytes": 10491253,
+      "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_base": "66811384f00ac47afa129d7b6e6681f4109c75e4",
-    "engine_branch": "eleven/local-20261015-vision3d-integration",
-    "engine_evidence": "evidence/local-20261015-vision3d-integration/eleven/20261015T112758Z-release-wasm-manifest.json",
+    "engine_base": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+    "engine_branch": "eleven/local-20261015-instance-runtime",
+    "engine_evidence": "evidence/local-20261015-instance-runtime/eleven/20261015T124330Z-agent-report.md",
     "source_files": {
-      "README.md": "daf09adb1d475fd6029edf1f29b74b78bf47cc1994d959cfceefd00e30ea3d49",
-      "crates/vision-web/src/lib.rs": "006c83c2d0ee415699ee15d2fe26d7a6c6930869412530db5611e4ca0080f747",
+      "README.md": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca",
+      "crates/vision-web/README.md": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54",
+      "crates/vision-web/src/instances.rs": "865106569a8c99bd60a20f376105b9421e13ff305459534831fe51ab5d1abce9",
+      "crates/vision-web/src/lib.rs": "24d89fd2c40ab866d9aa4b9853f3470c1a2f58015e9fb006b9edbd162e120b27",
+      "crates/vision-web/ui/mainpresenter.mjs": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7",
+      "crates/vision-web/ui/tests/mainpresenter.test.mjs": "bb8bb601880af507f68f1e0700818d3e7c2bb7b5ab2411a466668da898869904",
       "crates/vision-gpu-scene/src/lib.rs": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15",
       "crates/vision-render/src/image.rs": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f",
       "crates/vision-gpu/src/renderer.rs": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
@@ -36,5 +40,5 @@
     },
     "uncommitted_qualified_source": false
   },
-  "source_revision": "88880da4a70001bf6146842c429b6cef949e0a17"
+  "source_revision": "728e1247a830fec777b4a234af5d8cd9d20dc311"
 }

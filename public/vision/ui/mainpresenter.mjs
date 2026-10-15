@@ -311,18 +311,44 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       throw new Error("Scene load requires fresh package bytes and explicit fonts.");
     }
     if (contextLost || context?.isContextLost?.()) throw new Error("GPU context unavailable during scene load.");
-    if (typeof engine.load_scene !== "function") throw new Error("Rust engine does not support persistent scene loading.");
+    const instances = request.instances ?? [];
+    if (!Array.isArray(instances)) throw new Error("Instance dependencies must be an array of exact host-resolved packages.");
+    if (instances.some(instance => !instance || typeof instance !== "object"
+        || typeof instance.sceneId !== "string" || typeof instance.sceneVersion !== "string"
+        || !(instance.packageBytes instanceof Uint8Array)
+        || (instance.assets !== undefined && (!Array.isArray(instance.assets)
+          || instance.assets.some(asset => typeof asset?.path !== "string" || !(asset.bytes instanceof Uint8Array)))))) {
+      throw new Error("Instance dependencies require exact identities and package bytes.");
+    }
+    if (typeof engine.load_scene !== "function" && typeof engine.load_scene_with_instances !== "function") {
+      throw new Error("Rust engine does not support persistent scene loading.");
+    }
     const startedAt = clock.now();
     if (request.assets !== undefined) {
       if (!Array.isArray(request.assets) || request.assets.some(asset =>
           typeof asset.path !== "string" || !(asset.bytes instanceof Uint8Array))
-          || request.fonts.length !== 0 || typeof engine.load_scene_parts !== "function") {
+          || request.fonts.length !== 0 || typeof engine.load_scene_parts !== "function"
+          || (instances.length > 0 && typeof engine.load_scene_parts_with_instances !== "function")) {
         throw new Error("Scene parts require bounded assets and an admitted font bank.");
       }
-      await engine.load_scene_parts(request.packageBytes,
-        request.assets.map(asset => asset.path), request.assets.map(asset => asset.bytes));
+      if (instances.length > 0) {
+        await engine.load_scene_parts_with_instances(request.packageBytes,
+          request.assets.map(asset => asset.path), request.assets.map(asset => asset.bytes), instances);
+      } else {
+        await engine.load_scene_parts(request.packageBytes,
+          request.assets.map(asset => asset.path), request.assets.map(asset => asset.bytes));
+      }
+    } else if (instances.length > 0) {
+      if (typeof engine.load_scene_with_instances !== "function") {
+        throw new Error("Rust engine cannot admit exact instance packages.");
+      }
+      await engine.load_scene_with_instances(request.packageBytes, request.fonts, instances);
     } else {
-      await engine.load_scene(request.packageBytes, request.fonts);
+      if (typeof engine.load_scene_with_instances === "function") {
+        await engine.load_scene_with_instances(request.packageBytes, request.fonts, instances);
+      } else {
+        await engine.load_scene(request.packageBytes, request.fonts);
+      }
     }
     sceneLoaded = true;
     ensureActive(ticket);
