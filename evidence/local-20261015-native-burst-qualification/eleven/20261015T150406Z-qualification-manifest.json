@@ -1,0 +1,92 @@
+{
+  "schema": "solar.native-burst-qualification-manifest.v1",
+  "createdAt": "2026-10-15T15:04:06Z",
+  "worktree": {
+    "path": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-native-burst-qualification",
+    "branch": "eleven/local-20261015-native-burst-qualification",
+    "baseAndInitialHead": "623a9450d01be5df3b8e7765c6ef59ae8a2eff4d"
+  },
+  "distProvenance": {
+    "evidencePath": "evidence/local-20261015-native-burst-qualification/eleven/20261015T143521Z-dist-provenance.json",
+    "evidenceSha256": "fe0840367d35fcf9201fc3337a2c706ca04852e1b1e69af72dde40751b9ff59d",
+    "sourceWorktreeHead": "623a9450d01be5df3b8e7765c6ef59ae8a2eff4d",
+    "productBundleSourceRevision": "a1bab7fa17627e7a3f546683f78b097d9533a573",
+    "nativeSourceRevision": "4d197aefbde76cacc8ffd70cb84edec031575f5b",
+    "nativeBinarySha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448",
+    "visionSourceRevision": "728e1247a830fec777b4a234af5d8cd9d20dc311",
+    "visionMainPresenterSha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7",
+    "visionWasmSha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd",
+    "copiedFiles": 92,
+    "identicalCopy": true
+  },
+  "fixture": {
+    "sceneVersion": "sha256:d702ff0356419e696916086534158812c6b07908315e7d471fb26a678acf098a",
+    "sourceSha256": "16cefd316fd6c8390ef5c8a230ebfefc0fd5744dbdd2eb7f342d82f892f21a4c",
+    "archiveSha256": "869e7f7a8036afcdbb04bc0e1eab4f544f5202d2dd3faa0adbf9085b049eac7a",
+    "defaultValue": "0000/0512",
+    "expectedFinalValue": "0512/0512"
+  },
+  "evidence": [
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T142756Z-agent-start.md",
+      "bytes": 1518,
+      "sha256": "4b9f0f4a371ffe39d355a7d9b2ea456b87aa06c5942a3aca436dad892b375d30"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T143521Z-dist-provenance.json",
+      "bytes": 18062,
+      "sha256": "fe0840367d35fcf9201fc3337a2c706ca04852e1b1e69af72dde40751b9ff59d"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145031Z-native-burst-sustained.json",
+      "bytes": 2514,
+      "sha256": "fd160ec887af5c67e5434b8b4e8273eddd97e35567701c3980f7b8cdb63c95a1"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145224Z-native-burst-sustained.json",
+      "bytes": 15905,
+      "sha256": "882cda94033f5e45ad16950520f3d48a2aa3bd6ac7463a70dda2135cbc00cc39"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145336Z-native-burst-sustained-pixels.png",
+      "bytes": 30187,
+      "sha256": "ee150f2337bcf84fa694026f6c8ecef6c7b8b92f73c435ba7459b255312e3d0d"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145336Z-native-burst-sustained.json",
+      "bytes": 1927236,
+      "sha256": "abbde98d1290637a96b93a51e62bbdd706c6a11d59ad624956c678a9c821664e"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145357Z-native-burst-burst-pixels.png",
+      "bytes": 30187,
+      "sha256": "ee150f2337bcf84fa694026f6c8ecef6c7b8b92f73c435ba7459b255312e3d0d"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145357Z-native-burst-burst.json",
+      "bytes": 463753,
+      "sha256": "f73389e29ce2712a6b6e32d7e0541e3946dbec6735cfd2ab96993ea50d1a5036"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145938Z-native-burst-sustained-pixels.png",
+      "bytes": 30187,
+      "sha256": "ee150f2337bcf84fa694026f6c8ecef6c7b8b92f73c435ba7459b255312e3d0d"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145938Z-native-burst-sustained.json",
+      "bytes": 1934923,
+      "sha256": "318362efdd020f353d0f90e7d143cadaa7dc3850f207fb2dff049b211e48cdf1"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145953Z-native-burst-burst-pixels.png",
+      "bytes": 30187,
+      "sha256": "ee150f2337bcf84fa694026f6c8ecef6c7b8b92f73c435ba7459b255312e3d0d"
+    },
+    {
+      "path": "evidence/local-20261015-native-burst-qualification/eleven/20261015T145953Z-native-burst-burst.json",
+      "bytes": 522341,
+      "sha256": "735296868d4c23a211d1c47a5965ccb8ac261f43f39d951160c13415d2a75759"
+    }
+  ],
+  "manifestLimit": "This manifest excludes itself and the report/checkpoint created in the same signed commit; the commit signature covers every committed file."
+}

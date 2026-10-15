@@ -77,6 +77,7 @@ await withNative(url, async (peer) => {
         sentEpochMs,
         epochMs: clock(),
         level: receipt.level,
+        ackStateHash: typeof receipt.stateHash === "string" ? receipt.stateHash : null,
         stateHash: hashes[index],
       });
       if (receipts.length === total)

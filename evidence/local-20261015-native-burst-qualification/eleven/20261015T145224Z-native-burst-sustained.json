@@ -1,0 +1,209 @@
+{
+  "schema": "solar.native-burst-browser-qualification.v1",
+  "scenario": "paced",
+  "startedAt": "2026-10-15T14:52:24.439Z",
+  "scope": {
+    "operations": 512,
+    "scene": "native-burst-qualification",
+    "source": "real private Rust LSDP daemon + Solar host dist + pinned Vision dist",
+    "browser": "private headless Chrome; no CEF, no physical camera, no audio, no scene switch",
+    "publication": "none",
+    "presentationBoundary": "Vision frame-submitted followed by Solar CanvasPresentation retained-front-canvas copy; no GPU-completion or physical-scanout claim"
+  },
+  "artifacts": {
+    "resultPath": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\evidence\\local-20261015-native-burst-qualification\\eleven\\20261015T145224Z-native-burst-sustained.json",
+    "pixelsPath": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\evidence\\local-20261015-native-burst-qualification\\eleven\\20261015T145224Z-native-burst-sustained-pixels.png",
+    "scene": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\fixtures\\native-burst\\native-burst.lsmlz",
+    "nativeBinary": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-native-burst-qualification\\dist\\native\\win32-x64\\lsdpd.exe"
+  },
+  "serverLogs": {
+    "stdout": [
+      "{\"solar\":\"http://127.0.0.1:64777/\",\"native\":\"ws://127.0.0.1:64779/lsdp\",\"nativePid\":55020,\"sceneId\":\"native-burst-qualification\",\"archiveDigest\":\"sha256:cd7e20ebed5887bd867b6afa81d0f0371d8210705797e2a953c1fd5ade8cda5e\",\"persistence\":\"memory-only\"}"
+    ],
+    "stderr": []
+  },
+  "producerLogs": {
+    "stdout": [],
+    "stderr": []
+  },
+  "failures": [
+    "Error: Solar/Vision browser did not reach live status: {\"url\":\"http://127.0.0.1:64777/host.html?lsdp=ws%3A%2F%2F127.0.0.1%3A64779%2Flsdp&resource=scene\",\"title\":\"Solar\",\"status\":\"connecting\",\"bodyText\":\"\",\"sceneHtml\":\"<div id=\\\"scene\\\" data-testid=\\\"solar-scene-root\\\" data-native-burst-proof=\\\"attached\\\" data-solar-engine-ready=\\\"true\\\"><div data-solar-vision-scene=\\\"sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\\\" style=\\\"position: absolute; inset: 0px; opacity: 0; pointer-events: none;\\\"><canvas aria-hidden=\\\"true\\\" width=\\\"1\\\" height=\\\"1\\\" style=\\\"display: block; width: 100%; height: 100%; opacity: 0; position: absolute; inset: 0px;\\\"></canvas><canvas aria-hidden=\\\"true\\\" style=\\\"display: block; width: 100%; height: 100%;\\\"></canvas></div></div>\",\"scripts\":[\"http://127.0.0.1:64777/assets/host-CJCFYX3Y.js\",\"inline\"],\"canvases\":[{\"width\":1,\"height\":1,\"ariaHidden\":\"true\"},{\"width\":300,\"height\":150,\"ariaHidden\":\"true\"}],\"proofAttached\":true,\"performanceResources\":[{\"name\":\"http://127.0.0.1:64777/vision/pkg/lumencast_vision_web.js\",\"duration\":2.700000047683716},{\"name\":\"http://127.0.0.1:64777/vision/pkg/lumencast_vision_web_bg.wasm\",\"duration\":39.700000047683716},{\"name\":\"http://127.0.0.1:64777/fonts/geist-latin.woff2\",\"duration\":6.300000071525574},{\"name\":\"http://127.0.0.1:64777/fonts/geist-mono-latin.woff2\",\"duration\":6.899999976158142},{\"name\":\"http://127.0.0.1:64777/fonts/figtree-variable.ttf\",\"duration\":7},{\"name\":\"http://127.0.0.1:64777/fonts/alex-brush-400.woff2\",\"duration\":9.5},{\"name\":\"http://127.0.0.1:64777/fonts/ibm-plex-mono-400.woff2\",\"duration\":9.5},{\"name\":\"http://127.0.0.1:64777/fonts/ibm-plex-mono-500.woff2\",\"duration\":9.799999952316284},{\"name\":\"http://127.0.0.1:64777/fonts/ibm-plex-mono-600.woff2\",\"duration\":9.900000095367432},{\"name\":\"http://127.0.0.1:64777/fonts/space-grotesk-400.woff2\",\"duration\":10.100000023841858},{\"name\":\"http://127.0.0.1:64777/fonts/space-grotesk-500.woff2\",\"duration\":8.700000047683716},{\"name\":\"http://127.0.0.1:64777/fonts/space-grotesk-600.woff2\",\"duration\":10.399999976158142},{\"name\":\"http://127.0.0.1:64777/fonts/space-grotesk-700.woff2\",\"duration\":10.600000023841858},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.7000000476837158},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.8000000715255737},{\"name\":\"http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js\",\"duration\":2.5},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.8000000715255737},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.6999999284744263},{\"name\":\"http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js\",\"duration\":-4.599999904632568},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":2.399999976158142},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":2.200000047683716},{\"name\":\"http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js\",\"duration\":-3.700000047683716},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.0999999046325684},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.2999999523162842},{\"name\":\"http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js\",\"duration\":-4.899999976158142},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.600000023841858},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.5},{\"name\":\"http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js\",\"duration\":-4.800000071525574},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":2.3000000715255737},{\"name\":\"http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\",\"duration\":1.5}]}; console=[\"Failed to load resource: the server responded with a status of 404 (Not Found)\",\"[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)\",\"[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)\",\"[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)\",\"[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)\",\"[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)\",\"[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)\"]; badResponses=[]\n    at main (file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-native-burst-qualification/scripts/proof/qualify-native-burst.mjs:459:11)\n    at async file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-native-burst-qualification/scripts/proof/qualify-native-burst.mjs:663:3"
+  ],
+  "progressCallbacks": [],
+  "server": {
+    "ready": true,
+    "solar": "http://127.0.0.1:64777/",
+    "nativeUrl": "ws://127.0.0.1:64779/lsdp",
+    "nativePid": 55020,
+    "sceneId": "native-burst-qualification",
+    "archiveDigest": "sha256:cd7e20ebed5887bd867b6afa81d0f0371d8210705797e2a953c1fd5ade8cda5e",
+    "port": 64777
+  },
+  "browserNavigationStatus": 200,
+  "startupDiagnostics": {
+    "url": "http://127.0.0.1:64777/host.html?lsdp=ws%3A%2F%2F127.0.0.1%3A64779%2Flsdp&resource=scene",
+    "title": "Solar",
+    "status": "connecting",
+    "bodyText": "",
+    "sceneHtml": "<div id=\"scene\" data-testid=\"solar-scene-root\" data-native-burst-proof=\"attached\" data-solar-engine-ready=\"true\"><div data-solar-vision-scene=\"sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72\" style=\"position: absolute; inset: 0px; opacity: 0; pointer-events: none;\"><canvas aria-hidden=\"true\" width=\"1\" height=\"1\" style=\"display: block; width: 100%; height: 100%; opacity: 0; position: absolute; inset: 0px;\"></canvas><canvas aria-hidden=\"true\" style=\"display: block; width: 100%; height: 100%;\"></canvas></div></div>",
+    "scripts": [
+      "http://127.0.0.1:64777/assets/host-CJCFYX3Y.js",
+      "inline"
+    ],
+    "canvases": [
+      {
+        "width": 1,
+        "height": 1,
+        "ariaHidden": "true"
+      },
+      {
+        "width": 300,
+        "height": 150,
+        "ariaHidden": "true"
+      }
+    ],
+    "proofAttached": true,
+    "performanceResources": [
+      {
+        "name": "http://127.0.0.1:64777/vision/pkg/lumencast_vision_web.js",
+        "duration": 2.700000047683716
+      },
+      {
+        "name": "http://127.0.0.1:64777/vision/pkg/lumencast_vision_web_bg.wasm",
+        "duration": 39.700000047683716
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/geist-latin.woff2",
+        "duration": 6.300000071525574
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/geist-mono-latin.woff2",
+        "duration": 6.899999976158142
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/figtree-variable.ttf",
+        "duration": 7
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/alex-brush-400.woff2",
+        "duration": 9.5
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/ibm-plex-mono-400.woff2",
+        "duration": 9.5
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/ibm-plex-mono-500.woff2",
+        "duration": 9.799999952316284
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/ibm-plex-mono-600.woff2",
+        "duration": 9.900000095367432
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/space-grotesk-400.woff2",
+        "duration": 10.100000023841858
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/space-grotesk-500.woff2",
+        "duration": 8.700000047683716
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/space-grotesk-600.woff2",
+        "duration": 10.399999976158142
+      },
+      {
+        "name": "http://127.0.0.1:64777/fonts/space-grotesk-700.woff2",
+        "duration": 10.600000023841858
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.7000000476837158
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.8000000715255737
+      },
+      {
+        "name": "http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js",
+        "duration": 2.5
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.8000000715255737
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.6999999284744263
+      },
+      {
+        "name": "http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js",
+        "duration": -4.599999904632568
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 2.399999976158142
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 2.200000047683716
+      },
+      {
+        "name": "http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js",
+        "duration": -3.700000047683716
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.0999999046325684
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.2999999523162842
+      },
+      {
+        "name": "http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js",
+        "duration": -4.899999976158142
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.600000023841858
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.5
+      },
+      {
+        "name": "http://127.0.0.1:64777/assets/native-worker-ubPqxztq.js",
+        "duration": -4.800000071525574
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/source?version=sha256%3Ab42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 2.3000000715255737
+      },
+      {
+        "name": "http://127.0.0.1:64777/canvas/api/v1/scenes/native-burst-qualification/revisions/1/source.lsmlz?version=sha256:b42f80511d355b2640c723c922dd398ba3d4dfe1cdcda72b1a4bcc5f5ab1cc72",
+        "duration": 1.5
+      }
+    ]
+  },
+  "browser": {
+    "engine": "Chrome",
+    "version": "154.0.8037.98",
+    "headless": true,
+    "pageUrl": "http://127.0.0.1:64777/host.html?lsdp=ws%3A%2F%2F127.0.0.1%3A64779%2Flsdp&resource=scene",
+    "pageErrors": [],
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)",
+      "[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)",
+      "[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)",
+      "[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)",
+      "[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)",
+      "[solar] INTERNAL: Native LSDP: Vision load: font family is not registered: Arial (recoverable)"
+    ],
+    "requestFailures": [],
+    "badResponses": []
+  },
+  "passed": false,
+  "completedAt": "2026-10-15T14:52:40.701Z"
+}
