@@ -34,7 +34,13 @@ def main() -> None:
     args = parser.parse_args()
     scene = json.loads((args.deliverable / "z-bug.lsml").read_text(encoding="utf-8"))
     render = json.loads((args.deliverable / "render.json").read_text(encoding="utf-8"))
+    contact = json.loads((args.deliverable / "contact.json").read_text(encoding="utf-8"))
+    cadence = json.loads((args.deliverable / "cadence.json").read_text(encoding="utf-8"))
     assert scene["scene_id"] == "zab-z-corner-bug"
+    assert len(scene["layout"]["children"]) == 4
+    assert all(node["kind"] == "shape" and node["pathData"] for node in scene["layout"]["children"])
+    assert contact["sample_hz"] == 120 and contact["vertices"] < 1024
+    assert not cadence["errors"] and cadence["rate"] > 50
     assert render["total"] == 120 and render["animated"] == 56
     assert not render["errors"]
     frame_paths = sorted(args.frames.glob("frame-????.png"))
@@ -48,16 +54,23 @@ def main() -> None:
                 edge_touch += 1
     assert edge_touch == 0
     samples = {}
-    for time_ms in (0, 80, 160, 240, 320, 400, 480, 560, 640, 760, 800, 840, 900):
+    for time_ms in (0, 80, 160, 240, 320, 400, 440, 480, 520, 560, 600, 640, 680, 900):
         with Image.open(args.frames / f"frame-{round(time_ms * 60 / 1000):04d}.png") as frame:
             samples[str(time_ms)] = frame.getchannel("A").getbbox()
     assert samples["0"] is None and samples["80"] is not None
     with Image.open(args.source) as original, Image.open(args.frames / "frame-0055.png") as final_frame:
         source_mask = np.asarray(original.convert("RGBA").resize((180, 189), Image.Resampling.LANCZOS))[:, :, 3] > 128
         final_mask = np.asarray(final_frame.convert("RGBA").crop((112, 839, 292, 1028)))[:, :, 3] > 128
+        final_area = np.count_nonzero(np.asarray(final_frame.convert("RGBA"))[:, :, 3] > 128)
+    contact_areas = []
+    for index in range(22, 42):
+        with Image.open(args.frames / f"frame-{index:04d}.png") as frame:
+            contact_areas.append(int(np.count_nonzero(np.asarray(frame)[:, :, 3] > 128)))
+    visible_area_ratio = min(contact_areas) / final_area
+    assert visible_area_ratio > .9, "Contact must not shrink or fade into a dot"
     source_iou = float(np.count_nonzero(source_mask & final_mask) / np.count_nonzero(source_mask | final_mask))
     assert source_iou > 0.95
-    for name in ("arrow-left", "arrow-right", "arrow-left-draw", "arrow-right-draw", "z-assembled"):
+    for name in ("arrow-left", "arrow-right", "arrow-left-draw", "arrow-right-draw", "arrow-left-docked", "arrow-right-docked", "z-assembled"):
         ET.parse(args.deliverable / "assets" / f"{name}.svg")
     alpha_video = probe(args.deliverable / "z-bug-alpha.webm")
     preview = probe(args.deliverable / "z-bug-preview.mp4")
@@ -67,16 +80,19 @@ def main() -> None:
     for name in ("z-bug.lsml", "z-bug.lsmlz", "sponsor-motion.lsml", "sponsor-motion.lsmlz",
                  "z-bug-alpha.webm", "z-bug-preview.mp4", "z-bug-storyboard.png", "z-final-transparent.png",
                  "assets/arrow-left.svg", "assets/arrow-right.svg", "assets/arrow-left-draw.svg",
-                 "assets/arrow-right-draw.svg", "assets/z-assembled.svg"):
+                 "assets/arrow-right-draw.svg", "assets/z-assembled.svg", "assets/arrow-left-docked.svg",
+                 "assets/arrow-right-docked.svg", "contact.json", "cadence.json"):
         path = args.deliverable / name
         files[name] = {"bytes": path.stat().st_size, "sha256": sha256(path)}
     report = {
         "source": str(args.source.resolve()), "source_sha256": sha256(args.source),
         "scene_version": scene["scene_version"], "render": "Solar native LSDP / Vision canvas",
         "viewport": [1920, 1080], "fps": 60, "duration_s": 2.0,
-        "draw_s": 0.56, "fusion_s": 0.90, "vector_shapes": 5,
+        "draw_s": 0.335, "fusion_s": 0.68, "vector_shapes": 4,
         "source_derived_arrow_ribbons": 2, "progressive_arrow_draw_paths": 2,
-        "source_derived_final_mark": 1, "artificial_partition_cuts": 0,
+        "source_derived_final_mark": 1, "isolated_arrow_artificial_cuts": 0,
+        "contact_geometry": contact, "minimum_contact_visible_area_ratio": round(visible_area_ratio, 6),
+        "cadence": {key: value for key, value in cadence.items() if key != "submissions"},
         "raster_image_nodes": 0, "source_mask_iou_at_final_size": round(source_iou, 6),
         "animated_frame_edge_touch_count": edge_touch, "sample_alpha_bounds": samples,
         "render_errors": render["errors"], "alpha_video": alpha_video,

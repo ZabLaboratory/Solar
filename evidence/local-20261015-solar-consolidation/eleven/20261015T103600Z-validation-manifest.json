@@ -1,0 +1,31 @@
+{
+  "source_head_before_final_edits": "3bcfd55f34a6c7e5642cd153e671a914c2d0d228",
+  "files_sha256": {
+    "docs/development/code-map.md": "58a63b6584aa0fad6f74a126216fbf75b2a9a3a0ccf0412b1ca7c0225516b428",
+    "scripts/z-bug/README.md": "cafe7879465f42927d279f2fe860213b4c1d387255ed7f8e54579a0cce248d0c",
+    "scripts/z-bug/extract.py": "769ca6356e17fa9eae11e6cd513fa90a47bea6d2c72cb13586dab4f0fa92c345",
+    "scripts/z-bug/generate.mjs": "ee686528ece86f993097ac5ff7f40125027d2a9992b7ceb832ee13402ee22835",
+    "scripts/z-bug/render.mjs": "8b374e2b8439e94d25041cbb46215c0a19e9224f367dd719c69b7990b1f8ffa8",
+    "scripts/z-bug/storyboard.py": "2edc7daf11957e5cb747ab53908f6cd228a56c5198d42082fc3b9ec18aa6695e",
+    "scripts/z-bug/validate.py": "386b47474beb73bd9bc6880d20a503f2cc12a25f06a6ab9249ee3ecfe64c3fbf",
+    "src/engine/native-lsdp-runtime.ts": "fea9b4714106cd18fc55a43027dbd3a657e1d413ff4aab8482476268ea0f7621",
+    "src/peer-viewer/README.md": "d6a9d79b6e4fb53ad4172b69b8f373163f323b2b5bbe09d7d8eea3843d3f00e2",
+    "src/peer-viewer/injection.ts": "b976fdb02824306caf5f9a74948d5edf864d2bdd8cf1f35930bd4d5d652fbbb1",
+    "tests/unit/peer-viewer-injection.test.ts": "4df7ff5872b3da31d4b981789a6dccd98c2dd93d037ac10dd7d28aebcfbd69c5",
+    "tests/unit/sound.test.ts": "e3394ab5368264ed03f8f5e2668ea34e5df108a34b45a83ea4fd535f80988fcc"
+  },
+  "artifacts_sha256": {
+    "20261015T103600Z-solar-tests.gz": "8d8ee79a8ecf0073d10891226e2b75f46ff229bc877eba7571d85cd2c6f58288",
+    "20261015T103600Z-solar-tests-with-fixtures.gz": "799f72814e7d4675dc087c69329c103f9f902083cd01b0a72bee2bed9ea62266",
+    "20261015T103600Z-solar-tests-final.gz": "224d50c1ae8fb00bb424cbc120f12413b316cbd77eb1937d3bd0e6077311baa2",
+    "20261015T103600Z-solar-tests-qualified.gz": "237499c6c695c06f81b41afe8eeddf4a7900e534af58390e7804ff3ed6ff814b",
+    "20261015T103600Z-solar-typecheck-final.gz": "60997be77cfb603dbe3cc9525a5da2ae83bd3a84ef67781821f615d586c52ec1",
+    "20261015T103600Z-solar-lint-final.gz": "7d7fa41526e1c95e1ebfaa85cb562ca805263ea4eeed32a53d9cc0b7be846b91",
+    "20261015T103600Z-solar-architecture-final.gz": "6960f29ddbc134d55124a8dea4287838c06e7d8bfd07d655b2532f6f3a7f4e7f",
+    "20261015T103600Z-solar-consolidation-build.gz": "30017cfa708eaa2767cddb708ec2f31590ba0bbd9d793adabd2e93a443a253ff",
+    "20261015T103600Z-solar-consolidation-bundle.gz": "978a45045cfd9630997ad4135850a4a50f83244695e916952c8e7488d55474c7",
+    "20261015T103600Z-solar-native-consolidated-interop-built.gz": "4f7d60016a3474961a61417d064061cbf4a22ac388d1a80e741835e916861b7e"
+  },
+  "native_source": "4d197ae",
+  "native_binary_sha256": "111bf391a2f8cfa18a1918f822266a7e89d30be911f9a88c0110288b2d82a1b8"
+}

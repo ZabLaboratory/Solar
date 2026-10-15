@@ -2,8 +2,8 @@
 
 Each of the two large holes defines one arrow. A mitered outward offset of that
 hole produces a closed red ribbon with a real arrow tip and no partition seam.
-The source master is traced separately because the original merges both ribbons
-in its central red region; it cannot be separated pixel-exactly without cuts.
+Docked contours share the source's central material. Corresponding vertices
+let the complete ribbons reshape only during contact, without disappearing.
 """
 
 from __future__ import annotations
@@ -25,6 +25,49 @@ def contour_path(points: np.ndarray, sx: float = 1, sy: float = 1) -> str:
 def polygon_path(polygon: Polygon, sx: float = 1, sy: float = 1) -> str:
     outlines = [polygon.exterior, *polygon.interiors]
     return " ".join(contour_path(np.asarray(ring.coords), sx, sy) for ring in outlines)
+
+
+def ring_parameters(points: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    points = np.asarray(points, dtype=float)
+    if np.allclose(points[0], points[-1]):
+        points = points[:-1]
+    closed = np.vstack((points, points[0]))
+    lengths = np.linalg.norm(np.diff(closed, axis=0), axis=1)
+    times = np.cumsum(np.r_[0.0, lengths])
+    return closed, times / times[-1]
+
+
+def sample_ring(points: np.ndarray, times: np.ndarray) -> np.ndarray:
+    closed, knots = ring_parameters(points)
+    return np.column_stack([np.interp(times, knots, closed[:, axis]) for axis in (0, 1)])
+
+
+def corresponding_rings(source: np.ndarray, destination: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    # Same single-loop topology, unlike morphing an arrow into the entire Z.
+    source = ring_parameters(source)[0][:-1]
+    destination = ring_parameters(destination)[0][:-1]
+    samples = np.linspace(0, 1, 96, endpoint=False)
+    reference = sample_ring(source, samples)
+    candidates = (np.roll(direction, shift, axis=0)
+                  for direction in (destination, destination[::-1])
+                  for shift in range(len(destination)))
+    destination = min(candidates, key=lambda ring: np.square(sample_ring(ring, samples) - reference).sum())
+    # Keep every original corner at both endpoints, with common path commands.
+    times = np.unique(np.round(np.r_[ring_parameters(source)[1][:-1],
+                                    ring_parameters(destination)[1][:-1], samples[::3]], 7))
+    return sample_ring(source, times), sample_ring(destination, times)
+
+
+def docking_regions(mask: np.ndarray, holes: list[np.ndarray]) -> list[np.ndarray]:
+    distances = []
+    for contour in holes:
+        interior = np.zeros(mask.shape, dtype=np.uint8)
+        cv2.fillPoly(interior, [contour], 1)
+        distances.append(cv2.distanceTransform(1 - interior, cv2.DIST_L2, cv2.DIST_MASK_PRECISE))
+    regions = [mask & (distances[0] <= distances[1]), mask & (distances[0] > distances[1])]
+    return [cv2.approxPolyDP(max(cv2.findContours(region.astype(np.uint8), cv2.RETR_EXTERNAL,
+              cv2.CHAIN_APPROX_SIMPLE)[0], key=cv2.contourArea), .65, True)[:, 0, :]
+            for region in regions]
 
 
 def raster_preview(polygon: Polygon, color: str, size: tuple[int, int]) -> Image.Image:
@@ -63,7 +106,8 @@ def main() -> None:
     color = "#" + "".join(f"{v:02x}" for v in median)
     sx, sy = 180 / w, 189 / h
     vectors: dict[str, dict[str, object]] = {}
-    for name, contour in zip(("arrow-left", "arrow-right"), holes, strict=True):
+    docked = docking_regions(mask, holes)
+    for name, contour, dock_outline in zip(("arrow-left", "arrow-right"), holes, docked, strict=True):
         # The two arrow channels are real source geometry. Buffering their
         # simplified outlines forms a full, closed red ribbon, never a cut of Z.
         simplified = cv2.approxPolyDP(contour, 1.35, True)[:, 0, :]
@@ -86,7 +130,17 @@ def main() -> None:
             encoding="utf-8",
         )
         raster_preview(arrow, color, (w, h)).save(args.output / f"{name}.png")
+        start_outline, final_outline = corresponding_rings(np.asarray(arrow.exterior.coords), dock_outline)
+        inner_path = contour_path(np.asarray(hole.exterior.coords), sx, sy)
+        morph_start = contour_path(start_outline, sx, sy) + " " + inner_path
+        morph_end = contour_path(final_outline, sx, sy) + " " + inner_path
+        docked_polygon = Polygon(final_outline, [np.asarray(hole.exterior.coords)])
+        assert docked_polygon.is_valid and len(docked_polygon.interiors) == 1
+        (args.output / f"{name}-docked.svg").write_text(
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 189">\n'
+            f'<path fill="{color}" fill-rule="evenodd" d="{morph_end}"/>\n</svg>\n', encoding="utf-8")
         vectors[name] = {"pathData": polygon_path(arrow, sx, sy), "fill": color,
+                         "morphStart": morph_start, "morphDocked": morph_end,
                          "drawPathData": contour_path(np.asarray(draw_contour.coords), sx, sy),
                          "drawStrokeWidth": 19.5 * sx,
                          "sourceHoleVertices": len(simplified), "ringWidthPx": 19.5}
@@ -105,6 +159,7 @@ def main() -> None:
         "ribbon_width_px": 19.5,
         "drawing": "Progressive centerline stroke of each source-derived arrow ribbon",
         "source_master": "Full original silhouette traced independently; final merged red area is not artificially partitioned",
+        "docking": "Complete one-hole ribbons morph into matching source regions at contact; holes remain stationary in local coordinates",
         "artificial_cuts": 0,
     }
     (args.output / "extraction.json").write_text(json.dumps(report, indent=2), encoding="utf-8")

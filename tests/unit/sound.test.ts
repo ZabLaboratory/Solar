@@ -34,7 +34,14 @@ describe("authored sound admission", () => {
     const d = fixture(),
       a = audio(d);
     const original = compileSound(d)!;
-    expect(original.shows.show!.cues).toHaveLength(55);
+    expect(original.shows.show!.cues).toHaveLength(58);
+    expect(original.shows.show!.cues.map((cue) => cue.id)).toEqual(
+      expect.arrayContaining([
+        "brand-wordmark",
+        "signature-many-systems",
+        "signature-one-motion",
+      ]),
+    );
     expect(original.buses).toHaveLength(5);
     a.shows.show!.timeline = {
       sequence: [

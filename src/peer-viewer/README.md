@@ -4,7 +4,7 @@ Owner: Solar source adapters. Entry: `src/sources/peers.ts`, consumed by the
 Vision live-media controller. This domain creates no camera publisher.
 
 `injection.ts` normalizes the host or reserved native viewer/slot declarations,
-checks room addresses and reconciles the existing compatibility channel.
+projects the active document through `readReservedPeerLeaves`, checks room addresses and reconciles the existing compatibility channel.
 `antenne-controller.ts` arms the receive-only viewer when room credentials
 arrive and reconciles native slot snapshots. `slot-binding.ts` resolves an
 authored slot to a peer stream and forwards roster/stream changes to its listeners.

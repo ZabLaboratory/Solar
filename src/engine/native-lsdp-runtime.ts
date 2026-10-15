@@ -27,6 +27,7 @@ import { FramePatches } from "./frame-patches";
 import { NativeSceneFrames } from "./native-scene-frames";
 import { createCaptureResolver } from "../sources/capture";
 import { createPeerSources } from "../sources/peers";
+import { readReservedPeerLeaves } from "../peer-viewer/injection";
 import type { MountOptions, SolarToken } from "../types";
 import { CaptureStreamPool, LiveMediaController } from "./live-media";
 import { VisionSound } from "./sound/controller";
@@ -941,25 +942,9 @@ export class NativeLsdpRuntime {
   }
 
   private reserved(document: LSMLDocument): void {
-    const slots: Record<string, string> = {};
-    const defaults = document.defaults ?? {};
-    for (const [key, value] of Object.entries(defaults)) {
-      if (key.startsWith("__cam.slots.") && typeof value === "string" && value)
-        slots[key.slice(12)] = value;
-    }
-    const raw = defaults["__cam.viewer"];
-    let viewer: unknown = raw;
-    if (typeof raw === "string") {
-      try {
-        viewer = JSON.parse(raw);
-      } catch {
-        viewer = undefined;
-      }
-    }
-    this.peers.onReservedLeaves?.({
-      ...(viewer !== undefined ? { viewer } : {}),
-      slots,
-    });
+    this.peers.onReservedLeaves?.(
+      readReservedPeerLeaves(document.defaults ?? {}),
+    );
   }
   private async updatePlayback(document: LSMLDocument): Promise<void> {
     try {

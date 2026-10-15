@@ -1,0 +1,13 @@
+# Solar independent source consolidation
+
+Owner: Eleven. Branch eleven/local-20261015-solar-consolidation; base 44d86783fb4b8756aa67aa32a7fb9aaccdc29706. Source worktrees remain untouched. The parent integration worktree owns the complete worktree inventory and immutable dirty-source ZIP archives.
+
+Integrated Kumiki vector study 2f97657, scene sound 332a962 / 13507b0 / 6c948fd / 31f6a21 / a81519e, and Z-corner study 9f454d2 through 8657a07. Restored the six latest frozen dirty Z-study source files from the inventory ZIP; copied no deleted historical evidence. The existing newer persistent engine, worker delivery, font recovery, source framing and compiled Meet engine remain intact. These studies are development/fixture consumers, not a new Prism source or automatic Program audio route.
+
+Integration corrections: sound fixture now contains three authored signature cues (58 total), so its admission test verifies those named cues. Sparse fixture files were materialized from exact Git objects after initial ENOENT failures; no fixture was fabricated. An initial busy run hit an unrelated scene-library timeout; final full run limits workers to two and passes. Native camera-leaf projection moved from the large LSDP runtime into the existing peer injection owner, with malformed-JSON/nonmutation coverage. Browser-only render-script document global is declared for lint. The code map is regenerated from final sources.
+
+Fresh checks: TypeScript passes; ESLint passes; architecture/discovery/documentation/file-size checks pass. Vitest 4.1.5 from the existing dependency installation (lockfile requests 4.1.11): 37 files / 322 tests pass. Full library, host and server build passes; runtime layout, self-contained bundle and all four Vision artifact pins pass. Development tools/demos were imported with their historical evidence; their historical media captures were not rerun.
+
+The Solar native protocol harness passes against the newly built consolidated Rust daemon: five mutations, fragmented payload, rejected-batch atomicity, stale-base refusal, duplicate idempotency, unchanged source and memory-only restart reset. This harness is protocol/state evidence, not a Vision rendered-frame proof. Native source 4d197ae is qualified independently in its own repository. No package/server binary or common dev runtime has been replaced.
+
+Remaining: finish the worktree audit for camera-routing readback, then integrate that capability without the old positional release fallback. Vision 2D/3D candidate is separate and has not replaced this qualified package. No transition or switch-duration work is undertaken here. No public Live, CEF, physical Meet, 1080p60 endurance or remote CI claim.

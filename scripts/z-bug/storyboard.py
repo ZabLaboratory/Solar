@@ -6,8 +6,8 @@ from pathlib import Path
 from PIL import Image, ImageDraw
 
 
-TIMES_MS = (0, 80, 160, 240, 320, 400, 480, 560,
-            640, 700, 740, 760, 780, 800, 840, 900)
+TIMES_MS = (0, 80, 160, 240, 320, 400, 440, 480,
+            520, 560, 600, 630, 660, 690, 720, 900)
 FPS = 60
 CROP = (0, 700, 430, 1080)
 LABEL_HEIGHT = 26
@@ -32,7 +32,7 @@ def main() -> None:
             x = (index % 4) * tile_w
             y = (index // 4) * tile_h
             sheet.paste(crop, (x, y + LABEL_HEIGHT))
-        draw.text((x + 8, y + 6), f"{time_ms:04d} ms", fill="#f0f0f0")
+        draw.text((x + 8, y + 6), f"{frame_number * 1000 / FPS:06.1f} ms", fill="#f0f0f0")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(args.output)
 
