@@ -626,3 +626,48 @@ describe("native LSML mutation and runtime package", () => {
     expect(source.defaults.logo).toBe("");
   });
 });
+
+describe("dynamic image lifetime", () => {
+  it("does not exhaust URL admission when one bound image changes 512 times", async () => {
+    const scene = {
+      ...document,
+      assets: { allowedHosts: ["images.example"] },
+      defaults: { logo: "" },
+      layout: { kind: "image", bind: { src: "logo" } },
+    };
+    const origin: SceneSourceDelivery = {
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      sourceDigest: version,
+      revision: 1,
+      data: strToU8(JSON.stringify(scene)),
+      format: "lsml",
+      assets: new Map(),
+      blueManifest: nativeManifest(scene.scene_id, version),
+    };
+    const source = new Uint8Array(origin.data);
+    // Repeated bytes isolate Solar's historical URL limit from Vision's
+    // separate historical content/texture limit. No browser decode is involved.
+    const bytes = new Uint8Array([1, 2, 3]);
+    const fetchImage = vi.fn(
+      async () =>
+        new Response(bytes, {
+          headers: { "content-type": "image/png" },
+        }),
+    );
+    const assets = new NativeSceneAssets(origin, fetchImage as typeof fetch);
+    const rendered = await assets.renderPackage(scene);
+    for (let i = 0; i < 512; i++) {
+      const patch = await assets.prepareImagePatch(
+        { logo: `https://images.example/avatar-${i}.png` },
+        rendered.imageBindings,
+        scene,
+      );
+      expect(patch.assets).toHaveLength(1);
+      expect(patch.assets[0]!.bytes).toEqual(bytes);
+    }
+    expect(fetchImage).toHaveBeenCalledTimes(512);
+    expect(origin.data).toEqual(source);
+    expect(scene.defaults.logo).toBe("");
+  });
+});
