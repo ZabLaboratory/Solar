@@ -2,6 +2,7 @@ import { CAPTURE_VISUAL_KINDS } from "@lumencast/protocol";
 import type { PeerSources } from "../sources/peers";
 import type { ResolveCaptureDevice, SolarError } from "../types";
 import type { VisionLiveMediaSource, VisionSceneHandle } from "./vision-presenter";
+import { LiveMediaStageMetrics } from "./live-media-metrics";
 
 const CAPTURE_KINDS = new Set<string>(CAPTURE_VISUAL_KINDS);
 
@@ -72,6 +73,7 @@ export interface LiveMediaOptions {
   resolveCaptureDevice: ResolveCaptureDevice;
   peers: PeerSources;
   capturePool?: CaptureStreamPool;
+  metricsNow?: () => number;
   onError: (error: SolarError) => void;
   getScene: () => VisionSceneHandle | null;
 }
@@ -85,9 +87,11 @@ export class LiveMediaController {
   private uploadPending = false;
   private paused = false;
   private uploadCompletion: Promise<void> | null = null;
+  private readonly metrics: LiveMediaStageMetrics;
 
   constructor(private readonly options: LiveMediaOptions) {
     this.capturePool = options.capturePool ?? new CaptureStreamPool();
+    this.metrics = new LiveMediaStageMetrics(options.metricsNow);
   }
 
   /** A new Vision layer needs the current frames even when its sources are unchanged. */
@@ -156,6 +160,8 @@ export class LiveMediaController {
     this.framePump = null;
     for (const session of this.sessions.values()) this.disposeSession(session);
     this.sessions.clear();
+    this.metrics.flush();
+    void this.uploadCompletion?.finally(() => this.metrics.flush());
   }
 
   private createSession(source: VisionLiveMediaSource): MediaSession {
@@ -195,6 +201,7 @@ export class LiveMediaController {
       session.revision += 1;
       session.ready = false;
       session.dirty = false;
+      this.metrics.resetSource(session);
       this.clear(session);
     });
     return session;
@@ -270,6 +277,7 @@ export class LiveMediaController {
 
   private attachStream(session: MediaSession, stream: MediaStream | null, local: boolean): void {
     const revision = ++session.revision;
+    this.metrics.resetSource(session);
     session.ready = false;
     session.dirty = false;
     if (!stream) {
@@ -309,13 +317,20 @@ export class LiveMediaController {
         session.fallbackFrameRequest !== undefined) return;
     const video = session.video;
     const candidate = video as HTMLVideoElement & {
-      requestVideoFrameCallback?: (callback: () => void) => number;
+      requestVideoFrameCallback?: (callback: VideoFrameRequestCallback) => number;
     };
     if (candidate.requestVideoFrameCallback) {
       const requestNext = (): void => {
-        session.videoFrameRequest = candidate.requestVideoFrameCallback!(() => {
+        session.videoFrameRequest = candidate.requestVideoFrameCallback!((_now, metadata) => {
           session.videoFrameRequest = undefined;
           if (session.disposed || !session.ready) return;
+          const coalesced = session.dirty || this.uploadPending || this.framePump !== null;
+          this.metrics.recordSourceFrame(
+            session,
+            "rvfc",
+            metadata?.presentedFrames,
+            coalesced,
+          );
           session.dirty = true;
           this.schedulePump();
           requestNext();
@@ -327,6 +342,8 @@ export class LiveMediaController {
         session.fallbackFrameRequest = requestAnimationFrame(() => {
           session.fallbackFrameRequest = undefined;
           if (session.disposed || !session.ready) return;
+          const coalesced = session.dirty || this.uploadPending || this.framePump !== null;
+          this.metrics.recordSourceFrame(session, "animation-frame", undefined, coalesced);
           session.dirty = true;
           this.schedulePump();
           requestNext();
@@ -364,9 +381,18 @@ export class LiveMediaController {
         if (session.disposed || !session.ready) continue;
         const revision = session.revision;
         session.dirty = false;
-        drawVideo(session);
-        const bitmap = await createImageBitmap(session.frameCanvas);
+        const preparationStartedAt = this.metrics.beginBitmapPreparation();
+        let bitmap: ImageBitmap;
+        try {
+          drawVideo(session);
+          bitmap = await createImageBitmap(session.frameCanvas);
+          this.metrics.finishBitmapPreparation(preparationStartedAt, true);
+        } catch (error) {
+          this.metrics.finishBitmapPreparation(preparationStartedAt, false);
+          throw error;
+        }
         if (session.disposed || !session.ready || session.revision !== revision) {
+          this.metrics.discardStaleBitmap();
           bitmap.close();
           continue;
         }
@@ -376,11 +402,24 @@ export class LiveMediaController {
       for (let index = frames.length - 1; index >= 0; index -= 1) {
         const frame = frames[index]!;
         if (frame.session.disposed || !frame.session.ready || frame.session.revision !== frame.revision) {
+          this.metrics.discardStaleBitmap();
           frame.bitmap.close();
           frames.splice(index, 1);
         }
       }
-      if (frames.length > 0) await scene.updateMedia(frames.map(({ path, bitmap }) => ({ path, bitmap })));
+      if (frames.length > 0) {
+        const token = this.metrics.beginMediaUpdate(frames.length);
+        try {
+          await scene.updateMedia(
+            frames.map(({ path, bitmap }) => ({ path, bitmap })),
+            (receipt) => this.metrics.recordSubmissionReceipt(token, receipt),
+          );
+          this.metrics.finishMediaUpdate(token, true);
+        } catch (error) {
+          this.metrics.finishMediaUpdate(token, false);
+          throw error;
+        }
+      }
     } catch (error) {
       for (const frame of frames) frame.bitmap.close();
       if (!this.disposed) {
@@ -416,6 +455,7 @@ export class LiveMediaController {
   private disposeSession(session: MediaSession): void {
     if (session.disposed) return;
     session.disposed = true;
+    this.metrics.resetSource(session);
     if (session.videoFrameRequest !== undefined) {
       const candidate = session.video as HTMLVideoElement & {
         cancelVideoFrameCallback?: (handle: number) => void;

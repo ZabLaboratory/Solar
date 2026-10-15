@@ -218,6 +218,22 @@ Each stream attachment or decode error advances a session revision. Bitmap
 preparation checks that revision after its asynchronous work and before sending
 the complete batch, so an obsolete image cannot restore a cleared texture after
 the stream has already recovered. Rejected bitmaps are closed locally.
+`live-media-metrics.ts` aggregates RVFC/RAF callback counts, presented-frame
+deltas where a continuous metadata baseline exists, callback coalescing, bitmap
+preparation outcomes and durations, and `updateMedia` acknowledgments. It emits
+bounded `solar:live-media-stage` Performance entries at most once per second and
+flushes the last partial sample on disposal after the rate limit permits it; the
+history is capped at 64 entries.
+The entry detail contains counts and durations only, never source paths. A null
+presented-frame delta means at least one callback in that sample had no usable
+baseline. `mediaUpdateAckMsTotal` measures Solar's `updateMedia` wait per request,
+while presenter frame-submitted receipts and `renderSubmitCallMsTotal` are counted
+once per queued presenter submission even when several requests are coalesced into
+it. The latter uses the pinned presenter's elapsed `engine.render()` call timing
+when supplied. These are submission/ack measurements, not GPU
+completion. The browser presenter exposes no GPU completion fence or readback to
+Solar, so `gpuCompletionAvailable` remains false and `gpuCompletionMs` remains
+null. The diagnostic sample is local to the Solar page and adds no per-frame IPC.
 The asynchronous `play()` completion and rejection also belong to that revision;
 obsolete completion cannot restore readiness, and obsolete rejection cannot report
 an error for a replacement stream. A new attachment clears readiness and dirtiness

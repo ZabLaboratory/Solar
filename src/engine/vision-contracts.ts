@@ -23,7 +23,15 @@ export interface VisionPresenterMessage {
   seq?: number;
   message?: string;
   phase?: string;
+  timing?: Record<string, unknown>;
   mediaSources?: VisionLiveMediaSource[];
+}
+
+export interface VisionMediaSubmitReceipt {
+  /** True when the presenter returned frame-submitted for this frame queue batch. */
+  frameSubmitted: boolean;
+  /** Reported elapsed time around engine.render(); never GPU completion time. */
+  renderSubmitCallMs: number | null;
 }
 
 export interface VisionSceneHandle {
@@ -37,6 +45,7 @@ export interface VisionSceneHandle {
   deactivate?(): void;
   updateMedia(
     frames: Array<{ path: string; bitmap: ImageBitmap }>,
+    onSubmission?: (receipt: VisionMediaSubmitReceipt) => void,
   ): Promise<void>;
   clearMedia(paths: string[]): Promise<void>;
   dispose(): void;

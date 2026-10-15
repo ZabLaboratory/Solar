@@ -3,6 +3,7 @@ import { CaptureStreamPool, LiveMediaController } from "../../src/engine/live-me
 import type { PeerSources } from "../../src/sources/peers";
 import type { ResolveCaptureDevice } from "../../src/types";
 import type { VisionLiveMediaSource, VisionSceneHandle } from "../../src/engine/vision-presenter";
+import { LIVE_MEDIA_STAGE_METRIC } from "../../src/engine/live-media-metrics";
 
 const localCamera: VisionLiveMediaSource = {
   path: "camera.local",
@@ -152,6 +153,77 @@ describe("Vision live camera textures", () => {
     expect(stopTrack).toHaveBeenCalledOnce();
   });
 
+  it("counts callback coalescing behind an in-flight upload without claiming GPU completion", async () => {
+    performance.clearMeasures(LIVE_MEDIA_STAGE_METRIC);
+    const callbacks = new Map<number, VideoFrameRequestCallback>();
+    let nextCallback = 0;
+    Object.defineProperty(HTMLVideoElement.prototype, "requestVideoFrameCallback", {
+      configurable: true,
+      value: vi.fn((callback: VideoFrameRequestCallback) => {
+        const handle = ++nextCallback;
+        callbacks.set(handle, callback);
+        return handle;
+      }),
+    });
+    const scene = makeScene();
+    let metricsNow = 0;
+    let releaseFirstUpdate!: () => void;
+    scene.updateMedia
+      .mockImplementationOnce(async (frames) => {
+        await new Promise<void>((resolve) => { releaseFirstUpdate = resolve; });
+        frames.forEach(({ bitmap }) => bitmap.close());
+      })
+      .mockImplementation(async (frames) => {
+        frames.forEach(({ bitmap }) => bitmap.close());
+      });
+    const controller = new LiveMediaController({
+      liveAudio: false,
+      resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(),
+      metricsNow: () => metricsNow,
+      onError: vi.fn(),
+      getScene: () => scene,
+    });
+
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      const deliver = (handle: number, presentedFrames: number): void => {
+        const callback = callbacks.get(handle)!;
+        callbacks.delete(handle);
+        callback(0, { presentedFrames } as VideoFrameCallbackMetadata);
+      };
+      const firstHandle = callbacks.keys().next().value as number;
+      deliver(firstHandle, 40);
+      const secondHandle = callbacks.keys().next().value as number;
+      deliver(secondHandle, 43);
+      releaseFirstUpdate();
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledTimes(2));
+      await scene.updateMedia.mock.results[1]!.value;
+    } finally {
+      metricsNow = 1000;
+      controller.dispose();
+    }
+
+    const sample = performance
+      .getEntriesByName(LIVE_MEDIA_STAGE_METRIC)
+      .map((entry) => (entry as PerformanceMeasure).detail as Record<string, unknown>)
+      .at(-1);
+    expect(sample).toMatchObject({
+      rvfcCallbacks: 2,
+      presentedFrameDelta: null,
+      presentedFrameDeltaUnavailableCallbacks: 1,
+      coalescedInputs: 2,
+      bitmapStarts: 2,
+      bitmapSuccesses: 2,
+      mediaUpdateRequests: 2,
+      mediaUpdateAcknowledgements: 2,
+      renderSubmitCallUnavailable: 2,
+      gpuCompletionAvailable: false,
+      gpuCompletionMs: null,
+    });
+  });
+
   it("keeps one video-frame callback chain when play and loadeddata both report readiness", async () => {
     const callbacks = new Map<number, VideoFrameRequestCallback>();
     let nextHandle = 0;
@@ -265,6 +337,7 @@ describe("Vision live camera textures", () => {
   });
 
   it("discards an in-flight bitmap from before a decode error even if the stream recovers first", async () => {
+    performance.clearMeasures(LIVE_MEDIA_STAGE_METRIC);
     let finishOld!: (bitmap: ImageBitmap) => void;
     const oldClose = vi.fn();
     const freshClose = vi.fn();
@@ -272,9 +345,10 @@ describe("Vision live camera textures", () => {
       .mockImplementationOnce(() => new Promise<ImageBitmap>((resolve) => { finishOld = resolve; }))
       .mockResolvedValue({ close: freshClose, number: 222 } as unknown as ImageBitmap);
     const scene = makeScene();
+    let metricsNow = 0;
     const controller = new LiveMediaController({
       liveAudio: false, resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
-      peers: peerSources(), onError: vi.fn(), getScene: () => scene,
+      peers: peerSources(), metricsNow: () => metricsNow, onError: vi.fn(), getScene: () => scene,
     });
     try {
       controller.update([localCamera]);
@@ -288,7 +362,53 @@ describe("Vision live camera textures", () => {
       expect(scene.updateMedia).toHaveBeenCalledOnce();
       expect((scene.updateMedia.mock.calls[0]?.[0][0]?.bitmap as unknown as { number: number }).number).toBe(222);
       expect(oldClose).toHaveBeenCalledOnce();
-    } finally { controller.dispose(); }
+    } finally {
+      metricsNow = 1000;
+      controller.dispose();
+    }
+    const sample = performance
+      .getEntriesByName(LIVE_MEDIA_STAGE_METRIC)
+      .map((entry) => (entry as PerformanceMeasure).detail as Record<string, unknown>)
+      .at(-1);
+    expect(sample).toMatchObject({
+      bitmapStarts: 2,
+      bitmapSuccesses: 2,
+      bitmapStaleDiscards: 1,
+      mediaUpdateRequests: 1,
+      mediaUpdateAcknowledgements: 1,
+    });
+  });
+
+  it("closes and records a bitmap that completes after controller disposal", async () => {
+    performance.clearMeasures(LIVE_MEDIA_STAGE_METRIC);
+    let metricsNow = 0;
+    let finishBitmap!: (bitmap: ImageBitmap) => void;
+    const close = vi.fn(() => { metricsNow = 1000; });
+    vi.mocked(createImageBitmap).mockImplementationOnce(
+      () => new Promise<ImageBitmap>((resolve) => { finishBitmap = resolve; }),
+    );
+    const scene = makeScene();
+    const controller = new LiveMediaController({
+      liveAudio: false,
+      resolveCaptureDevice: async () => ({ deviceId: "device-1" }),
+      peers: peerSources(),
+      metricsNow: () => metricsNow,
+      onError: vi.fn(),
+      getScene: () => scene,
+    });
+
+    controller.update([localCamera]);
+    await vi.waitFor(() => expect(createImageBitmap).toHaveBeenCalledOnce());
+    controller.dispose();
+    finishBitmap({ close } as unknown as ImageBitmap);
+    await vi.waitFor(() => expect(close).toHaveBeenCalledOnce());
+    await vi.waitFor(() => {
+      const samples = performance
+        .getEntriesByName(LIVE_MEDIA_STAGE_METRIC)
+        .map((entry) => (entry as PerformanceMeasure).detail as Record<string, unknown>);
+      expect(samples.some((sample) => sample.bitmapStaleDiscards === 1)).toBe(true);
+    });
+    expect(scene.updateMedia).not.toHaveBeenCalled();
   });
 
   it("ignores play completion from a stream invalidated by a video error", async () => {

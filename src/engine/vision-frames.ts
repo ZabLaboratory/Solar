@@ -1,3 +1,5 @@
+import type { VisionMediaSubmitReceipt } from "./vision-contracts";
+
 export interface VisionFrame {
   patch: Record<string, unknown>;
   frames: Array<{ path: string; bitmap: ImageBitmap }>;
@@ -12,6 +14,7 @@ export class VisionFrames {
   private waiting: Array<{
     resolve: () => void;
     reject: (error: Error) => void;
+    onSubmission?: (receipt: VisionMediaSubmitReceipt | null) => void;
   }> = [];
   private running: Promise<void> = Promise.resolve();
   private busy = false;
@@ -19,7 +22,11 @@ export class VisionFrames {
   private scheduled = false;
   private readonly channel = new MessageChannel();
 
-  constructor(private readonly submit: (frame: VisionFrame) => Promise<void>) {
+  constructor(
+    private readonly submit: (
+      frame: VisionFrame,
+    ) => Promise<VisionMediaSubmitReceipt | null | void>,
+  ) {
     this.channel.port1.onmessage = () => {
       this.scheduled = false;
       void this.flush().catch(() => {}); // Each caller receives its rejection.
@@ -37,7 +44,10 @@ export class VisionFrames {
     return this.pending();
   }
 
-  addMedia(frames: VisionFrame["frames"]): Promise<void> {
+  addMedia(
+    frames: VisionFrame["frames"],
+    onSubmission?: (receipt: VisionMediaSubmitReceipt | null) => void,
+  ): Promise<void> {
     if (this.closed) {
       frames.forEach(({ bitmap }) => bitmap.close());
       return Promise.reject(new Error("Vision frame queue closed."));
@@ -46,12 +56,14 @@ export class VisionFrames {
       this.frames.get(path)?.close();
       this.frames.set(path, bitmap);
     }
-    return this.pending();
+    return this.pending(onSubmission);
   }
 
-  private pending(): Promise<void> {
+  private pending(
+    onSubmission?: (receipt: VisionMediaSubmitReceipt | null) => void,
+  ): Promise<void> {
     const result = new Promise<void>((resolve, reject) =>
-      this.waiting.push({ resolve, reject }),
+      this.waiting.push({ resolve, reject, ...(onSubmission ? { onSubmission } : {}) }),
     );
     this.schedule();
     return result;
@@ -83,9 +95,18 @@ export class VisionFrames {
     this.running = Promise.resolve().then(async () => {
       try {
         if (this.closed) throw new Error("Vision frame queue closed.");
-        await this.submit(frame);
+        const receipt = await this.submit(frame);
         if (this.closed) throw new Error("Vision frame queue closed.");
-        waiting.forEach(({ resolve }) => resolve());
+        waiting.forEach(({ resolve, onSubmission }) => {
+          if (onSubmission) {
+            try {
+              onSubmission(receipt ?? null);
+            } catch {
+              // Diagnostics must not change frame ownership or waiter completion.
+            }
+          }
+          resolve();
+        });
       } catch (failure) {
         const error =
           failure instanceof Error ? failure : new Error(String(failure));
