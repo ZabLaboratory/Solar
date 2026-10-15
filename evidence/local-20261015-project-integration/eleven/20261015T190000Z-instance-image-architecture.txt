@@ -1,0 +1,45 @@
+
+> @zablab/solar@3.0.0 check:architecture
+> npm run check:source-usage && npm run code:check && npm run check:docs && python scripts/check_file_sizes.py
+
+
+> @zablab/solar@3.0.0 check:source-usage
+> node scripts/check-source-usage.mjs
+
+{
+  "schema": "solar.source-usage.v2",
+  "roots": [
+    "src/index.ts",
+    "src/server/index.ts",
+    "src/dev-entry.ts",
+    "src/host-entry.ts"
+  ],
+  "source_files": 61,
+  "reachable_files": 61,
+  "unused": [],
+  "unusedExports": [],
+  "unusedDependencies": [],
+  "problems": [],
+  "limits": "AST module/export usage including public re-exports, literal dynamic imports and Worker URL edges. Types and local live helper calls count. Tests cannot retain unused product code. Symbol liveness inside methods uses tsc/eslint; opaque runtime behavior and upstream internals require their separate tests/pins."
+}
+
+> @zablab/solar@3.0.0 code:check
+> node scripts/code/cli.mjs check
+
+Code map is current: 61 files.
+
+> @zablab/solar@3.0.0 check:docs
+> node scripts/check-documentation.mjs
+
+{
+  "tools": 83,
+  "schema": "solar.documentation.v1",
+  "documents": 31,
+  "localLinks": 177,
+  "npmCommands": 92,
+  "pathReferences": 153,
+  "toolReferences": 80,
+  "failures": [],
+  "limits": "Current local Markdown links, paths, headings, named npm commands and Solar script references (including unquoted commands). Historical ADRs/evidence, explicitly other-repository commands and remote endpoints are excluded. Behavioral claims and integration boundaries require review/tests."
+}
+File-size guard: 292 text files, 3 reviewed exceptions, no growth.

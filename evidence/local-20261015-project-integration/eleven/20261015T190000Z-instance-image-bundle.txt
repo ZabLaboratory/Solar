@@ -1,0 +1,11 @@
+
+> @zablab/solar@3.0.0 check:bundle
+> npm run check:layout && node scripts/check-host-bundle.mjs && node scripts/check-vision-assets.mjs
+
+
+> @zablab/solar@3.0.0 check:layout
+> node scripts/check-runtime-layout.mjs
+
+Solar runtime layout verified: 5 Vision assets, one copy each under host/vision, no host/root collision.
+Solar host verified: 3 self-contained JavaScript chunk(s), Vision renderer and peer camera support present.
+Vision presenter, fonts, generated glue and WASM engine match all four artifact pins.
