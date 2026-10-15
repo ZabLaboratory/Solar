@@ -83,6 +83,9 @@ assets, missing or changed copies, and every collision when the host is promoted
 to the installed runtime root. It runs at build completion, in `check:bundle`,
 before npm packing and immediately before release archive creation.
 The four engine/host files are SHA-256 pinned in public/vision/vision-assets.json.
+The consolidated Vision repository rebuild reproduces all four preceding
+Solar-facing engine pins exactly. Its separate Vision3D API is not exposed by
+this 2D host; source consolidation does not imply a new render path.
 Regenerate those checked-in
 assets from the configured `lumencast-vision` source after changing its Rust or
 presenter code, then run `npm run check:bundle`.
