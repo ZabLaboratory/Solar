@@ -44,6 +44,12 @@ application/rendering boundary. The pinned browser adapter's existing 32-channel
 window therefore bounds worker deliveries while main admission is pending. Both
 sides abort on disconnect, including pending connection/request work. A snapshot
 can bypass the main notification queue to complete same-connection resync.
+Worker timing is best-effort: missing or throwing Performance APIs drop only the
+sample and cannot block a transaction receipt. A failed transaction is returned
+to the worker as an error before `onIncomingFailed` runs; if that lifecycle hook
+throws and an `onClose` handler is registered, its exception is forwarded through
+that lifecycle path without turning the original transaction failure into a
+successful receipt.
 `tests/unit/native-worker.test.ts` exercises the worker callback itself: scalar
 receipts stay pending until main admission, and a refused admission propagates
 its typed error. The transport is mocked; this does not measure native window

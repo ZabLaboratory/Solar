@@ -11,6 +11,14 @@ interface VerifiedWorkerState {
 // Only this client's private Worker channel can certify a delivery. A field
 // supplied by the network or a caller's lookalike context cannot bypass hashing.
 const verifiedStates = new WeakMap<IncomingContext, VerifiedWorkerState>();
+const readPerformanceNow = (): number | undefined => {
+  try {
+    const now = performance.now();
+    return Number.isFinite(now) ? now : undefined;
+  } catch {
+    return undefined;
+  }
+};
 const measureStage = (
   start: number,
   end: number,
@@ -92,7 +100,7 @@ export class NativeWorkerClient {
         const delivery = new AbortController();
         this.deliveries.set(data.id, delivery);
         const queued = data.metadata.profile !== "lsdp.state.read/1";
-        const queuedAt = performance.now();
+        const queuedAt = readPerformanceNow();
         const queueDepthAtArrival = queued ? ++this.queuedDeliveries : 0;
         if (queued)
           this.queueHighWater = Math.max(
@@ -107,8 +115,8 @@ export class NativeWorkerClient {
           this.queuedDeliveries = Math.max(0, this.queuedDeliveries - 1);
         };
         const deliver = async () => {
-          const received = performance.now();
-          if (queued)
+          const received = readPerformanceNow();
+          if (queued && queuedAt !== undefined && received !== undefined)
             measureStage(queuedAt, received, {
               stage: "worker-main-queue",
               resource,
@@ -122,16 +130,14 @@ export class NativeWorkerClient {
             return;
           }
           if (
+            received !== undefined &&
             Number.isFinite(data.verificationMs) &&
             Number.isFinite(data.sentAt)
           ) {
-            const name = "solar:native-stage";
-            if (performance.getEntriesByName(name).length >= 64)
-              performance.clearMeasures(name);
-            performance.measure(name, {
-              start: received,
-              duration: Math.max(0, data.verificationMs ?? 0),
-              detail: {
+            measureStage(
+              received,
+              received + Math.max(0, data.verificationMs ?? 0),
+              {
                 stage: "worker-verify",
                 resource,
                 phase:
@@ -139,15 +145,19 @@ export class NativeWorkerClient {
                     ? "snapshot"
                     : "change",
               },
-            });
-            measureStage(
-              Math.min(
+            );
+            try {
+              const deliveryStarted = Math.min(
                 received,
                 Math.max(0, data.sentAt - performance.timeOrigin),
-              ),
-              received,
-              { stage: "worker-delivery", resource },
-            );
+              );
+              measureStage(deliveryStarted, received, {
+                stage: "worker-delivery",
+                resource,
+              });
+            } catch {
+              // Missing or broken clock metadata only drops this sample.
+            }
           }
           const context: IncomingContext = {
             metadata: data.metadata,
@@ -168,17 +178,30 @@ export class NativeWorkerClient {
             this.worker.postMessage({ type: "result", id: data.id, value });
           } catch (error) {
             if (this.abort.signal.aborted) return;
+            const failure =
+              error instanceof Error ? error : new Error(String(error));
             this.worker.postMessage({
               type: "result",
               id: data.id,
               error: {
-                message: error instanceof Error ? error.message : String(error),
+                message: failure.message,
+                ...(error && typeof error === "object" && "code" in error
+                  ? { code: String(error.code) }
+                  : {}),
               },
             });
-            options?.onIncomingFailed?.(
-              context,
-              error instanceof Error ? error : new Error(String(error)),
-            );
+            try {
+              options?.onIncomingFailed?.(context, failure);
+            } catch (callbackError) {
+              // The original transaction failure has already been returned to
+              // the worker. Report the lifecycle-hook failure separately so it
+              // cannot become a success receipt or reject the ordered queue.
+              options?.onClose?.(
+                callbackError instanceof Error
+                  ? callbackError
+                  : new Error(String(callbackError)),
+              );
+            }
           } finally {
             releaseQueueSlot();
             verifiedStates.delete(context);
