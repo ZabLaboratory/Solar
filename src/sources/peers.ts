@@ -212,7 +212,7 @@ export function createPeerSources(
           revision: routingRevision,
           slots: resolvedSlots,
         });
-        // Prism bounds inbound observation frames to 16 KiB. Large scenes keep
+        // Prism bounds decoded frames to 16,384 UTF-16 code units. Large scenes keep
         // their camera route; they simply do not publish a partial snapshot.
         if (
           frame.length > MAX_ROUTING_READBACK_CHARS ||
