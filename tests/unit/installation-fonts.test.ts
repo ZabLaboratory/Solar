@@ -1,6 +1,13 @@
 // @vitest-environment node
 import { afterEach, expect, it } from "vitest";
-import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
+import {
+  mkdtemp,
+  mkdir,
+  writeFile,
+  readFile,
+  rm,
+  open,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { InstallationFonts } from "../../src/server/installation-fonts";
@@ -176,4 +183,93 @@ it("refuses non-local installation endpoints before fetching", async () => {
     }))
       void batch;
   }).rejects.toThrow("INSTALLATION_FONT_HOST_REQUIRED");
+});
+
+it("reports prepared files, exclusions and capacity without claiming engine registration or disclosing paths", async () => {
+  const root = await mkdtemp(join(tmpdir(), "solar-font-test-"));
+  roots.push(root);
+  const source = join(root, "private-source"),
+    cache = join(root, "cache");
+  await mkdir(source);
+  await writeFile(join(source, "one.ttf"), "one");
+  await writeFile(join(source, "duplicate.otf"), "one");
+  await writeFile(join(source, "old.FON"), "bitmap");
+  await writeFile(join(source, "old.fnt"), "bitmap");
+  const fonts = new InstallationFonts(cache);
+  services.push(fonts);
+  expect(fonts.diagnostics()).toMatchObject({
+    state: "unprepared",
+    preparedFiles: 0,
+    failureCode: null,
+  });
+  await fonts.prepare([source]);
+  const endpoint = await fonts.start(["http://127.0.0.1:8099"]);
+  const headers = { Authorization: `Bearer ${endpoint.token}` };
+  expect((await fetch(endpoint.url + "/report")).status).toBe(403);
+  expect(
+    (
+      await fetch(endpoint.url + "/report", {
+        headers: { ...headers, Origin: "https://untrusted.example" },
+      })
+    ).status,
+  ).toBe(403);
+  const report = await (
+    await fetch(endpoint.url + "/report", { headers })
+  ).json();
+  expect(report).toMatchObject({
+    state: "ready",
+    preparedFiles: 1,
+    preparedBytes: 3,
+    sourceFilesRead: 2,
+    unsupportedFiles: 2,
+    unsupportedFormats: { ".fon": 1, ".fnt": 1 },
+    failureCode: null,
+    limits: {
+      maxPreparedFiles: 2048,
+      maxPreparedBytes: 1024 * 1024 * 1024,
+      maxSourceFileBytes: 64 * 1024 * 1024,
+    },
+  });
+  expect(report.supportedFormats).toEqual([
+    ".ttf",
+    ".otf",
+    ".ttc",
+    ".woff",
+    ".woff2",
+  ]);
+  expect(JSON.stringify(report)).not.toContain(root);
+  expect(report).not.toHaveProperty("registeredFonts");
+  expect(
+    Array.isArray(await (await fetch(endpoint.url, { headers })).json()),
+  ).toBe(true);
+  report.supportedFormats.length = 0;
+  expect(fonts.diagnostics().supportedFormats).toHaveLength(5);
+});
+
+it("keeps a bounded failure diagnostic when one source exceeds the admitted file limit", async () => {
+  const root = await mkdtemp(join(tmpdir(), "solar-font-test-"));
+  roots.push(root);
+  const source = join(root, "large.ttf");
+  const file = await open(source, "w");
+  try {
+    await file.truncate(64 * 1024 * 1024 + 1);
+  } finally {
+    await file.close();
+  }
+  const fonts = new InstallationFonts(join(root, "cache"));
+  await expect(fonts.prepare([source])).rejects.toThrow(
+    "INSTALLATION_FONT_FILE_LIMIT",
+  );
+  expect(fonts.diagnostics()).toMatchObject({
+    state: "failed",
+    preparedFiles: 0,
+    failureCode: "INSTALLATION_FONT_FILE_LIMIT",
+  });
+  await rm(source);
+  await fonts.prepare([source]);
+  expect(fonts.diagnostics()).toMatchObject({
+    state: "ready",
+    preparedFiles: 0,
+    failureCode: null,
+  });
 });
