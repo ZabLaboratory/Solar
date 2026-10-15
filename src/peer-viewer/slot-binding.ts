@@ -50,6 +50,10 @@ export interface SlotBindingRegistry {
   assign(slotRef: string, peerLabel: string | null): void;
   /** The `peer_label` currently bound to a slot, or `null` when unbound. */
   boundPeer(slotRef: string): string | null;
+  /** The effective peer label for a key before stream availability is checked.
+   *  Positional keys report their current arrival-order peer; an explicit
+   *  release tombstone reports `null`. */
+  resolvedPeer(key: string): string | null;
   /** Resolve a node key — an authored `slotRef` (translated via the current
    *  binding), a positional `@<n>` (the n-th peer in arrival order), or a bare
    *  `peer_label` (pass-through) — to its live stream. Unbound slot, out-of-range
@@ -143,6 +147,8 @@ export function createSlotBindingRegistry(
     boundPeer(slotRef): string | null {
       return bindings.get(slotRef) ?? null;
     },
+
+    resolvedPeer: peerLabelOf,
 
     resolve,
 
