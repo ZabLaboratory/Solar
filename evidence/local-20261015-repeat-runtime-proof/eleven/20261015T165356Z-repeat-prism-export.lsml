@@ -1,0 +1,239 @@
+{
+  "lsml": "1.1",
+  "scene_id": "repeat-runtime-proof",
+  "scene_version": "sha256:83f8080c735555bf5cdc0ae7034c0a14c80c246ac118ba8305bc703772efd325",
+  "layout": {
+    "kind": "frame",
+    "id": "roster-root",
+    "size": {
+      "w": 800,
+      "h": 500
+    },
+    "background": "#0a0f16",
+    "children": [
+      {
+        "kind": "stack",
+        "id": "roster-content",
+        "direction": "vertical",
+        "gap": 8,
+        "position": {
+          "x": 28,
+          "y": 20
+        },
+        "size": {
+          "w": 744,
+          "h": 460
+        },
+        "children": [
+          {
+            "kind": "text",
+            "id": "roster-heading",
+            "bind": {
+              "value": "__lit.heading"
+            },
+            "size": {
+              "w": 740,
+              "h": 30
+            },
+            "style": {
+              "fontSize": 24,
+              "fontWeight": 700,
+              "fontFamily": "Figtree",
+              "color": "#ffffff"
+            }
+          },
+          {
+            "kind": "repeat",
+            "id": "teams-repeat",
+            "bind": {
+              "items": "teams"
+            },
+            "scope": "team",
+            "key": "{team}.id",
+            "template": {
+              "kind": "frame",
+              "id": "team-template",
+              "size": {
+                "w": 740,
+                "h": 118
+              },
+              "background": "#142438",
+              "children": [
+                {
+                  "kind": "stack",
+                  "id": "team-content",
+                  "direction": "vertical",
+                  "gap": 4,
+                  "position": {
+                    "x": 10,
+                    "y": 8
+                  },
+                  "size": {
+                    "w": 720,
+                    "h": 102
+                  },
+                  "children": [
+                    {
+                      "kind": "text",
+                      "id": "team-name",
+                      "bind": {
+                        "value": "{team}.name"
+                      },
+                      "size": {
+                        "w": 700,
+                        "h": 24
+                      },
+                      "style": {
+                        "fontSize": 20,
+                        "fontWeight": 700,
+                        "fontFamily": "Figtree",
+                        "color": "#ffffff"
+                      }
+                    },
+                    {
+                      "kind": "repeat",
+                      "id": "players-repeat",
+                      "bind": {
+                        "items": "{team}.players"
+                      },
+                      "scope": "player",
+                      "key": "{player}.id",
+                      "limit": 2,
+                      "template": {
+                        "kind": "frame",
+                        "id": "player-template",
+                        "size": {
+                          "w": 700,
+                          "h": 28
+                        },
+                        "background": "#203850",
+                        "children": [
+                          {
+                            "kind": "stack",
+                            "id": "player-row",
+                            "direction": "horizontal",
+                            "gap": 16,
+                            "position": {
+                              "x": 8,
+                              "y": 2
+                            },
+                            "size": {
+                              "w": 680,
+                              "h": 24
+                            },
+                            "children": [
+                              {
+                                "kind": "text",
+                                "id": "player-name",
+                                "bind": {
+                                  "value": "{player}.name"
+                                },
+                                "size": {
+                                  "w": 390,
+                                  "h": 24
+                                },
+                                "style": {
+                                  "fontSize": 18,
+                                  "fontWeight": 600,
+                                  "fontFamily": "Figtree",
+                                  "color": "#ffffff"
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "id": "player-score",
+                                "bind": {
+                                  "value": "{player}.score"
+                                },
+                                "size": {
+                                  "w": 90,
+                                  "h": 24
+                                },
+                                "style": {
+                                  "fontSize": 18,
+                                  "fontWeight": 600,
+                                  "fontFamily": "Figtree",
+                                  "color": "#ffffff"
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "id": "team-code",
+                                "bind": {
+                                  "value": "{team}.code"
+                                },
+                                "size": {
+                                  "w": 40,
+                                  "h": 24
+                                },
+                                "style": {
+                                  "fontSize": 18,
+                                  "fontWeight": 600,
+                                  "fontFamily": "Figtree",
+                                  "color": "#ffffff"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "defaults": {
+    "__lit.heading": "LIVE ROSTER",
+    "teams": [
+      {
+        "id": "red",
+        "name": "RED TEAM",
+        "code": "R",
+        "players": [
+          {
+            "id": "r-a",
+            "name": "ALICE",
+            "score": "11"
+          },
+          {
+            "id": "r-b",
+            "name": "BOB",
+            "score": "22"
+          },
+          {
+            "id": "r-c",
+            "name": "CARA",
+            "score": "33"
+          }
+        ]
+      },
+      {
+        "id": "blue",
+        "name": "BLUE TEAM",
+        "code": "B",
+        "players": [
+          {
+            "id": "b-d",
+            "name": "DANA",
+            "score": "44"
+          },
+          {
+            "id": "b-e",
+            "name": "ELI",
+            "score": "55"
+          },
+          {
+            "id": "b-f",
+            "name": "FOX",
+            "score": "66"
+          }
+        ]
+      }
+    ]
+  }
+}
