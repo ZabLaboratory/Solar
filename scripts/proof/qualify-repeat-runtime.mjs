@@ -1,3 +1,4 @@
+/* global document, getComputedStyle, window */
 import assert from "node:assert/strict";
 import { spawn, execFile } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -11,7 +12,7 @@ import {
 } from "node:fs/promises";
 import { createServer as createNetServer } from "node:net";
 import { createRequire } from "node:module";
-import { basename, resolve, sep } from "node:path";
+import { basename, resolve } from "node:path";
 import { parseArgs, promisify } from "node:util";
 import { strToU8, zipSync } from "fflate";
 import { createServer as createViteServer } from "vite";
@@ -33,7 +34,7 @@ const { values } = parseArgs({
 
 if (values.help) {
   process.stdout.write(
-    "Usage: node scripts/proof/qualify-repeat-runtime.mjs --prism-root <Prism-read-only> --native-bin <lsdpd.exe> --out <private-work-output> --stamp <YYYYMMDDTHHMMSSZ> [--playwright-root <Prism>] [--evidence <Solar-evidence/local-20261015-repeat-runtime-proof/eleven>]\n",
+    "Usage: node scripts/proof/qualify-repeat-runtime.mjs --prism-root <Prism-read-only> --native-bin <lsdpd.exe> --out <private-work-output> --stamp <YYYYMMDDTHHMMSSZ> [--playwright-root <Prism>] [--evidence <Solar-evidence/local-20261015-rejected-mutation-frame/eleven>]\n",
   );
   process.exit(0);
 }
@@ -50,7 +51,7 @@ const out = resolve(values.out);
 const evidence = values.evidence ? resolve(values.evidence) : null;
 const canonicalEvidence = resolve(
   root,
-  "evidence/local-20261015-repeat-runtime-proof/eleven",
+  "evidence/local-20261015-rejected-mutation-frame/eleven",
 );
 if (evidence && evidence !== canonicalEvidence)
   throw new Error(`Evidence output must be ${canonicalEvidence}`);
@@ -478,6 +479,25 @@ async function waitForEvent(type, priorCount, timeout = 12_000) {
   );
 }
 
+async function readSolarStatus() {
+  return page.evaluate(
+    () => document.documentElement.dataset.solarStatus ?? null,
+  );
+}
+
+async function waitForSolarStatus(expected, timeout = 30_000) {
+  const until = Date.now() + timeout;
+  let last = null;
+  while (Date.now() < until) {
+    last = await readSolarStatus();
+    if (last === expected) return last;
+    await sleep(80);
+  }
+  throw new Error(
+    `Solar status did not become ${expected}; latest status: ${JSON.stringify(last)}`,
+  );
+}
+
 function processExists(pid) {
   if (!Number.isInteger(pid) || pid < 1) return false;
   try {
@@ -544,9 +564,9 @@ async function sendMutation(label, operations, mode = "accepted") {
   });
   const body = await jsonResponse(response);
   let solarEvent = null;
-  if (mode === "accepted") {
+  if (mode === "accepted" || mode === "native-only") {
     assert.equal(response.status, 200, `${label} native LSDP request failed: ${body.text}`);
-    solarEvent = await waitForEvent("applied", beforeApplied);
+    if (mode === "accepted") solarEvent = await waitForEvent("applied", beforeApplied);
   } else {
     try {
       solarEvent = await waitForEvent("error", beforeErrors, 5_000);
@@ -569,6 +589,7 @@ async function sendMutation(label, operations, mode = "accepted") {
     appliedEventsBefore: beforeApplied,
     errorEventsBefore: beforeErrors,
     pageErrors: [...pageErrors],
+    solarStatusAfterRequest: await readSolarStatus(),
   };
   report.phases.push(phase);
   return { phase, state: afterState.value };
@@ -774,6 +795,7 @@ async function capture(label, { expectedVisible = true } = {}) {
     label,
     screenshot: path,
     screenshotSha256: sha256(screenshotBytes),
+    solarStatus: await readSolarStatus(),
     ...surface,
   };
   report.phases.push({ label: `${label}-pixels`, surface: record });
@@ -1029,7 +1051,7 @@ try {
     false,
   );
   const rejectedCapture = await capture("repeat-duplicate-key-rejected", {
-    expectedVisible: false,
+    expectedVisible: true,
   });
   report.visibilityInstrumentation.errorWrites = await page.evaluate(
     () => window.__solarRepeatOpacityWrites ?? [],
@@ -1044,7 +1066,11 @@ try {
       after: rejectedCapture.sha256,
       unchanged: removedCapture.sha256 === rejectedCapture.sha256,
     },
-    pageScreenshotSha256: rejectedCapture.screenshotSha256,
+    pageScreenshotHashBeforeAndAfter: {
+      before: removedCapture.screenshotSha256,
+      after: rejectedCapture.screenshotSha256,
+      unchanged: removedCapture.screenshotSha256 === rejectedCapture.screenshotSha256,
+    },
     computedLayerOpacity: rejectedCapture.visibility.layerOpacity,
     layerBecameHiddenAfterError: report.visibilityInstrumentation.errorWrites.some(
       (write) => write.before === "1" && write.after === "0",
@@ -1066,23 +1092,157 @@ try {
   );
   assert.equal(
     rejectedCapture.frontCanvasVisible,
-    false,
-    "Duplicate-key error unexpectedly kept the accepted frame visible",
+    true,
+    "Duplicate-key rejection hid the last accepted frame",
   );
+  assert.equal(
+    rejectedCapture.screenshotSha256,
+    removedCapture.screenshotSha256,
+    "Duplicate-key rejection changed the page-level screenshot",
+  );
+  assert.equal(
+    rejected.phase.acceptedNativeReceiptBeforeRenderRefusal,
+    true,
+    "Malformed collection did not reach Vision through the native receiver",
+  );
+  assert.ok(
+    String(rejected.phase.solarEvent?.message ?? "").includes("Vision load:"),
+    "Duplicate-key update did not preserve the surfaced Vision load error",
+  );
+
+  const statusBeforeCorrection = await readSolarStatus();
+  assert.notEqual(
+    statusBeforeCorrection,
+    "live",
+    "Solar unexpectedly reported live while its native snapshot was malformed",
+  );
+  const correction = await sendMutation(
+    "valid-collection-snapshot-correction",
+    [
+      {
+        op: "replace",
+        path: "/defaults/teams/0/players",
+        value: blueAfterRemoval.players,
+      },
+    ],
+    "native-only",
+  );
+  assert.ok(
+    correction.phase.stateHashChanged,
+    "Corrected collection did not change the native snapshot hash",
+  );
+  const correctedPlayers = correction.state?.defaults?.teams?.[0]?.players;
+  assert.ok(Array.isArray(correctedPlayers));
+  assert.equal(
+    new Set(correctedPlayers.map((player) => player.id)).size,
+    correctedPlayers.length,
+    "Corrected native snapshot still contains duplicate Repeat keys",
+  );
+  assert.equal(
+    correction.phase.solarEvent,
+    null,
+    "Native correction unexpectedly manufactured a Solar presentation receipt",
+  );
+  const liveStatus = await waitForSolarStatus("live");
+  const healthAfterSnapshot = await getHealth();
+  const appliedAfterSnapshot = (healthAfterSnapshot.events ?? []).filter(
+    (event) => event.type === "applied",
+  ).length;
+  assert.equal(
+    appliedAfterSnapshot,
+    correction.phase.appliedEventsBefore,
+    "Snapshot recovery emitted an unexpected completed-frame event before a live mutation",
+  );
+  correction.phase.solarStatusBeforeCorrection = statusBeforeCorrection;
+  correction.phase.solarStatusAfterCorrectionSnapshot = liveStatus;
+  correction.phase.snapshotReceiptExpected = false;
+  correction.phase.appliedEventsAfterCorrectionSnapshot = appliedAfterSnapshot;
+  const recoveredCapture = await capture("repeat-corrected-snapshot-live");
+  assert.equal(recoveredCapture.solarStatus, "live");
+  assert.equal(
+    recoveredCapture.frontCanvasVisible,
+    true,
+    "Corrected valid collection snapshot did not retain a visible scene",
+  );
+  assert.deepEqual(
+    recoveredCapture.brightBands.map(({ top, bottom }) => [top, bottom]),
+    removedCapture.brightBands.map(({ top, bottom }) => [top, bottom]),
+    "Corrected snapshot changed the last accepted text row positions",
+  );
+
+  const playersAfterRecoveryReorder = [...blueAfterRemoval.players].reverse();
+  const recovered = await postMutations(
+    "valid-collection-reorder-after-snapshot-recovery",
+    [
+      {
+        op: "replace",
+        path: "/defaults/teams/0/players",
+        value: playersAfterRecoveryReorder,
+      },
+    ],
+  );
+  const reorderedAfterRecoveryCapture = await capture(
+    "repeat-valid-collection-reordered-after-recovery",
+  );
+  assert.notEqual(
+    reorderedAfterRecoveryCapture.sha256,
+    removedCapture.sha256,
+    "Post-recovery collection mutation did not change visible pixels",
+  );
+  assert.ok(
+    reorderedAfterRecoveryCapture.diffFromPreviousCapture?.changedPixels > 0,
+    "Post-recovery collection mutation did not change canvas pixels",
+  );
+  assert.ok(
+    recovered.phase.solarEvent,
+    "Post-recovery collection mutation did not receive a Solar presentation event",
+  );
+
+  const resumedValue = "73";
+  const resumed = await postMutations(
+    "valid-scalar-after-duplicate-key-recovery",
+    [
+      {
+        op: "replace",
+        path: "/defaults/teams/0/players/0/score",
+        value: resumedValue,
+      },
+    ],
+  );
+  const resumedCapture = await capture("repeat-valid-scalar-resumed");
+  assert.notEqual(
+    resumedCapture.sha256,
+    reorderedAfterRecoveryCapture.sha256,
+    "Valid scalar mutation after recovery did not change visible pixels",
+  );
+  assert.ok(resumedCapture.diffFromPreviousCapture?.changedPixels > 0);
+  assert.equal(resumedCapture.frontCanvasVisible, true);
+  assert.ok(resumed.phase.solarEvent, "Post-recovery scalar mutation was not presented");
 
   const latestState = await readState();
   assert.equal(latestState.value.scene_id, exported.bundle.scene_id);
   assert.equal(latestState.value.scene_version, exported.bundle.scene_version);
   assert.equal(
-    JSON.stringify(latestState.value.defaults.teams[0].players),
-    JSON.stringify(malformedBlue),
-    "Private native server did not retain the malformed payload used for rejection",
+    latestState.value.defaults.teams[0].players[0].score,
+    resumedValue,
+    "Private native server did not retain the valid post-recovery scalar value",
+  );
+  const finalPlayers = latestState.value.defaults.teams[0].players;
+  assert.equal(
+    new Set(finalPlayers.map((player) => player.id)).size,
+    finalPlayers.length,
+    "Corrected native snapshot still contains duplicate Repeat keys",
+  );
+  assert.deepEqual(
+    finalPlayers.map((player) => player.id),
+    playersAfterRecoveryReorder.map((player) => player.id),
+    "Post-recovery structural mutation did not retain its keyed collection order",
   );
   assert.deepEqual(pageErrors, [], "Unexpected browser page exceptions");
 
   report.result = {
-    passed: false,
-    status: "partial-with-malformed-state-recovery-gap",
+    passed: true,
+    status: "qualified-last-valid-frame-retention-and-mutation-recovery",
     validMultiItemRenderingQualified: true,
     malformedUpdateBehavior: {
       nativeReceiverAcceptedMalformedCollection: rejected.phase.acceptedNativeReceiptBeforeRenderRefusal,
@@ -1090,7 +1250,17 @@ try {
       solarAppliedEventCountDidNotAdvance: true,
       retainedCanvasBackingPixelsUnchanged: true,
       lastValidFrameRemainedVisible: rejectedCapture.frontCanvasVisible,
-      screenshotSha256: rejectedCapture.screenshotSha256,
+      pageScreenshotUnchangedFromLastValidFrame:
+        rejectedCapture.screenshotSha256 === removedCapture.screenshotSha256,
+      opacityAfterRejection: rejectedCapture.visibility.layerOpacity,
+      errorWasPreserved: String(rejected.phase.solarEvent?.message ?? "").includes("Vision load:"),
+      clearScenePostedBeforeRecovery: true,
+      correctedCollectionSnapshotReturnedToLive: correction.phase.solarStatusAfterCorrectionSnapshot === "live",
+      correctedSnapshotDidNotClaimApplied: correction.phase.solarEvent === null,
+      subsequentCollectionMutationPresented: Boolean(recovered.phase.solarEvent),
+      subsequentCollectionPixelsChanged: reorderedAfterRecoveryCapture.diffFromPreviousCapture?.changedPixels ?? null,
+      subsequentScalarMutationPresented: Boolean(resumed.phase.solarEvent),
+      subsequentScalarPixelsChanged: resumedCapture.diffFromPreviousCapture?.changedPixels ?? null,
     },
     oneSceneIdentityPreserved: true,
     sceneVersionPreservedAcrossLiveUpdates: true,
@@ -1099,7 +1269,10 @@ try {
       "outer keyed collection reorder",
       "inner scoped collection insertion under limit 2",
       "inner scoped collection removal under limit 2",
-      "duplicate-key collection rejected by Vision after native acceptance; retained canvas pixels stayed cached but Solar hid the layer",
+      "duplicate-key collection rejected by Vision after native acceptance; prior visible front canvas retained",
+      "corrected valid native snapshot reconnected without an invented applied presentation event",
+      "subsequent valid keyed collection reorder received a real applied event and changed pixels",
+      "subsequent valid scalar text mutation received a real applied event and changed pixels",
     ],
     initialCanvas: initial,
     scalarCanvas: scalarCapture,
@@ -1107,16 +1280,25 @@ try {
     addedCanvas: addedCapture,
     removedCanvas: removedCapture,
     rejectedCanvas: rejectedCapture,
+    correctedSnapshotCanvas: recoveredCapture,
+    recoveredCanvas: recoveredCapture,
+    recoveredCollectionCanvas: reorderedAfterRecoveryCapture,
+    resumedCanvas: resumedCapture,
     scalarMutation: scalar.phase,
     reorderMutation: reordered.phase,
     addMutation: added.phase,
     removeMutation: removed.phase,
     rejectedMutation: rejected.phase,
+    correctedSnapshot: correction.phase,
+    recoveryMutation: recovered.phase,
+    resumedMutation: resumed.phase,
     finalAuthoritativeScene: {
       sceneId: latestState.value.scene_id,
       sceneVersion: latestState.value.scene_version,
       stateHash: latestState.stateHash,
-      duplicateKeysRemainInPrivateServerUntilShutdown: true,
+      duplicateKeysRemainInPrivateServerUntilShutdown: false,
+      malformedCollectionCorrected: true,
+      postRecoveryScore: resumedValue,
     },
     pageErrors,
     consoleErrors,
@@ -1125,7 +1307,8 @@ try {
       "Nested team/player scopes and the inner limit of 2 were exercised; other scope grammars were not exhaustively tested.",
       "Keyed reorder was observed in pixels; internal retained node ids are not exposed by Solar's public host.",
       "Canvas pixels and computed CSS visibility are measured separately; screenshots capture the page-level composition, but do not prove physical display scanout.",
-      "The duplicate-key request changed only this private Rust receiver's RAM before Vision refused the state; the retained front-canvas buffer stayed unchanged, but Solar made that layer invisible and the screenshot is blank. The private receiver is stopped in cleanup.",
+      "The duplicate-key request changed only this private Rust receiver's RAM before Vision refused the state; Solar reported the failure without an applied presentation event and kept the previous front canvas visible through clear-scene.",
+      "The valid corrective collection is adopted through a successful native snapshot; snapshots have no solar:lsdp-applied event, so no presentation receipt is claimed. A later valid keyed collection reorder and then a distinct scalar patch each produced a real Solar applied event and changed visible pixels; the private receiver is stopped in cleanup.",
     ],
   };
 

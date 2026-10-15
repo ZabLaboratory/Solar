@@ -24,6 +24,7 @@ const fake = vi.hoisted(() => ({
   created: 0,
   terminated: 0,
   failTerminate: false,
+  failLoads: 0,
   requests: [] as string[],
 }));
 
@@ -51,13 +52,23 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
         canvas.height = 1080;
         const type = String(request.type);
         fake.requests.push(type);
+        const rejectLoad = type === "load" && fake.failLoads > 0;
+        if (rejectLoad) fake.failLoads--;
         const deliver = (): void =>
           listener?.({
-            data: {
-              type: type === "init-empty" ? "engine-ready" : "frame-submitted",
-              seq: request.seq as number,
-              timing: { gpuSubmitCallMs: 2.5 },
-            },
+            data: rejectLoad
+              ? {
+                  type: "error",
+                  seq: request.seq as number,
+                  phase: "load",
+                  message: "Malformed Repeat key.",
+                }
+              : {
+                  type:
+                    type === "init-empty" ? "engine-ready" : "frame-submitted",
+                  seq: request.seq as number,
+                  timing: { gpuSubmitCallMs: 2.5 },
+                },
           });
         if (fake.heldTypes.has(type)) fake.held.push({ type, deliver });
         else queueMicrotask(deliver);
@@ -119,6 +130,7 @@ afterEach(() => {
   fake.created = 0;
   fake.terminated = 0;
   fake.failTerminate = false;
+  fake.failLoads = 0;
   fake.requests.length = 0;
 });
 
@@ -407,6 +419,74 @@ it("keeps one presenter alive across scene switches and scene-handle disposal", 
   expect(fake.terminated).toBe(0);
   disconnectVisionSession(target);
   expect(fake.terminated).toBe(1);
+});
+
+it("keeps the first rejected scene load hidden when no accepted frame exists", async () => {
+  const { target, delivery, pack } = setup();
+  fake.failLoads = 1;
+
+  await expect(
+    mountVisionScene(target, delivery, {}, vi.fn(), vi.fn(), pack, true),
+  ).rejects.toThrow("Vision load: Malformed Repeat key.");
+
+  const layer = target.querySelector<HTMLElement>("[data-solar-vision-scene]");
+  expect(layer).not.toBeNull();
+  expect(layer?.style.opacity).toBe("0");
+  expect(fake.requests).toContain("clear-scene");
+});
+
+it("retains the last accepted frame through a rejected replacement and permits a valid reload", async () => {
+  const { target, delivery, pack } = setup();
+  const first = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    pack,
+    true,
+  );
+  first.activate();
+  const layer = target.querySelector<HTMLElement>("[data-solar-vision-scene]");
+  const frontCanvas = layer?.lastElementChild;
+  expect(layer?.style.opacity).toBe("1");
+  fake.failLoads = 1;
+
+  await expect(
+    mountVisionScene(
+      target,
+      { ...delivery, sceneVersion: "v2" },
+      {},
+      vi.fn(),
+      vi.fn(),
+      { ...pack, sceneVersion: "v2" },
+      true,
+    ),
+  ).rejects.toThrow("Vision load: Malformed Repeat key.");
+
+  expect(fake.requests).toContain("clear-scene");
+  expect(target.querySelector("[data-solar-vision-scene]")).toBe(layer);
+  expect(layer?.style.opacity).toBe("1");
+  expect(layer?.lastElementChild).toBe(frontCanvas);
+
+  const recovered = await mountVisionScene(
+    target,
+    { ...delivery, sceneVersion: "v2" },
+    {},
+    vi.fn(),
+    vi.fn(),
+    { ...pack, sceneVersion: "v2" },
+    true,
+  );
+  recovered.activate();
+
+  expect(fake.created).toBe(1);
+  expect(fake.requests.filter((type) => type === "load")).toHaveLength(3);
+  expect(target.querySelector("[data-solar-vision-scene]")).toBe(layer);
+  expect(layer?.style.opacity).toBe("1");
+  expect(layer?.lastElementChild).toBe(frontCanvas);
+  first.dispose();
+  recovered.dispose();
 });
 
 it("ignores a retired presenter callback after termination fails and the target reopens", async () => {

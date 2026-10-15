@@ -40,16 +40,18 @@ bindings survive, and feeds the exported LSMLZ into a private RAM-only Rust LSDP
 receiver. Solar's existing host then renders that one scene through its pinned
 Vision WASM. The run captures the original two-team/two-player-per-team view,
 one scalar text change, keyed team reorder, and scoped insertion/removal under
-the inner limit of two. It then sends a duplicate-key update and records native
-acceptance, Vision's rejection, the retained canvas buffer, computed layer
-visibility, and the page screenshot separately. A cached canvas hash alone does
-not prove the previous frame stayed visible. In the captured Solar build, the
-duplicate-key payload receives a native `applied` receipt, Vision rejects a
-recovery `load`, and a traced opacity write in
-`src/engine/vision-presenter.ts` hides the retained canvas; this run is
-explicitly partial and does not qualify malformed-update recovery or last-frame
-retention. The driver does not test scene selection, transitions, physical
-display scanout or CEF.
+the inner limit of two. It then sends a duplicate-key update and separately
+records the native receipt, surfaced Vision rejection, retained front-canvas
+pixels, computed layer visibility, and page screenshot. It corrects the collection
+in the private native receiver and waits for Solar's `connecting` → `live` snapshot
+recovery; snapshots do not produce `solar:lsdp-applied` receipts. After that, a
+distinct keyed collection reorder and a scalar text mutation must each produce a
+real applied event and changed visible pixels. The fixture is
+`tests/fixtures/repeat-runtime/prism-authoring.lsml`; authoring/export source
+provenance is checked against the read-only Prism worktree. This qualifies one
+Repeat graph, active-frame retention after a rejected replacement and a same-session
+reconnect/recovery path, not all scope grammars or every malformed package. It does
+not test scene selection, transitions, physical display scanout or CEF.
 
 Example invocation from the Solar worktree:
 
@@ -59,5 +61,5 @@ node scripts/proof/qualify-repeat-runtime.mjs `
   --native-bin D:\Documents\Zab\Solar\.worktrees\eleven-local-20261015-project-integration\dist\native\win32-x64\lsdpd.exe `
   --out build\repeat-runtime\<UTC-stamp> `
   --stamp <UTC-stamp> `
-  --evidence evidence\local-20261015-repeat-runtime-proof\eleven
+  --evidence evidence\local-20261015-rejected-mutation-frame\eleven
 ```
