@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { afterEach, expect, it } from "vitest";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { InstallationFonts } from "../../src/server/installation-fonts";
@@ -66,9 +66,107 @@ it("persists immutable fonts, reuses unchanged files and admits later installati
     })
   ).json();
   await writeFile(join(cache, entries[0].hash), "corrupted");
-  await expect(async () => {
-    for await (const batch of installationFontBatches(endpoint)) void batch;
-  }).rejects.toThrow("INSTALLATION_FONT_ASSET_UNAVAILABLE");
+  const repaired: string[] = [];
+  for await (const batch of installationFontBatches(endpoint))
+    repaired.push(...batch.map((bytes) => Buffer.from(bytes).toString()));
+  expect(repaired.sort()).toEqual(["new", "one"]);
+  expect(changed.report.repaired).toBe(1);
+});
+
+it.each([
+  ["truncated", '{"schema":'],
+  [
+    "wrong shape",
+    JSON.stringify({ schema: "solar.installation-fonts.v1", sources: {} }),
+  ],
+  [
+    "invalid row",
+    JSON.stringify({ schema: "solar.installation-fonts.v1", sources: [null] }),
+  ],
+  ["unknown schema", JSON.stringify({ schema: "future", sources: [] })],
+])("reconstructs a %s index from installed sources", async (_name, index) => {
+  const root = await mkdtemp(join(tmpdir(), "solar-font-test-"));
+  roots.push(root);
+  const source = join(root, "source"),
+    cache = join(root, "cache");
+  await mkdir(source);
+  await mkdir(cache);
+  await writeFile(join(source, "one.ttf"), "one");
+  await writeFile(join(cache, "index.json"), index);
+  const recovered = new InstallationFonts(cache);
+  await recovered.prepare([source]);
+  expect(recovered.report).toMatchObject({
+    indexRecovered: true,
+    filesRead: 1,
+    files: 1,
+  });
+  const warm = new InstallationFonts(cache);
+  await warm.prepare([source]);
+  expect(warm.report).toMatchObject({
+    indexRecovered: false,
+    filesRead: 0,
+    reused: 1,
+  });
+});
+
+it("repairs equal-length corruption on request without hashing fonts during warm prepare", async () => {
+  const root = await mkdtemp(join(tmpdir(), "solar-font-test-"));
+  roots.push(root);
+  const source = join(root, "source"),
+    cache = join(root, "cache");
+  await mkdir(source);
+  await writeFile(join(source, "one.ttf"), "one");
+  await new InstallationFonts(cache).prepare([source]);
+  const { sources } = JSON.parse(
+    await readFile(join(cache, "index.json"), "utf8"),
+  );
+  await writeFile(join(cache, sources[0].hash), "bad");
+  const warm = new InstallationFonts(cache);
+  services.push(warm);
+  await warm.prepare([source]);
+  expect(warm.report).toMatchObject({ filesRead: 0, reused: 1, repaired: 0 });
+  const endpoint = await warm.start([]);
+  const response = await fetch(endpoint.url + "/" + sources[0].hash, {
+    headers: { Authorization: `Bearer ${endpoint.token}` },
+  });
+  expect(response.status).toBe(200);
+  expect(await response.text()).toBe("one");
+  expect(warm.report.repaired).toBe(1);
+});
+
+it("never repairs a font with changed source bytes under the old digest", async () => {
+  const root = await mkdtemp(join(tmpdir(), "solar-font-test-"));
+  roots.push(root);
+  const source = join(root, "source"),
+    cache = join(root, "cache");
+  await mkdir(source);
+  const sourcePath = join(source, "one.ttf");
+  await writeFile(sourcePath, "one");
+  const fonts = new InstallationFonts(cache);
+  services.push(fonts);
+  await fonts.prepare([source]);
+  const { sources } = JSON.parse(
+    await readFile(join(cache, "index.json"), "utf8"),
+  );
+  await writeFile(join(cache, sources[0].hash), "bad");
+  await writeFile(sourcePath, "new");
+  const endpoint = await fonts.start([]);
+  const response = await fetch(endpoint.url + "/" + sources[0].hash, {
+    headers: { Authorization: `Bearer ${endpoint.token}` },
+  });
+  expect(response.status).toBe(500);
+  expect(fonts.report.repaired).toBe(0);
+});
+
+it("retains genuine index filesystem errors", async () => {
+  const root = await mkdtemp(join(tmpdir(), "solar-font-test-"));
+  roots.push(root);
+  const cache = join(root, "cache");
+  await mkdir(cache);
+  await mkdir(join(cache, "index.json"));
+  await expect(new InstallationFonts(cache).prepare([])).rejects.toMatchObject({
+    code: "EISDIR",
+  });
 });
 it("refuses non-local installation endpoints before fetching", async () => {
   await expect(async () => {

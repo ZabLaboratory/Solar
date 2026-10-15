@@ -44,8 +44,14 @@ This store does not replace Orion's signed Blue/source admission or daemon lifec
 `Solar/fonts` directory. It enumerates packaged editor fonts, Windows system and
 per-user font directories, and registered external Windows font paths from
 `windows-fonts.ts`. Only new/modified sources are copied and content-addressed;
-unchanged files reuse the installation index. TTF/OTF/TTC/WOFF/WOFF2 are admitted;
-legacy Windows FON/FNT bitmap files are reported as unsupported. The authenticated
+unchanged files reuse the installation index. TTF/OTF/TTC/WOFF/WOFF2 are admitted.
+Malformed or incompatible cache indexes are reconstructed from installed sources;
+genuine filesystem failures remain errors. A requested corrupt or missing cached
+copy is atomically repaired from a still-matching installed source, including
+equal-length corruption. Changed source bytes are never returned under an old
+digest. Valid warm preparation still reuses metadata without hashing all fonts.
+`report.indexRecovered` and `report.repaired` expose these recovery events.
+Legacy Windows FON/FNT bitmap files are reported as unsupported. The authenticated
 loopback catalogue belongs to the receiver lifecycle and has explicit origin,
 file-count, byte and digest checks. No scene data is written to this catalogue.
 The browser receives its endpoint through `ReceptionConnection.fontCatalog`.

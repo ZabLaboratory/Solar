@@ -6,6 +6,7 @@ import {
   stat,
   writeFile,
   rename,
+  rm,
 } from "node:fs/promises";
 import { join, extname } from "node:path";
 import { createServer, type Server } from "node:http";
@@ -32,6 +33,7 @@ interface SourceEntry {
 export class InstallationFonts {
   private server: Server | null = null;
   private entries = new Map<string, FontEntry>();
+  private sourcePaths = new Map<string, Set<string>>();
   private readonly token = randomBytes(32).toString("hex");
   readonly report = {
     filesRead: 0,
@@ -39,6 +41,8 @@ export class InstallationFonts {
     unsupported: [] as string[],
     files: 0,
     bytes: 0,
+    indexRecovered: false,
+    repaired: 0,
   };
   constructor(private readonly directory: string) {}
 
@@ -46,11 +50,44 @@ export class InstallationFonts {
     await mkdir(this.directory, { recursive: true });
     let previous: SourceEntry[] = [];
     try {
-      previous = JSON.parse(
+      const index: unknown = JSON.parse(
         await readFile(join(this.directory, "index.json"), "utf8"),
-      ).sources;
+      );
+      if (
+        index &&
+        typeof index === "object" &&
+        "schema" in index &&
+        index.schema === "solar.installation-fonts.v1" &&
+        "sources" in index &&
+        Array.isArray(index.sources) &&
+        index.sources.every(
+          (entry: unknown): entry is SourceEntry =>
+            entry !== null &&
+            typeof entry === "object" &&
+            "path" in entry &&
+            typeof entry.path === "string" &&
+            entry.path.length > 0 &&
+            "size" in entry &&
+            typeof entry.size === "number" &&
+            Number.isSafeInteger(entry.size) &&
+            entry.size > 0 &&
+            entry.size <= 64 * 1024 * 1024 &&
+            "modified" in entry &&
+            typeof entry.modified === "number" &&
+            Number.isFinite(entry.modified) &&
+            entry.modified >= 0 &&
+            "hash" in entry &&
+            typeof entry.hash === "string" &&
+            /^[a-f0-9]{64}$/.test(entry.hash),
+        )
+      ) {
+        previous = index.sources;
+      } else {
+        this.report.indexRecovered = true;
+      }
     } catch (error) {
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+      if (error instanceof SyntaxError) this.report.indexRecovered = true;
+      else if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
     }
     const old = new Map(previous.map((entry) => [entry.path, entry]));
     const sources: SourceEntry[] = [];
@@ -111,6 +148,9 @@ export class InstallationFonts {
         }
         sources.push({ path, size: info.size, modified: info.mtimeMs, hash });
         this.entries.set(hash, { hash, bytes: info.size });
+        const paths = this.sourcePaths.get(hash) ?? new Set<string>();
+        paths.add(path);
+        this.sourcePaths.set(hash, paths);
         if (
           this.entries.size > MAX_FILES ||
           [...this.entries.values()].reduce((n, x) => n + x.bytes, 0) >
@@ -177,9 +217,7 @@ export class InstallationFonts {
           response.end();
           return;
         }
-        const bytes = await readFile(join(this.directory, hash));
-        if (createHash("sha256").update(bytes).digest("hex") !== hash)
-          throw new Error("INSTALLATION_FONT_INTEGRITY");
+        const bytes = await this.fontBytes(hash);
         response.setHeader("content-type", "application/octet-stream");
         response.end(bytes);
       } catch {
@@ -196,6 +234,42 @@ export class InstallationFonts {
     if (!address || typeof address === "string")
       throw new Error("INSTALLATION_FONT_ADDRESS");
     return { url: `http://127.0.0.1:${address.port}/fonts`, token: this.token };
+  }
+
+  /** Repair only on a failed read/integrity check, without hashing the warm catalogue. */
+  private async fontBytes(hash: string): Promise<Buffer> {
+    const entry = this.entries.get(hash)!;
+    const valid = (bytes: Buffer): boolean =>
+      bytes.length === entry.bytes &&
+      createHash("sha256").update(bytes).digest("hex") === hash;
+    try {
+      const bytes = await readFile(join(this.directory, hash));
+      if (!valid(bytes)) throw new Error("INSTALLATION_FONT_INTEGRITY");
+      return bytes;
+    } catch (error) {
+      for (const source of this.sourcePaths.get(hash) ?? []) {
+        let bytes: Buffer;
+        try {
+          bytes = await readFile(source);
+        } catch {
+          continue;
+        }
+        // A changed source must not be served under the previously admitted hash.
+        if (!valid(bytes)) continue;
+        const output = join(this.directory, hash);
+        const temporary =
+          output + "." + randomBytes(8).toString("hex") + ".tmp";
+        try {
+          await writeFile(temporary, bytes, { flag: "wx" });
+          await rename(temporary, output);
+        } finally {
+          await rm(temporary, { force: true });
+        }
+        this.report.repaired++;
+        return bytes;
+      }
+      throw error;
+    }
   }
   async stop(): Promise<void> {
     const server = this.server;
