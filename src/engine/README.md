@@ -183,6 +183,17 @@ clear the texture. Local references are resolved through `sources/capture.ts`;
 peer slots use `sources/peers.ts`. Neither source kind is gated on broadcast
 mode.
 
+Meet's `x-zab.meet-framing/1` LSML profile carries direct image framing
+(`object_fit`, `contentBox`, `sourceCrop`, `sourceZoom`, `objectPosition` and
+`clipEffects`). Vision projects fit and authored image bounds into the peer
+descriptor. `live-media.ts` applies crop, fit, zoom and position in the source
+bitmap, scaling the content box from authored dimensions to the bounded texture.
+Hot framing changes request a freshly prepared bitmap while retaining the peer
+subscription and active stream. Vision keeps `clipEffects` on the normalized
+image node, where its image renderer clips the effect boundary. Prism's older
+`metadata.figma.captureFraming` stays available as export compatibility data
+and is not the runtime rendering authority.
+
 Each media session owns one pending video-frame callback, or one animation-frame
 fallback. Repeated readiness from `play()` and `loadeddata` reuses that watcher;
 it cannot create another chain. A consumed callback clears its handle before

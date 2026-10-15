@@ -356,9 +356,130 @@ describe("Vision live camera textures", () => {
       expect(stopTrack).not.toHaveBeenCalled();
       expect(scene.clearMedia).not.toHaveBeenCalled();
       // A 1280x720 stream is contained in the new 800x600 texture.
-      expect(contexts.drawImage).toHaveBeenLastCalledWith(video, 0, 75, 800, 450);
+      expect(contexts.drawImage).toHaveBeenLastCalledWith(
+        video,
+        0,
+        0,
+        1280,
+        720,
+        0,
+        75,
+        800,
+        450,
+      );
     } finally { controller.dispose(); }
     expect(stopTrack).toHaveBeenCalledOnce();
+  });
+
+  it("applies contain, cover and fill to a Meet peer bitmap without resubscribing", async () => {
+    const scene = makeScene();
+    const peers = peerSources();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => null, peers,
+      onError: vi.fn(), getScene: () => scene,
+    });
+    const stream = { getTracks: () => [] } as unknown as MediaStream;
+    const source = { ...remoteCamera, height: 240 };
+    try {
+      controller.update([source]);
+      peers.publish("caster-slot", stream);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      const video = document.querySelector("video")!;
+      expect(contexts.drawImage).toHaveBeenLastCalledWith(
+        video,
+        0,
+        0,
+        1280,
+        720,
+        0,
+        30,
+        320,
+        180,
+      );
+
+      controller.update([{ ...source, fit: "cover" }]);
+      await vi.waitFor(() =>
+        expect(scene.updateMedia).toHaveBeenCalledTimes(2),
+      );
+      const cover = contexts.drawImage.mock.calls.at(-1)!;
+      expect(cover.slice(1, 5)).toEqual([0, 0, 1280, 720]);
+      expect(cover[5]).toBeCloseTo(-53.3333, 3);
+      expect(cover[6]).toBe(0);
+      expect(cover[7]).toBeCloseTo(426.6667, 3);
+      expect(cover[8]).toBe(240);
+
+      controller.update([{ ...source, fit: "fill" }]);
+      await vi.waitFor(() =>
+        expect(scene.updateMedia).toHaveBeenCalledTimes(3),
+      );
+      expect(contexts.drawImage).toHaveBeenLastCalledWith(
+        video,
+        0,
+        0,
+        1280,
+        720,
+        0,
+        0,
+        320,
+        240,
+      );
+      expect(document.querySelector("video")).toBe(video);
+      expect(peers.subscribePeerStream).toHaveBeenCalledOnce();
+      expect(peers.unsubscribe).not.toHaveBeenCalled();
+    } finally {
+      controller.dispose();
+    }
+  });
+
+  it("applies Meet crop, zoom, content box and position updates to the peer bitmap", async () => {
+    const scene = makeScene();
+    const peers = peerSources();
+    const controller = new LiveMediaController({
+      liveAudio: false, resolveCaptureDevice: async () => null, peers,
+      onError: vi.fn(), getScene: () => scene,
+    });
+    const stream = { getTracks: () => [] } as unknown as MediaStream;
+    const source: VisionLiveMediaSource = {
+      ...remoteCamera,
+      size: { w: 640, h: 360 },
+      contentBox: { x: 40, y: 20, width: 400, height: 200 },
+      sourceCrop: { left: 25, top: 25, right: 25, bottom: 25 },
+      sourceZoom: 2,
+      objectPosition: { x: 0.75, y: 0.25 },
+    };
+    try {
+      controller.update([source]);
+      peers.publish("caster-slot", stream);
+      await vi.waitFor(() => expect(scene.updateMedia).toHaveBeenCalledOnce());
+      const video = document.querySelector("video")!;
+      const framed = contexts.drawImage.mock.calls.at(-1)!;
+      expect(framed.slice(1, 5)).toEqual([320, 180, 640, 360]);
+      expect(framed[5]).toBeCloseTo(-96.6667, 3);
+      expect(framed[6]).toBeCloseTo(-15, 3);
+      expect(framed[7]).toBeCloseTo(355.5556, 3);
+      expect(framed[8]).toBeCloseTo(200, 3);
+
+      controller.update([
+        {
+          ...source,
+          sourceZoom: 1.5,
+          contentBox: { ...source.contentBox!, x: 20 },
+        },
+      ]);
+      await vi.waitFor(() =>
+        expect(scene.updateMedia).toHaveBeenCalledTimes(2),
+      );
+      const moved = contexts.drawImage.mock.calls.at(-1)!;
+      expect(moved.slice(1, 5)).toEqual([320, 180, 640, 360]);
+      expect(moved[5]).toBeCloseTo(-40, 3);
+      expect(moved[6]).toBeCloseTo(-2.5, 3);
+      expect(moved[7]).toBeCloseTo(266.6667, 3);
+      expect(moved[8]).toBeCloseTo(150, 3);
+      expect(peers.subscribePeerStream).toHaveBeenCalledOnce();
+      expect(peers.unsubscribe).not.toHaveBeenCalled();
+    } finally {
+      controller.dispose();
+    }
   });
 
   it("replaces the capture track when the actual source identity changes", async () => {

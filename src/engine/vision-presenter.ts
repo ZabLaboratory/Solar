@@ -12,6 +12,12 @@ export interface VisionLiveMediaSource {
   device_ref?: string;
   slot_ref?: string;
   fit?: "cover" | "contain" | "fill" | string;
+  /** Authored LSML image bounds before Vision caps the upload texture. */
+  size?: { w: number; h: number };
+  contentBox?: { x?: number; y?: number; width?: number; height?: number };
+  sourceCrop?: { left?: number; top?: number; right?: number; bottom?: number };
+  sourceZoom?: number;
+  objectPosition?: { x?: number; y?: number };
   width: number;
   height: number;
 }

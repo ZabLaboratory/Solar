@@ -126,8 +126,12 @@ export class LiveMediaController {
     for (const source of sources) {
       const current = this.sessions.get(source.path);
       if (current) {
-        if (current.source.width !== source.width || current.source.height !== source.height ||
-            current.source.fit !== source.fit) {
+        const textureChanged =
+          current.source.width !== source.width ||
+          current.source.height !== source.height;
+        const framingChanged =
+          renderSignature(current.source) !== renderSignature(source);
+        if (textureChanged || framingChanged) {
           const width = boundedDimension(source.width);
           const height = boundedDimension(source.height);
           current.revision += 1;
@@ -433,6 +437,19 @@ function signature(source: VisionLiveMediaSource): string {
   return [source.type, source.source_kind, source.device_ref, source.slot_ref].join("\u0000");
 }
 
+function renderSignature(source: VisionLiveMediaSource): string {
+  return JSON.stringify([
+    source.width,
+    source.height,
+    source.fit,
+    source.size,
+    source.contentBox,
+    source.sourceCrop,
+    source.sourceZoom,
+    source.objectPosition,
+  ]);
+}
+
 function boundedDimension(value: number): number {
   if (!Number.isSafeInteger(value) || value < 1 || value > 4096) {
     throw new Error("Vision returned an invalid live-media texture size.");
@@ -448,16 +465,66 @@ function drawVideo(session: MediaSession): void {
   const sh = video.videoHeight;
   context.clearRect(0, 0, width, height);
   if (!sw || !sh) return;
-  if (source.fit === "fill") {
-    context.drawImage(video, 0, 0, width, height);
-    return;
+  const authoredWidth = finitePositive(source.size?.w, width);
+  const authoredHeight = finitePositive(source.size?.h, height);
+  const scaleX = width / authoredWidth;
+  const scaleY = height / authoredHeight;
+  const boxX = finite(source.contentBox?.x, 0) * scaleX;
+  const boxY = finite(source.contentBox?.y, 0) * scaleY;
+  const boxWidth = Math.max(1, finitePositive(source.contentBox?.width, authoredWidth) * scaleX);
+  const boxHeight = Math.max(1, finitePositive(source.contentBox?.height, authoredHeight) * scaleY);
+  const crop = normalizeCrop(source.sourceCrop);
+  const sx = sw * crop.left / 100;
+  const sy = sh * crop.top / 100;
+  const croppedWidth = sw * (1 - (crop.left + crop.right) / 100);
+  const croppedHeight = sh * (1 - (crop.top + crop.bottom) / 100);
+  const fit = source.fit === "fill" ? "fill" : source.fit === "contain" ? "contain" : "cover";
+  const uniformScale = fit === "contain"
+    ? Math.min(boxWidth / croppedWidth, boxHeight / croppedHeight)
+    : Math.max(boxWidth / croppedWidth, boxHeight / croppedHeight);
+  const zoom = Math.max(0.1, Math.min(10, finite(source.sourceZoom, 1)));
+  const positionX = Math.max(0, Math.min(1, finite(source.objectPosition?.x, 0.5)));
+  const positionY = Math.max(0, Math.min(1, finite(source.objectPosition?.y, 0.5)));
+  const drawScaleX = (fit === "fill" ? boxWidth / croppedWidth : uniformScale) * zoom;
+  const drawScaleY = (fit === "fill" ? boxHeight / croppedHeight : uniformScale) * zoom;
+  const dx = boxX + (boxWidth - croppedWidth * drawScaleX) * positionX;
+  const dy = boxY + (boxHeight - croppedHeight * drawScaleY) * positionY;
+  context.drawImage(
+    video,
+    sx,
+    sy,
+    croppedWidth,
+    croppedHeight,
+    dx,
+    dy,
+    croppedWidth * drawScaleX,
+    croppedHeight * drawScaleY,
+  );
+}
+
+function finite(value: number | undefined, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function finitePositive(value: number | undefined, fallback: number): number {
+  const number = finite(value, fallback);
+  return number > 0 ? number : fallback;
+}
+
+function normalizeCrop(crop: VisionLiveMediaSource["sourceCrop"] = {}) {
+  const normalized = {
+    left: Math.max(0, Math.min(99, finite(crop.left, 0))),
+    top: Math.max(0, Math.min(99, finite(crop.top, 0))),
+    right: Math.max(0, Math.min(99, finite(crop.right, 0))),
+    bottom: Math.max(0, Math.min(99, finite(crop.bottom, 0))),
+  };
+  for (const [first, second] of [["left", "right"], ["top", "bottom"]] as const) {
+    const total = normalized[first] + normalized[second];
+    if (total > 99) {
+      const factor = 99 / total;
+      normalized[first] *= factor;
+      normalized[second] *= factor;
+    }
   }
-  const scale = source.fit === "contain"
-    ? Math.min(width / sw, height / sh)
-    : Math.max(width / sw, height / sh);
-  const drawWidth = sw * scale;
-  const drawHeight = sh * scale;
-  const dx = (width - drawWidth) / 2;
-  const dy = (height - drawHeight) / 2;
-  context.drawImage(video, dx, dy, drawWidth, drawHeight);
+  return normalized;
 }
