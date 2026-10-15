@@ -18,6 +18,24 @@ export interface InstallationFontEndpoint {
   url: string;
   token: string;
 }
+export interface InstallationFontDiagnostics {
+  state: "unprepared" | "preparing" | "ready" | "failed";
+  preparedFiles: number;
+  preparedBytes: number;
+  sourceFilesRead: number;
+  reusedSources: number;
+  unsupportedFiles: number;
+  unsupportedFormats: Record<string, number>;
+  supportedFormats: string[];
+  limits: {
+    maxPreparedFiles: number;
+    maxPreparedBytes: number;
+    maxSourceFileBytes: number;
+  };
+  indexRecovered: boolean;
+  repairedFiles: number;
+  failureCode: string | null;
+}
 interface FontEntry {
   hash: string;
   bytes: number;
@@ -32,6 +50,8 @@ interface SourceEntry {
 /** Installation-owned immutable files; no scene state is stored here. */
 export class InstallationFonts {
   private server: Server | null = null;
+  private preparationState: InstallationFontDiagnostics["state"] = "unprepared";
+  private preparationFailure: string | null = null;
   private entries = new Map<string, FontEntry>();
   private sourcePaths = new Map<string, Set<string>>();
   private readonly token = randomBytes(32).toString("hex");
@@ -46,7 +66,53 @@ export class InstallationFonts {
   };
   constructor(private readonly directory: string) {}
 
+  /** Prepared immutable files are not a claim that an engine registered every font. */
+  diagnostics(): InstallationFontDiagnostics {
+    const unsupportedFormats: Record<string, number> = {};
+    for (const path of this.report.unsupported) {
+      const extension = extname(path).toLowerCase();
+      unsupportedFormats[extension] = (unsupportedFormats[extension] ?? 0) + 1;
+    }
+    return {
+      state: this.preparationState,
+      preparedFiles: this.entries.size,
+      preparedBytes: [...this.entries.values()].reduce(
+        (sum, entry) => sum + entry.bytes,
+        0,
+      ),
+      sourceFilesRead: this.report.filesRead,
+      reusedSources: this.report.reused,
+      unsupportedFiles: this.report.unsupported.length,
+      unsupportedFormats,
+      supportedFormats: [...formats],
+      limits: {
+        maxPreparedFiles: MAX_FILES,
+        maxPreparedBytes: MAX_BYTES,
+        maxSourceFileBytes: 64 * 1024 * 1024,
+      },
+      indexRecovered: this.report.indexRecovered,
+      repairedFiles: this.report.repaired,
+      failureCode: this.preparationFailure,
+    };
+  }
+
   async prepare(roots: readonly string[]): Promise<void> {
+    this.preparationState = "preparing";
+    this.preparationFailure = null;
+    try {
+      await this.prepareSources(roots);
+      this.preparationState = "ready";
+    } catch (error) {
+      this.preparationState = "failed";
+      const message = error instanceof Error ? error.message : "";
+      this.preparationFailure = /^INSTALLATION_FONT_[A-Z_]+$/.test(message)
+        ? message
+        : "INSTALLATION_FONT_PREPARATION_FAILED";
+      throw error;
+    }
+  }
+
+  private async prepareSources(roots: readonly string[]): Promise<void> {
     await mkdir(this.directory, { recursive: true });
     let previous: SourceEntry[] = [];
     try {
@@ -206,6 +272,11 @@ export class InstallationFonts {
       }
       try {
         response.setHeader("cache-control", "no-store");
+        if (request.url === "/fonts/report") {
+          response.setHeader("content-type", "application/json");
+          response.end(JSON.stringify(this.diagnostics()));
+          return;
+        }
         if (request.url === "/fonts") {
           response.setHeader("content-type", "application/json");
           response.end(JSON.stringify([...this.entries.values()]));

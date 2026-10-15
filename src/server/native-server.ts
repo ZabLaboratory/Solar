@@ -2,6 +2,7 @@ import { windowsRegisteredFonts } from "./windows-fonts";
 import {
   InstallationFonts,
   type InstallationFontEndpoint,
+  type InstallationFontDiagnostics,
 } from "./installation-fonts";
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
@@ -141,6 +142,7 @@ export class SolarReceptionServer {
   private monitor: ReturnType<typeof setInterval> | null = null;
   private installationFonts: InstallationFonts | null = null;
   private fontCatalog: InstallationFontEndpoint | undefined;
+  private lastFontDiagnostics: InstallationFontDiagnostics | undefined;
   private probing = false;
   private readonly settings: Record<string, unknown>;
   private readonly peers = new Set<BrowserLSDP>();
@@ -295,6 +297,8 @@ export class SolarReceptionServer {
       return ready;
     } catch (error) {
       await this.halt();
+      this.lastFontDiagnostics =
+        this.installationFonts?.diagnostics() ?? this.lastFontDiagnostics;
       await this.installationFonts?.stop();
       this.installationFonts = null;
       this.fontCatalog = undefined;
@@ -485,11 +489,19 @@ export class SolarReceptionServer {
   }
 
   /** Shared native subscription for Electron control consumers. */
-  status(): { ready: boolean; recovering: boolean; pid: number | null } {
+  status(): {
+    ready: boolean;
+    recovering: boolean;
+    pid: number | null;
+    fonts?: InstallationFontDiagnostics;
+  } {
+    const fonts =
+      this.installationFonts?.diagnostics() ?? this.lastFontDiagnostics;
     return {
       ready: this.connection !== null && this.recovering === null,
       recovering: this.recovering !== null,
       pid: this.connection?.pid ?? null,
+      ...(fonts ? { fonts: structuredClone(fonts) } : {}),
     };
   }
 
@@ -686,6 +698,8 @@ export class SolarReceptionServer {
     this.epoch++;
     this.abort?.abort();
     await this.starting?.catch(() => {});
+    this.lastFontDiagnostics =
+      this.installationFonts?.diagnostics() ?? this.lastFontDiagnostics;
     await this.installationFonts?.stop();
     this.installationFonts = null;
     this.fontCatalog = undefined;

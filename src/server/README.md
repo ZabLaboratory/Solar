@@ -52,6 +52,15 @@ equal-length corruption. Changed source bytes are never returned under an old
 digest. Valid warm preparation still reuses metadata without hashing all fonts.
 `report.indexRecovered` and `report.repaired` expose these recovery events.
 Legacy Windows FON/FNT bitmap files are reported as unsupported. The authenticated
+`<fontCatalog.url>/report` endpoint and `SolarReceptionServer.status().fonts`
+expose preparation state, deduplicated prepared file/byte counts, source reads and
+reuse, extension-based exclusion counts, repaired files and capacity limits.
+Diagnostics contain no source paths or catalogue token. A failed startup retains
+its bounded preparation failure code after cleanup. Prepared files are not a
+claim that a browser engine has registered every font; engine registration remains
+measured separately. The file catalogue is bounded to 2,048 distinct files,
+1 GiB of encoded bytes and 64 MiB per source file; the report states these actual
+limits rather than promising unrestricted coverage. The authenticated
 loopback catalogue belongs to the receiver lifecycle and has explicit origin,
 file-count, byte and digest checks. No scene data is written to this catalogue.
 The browser receives its endpoint through `ReceptionConnection.fontCatalog`.
