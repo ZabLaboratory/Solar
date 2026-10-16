@@ -1,0 +1,20 @@
+{
+  "capturedUtc": "2026-10-16T02:01:05.2690145Z",
+  "sourceHead": "30074b151430e8e9220a9a76021367820a9045b1",
+  "scope": "Read-only verification of installation-font admission lifetime; no product changes",
+  "tests": "20261016T020020Z-font-session-tests.json",
+  "passed": 23,
+  "failed": 0,
+  "skipped": 0,
+  "findings": [
+    "prewarmVisionSession serializes with scene loads and returns when the same live session already has fontsReady",
+    "mountVisionSceneNow enumerates installationFonts only while session.fontsReady is false; the flag is set after successful admissions",
+    "The existing prepares-empty-engine test verifies one catalogue invocation across two prewarms and subsequent scene load, using one presenter",
+    "InstallationFontBatches itself fetches and hashes on each explicit invocation; this low-level repeated invocation is not the persistent-session scene path",
+    "The prior forced second-transfer benchmark does not establish repeated production scene-load cost"
+  ],
+  "limitations": [
+    "Synthetic presenter tests do not qualify current installed common Prism or TTC face and glyph coverage",
+    "No new memory cache, scene history, integrity bypass, runtime installation or shared-app restart"
+  ]
+}
