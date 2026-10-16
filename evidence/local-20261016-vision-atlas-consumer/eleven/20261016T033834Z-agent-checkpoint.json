@@ -1,0 +1,20 @@
+{
+  "status": "active-context-complete",
+  "base": "22af74c2a001850c0fb1c660a38162a16fe018af",
+  "productEdits": [],
+  "reuseDecision": "Adapt NativeSceneFrames, persistent vision-presenter and NativeCompositionSession. Reuse current publisher and source state hash fences. Replace native-path LSML owner-local atlas projection with accepted Vision GPU contribution graph metadata rather than duplicate layout.",
+  "observations": [
+    "Current prepareNativeComposition rewrites LSML before Vision rendering",
+    "Current scalar NativeCompositionSession.project recomputes LSML layout independently",
+    "Presenter frame-submitted currently lacks accepted composition metadata",
+    "Native composition source hash binds original LSML; rendered variant sceneVersion must be separately checked against Vision receipt",
+    "FramePatches already merges scalar leaves while retaining receipts; preserve submission ordering and source state hash association"
+  ],
+  "pending": [
+    "Review actual upstream receipt schema after Vision owner implements it",
+    "Add strict runtime receipt validation and physical source size handling",
+    "Ensure publication follows exact accepted frame and mutations cannot publish stale geometry",
+    "Adopt coherent pinned Vision assets after rebuilt WASM; qualified integrated browser/native proof required"
+  ],
+  "runtime": "Common dev untouched; no Live/REC change"
+}

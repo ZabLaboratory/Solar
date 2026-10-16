@@ -1,0 +1,24 @@
+{
+  "unit": "local-20261016-vision-atlas-consumer",
+  "role": "eleven",
+  "thread": "01a11a8b-8f4f-7fc2-abc4-7983042e4f63",
+  "base": "22af74c2a001850c0fb1c660a38162a16fe018af",
+  "authority": "Remaining corrections excluding transition and scene-switch duration",
+  "scope": [
+    "src/engine/vision-contracts.ts",
+    "src/engine/vision-presenter.ts",
+    "src/engine/native-scene-frames.ts",
+    "src/engine/native-composition-session.ts",
+    "src/scenes/native-composition*",
+    "src/scenes/native-document.ts",
+    "affected tests, domain README and generated discovery index",
+    "coherent pinned Vision producer assets"
+  ],
+  "intent": "Use accepted Vision graph receipt as native composition authority; expose atlas from same persistent Vision GPU canvas without LSML atlas layout rewrite",
+  "dependencies": [
+    "Vision owner same engine atlas-to-canvas API",
+    "Prism6f3d5aa5 global-scene-texels consumer",
+    "Pulsar8f23d6da global-scene-texels backend"
+  ],
+  "runtime": "No common installation or public output operation"
+}
