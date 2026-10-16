@@ -14,6 +14,7 @@ import {
   prepareEditableBindings,
   prepareNativeComposition,
 } from "./editable-bindings";
+import type { NativeCompositionProjection } from "./native-composition";
 
 export type LSMLDocument = Record<string, unknown> & {
   scene_id: string;
@@ -709,7 +710,11 @@ export class NativeSceneAssets {
   async renderPackage(
     document: LSMLDocument,
     signal?: AbortSignal,
-    nativeComposition?: { width: number; height: number },
+    nativeComposition?: {
+      width: number;
+      height: number;
+      maxTextureSize: number;
+    },
     separateFonts = false,
     directParts = false,
     instanceSources: Promise<SceneSourceDelivery[]> = Promise.resolve([]),
@@ -728,7 +733,11 @@ export class NativeSceneAssets {
     animationBindings: Record<string, string>;
     geometryBindings: Record<string, [string, string]>;
     hostFonts?: VerifiedFont[];
-    surface?: { width: number; height: number };
+    surface?: {
+      width: number;
+      height: number;
+      composition?: NativeCompositionProjection;
+    };
   }> {
     if (
       document.scene_id !== this.origin.sceneId ||
@@ -753,8 +762,15 @@ export class NativeSceneAssets {
     );
     const geometryBindings = prepareEditableBindings(variant);
     const animationBindings = prepareAnimationBindings(variant);
-    const surface = nativeComposition
-      ? prepareNativeComposition(variant, nativeComposition)
+    const composition = nativeComposition
+      ? prepareNativeComposition(
+          variant,
+          {
+            width: nativeComposition.width,
+            height: nativeComposition.height,
+          },
+          nativeComposition.maxTextureSize,
+        )
       : undefined;
     const textBindings = prepareTextBindings(variant);
     const [preparedImages, sources] = await Promise.all([
@@ -846,7 +862,15 @@ export class NativeSceneAssets {
         animationBindings,
         geometryBindings,
         ...(separateFonts ? { hostFonts: fonts } : {}),
-        ...(surface ? { surface } : {}),
+        ...(composition
+          ? {
+              surface: {
+                width: composition.width,
+                height: composition.height,
+                ...(composition.groups.length ? { composition } : {}),
+              },
+            }
+          : {}),
       };
     } catch (error) {
       instanceImages.release();

@@ -3,6 +3,7 @@ import {
   mountVisionScene,
   disconnectVisionSession,
   prewarmVisionSession,
+  visionMaxTextureSize,
 } from "../../src/engine/vision-presenter";
 import { nativeManifest } from "../helpers/native-source";
 
@@ -88,7 +89,10 @@ function setup() {
   document.head.innerHTML = '<base href="http://localhost:3000/">';
   vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue({
     drawImage: vi.fn(),
-  } as unknown as CanvasRenderingContext2D);
+    MAX_TEXTURE_SIZE: 3379,
+    getParameter: vi.fn(() => 8192),
+    isContextLost: vi.fn(() => false),
+  } as unknown as WebGL2RenderingContext);
   const target = document.createElement("div");
   document.body.append(target);
   targets.push(target);
@@ -144,6 +148,7 @@ it("prepares the empty engine and installation fonts before any scene, then reus
   await prewarmVisionSession(target, vi.fn(), fonts);
   expect(fake.created).toBe(1);
   expect(fake.requests).toEqual(["init-empty", "preload-fonts"]);
+  expect(visionMaxTextureSize(target)).toBe(8192);
   expect(target.querySelector("[data-solar-vision-scene]")).toBeNull();
   await prewarmVisionSession(target, vi.fn(), fonts);
   expect(catalogs).toBe(1);

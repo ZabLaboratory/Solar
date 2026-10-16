@@ -36,6 +36,27 @@ document rebuilds. See `docs/development/native-lsdp.md` for local operation.
 If preparation advances the resource between read and subscribe, BASE_MISMATCH
 causes a fresh read/render/hash check, bounded to four attempts on that connection.
 Other failures and repeated conflicts remain visible and reconnect normally.
+The separate composition publisher also handles its own terminal socket close:
+it is discarded without a remote clear, then the runtime's shared reconnect
+backoff refreshes its token and republishes only the latest accepted plan or
+clear. This retry leaves a healthy primary LSML connection in place; primary
+recovery takes priority and runtime disconnect cancels pending composition work.
+`NativeCompositionSession` stores accepted source state while the peer is absent
+and replays that latest state when a replacement peer starts; it reports retry
+success only after the replacement peer completes its first current publication.
+When the trusted host config enables `nativeCompositionLSDP`, the runtime also
+derives compositor metadata from that same active LSML document and publishes
+it to the separate `solar/composition` resource. It does not mutate the source
+LSML, insert plan fields into native snapshots, or wait for this side-channel
+before returning the existing mutation or frame receipt. Main claims the
+physical A/B producer nonce in that resource; Solar verifies the nonce before
+each graph CAS and never changes the owner map. The publisher keeps one
+read/write active and only the latest pending plan. Pending callers can receive
+`superseded`; this is not an LSML ACK. `clear` is an ordinary latest-state
+action and may be superseded by a newer plan. `retire` is terminal: it blocks
+later side-channel work and clears after the active operation before closing
+the peer. Publisher, session replay and reconnect paths have targeted Solar unit
+coverage; real cross-process/Main/Pulsar composition remains a separate qualification.
 `native-worker-client.ts` owns the dedicated `native-worker.ts` transport and
 LSML verification thread. It certifies each state through its private Worker
 channel; the render consumer reuses that exact structured-clone state instead of

@@ -1,4 +1,5 @@
 import type { VerifiedFont } from "../scenes/verified-font";
+import type { NativeCompositionProjection } from "../scenes/native-composition";
 
 /** Host/presenter wire messages and scene ownership handles. Implementations remain in vision-presenter. */
 export interface VisionLiveMediaSource {
@@ -74,7 +75,11 @@ export interface VisionRenderPackage {
   geometryBindings?: Record<string, [string, string]>;
   hostFonts?: Array<Uint8Array | VerifiedFont>;
   requiredFontDigests?: readonly string[];
-  surface?: { width: number; height: number };
+  surface?: {
+    width: number;
+    height: number;
+    composition?: NativeCompositionProjection;
+  };
   installationFonts?: () => AsyncIterable<Uint8Array[]>;
   resolveImages?: (patch: Record<string, unknown>) => Promise<{
     values: Record<string, unknown>;

@@ -78,6 +78,7 @@ vi.mock("../../src/engine/vision-presenter", () => ({
   prewarmVisionSession: mocks.prewarm,
   disconnectVisionSession: mocks.disconnectSession,
   activateVisionScene: mocks.activate,
+  visionMaxTextureSize: vi.fn(() => 8192),
 }));
 vi.mock("../../src/engine/live-media", () => ({
   CaptureStreamPool: class {},
@@ -190,6 +191,13 @@ function change(path = "/defaults/__lit.text.title") {
 }
 
 describe("native Solar subscriber", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.peers.length = 0;
+    mocks.subscribeConflicts = 0;
+    mocks.retrySnapshot = structuredClone(document);
+  });
+
   it("receives all 512 states in order and confirms every identity after their covering frame", async () => {
     const { runtime, receiveRaw, flush, context, scene, options } =
       await setup();
@@ -284,12 +292,6 @@ describe("native Solar subscriber", () => {
       }),
     );
     runtime.disconnect();
-  });
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.peers.length = 0;
-    mocks.subscribeConflicts = 0;
-    mocks.retrySnapshot = structuredClone(document);
   });
   it("keeps exact generation identity and ignores changes to another physical lane", async () => {
     const collection = {

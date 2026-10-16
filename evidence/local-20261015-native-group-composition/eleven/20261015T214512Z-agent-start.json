@@ -1,0 +1,23 @@
+{
+  "schema": "zab.agent-start/v1",
+  "timestamp": "20261015T214512Z",
+  "role": "eleven",
+  "unit": "local-20261015-native-group-composition",
+  "repository": "Solar",
+  "worktree": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-native-group-composition",
+  "commonGitDir": "D:/Documents/Zab/Solar/.git",
+  "branch": "eleven/local-20261015-native-group-composition",
+  "base": "486d87dbee1845423e4db32dd4c710119fdae133",
+  "head": "486d87dbee1845423e4db32dd4c710119fdae133",
+  "worktreeStatus": [],
+  "authorizedScope": "isolated active-scene native group composition; source-to-render geometry, opacity, masks, order, atomic validation and lifecycle",
+  "exclusions": [
+    "scene transition",
+    "prepare/commit/readiness",
+    "switch duration",
+    "common runtime replacement/restart",
+    "public stream",
+    "remote push/merge",
+    "foreign worktrees"
+  ]
+}

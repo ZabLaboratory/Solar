@@ -34,6 +34,7 @@ export type SolarErrorCode =
   | "INSTANCE_SOURCE_INVALID"
   | "VISION_INIT_FAILED"
   | "VISION_PATCH_FAILED"
+  | "NATIVE_COMPOSITION_FAILED"
   | "SOUND_FAILED"
   | "CAMERA_CAPTURE_FAILED";
 
@@ -44,8 +45,10 @@ export interface SolarError {
 }
 
 export interface MountOptions {
-  /** Trusted native compositor viewport; local capture pixels remain host-owned. */
+  /** Trusted physical compositor viewport; capture pixels remain host-owned. */
   nativeComposition?: { width: number; height: number };
+  /** Optional derived-plan channel, valid only for a physical A/B lane host. */
+  nativeCompositionLSDP?: NativeCompositionLSDPOptions;
   /** Trusted host-supplied font bytes; source identity and assets stay pinned. */
   fontAssetsProvider?: (
     signal: AbortSignal,
@@ -75,6 +78,15 @@ export interface NativeLSDPOptions {
   resource: string;
   /** Exact entry of a native generation/session collection, never a role fallback. */
   selector?: string;
+}
+
+export interface NativeCompositionLSDPOptions {
+  url: string;
+  resource: "solar/composition";
+  /** Physical lane slot, not a Preview/Program role. */
+  graph: "A" | "B";
+  /** Main-assigned nonce claimed in `producers[graph]` before this host publishes. */
+  producer_id: string;
 }
 
 export type ResolveCaptureDevice = (

@@ -20,6 +20,59 @@ one native subscription path. Collections use a selector for an exact scene
 generation or API test-session ID; unrelated entries cannot retarget Vision.
 Scene-intent, editable and camera responses await native application ACK.
 
+## Derived native composition plan
+
+A trusted physical lane host can opt into `nativeComposition` and
+`nativeCompositionLSDP` in the Solar mount options. Solar derives the plan from
+the LSML document already selected by that lane's active LSDP snapshot; it does
+not fetch a second scene, rewrite the snapshot or publish through the
+transition-feedback resource. `source` identifies the active native resource,
+optional selector, scene ID/version and exact LSDP state hash. `planHash` is
+`sha256:` plus SHA-256 of canonical UTF-8 JSON for `{schema,source,viewport,
+groups,surfaces}`; it excludes the Main-assigned `producer_id`.
+
+The separate `solar/composition` state is
+`{schema:'solar.native-composition.state/1', producers:{A?,B?}, graphs:{A?,B?}}`.
+Main claims or retires each physical slot by CAS on this same resource. Solar
+only reads the claim, and writes/removes the graph when the configured nonce
+still owns the slot. A stale-base retry rereads and refuses if Main rotated the
+owner. Only groups and surfaces are the canonical plan graph; there is no
+parallel owner partition.
+
+The publisher treats the plan as derived latest state. It allows one peer
+operation in flight and retains only one latest pending operation; each newly
+received plan supersedes the previous pending plan. `completed`, `superseded`
+and `retired` Promise results describe this side channel only; they do not
+replace or defer the original mutation receipts. Clear follows the latest-state
+queue and can itself be superseded by a newer plan. Retirement is terminal: it
+blocks later work and clears the owned graph after any active operation before
+closing the peer. This bound is verified with a blocked fake peer and a 130-plan
+burst; it is not a native 130-mutations-per-second measurement.
+
+The composition socket has its own terminal-close recovery. If only that peer
+closes, Solar abandons it without attempting a clear over the dead connection,
+uses the runtime's existing reconnect timer/backoff to fetch a fresh token and
+replace that peer, then republishes only the latest accepted composition (or
+repeats its current clear). Composition accepted from later LSML mutations is
+retained as one current publication while that peer is absent, so recovery does
+not depend on another mutation arriving. The primary LSML/Vision session remains connected;
+a primary reconnect takes priority on the shared timer, and runtime disconnect
+cancels a pending composition retry. This recovers the derived side channel; it
+does not create an LSML receipt or retain prior scene plans.
+
+The current Solar planner accepts only resolved fixed frames for native group
+bounds and reads `MAX_TEXTURE_SIZE` from the existing Vision WebGL2 session.
+Unresolved grid/repeat/auto-layout geometry and over-budget atlases fail closed.
+Pulsar's isolated native probe now covers Solar surface bands composed with a
+capture under group opacity. Non-null masks and unsupported group blend modes
+remain refused. Solar's local plan tests do not qualify atlas routing through
+the external Main consumer and Pulsar together, so they are not proof of
+end-to-end mixed composition pixels. See `tests/unit/native-composition.test.ts`,
+`tests/unit/native-composition-publisher.test.ts`,
+`tests/unit/native-composition-session.test.ts` and
+`tests/unit/native-lsdp-runtime-composition.test.ts` plus
+`tests/unit/native-lsdp-runtime.test.ts` for Solar-local coverage.
+
 ## Mutation application contract
 
 After sending, the producer is outside the mutation application/rendering contract.

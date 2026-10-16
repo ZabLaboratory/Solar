@@ -5,7 +5,13 @@ import {
   NativeSceneAssets,
   type LSMLDocument,
 } from "../scenes/native-document";
-import { mountVisionScene, type VisionSceneHandle } from "./vision-presenter";
+import {
+  mountVisionScene,
+  visionMaxTextureSize,
+  type VisionSceneHandle,
+} from "./vision-presenter";
+import type { NativeCompositionProjection } from "../scenes/native-composition";
+import { prepareNativeComposition } from "../scenes/native-composition";
 
 /** Prepare the active scene; inactive sources and GPU frames are never retained. */
 export class NativeSceneFrames {
@@ -25,12 +31,29 @@ export class NativeSceneFrames {
     scene.dispose();
   }
 
+  /** Recompute compositor metadata for a scalar LSML update without loading a scene. */
+  projectComposition(
+    document: LSMLDocument,
+  ): NativeCompositionProjection | null {
+    const viewport = this.options.nativeComposition;
+    if (!viewport) return null;
+    return prepareNativeComposition(
+      structuredClone(document),
+      viewport,
+      visionMaxTextureSize(this.options.target),
+    );
+  }
+
   async prepare(
     document: LSMLDocument,
     check: () => void,
     signal: AbortSignal,
     activeAssets: NativeSceneAssets | null,
-  ): Promise<{ scene: VisionSceneHandle; assets: NativeSceneAssets }> {
+  ): Promise<{
+    scene: VisionSceneHandle;
+    assets: NativeSceneAssets;
+    composition: NativeCompositionProjection | null;
+  }> {
     let started = performance.now();
     let assets = activeAssets;
     if (
@@ -66,6 +89,12 @@ export class NativeSceneFrames {
     }
     this.measure("source", started, { sceneId: document.scene_id });
     started = performance.now();
+    const nativeComposition = this.options.nativeComposition
+      ? {
+          ...this.options.nativeComposition,
+          maxTextureSize: visionMaxTextureSize(this.options.target),
+        }
+      : undefined;
     const instanceSources = acquireInstanceSources(
       document,
       this.options.sceneSourceProvider,
@@ -75,7 +104,7 @@ export class NativeSceneFrames {
       .renderPackage(
         document,
         signal,
-        this.options.nativeComposition,
+        nativeComposition,
         true,
         true,
         instanceSources,
@@ -136,7 +165,11 @@ export class NativeSceneFrames {
       await scene.flush?.();
       this.measure("vision", started, { sceneId: document.scene_id });
       check();
-      return { scene, assets };
+      return {
+        scene,
+        assets,
+        composition: renderPackage.surface?.composition ?? null,
+      };
     } catch (error) {
       scene?.dispose();
       throw error;

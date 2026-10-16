@@ -59,6 +59,15 @@ Merkle hash, and applies atomic `lsdp.apply/1` notifications. See
 [native local development](docs/development/native-lsdp.md) for the Rust server
 launcher and mutation endpoint.
 
+A trusted physical lane host may also set `nativeComposition: { width, height }`
+and `nativeCompositionLSDP: { url, resource: "solar/composition", graph: "A" | "B",
+producer_id }`. The separate LSDP resource carries an active-scene composition
+plan derived by Solar from the same LSML snapshot; Main owns the producer claim
+for that physical host. This opt-in metadata path does not alter LSML snapshots
+or mutation receipts. It is a planning/publication contract, not a claim of
+completed native Solar-band rendering: the current Pulsar consumer still
+rejects unsupported surface, mask and blend content.
+
 The `@zablab/solar/server` entry runs in a Node 22+/Electron-main host. It owns
 the packaged Rust receiver, injects declared Solar/Orion resources and waits for
 real protocol readiness. The browser entry never creates a process. Full LSML

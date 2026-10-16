@@ -90,6 +90,7 @@ describe("native LSML mutation and runtime package", () => {
       const runtime = await assets.renderPackage(scene, undefined, {
         width: 1920,
         height: 1080,
+        maxTextureSize: 8192,
       });
       const rendering = JSON.parse(
         strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
@@ -102,7 +103,6 @@ describe("native LSML mutation and runtime package", () => {
   it.each([
     { kind: "frame", children: [] },
     { kind: "frame", size: { w: 640, h: 360 }, children: [] },
-    { kind: "frame", children: [{ kind: "x-zab.capture", id: "camera" }] },
   ])(
     "uses the native viewport for a single-band surface independently of root size",
     async (layout) => {
@@ -121,6 +121,7 @@ describe("native LSML mutation and runtime package", () => {
       const runtime = await assets.renderPackage(scene, undefined, {
         width: 1920,
         height: 1080,
+        maxTextureSize: 8192,
       });
       expect(runtime.surface).toEqual({ width: 1920, height: 1080 });
       const rendering = JSON.parse(
@@ -132,6 +133,74 @@ describe("native LSML mutation and runtime package", () => {
       expect(scene).toEqual(original);
     },
   );
+  it("exports exact local capture dimensions for the native compositor", async () => {
+    const scene = {
+      ...document,
+      layout: {
+        kind: "frame",
+        size: { w: 640, h: 360 },
+        children: [
+          {
+            kind: "x-zab.capture",
+            id: "camera",
+            size: { w: 320, h: 180 },
+          },
+        ],
+      },
+    };
+    const assets = new NativeSceneAssets({
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(scene)),
+      assets: new Map(),
+      sourceDigest: version,
+      blueManifest: nativeManifest(scene.scene_id, version),
+    });
+    const runtime = await assets.renderPackage(scene, undefined, {
+      width: 1920,
+      height: 1080,
+      maxTextureSize: 8192,
+    });
+
+    expect(runtime.surface?.composition?.groups[1]?.children).toContainEqual({
+      kind: "capture",
+      componentId: "camera",
+      localSize: { width: 320, height: 180 },
+      affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
+      localOpacity: 1,
+      visible: true,
+      cropPercent: { left: 0, top: 0, right: 0, bottom: 0 },
+    });
+  });
+  it("rejects a capture with no authored local dimensions", async () => {
+    const scene = {
+      ...document,
+      layout: {
+        kind: "frame",
+        children: [{ kind: "x-zab.capture", id: "camera" }],
+      },
+    };
+    const assets = new NativeSceneAssets({
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(scene)),
+      assets: new Map(),
+      sourceDigest: version,
+      blueManifest: nativeManifest(scene.scene_id, version),
+    });
+
+    await expect(
+      assets.renderPackage(scene, undefined, {
+        width: 1920,
+        height: 1080,
+        maxTextureSize: 8192,
+      }),
+    ).rejects.toThrow("NATIVE_COMPOSITION_UNRESOLVED_BOUNDS:camera");
+  });
   it("separates fonts only for persistent runtime transfer and keeps source packaging intact", async () => {
     const font = new Uint8Array([1, 2, 3]);
     const origin: SceneSourceDelivery = {

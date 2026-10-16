@@ -1,4 +1,8 @@
-import { InstanceSourceError } from "../scenes/instances";
+import {
+  selectNativeDocument,
+  reportNativeLsdpError,
+  measureNativeLsdpStage,
+} from "./native-lsdp-runtime-support";
 import {
   disconnectVisionSession,
   prewarmVisionSession,
@@ -26,6 +30,9 @@ import {
 import { presentationFeedback } from "./control-feedback";
 import { FramePatches } from "./frame-patches";
 import { NativeSceneFrames } from "./native-scene-frames";
+import { NativeCompositionSession } from "./native-composition-session";
+import { NativeLsdpReconnect } from "./native-lsdp-reconnect";
+import type { NativeCompositionProjection } from "../scenes/native-composition";
 import { createCaptureResolver } from "../sources/capture";
 import { createPeerSources } from "../sources/peers";
 import { readReservedPeerLeaves } from "../peer-viewer/injection";
@@ -100,8 +107,7 @@ export class NativeLsdpRuntime {
   }
   private active = false;
   private peer: BrowserLSDP | null = null;
-  private timer: ReturnType<typeof setTimeout> | null = null;
-  private delay = 250;
+  private readonly reconnectTimer: NativeLsdpReconnect;
   private abort: AbortController | null = null;
   private token: SolarToken;
   private document: LSMLDocument | null = null;
@@ -112,12 +118,20 @@ export class NativeLsdpRuntime {
   private sequence: number | null = null;
   private assets: NativeSceneAssets | null = null;
   private readonly frames: NativeSceneFrames;
+  private readonly composition: NativeCompositionSession;
+  private readonly measure: (
+    stage: string,
+    start: number,
+    extra?: Record<string, unknown>,
+  ) => void;
   private finalizedPresentation: string | null = null;
   private presentation: {
     id: string;
     document: LSMLDocument;
     scene: VisionSceneHandle;
     assets: NativeSceneAssets;
+    composition: NativeCompositionProjection | null;
+    previousComposition: NativeCompositionProjection | null;
     committed: boolean;
     finalized?: boolean;
     previous: { scene: VisionSceneHandle; media: LiveMediaController } | null;
@@ -139,6 +153,25 @@ export class NativeLsdpRuntime {
   >;
 
   constructor(private readonly options: MountOptions) {
+    this.reconnectTimer = new NativeLsdpReconnect({
+      active: () => this.active,
+      connectPrimary: () => void this.connect(),
+      reconnectComposition: () =>
+        void this.reconnectTimer.recoverComposition(
+          this.token,
+          (authToken) => this.composition.start(authToken),
+          (error) => this.report(error),
+        ),
+      connecting: () => this.options.onStatus?.("connecting"),
+    });
+    this.measure = (stage, start, extra) =>
+      measureNativeLsdpStage(
+        stage,
+        start,
+        this.document?.scene_id,
+        options.nativeLSDP.resource,
+        extra,
+      );
     this.sound = new VisionSound(options.sceneAudio === true, (error) =>
       options.onError?.({
         code: "SOUND_FAILED",
@@ -155,24 +188,15 @@ export class NativeLsdpRuntime {
       },
       (error) => this.report(error),
       () => this.abort?.signal,
-      (stage, start, extra) => this.measure(stage, start, extra),
+      this.measure,
+    );
+    this.composition = new NativeCompositionSession(
+      options,
+      () => this.reconnectTimer.schedule("composition"),
+      () => this.reconnectTimer.reset(),
     );
     this.peers = createPeerSources(options, createPeerViewerFromInjection);
     this.resolveCaptureDevice = createCaptureResolver(options);
-  }
-
-  private measure(stage: string, start: number, extra = {}): void {
-    if (performance.getEntriesByName("solar:native-stage").length >= 64)
-      performance.clearMeasures("solar:native-stage");
-    performance.measure("solar:native-stage", {
-      start,
-      detail: {
-        stage,
-        sceneId: this.document?.scene_id,
-        resource: this.options.nativeLSDP.resource,
-        ...extra,
-      },
-    });
   }
 
   start(): void {
@@ -185,8 +209,7 @@ export class NativeLsdpRuntime {
     this.active = false;
     this.animations.dispose();
     this.sound.dispose();
-    if (this.timer) clearTimeout(this.timer);
-    this.timer = null;
+    this.reconnectTimer.clear();
     this.closePeer();
     if (this.presentation) {
       if (this.presentation.scene !== this.current?.scene)
@@ -202,6 +225,7 @@ export class NativeLsdpRuntime {
     }
     this.current?.media.dispose();
     this.current?.scene.dispose();
+    this.composition.retire();
     disconnectVisionSession(this.options.target);
     this.current = null;
     this.document = null;
@@ -217,9 +241,8 @@ export class NativeLsdpRuntime {
     this.token = token;
     if (!this.active) return;
     this.closePeer();
-    this.reconnect();
+    this.reconnectTimer.schedule("primary");
   }
-
   private closePeer(): void {
     this.patches?.close();
     this.patches = null;
@@ -232,24 +255,13 @@ export class NativeLsdpRuntime {
     peer?.close();
   }
 
-  private reconnect(): void {
-    if (!this.active || this.timer) return;
-    this.options.onStatus?.("connecting");
-    this.timer = setTimeout(() => {
-      this.timer = null;
-      void this.connect();
-    }, this.delay);
-    this.delay = Math.min(this.delay * 2, 10_000);
-  }
-
   private async connect(): Promise<void> {
     if (!this.active || this.abort) return;
     this.options.onStatus?.("connecting");
     const abort = new AbortController();
     this.abort = abort;
     try {
-      // Both physical hosts start their engine/font bank before scene admission.
-      // Observe failure immediately even while token acquisition is pending.
+      // Prewarm both engines before scene admission and observe failures immediately.
       const engineReady = prewarmVisionSession(
         this.options.target,
         (error) => this.report(error),
@@ -259,6 +271,7 @@ export class NativeLsdpRuntime {
       const authToken =
         typeof this.token === "string" ? this.token : await this.token.fetch();
       abort.signal.throwIfAborted();
+      this.composition.start(authToken);
       const callbacks = {
         authToken,
         onTransaction: (value: unknown, context: IncomingContext) =>
@@ -285,6 +298,13 @@ export class NativeLsdpRuntime {
             receipts.forEach((receipt) => receipt.check());
             const last = receipts.at(-1)!.detail;
             this.presentedDocument = receipts.at(-1)!.document;
+            const latestReceipt = receipts.at(-1)!;
+            if (this.current)
+              this.composition.acceptDocument(
+                latestReceipt.document,
+                this.frames,
+                last.stateHash,
+              );
             for (const receipt of receipts)
               this.options.target.dispatchEvent(
                 new CustomEvent("solar:lsdp-applied", {
@@ -306,13 +326,13 @@ export class NativeLsdpRuntime {
       abort.signal.throwIfAborted();
       await this.readSubscribe(peer, abort.signal);
       abort.signal.throwIfAborted();
-      this.delay = 250;
+      this.reconnectTimer.reset();
       this.options.onStatus?.("live");
     } catch (error) {
       if (!abort.signal.aborted) {
         this.report(error);
         this.closePeer();
-        this.reconnect();
+        this.reconnectTimer.schedule("primary");
       }
     }
   }
@@ -321,7 +341,6 @@ export class NativeLsdpRuntime {
     peer: BrowserLSDP,
     signal: AbortSignal,
   ): Promise<void> {
-    // Same-connection catch-up also serves explicit native resync notifications.
     for (let attempt = 0; attempt < 4; attempt++) {
       const ready = new Promise<void>((resolve, reject) => {
         this.snapshot = { resolve, reject };
@@ -359,7 +378,7 @@ export class NativeLsdpRuntime {
     if (this.peer !== peer || !this.active) return;
     this.report(error);
     this.closePeer();
-    this.reconnect();
+    this.reconnectTimer.schedule("primary");
   }
 
   private async receive(
@@ -392,7 +411,7 @@ export class NativeLsdpRuntime {
         );
         const document = handled
           ? this.document
-          : this.selectedDocument(state.value);
+          : selectNativeDocument(state.value, this.options.nativeLSDP.selector);
         const hash = state.stateHash;
         if (handled) {
           /* coordinated presentation owns the visible frame */
@@ -404,14 +423,19 @@ export class NativeLsdpRuntime {
               ? jsonPatch.compare(this.presentedDocument, document)
               : null;
           const patch = operations ? defaultsPatch(operations, document) : null;
+          const compositionNeedsRebuild =
+            patch !== null && this.composition.requiresRebuild(patch);
           if (
             patch &&
             this.current &&
+            !compositionNeedsRebuild &&
             this.current.scene.canApplyPatch?.(patch) !== false
           ) {
             await this.visual(async () => {
               check();
               await this.current!.scene.applyPatch(patch);
+              if (this.current)
+                this.composition.acceptDocument(document, this.frames, hash);
             });
           } else
             await this.visual(() =>
@@ -419,6 +443,7 @@ export class NativeLsdpRuntime {
                 animationDocument(document, this.animations.current(document)),
                 check,
                 signal,
+                hash,
               ),
             );
         } else {
@@ -430,6 +455,7 @@ export class NativeLsdpRuntime {
           await this.current?.scene.flush?.();
           this.current = null;
           this.assets = null;
+          this.composition.clear();
         }
         check();
         this.document = document;
@@ -502,7 +528,10 @@ export class NativeLsdpRuntime {
             throw new Error("Native snapshot required.");
           })());
     const resourceState = state.value;
-    let next = this.selectedDocument(resourceState);
+    let next = selectNativeDocument(
+      resourceState,
+      this.options.nativeLSDP.selector,
+    );
     const hash = state.stateHash;
     if (
       !application &&
@@ -535,16 +564,20 @@ export class NativeLsdpRuntime {
           ? defaultsPatch(jsonPatch.compare(this.presentedDocument, next), next)
           : null))
       : null;
+    const compositionNeedsRebuild =
+      patch !== null && this.composition.requiresRebuild(patch);
     this.measure("classify", classifiedAt);
     // Only replaceable scalar state can share a frame. Native transport receives
     // an honest "received" receipt; presentation receipts still follow Vision.
     // Commands, structure and coordinated lane transitions remain synchronous.
     const scalar = scalarOperations(selectedOperations);
     if (
+      next &&
       scalar &&
       patch &&
       this.current &&
       this.patches &&
+      !compositionNeedsRebuild &&
       this.current.scene.canApplyPatch?.(patch) !== false &&
       this.document?.scene_id === next?.scene_id &&
       this.document?.scene_version === next?.scene_version &&
@@ -562,7 +595,11 @@ export class NativeLsdpRuntime {
         stateHash: hash,
         render: "patch",
       };
-      this.patches.add(patch, { detail, check, document: next! });
+      this.patches.add(patch, {
+        detail,
+        check,
+        document: next,
+      });
       this.options.target.dispatchEvent(
         new CustomEvent("solar:lsdp-received", { detail }),
       );
@@ -588,6 +625,7 @@ export class NativeLsdpRuntime {
       await this.current?.scene.flush?.();
       this.current = null;
       this.assets = null;
+      this.composition.clear();
     } else if (
       next &&
       this.document &&
@@ -595,16 +633,21 @@ export class NativeLsdpRuntime {
     ) {
       rendering = "unchanged";
     } else if (
+      next &&
       patch &&
       this.current &&
+      !compositionNeedsRebuild &&
       this.current.scene.canApplyPatch?.(patch) !== false &&
       this.document?.scene_id === next.scene_id &&
       this.document?.scene_version === next.scene_version
     ) {
       rendering = "patch";
+      const patchedDocument = next;
       await this.visual(async () => {
         check();
         await this.current!.scene.applyPatch(patch);
+        if (this.current)
+          this.composition.acceptDocument(patchedDocument, this.frames, hash);
       });
     } else {
       rendering = "document";
@@ -613,6 +656,7 @@ export class NativeLsdpRuntime {
           animationDocument(next!, this.animations.current(next!)),
           check,
           signal,
+          hash,
         ),
       );
     }
@@ -640,24 +684,6 @@ export class NativeLsdpRuntime {
     return application
       ? { level: "applied", transactionId: mutation.id }
       : { level: "applied", stateHash: hash };
-  }
-
-  private selectedDocument(state: unknown): LSMLDocument | null {
-    const selector = this.options.nativeLSDP!.selector;
-    if (!selector) {
-      if (state === null) return null;
-      const document = requireLSML(state);
-      if (!document["x-solar-transition"]) return document;
-      const clean = structuredClone(document);
-      delete clean["x-solar-transition"];
-      return clean;
-    }
-    if (!state || typeof state !== "object" || Array.isArray(state))
-      throw new Error("Native scene collection required.");
-    const value = Object.hasOwn(state, selector)
-      ? (state as Record<string, unknown>)[selector]
-      : null;
-    return value === null ? null : requireLSML(value);
   }
 
   private async transition(
@@ -752,7 +778,8 @@ export class NativeLsdpRuntime {
         ["commit", "finalize"].includes(transition.phase)
       ) {
         const document = requireLSML(
-          transition.source ?? this.selectedDocument(state),
+          transition.source ??
+            selectNativeDocument(state, this.options.nativeLSDP.selector),
         );
         const frame = await this.frames.prepare(
           document,
@@ -764,6 +791,7 @@ export class NativeLsdpRuntime {
           id: transition.request_id,
           document,
           ...frame,
+          previousComposition: this.composition.currentProjection,
           committed: false,
           previous: this.current,
           previousDocument: this.document,
@@ -793,6 +821,7 @@ export class NativeLsdpRuntime {
               id: transition.request_id,
               document,
               ...frame,
+              previousComposition: this.composition.currentProjection,
               committed: false,
               previous: this.current,
               previousDocument: this.document,
@@ -812,7 +841,10 @@ export class NativeLsdpRuntime {
         // A subscriber joining after compensation receives the restored source
         // with abort metadata. Present that source before confirming recovery.
         if (!pending && !this.hasSnapshot) {
-          const restored = this.selectedDocument(state);
+          const restored = selectNativeDocument(
+            state,
+            this.options.nativeLSDP.selector,
+          );
           if (restored) {
             await this.render(restored, check, signal);
             this.document = restored;
@@ -826,6 +858,7 @@ export class NativeLsdpRuntime {
             if (this.current?.media !== pending.previous?.media)
               this.current?.media.dispose();
             this.current = pending.previous;
+            this.composition.use(pending.previousComposition);
             this.document = pending.previousDocument;
             this.assets = pending.previousAssets;
             if (this.current)
@@ -859,6 +892,7 @@ export class NativeLsdpRuntime {
           pending.scene.activate(); // old frame remains available until Orion finalizes.
           pending.previous?.scene.deactivate?.();
           this.current = { scene: pending.scene, media };
+          this.composition.use(pending.composition);
           this.assets = pending.assets;
           this.document = pending.document;
           media.update(pending.scene.mediaSources);
@@ -890,6 +924,7 @@ export class NativeLsdpRuntime {
     document: LSMLDocument,
     check: () => void,
     signal: AbortSignal,
+    compositionStateHash?: string,
   ): Promise<void> {
     let next: VisionSceneHandle | null = null;
     let media: LiveMediaController | null = this.current?.media ?? null;
@@ -922,6 +957,7 @@ export class NativeLsdpRuntime {
       activateVisionScene(next, previous?.scene, true);
       committed = true;
       this.current = { scene: next, media };
+      this.composition.use(frame.composition);
       this.assets = assets;
       media.update(next.mediaSources);
       await previous?.scene.flush?.();
@@ -930,6 +966,12 @@ export class NativeLsdpRuntime {
       check();
       media.resume();
       if (previous && previous.media !== media) previous.media.dispose();
+      if (compositionStateHash !== undefined)
+        this.composition.accept(
+          frame.composition,
+          document,
+          compositionStateHash,
+        );
     } catch (error) {
       if (!committed) {
         if (!reusedMedia) media?.dispose();
@@ -941,7 +983,6 @@ export class NativeLsdpRuntime {
       this.current?.media.resume();
     }
   }
-
   private reserved(document: LSMLDocument): void {
     this.peers.onReservedLeaves?.(
       readReservedPeerLeaves(document.defaults ?? {}),
@@ -978,10 +1019,6 @@ export class NativeLsdpRuntime {
   }
 
   private report(error: unknown): void {
-    this.options.onError?.({
-      code: error instanceof InstanceSourceError ? error.code : "INTERNAL",
-      message: `Native LSDP: ${error instanceof Error ? error.message : String(error)}`,
-      recoverable: true,
-    });
+    reportNativeLsdpError(this.options.onError, error);
   }
 }
