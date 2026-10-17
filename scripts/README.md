@@ -22,7 +22,8 @@ No tool implicitly publishes, deploys or edits Prism. Host/camera probes launch 
 
 | File                          | Invocation / responsibility                                                                                                                    |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `build-host-html.mjs`         | Build's versioned relative CEF HTML entry                                                                                                      |
+| `build-host-html.mjs`         | Build's versioned relative CEF HTML entry and host capability contract                                                                         |
+| `host-contract.mjs`           | Emitted `solar.host.v2` capability list and package guard, including `solar.native-composition.resource.v1`                                    |
 | `build-server.mjs`            | `npm run build:server`; Node reception package and declarations                                                                                |
 | `check-host-bundle.mjs`       | `npm run check:bundle`; actual emitted source maps and self-contained imports                                                                  |
 | `check-runtime-layout.mjs`    | `npm run check:layout`; unique assets and installed-root collisions                                                                            |
@@ -46,16 +47,17 @@ matching-revision multi-platform extension.
 
 ## Real native and process-level checks
 
-| File                          | Invocation / responsibility                                                                                                             |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `native-lsdp-local.mjs`       | `npm run native:start -- --help`; same product receiver, RAM-only mutation host                                                         |
-| `native-lsdp-tools.mjs`       | Helper used by local/proof producers; runtime bundling/native reads                                                                     |
-| `test-native-lsdp.mjs`        | `npm run test:native -- <scene.lsmlz>`; actual binary snapshots/operations                                                              |
-| `test-reception-server.mjs`   | `node scripts/test-reception-server.mjs <scene.lsmlz> <Orion>`                                                                          |
-| `test-reception-install.mjs`  | `node scripts/test-reception-install.mjs <scene.lsmlz> <Prism-read-only> <Orion>`; installed dist and existing adapter loaded in memory |
-| `test-reception-recovery.mjs` | `node scripts/test-reception-recovery.mjs <scene.lsmlz>`; child loss and same-port recovery                                             |
-| `test-reception-burst.mjs`    | `node scripts/test-reception-burst.mjs <scene.lsmlz>`; native burst/recovery boundary, not pixel cadence                                |
-| `test-packaged-cache.mjs`     | `node scripts/test-packaged-cache.mjs`; built immutable store/export boundary                                                           |
+| File                             | Invocation / responsibility                                                                                                                                           |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `native-lsdp-local.mjs`          | `npm run native:start -- --help`; same product receiver, RAM-only mutation host                                                                                       |
+| `native-lsdp-tools.mjs`          | Helper used by local/proof producers; runtime bundling/native reads                                                                                                   |
+| `test-native-lsdp.mjs`           | `npm run test:native -- <scene.lsmlz>`; actual binary snapshots/operations                                                                                            |
+| `test-reception-server.mjs`      | `node scripts/test-reception-server.mjs <scene.lsmlz> <Orion>`                                                                                                        |
+| `test-reception-install.mjs`     | `node scripts/test-reception-install.mjs <scene.lsmlz> <Prism-read-only> <Orion>`; installed dist and existing adapter loaded in memory                               |
+| `test-reception-recovery.mjs`    | `node scripts/test-reception-recovery.mjs <scene.lsmlz>`; child loss and same-port recovery                                                                           |
+| `test-reception-burst.mjs`       | `node scripts/test-reception-burst.mjs <scene.lsmlz>`; native burst/recovery boundary, not pixel cadence                                                              |
+| `test-composition-reception.mjs` | `node scripts/test-composition-reception.mjs <lsdpd> <canonical-evidence.json>`; native composition declare/read/apply/replace/watch/recovery and owned child cleanup |
+| `test-packaged-cache.mjs`        | `node scripts/test-packaged-cache.mjs`; built immutable store/export boundary                                                                                         |
 
 The integration adapter test's Prism argument is read-only; the full installed application
 lifecycle remains a separate Prism task. See [qualification](../docs/runbooks/qualification.md).
