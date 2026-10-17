@@ -1,5 +1,36 @@
 # LSDP and Vision runtime
 
+`vision-composition-frame.ts` validates the typed `vision.native-composition-frame/1`
+receipt emitted by the same GPU submission as the presenter's canvas. It checks
+the exact render-variant scene identity, canonical scene grid, atlas canvas extent,
+integer 1:1 bands, graph ownership and monotonic accepted pixel/layout revisions.
+Capture framing remains explicit in this receipt: fit, normalized source crop,
+nullable content box/position fields and zoom come from the active Vision graph.
+`authoredSize` preserves the source's authored box dimensions (nullable per axis);
+`sourceSize` is the required positive upload-texture size. Keeping both lets the
+Main consumer scale source-box framing into the occurrence's computed `localSize`
+without re-reading or re-projecting LSML.
+Blend, mask and clip presence are checked as graph facts, including the Rust
+`clipKind` classification that distinguishes an exact viewport/image bound from
+an authored clip. Acceptance does not claim that the native compositor supports
+every such effect.
+It does not derive layout from LSML or certify physical scanout. The persistent
+presenter can explicitly enable native atlas output before loading; its mode ACK
+is required, and a later canonical load disables that mode on the same engine.
+`VisionSceneHandle.compositionFrame` exposes only a matching accepted receipt for
+the current scene owner. `tests/unit/vision-composition-frame.test.ts` and
+`tests/unit/vision-session.test.ts` cover these refusals and lifetime boundaries.
+`NativeSceneFrames` projects this exact receipt only after the scene's frame queue
+flushes. The private LSML package keeps its canonical geometry; the native path
+sets a fixed viewport surface and enables the GPU composition mode without
+rewriting layout. Scalar patches project the receipt accepted by the same live
+scene handle, so transform/layout changes do not rebuild composition from LSML.
+
+`vision-font-assets.ts` owns the existing host font catalog, shared acquisition
+promise and legacy virtual font URLs used by `vision-presenter.ts`. Acquisition
+failure clears that promise so the next attempt can retry. This extraction keeps
+font ownership separate from scene receipts; it introduces no second font cache.
+
 [`sound/`](sound/README.md) owns authored scene audio: hash-pinned packaged clips,
 composed cues, routed DSP buses, live mix mutations, shared motion transport and
 offline PCM. This experimental browser extension is enabled by `sceneAudio`;
@@ -44,11 +75,12 @@ recovery takes priority and runtime disconnect cancels pending composition work.
 `NativeCompositionSession` stores accepted source state while the peer is absent
 and replays that latest state when a replacement peer starts; it reports retry
 success only after the replacement peer completes its first current publication.
-When the trusted host config enables `nativeCompositionLSDP`, the runtime also
-derives compositor metadata from that same active LSML document and publishes
-it to the separate `solar/composition` resource. It does not mutate the source
-LSML, insert plan fields into native snapshots, or wait for this side-channel
-before returning the existing mutation or frame receipt. Main claims the
+When the trusted host config enables `nativeCompositionLSDP`, the runtime projects
+compositor metadata from the accepted Vision receipt of that active scene and
+publishes it with the exact LSDP state hash to the separate `solar/composition`
+resource. It does not mutate the source LSML, insert plan fields into native
+snapshots, or wait for this side-channel before returning the existing mutation
+or frame receipt. Main claims the
 physical A/B producer nonce in that resource; Solar verifies the nonce before
 each graph CAS and never changes the owner map. The publisher keeps one
 read/write active and only the latest pending plan. Pending callers can receive

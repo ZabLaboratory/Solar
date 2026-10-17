@@ -1,530 +1,422 @@
 import { expect, it } from "vitest";
 import {
-  NATIVE_COMPOSITION_AUTHORED_ROOT_ID,
-  prepareNativeComposition,
+  projectNativeCompositionFrame,
   withNativeCompositionSource,
 } from "../../src/scenes/native-composition";
+import { compositionFrame } from "../helpers/vision-composition-frame";
+import type { VisionCompositionFrame } from "../../src/engine/vision-composition-frame";
 
-const viewport = { width: 800, height: 600 };
-const maxTextureSize = 4096;
-const rootId = "prism.native-composition.root.v1";
-const authoredRootId = NATIVE_COMPOSITION_AUTHORED_ROOT_ID;
+const expected = {
+  sceneId: "scene",
+  sceneVersion: "v1",
+  width: 1920,
+  height: 1080,
+  maxTextureSize: 4096,
+};
 
-function document(layout: Record<string, unknown>, defaults = {}) {
-  return {
-    scene_id: "native-composition-test",
-    scene_version: "base",
-    defaults,
-    layout,
-  };
+function project(frame: VisionCompositionFrame) {
+  return projectNativeCompositionFrame(frame, expected);
 }
 
-function frame(
-  id: string,
-  size: { w: number; h: number } | { width: number; height: number },
-  children: unknown[],
-  properties: Record<string, unknown> = {},
-) {
-  return {
-    kind: "frame",
-    id,
-    size: "w" in size ? size : { w: size.width, h: size.height },
-    children,
-    ...properties,
-  };
-}
-
-it("keeps the authored root style on one child group while the synthetic root stays neutral", () => {
-  const source = document(
-    frame(
-      "authored-layout",
-      viewport,
-      [
-        { kind: "shape", id: "root-background" },
-        { kind: "x-zab.capture", id: "camera", size: { w: 320, h: 180 } },
-        { kind: "text", id: "root-label", value: "after capture" },
-      ],
-      {
-        position: { x: 40, y: 20 },
-        rotation: 15,
-        opacity: 0.5,
-        visible: true,
-        clipsContent: true,
-        cornerRadius: 24,
-        fill: "#1b2c3d",
-      },
-    ),
-  );
-
-  const projection = prepareNativeComposition(source, viewport, maxTextureSize);
-  const root = projection.groups.find((group) => group.id === rootId)!;
-  const authoredRoot = projection.groups.find(
-    (group) => group.id === authoredRootId,
-  )!;
-  expect(root).toMatchObject({
-    parentId: null,
-    order: 0,
-    opacity: 1,
+it("projects nested owners and interleaved global bands without applying owner affine twice", () => {
+  const frame = compositionFrame();
+  frame.owners.push({
+    nodeId: 1,
+    parentNodeId: 0,
+    paintOrder: 4,
+    localSize: [480, 270],
+    localToWorld: [1.5, 0.2, -0.4, 1.25, 150, 90],
+    opacity: 0.4,
     visible: true,
     blendMode: "normal",
+    maskPresent: false,
+    clipPresent: false,
+    clipKind: "none",
+  });
+  frame.captures[0]!.ownerNodeId = 1;
+  frame.captures[0]!.paintOrder = 7;
+  frame.captures[0]!.localToWorld = [0.5, 1.25, -0.75, 0.5, 123.5, -45.25];
+  frame.surfaces[0]!.ownerNodeId = 1;
+  frame.surfaces[0]!.paintOrder = 5;
+  frame.surfaces[0]!.beforeNodeId = 2;
+  frame.surfaces[0]!.afterNodeId = null;
+  frame.surfaces[0]!.atlasRect = [403, 1, 1920, 1080];
+  frame.surfaces.push({
+    ownerNodeId: 0,
+    bandIndex: 1,
+    paintOrder: 1,
+    beforeNodeId: 1,
+    afterNodeId: null,
+    coordinateSpace: "global-scene-texels",
+    sceneRect: [12, 8, 400, 300],
+    atlasRect: [1, 1, 400, 300],
+  });
+  frame.atlasSize = [2323, 1082];
+  frame.canvasSize = [2323, 1082];
+
+  const result = project(frame);
+  const root = result.groups[0]!;
+  const owner = result.groups.find(
+    (group) => group.id === "prism.native-composition.root.v1",
+  )!;
+  const nested = result.groups.find((group) => group.id === "vision.owner.1")!;
+
+  expect(result).toMatchObject({
+    coordinateSpace: "global-scene-texels",
+    atlasSize: { width: 2323, height: 1082 },
+    width: 2323,
+    height: 1082,
+    viewport: { width: 1920, height: 1080 },
+  });
+  expect(root).toMatchObject({
+    id: "prism.native-composition.root.v1",
+    parentId: null,
+    opacity: 1,
+    children: [
+      { kind: "solarBand", band: 0 },
+      { kind: "group", id: "vision.owner.1" },
+    ],
+  });
+  expect(owner.children).toEqual([
+    { kind: "solarBand", band: 0 },
+    { kind: "group", id: "vision.owner.1" },
+  ]);
+  expect(nested).toMatchObject({
+    parentId: "prism.native-composition.root.v1",
+    opacity: 0.4,
+    bounds: { x: 0, y: 0, width: 1920, height: 1080 },
     affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
-    mask: null,
-    children: [{ kind: "group", id: authoredRootId }],
-  });
-  expect(authoredRoot).toMatchObject({
-    parentId: rootId,
-    opacity: 0.5,
-    visible: true,
-    blendMode: "normal",
-    bounds: { x: 0, y: 0, width: 800, height: 600 },
-    mask: { kind: "frame-clip", width: 800, height: 600, radius: 24 },
-    children: [
-      { kind: "solarBand", band: 0 },
-      {
-        kind: "capture",
-        componentId: "camera",
-        localSize: { width: 320, height: 180 },
-        visible: true,
-      },
-      { kind: "solarBand", band: 1 },
-    ],
-  });
-  expect(authoredRoot.affine.m00).toBeCloseTo(Math.cos(Math.PI / 12), 12);
-  expect(authoredRoot.affine.m01).toBeCloseTo(-Math.sin(Math.PI / 12), 12);
-  expect(authoredRoot.affine.m10).toBeCloseTo(Math.sin(Math.PI / 12), 12);
-  expect(authoredRoot.affine.m11).toBeCloseTo(Math.cos(Math.PI / 12), 12);
-  expect(authoredRoot.affine.tx).toBeCloseTo(
-    40 + 400 - Math.cos(Math.PI / 12) * 400 + Math.sin(Math.PI / 12) * 300,
-    12,
-  );
-  expect(authoredRoot.affine.ty).toBeCloseTo(
-    20 + 300 - Math.sin(Math.PI / 12) * 400 - Math.cos(Math.PI / 12) * 300,
-    12,
-  );
-  expect(projection.surfaces).toMatchObject([
-    {
-      band: 0,
-      ownerId: authoredRootId,
-      ownerPath: [rootId, authoredRootId],
-      coordinateSpace: "group-local",
-      rect: { x: 0, y: 0, width: 800, height: 600 },
-    },
-    {
-      band: 1,
-      ownerId: authoredRootId,
-      ownerPath: [rootId, authoredRootId],
-      coordinateSpace: "group-local",
-      rect: { x: 0, y: 0, width: 800, height: 600 },
-    },
-  ]);
-
-  const atlas = source.layout as {
-    children: Array<{
-      children: Array<Record<string, unknown>>;
-    }>;
-  };
-  const firstRasterOwner = atlas.children[0]!.children[0]!;
-  const nextRasterOwner = atlas.children[1]!.children[0]!;
-  expect(firstRasterOwner).toMatchObject({
-    position: { x: 0, y: 0 },
-    rotation: 0,
-    opacity: 1,
-    visible: true,
-    blendMode: "normal",
-    fill: "#1b2c3d",
-  });
-  expect(firstRasterOwner).not.toHaveProperty("clipsContent");
-  expect(firstRasterOwner).not.toHaveProperty("cornerRadius");
-  expect(nextRasterOwner).not.toHaveProperty("fill");
-  expect(nextRasterOwner).not.toHaveProperty("opacity", 0.5);
-});
-
-it("segments nested capture groups in DFS order and paints each owner background once", () => {
-  const source = document(
-    frame(
-      "root-layout",
-      { w: 800, h: 600 },
-      [
-        { kind: "shape", id: "root-before" },
-        frame(
-          "outer",
-          { w: 300, h: 200 },
-          [
-            { kind: "shape", id: "outer-before" },
-            frame(
-              "inner",
-              { w: 120, h: 80 },
-              [
-                { kind: "text", id: "inner-before", value: "before" },
-                {
-                  kind: "x-zab.capture",
-                  id: "camera",
-                  size: { w: 100, h: 56 },
-                },
-                { kind: "shape", id: "inner-after" },
-              ],
-              { position: { x: 22, y: 17 }, rotation: -13 },
-            ),
-            { kind: "shape", id: "outer-after" },
-          ],
-          { position: { x: 50, y: 30 }, rotation: 27, opacity: 0.5 },
-        ),
-        { kind: "shape", id: "root-after" },
-      ],
-      { fill: "#123456" },
-    ),
-  );
-
-  const projection = prepareNativeComposition(source, viewport, maxTextureSize);
-  const root = projection.groups.find((group) => group.id === rootId)!;
-  const outer = projection.groups.find((group) => group.id === "outer")!;
-  const inner = projection.groups.find((group) => group.id === "inner")!;
-
-  expect(projection.groups.map((group) => group.id)).toEqual([
-    rootId,
-    authoredRootId,
-    "outer",
-    "inner",
-  ]);
-  expect(root).toMatchObject({
-    parentId: null,
-    opacity: 1,
-    visible: true,
-    blendMode: "normal",
-    bounds: { x: 0, y: 0, width: 800, height: 600 },
-    children: [{ kind: "group", id: authoredRootId }],
-  });
-  const authoredRoot = projection.groups.find(
-    (group) => group.id === authoredRootId,
-  )!;
-  expect(authoredRoot).toMatchObject({
-    parentId: rootId,
-    opacity: 1,
-    bounds: { x: 0, y: 0, width: 800, height: 600 },
-    children: [
-      { kind: "solarBand", band: 0 },
-      { kind: "group", id: "outer" },
-      { kind: "solarBand", band: 5 },
-    ],
-  });
-  expect(outer).toMatchObject({
-    parentId: authoredRootId,
-    opacity: 0.5,
-    bounds: { x: 0, y: 0, width: 300, height: 200 },
     children: [
       { kind: "solarBand", band: 1 },
-      { kind: "group", id: "inner" },
-      { kind: "solarBand", band: 4 },
+      { kind: "capture", componentId: "vision.capture.2" },
     ],
   });
-  const outerAngle = (27 * Math.PI) / 180;
-  expect(outer.affine.m00).toBeCloseTo(Math.cos(outerAngle), 12);
-  expect(outer.affine.m01).toBeCloseTo(-Math.sin(outerAngle), 12);
-  expect(outer.affine.tx).toBeCloseTo(
-    50 + 150 - Math.cos(outerAngle) * 150 + Math.sin(outerAngle) * 100,
-    12,
-  );
-  expect(inner).toMatchObject({
-    parentId: "outer",
-    bounds: { x: 0, y: 0, width: 120, height: 80 },
-    children: [
-      { kind: "solarBand", band: 2 },
-      {
-        kind: "capture",
-        componentId: "camera",
-        localSize: { width: 100, height: 56 },
-        visible: true,
-        localOpacity: 1,
-      },
-      { kind: "solarBand", band: 3 },
-    ],
+  const capture = nested.children[1]!;
+  expect(capture).toMatchObject({
+    kind: "capture",
+    sourceComponentId: "camera",
+    localSize: { width: 320, height: 180 },
+    affine: {
+      m00: 0.5,
+      m01: -0.75,
+      tx: 123.5,
+      m10: 1.25,
+      m11: 0.5,
+      ty: -45.25,
+    },
+    localOpacity: 0.75,
+    visible: true,
+    cropPercent: { left: 0, top: 10, right: 0, bottom: 15 },
+    sourceFraming: {
+      fit: "cover",
+      contentBox: { x: 5, y: null, width: 300, height: null },
+      sourceZoom: 1.5,
+      objectPosition: { x: 0.25, y: null },
+      authoredSize: [320, 180],
+      sourceSize: [320, 180],
+    },
   });
-  expect(
-    projection.surfaces.map(
-      ({ band, ownerId, coordinateSpace, ownerPath, atlasRect }) => ({
-        band,
-        ownerId,
-        coordinateSpace,
-        ownerPath,
-        y: atlasRect.y,
-      }),
-    ),
-  ).toEqual([
-    {
+  expect(result.surfaces).toEqual([
+    expect.objectContaining({
       band: 0,
-      ownerId: authoredRootId,
-      coordinateSpace: "group-local",
-      ownerPath: [rootId, authoredRootId],
-      y: 0,
-    },
-    {
+      ownerId: "prism.native-composition.root.v1",
+      ownerPath: ["prism.native-composition.root.v1"],
+      coordinateSpace: "global-scene-texels",
+      rect: { x: 12, y: 8, width: 400, height: 300 },
+      atlasRect: { x: 1, y: 1, width: 400, height: 300 },
+      affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
+    }),
+    expect.objectContaining({
       band: 1,
-      ownerId: "outer",
-      coordinateSpace: "group-local",
-      ownerPath: [rootId, authoredRootId, "outer"],
-      y: 600,
-    },
-    {
-      band: 2,
-      ownerId: "inner",
-      coordinateSpace: "group-local",
-      ownerPath: [rootId, authoredRootId, "outer", "inner"],
-      y: 800,
-    },
-    {
-      band: 3,
-      ownerId: "inner",
-      coordinateSpace: "group-local",
-      ownerPath: [rootId, authoredRootId, "outer", "inner"],
-      y: 880,
-    },
-    {
-      band: 4,
-      ownerId: "outer",
-      coordinateSpace: "group-local",
-      ownerPath: [rootId, authoredRootId, "outer"],
-      y: 960,
-    },
-    {
-      band: 5,
-      ownerId: authoredRootId,
-      coordinateSpace: "group-local",
-      ownerPath: [rootId, authoredRootId],
-      y: 1160,
-    },
-  ]);
-
-  const atlas = source.layout as {
-    size: { w: number; h: number };
-    children: Array<{
-      position: { y: number };
-      size: { w: number; h: number };
-      children: Array<{ fill?: string; children: Array<{ id?: string }> }>;
-    }>;
-  };
-  expect(atlas.size).toEqual({ w: 800, h: 1760 });
-  expect(atlas.children[0]!.children[0]!.fill).toBe("#123456");
-  expect(atlas.children[5]!.children[0]).not.toHaveProperty("fill");
-  expect(
-    atlas.children.map(({ position, size }) => ({ y: position.y, size })),
-  ).toEqual([
-    { y: 0, size: { w: 800, h: 600 } },
-    { y: 600, size: { w: 300, h: 200 } },
-    { y: 800, size: { w: 120, h: 80 } },
-    { y: 880, size: { w: 120, h: 80 } },
-    { y: 960, size: { w: 300, h: 200 } },
-    { y: 1160, size: { w: 800, h: 600 } },
+      ownerId: "vision.owner.1",
+      ownerPath: ["prism.native-composition.root.v1", "vision.owner.1"],
+      rect: { x: 0, y: 0, width: 1920, height: 1080 },
+      atlasRect: { x: 403, y: 1, width: 1920, height: 1080 },
+    }),
   ]);
 });
 
-it("carries mixed-blend contributions on an isolated canonical group", () => {
-  const source = document(
-    frame("root", viewport, [
-      { kind: "shape", id: "below" },
-      { kind: "x-zab.capture", id: "camera", size: { w: 320, h: 180 } },
-      { kind: "text", id: "before" },
-      {
-        kind: "image",
-        id: "image",
-        blendMode: "difference",
-        opacity: 0.7,
-        rotation: 30,
-      },
-      { kind: "text", id: "after" },
-    ]),
-  );
+it("preserves independent nested owner opacity and capture own opacity", () => {
+  const frame = compositionFrame();
+  frame.owners[0]!.opacity = 0.5;
+  frame.owners.push({
+    nodeId: 1,
+    parentNodeId: 0,
+    paintOrder: 3,
+    localSize: [500, 250],
+    localToWorld: [1, 0, 0, 1, 10, 20],
+    opacity: 0.4,
+    visible: true,
+    blendMode: "normal",
+    maskPresent: false,
+    clipPresent: false,
+    clipKind: "none",
+  });
+  frame.captures[0]!.ownerNodeId = 1;
+  const result = project(frame);
 
-  const projection = prepareNativeComposition(source, viewport, maxTextureSize);
-  const root = projection.groups.find((group) => group.id === authoredRootId)!;
-  const blend = projection.groups.find(
-    (group) => group.blendMode === "difference",
-  )!;
   expect(
-    projection.groups.find((group) => group.id === rootId)!.children,
-  ).toEqual([{ kind: "group", id: authoredRootId }]);
-  expect(root.children).toEqual([
+    result.groups.find(
+      (group) => group.id === "prism.native-composition.root.v1",
+    )?.opacity,
+  ).toBe(0.5);
+  expect(
+    result.groups.find((group) => group.id === "vision.owner.1")?.opacity,
+  ).toBe(0.4);
+  expect(result.groups[1]!.children[0]).toMatchObject({
+    kind: "capture",
+    localOpacity: 0.75,
+  });
+});
+
+it("uses a unique child id per capture occurrence and requires its base author id", () => {
+  const frame = compositionFrame();
+  frame.captures.push({
+    ...structuredClone(frame.captures[0]!),
+    nodeId: 8,
+    paintOrder: 3,
+    effectiveComponentId: "camera",
+    localToWorld: [1, 0, 0, 1, 50, 60],
+  });
+  frame.captures[0]!.paintOrder = 4;
+  const result = project(frame);
+  const owner = result.groups[0]!;
+  expect(owner.children).toMatchObject([
     { kind: "solarBand", band: 0 },
     {
       kind: "capture",
-      componentId: "camera",
-      localSize: { width: 320, height: 180 },
-      affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
-      localOpacity: 1,
-      visible: true,
-      cropPercent: { left: 0, top: 0, right: 0, bottom: 0 },
+      componentId: "vision.capture.8",
+      sourceComponentId: "camera",
     },
-    { kind: "solarBand", band: 1 },
-    { kind: "group", id: blend.id },
-    { kind: "solarBand", band: 3 },
+    {
+      kind: "capture",
+      componentId: "vision.capture.2",
+      sourceComponentId: "camera",
+    },
   ]);
-  expect(blend).toMatchObject({
-    parentId: authoredRootId,
+
+  frame.captures[0]!.effectiveComponentId = null;
+  expect(() => project(frame)).toThrow(
+    "NATIVE_COMPOSITION_CAPTURE_SOURCE_COMPONENT_ID_MISSING:2",
+  );
+});
+
+it("uses the required native root id for the receipt root occurrence", () => {
+  const frame = compositionFrame();
+  frame.owners[0]!.nodeId = 47;
+  frame.captures[0]!.ownerNodeId = 47;
+  frame.surfaces[0]!.ownerNodeId = 47;
+  const result = project(frame);
+  expect(result.groups).toHaveLength(1);
+  expect(result.groups[0]).toMatchObject({
+    id: "prism.native-composition.root.v1",
+    parentId: null,
+    opacity: 1,
+    children: [
+      { kind: "solarBand", band: 0 },
+      { kind: "capture", componentId: "vision.capture.2" },
+    ],
+  });
+  expect(result.surfaces[0]?.ownerPath).toEqual([
+    "prism.native-composition.root.v1",
+  ]);
+
+  frame.owners = [];
+  frame.captures = [];
+  frame.surfaces = [];
+  frame.atlasSize = [0, 0];
+  frame.canvasSize = [1, 1];
+  expect(() => project(frame)).toThrow(
+    "VISION_NATIVE_COMPOSITION_ROOT_OWNER_REQUIRED",
+  );
+});
+
+it("preserves authored framing units separately from the bounded upload texture", () => {
+  const frame = compositionFrame();
+  frame.captures[0]!.authoredSize = [640, 360];
+  frame.captures[0]!.sourceSize = [320, 180];
+  const capture = project(frame).groups[0]!.children[1]!;
+  expect(capture).toMatchObject({
+    kind: "capture",
+    localSize: { width: 320, height: 180 },
+    sourceFraming: {
+      contentBox: { x: 5, y: null, width: 300, height: null },
+      authoredSize: [640, 360],
+      sourceSize: [320, 180],
+    },
+  });
+});
+
+it("supports capture-only and paint-only receipts, including the transparent one-pixel canvas", () => {
+  const captureOnly = compositionFrame();
+  captureOnly.atlasSize = [0, 0];
+  captureOnly.canvasSize = [1, 1];
+  captureOnly.surfaces = [];
+  const captureProjection = project(captureOnly);
+  expect(captureProjection).toMatchObject({
+    width: 1,
+    height: 1,
+    atlasSize: { width: 1, height: 1 },
+    surfaces: [],
+  });
+  expect(captureProjection.groups[0]!.children).toMatchObject([
+    { kind: "capture", componentId: "vision.capture.2" },
+  ]);
+
+  const paintOnly = compositionFrame();
+  paintOnly.captures = [];
+  paintOnly.surfaces[0]!.beforeNodeId = null;
+  const paintProjection = project(paintOnly);
+  expect(paintProjection.groups[0]!.children).toEqual([
+    { kind: "solarBand", band: 0 },
+  ]);
+  expect(paintProjection.surfaces[0]!.atlasRect).toEqual({
+    x: 1,
+    y: 1,
+    width: 1920,
+    height: 1080,
+  });
+});
+
+it("keeps exact viewport scaling and maps full rotation/shear into native matrix order", () => {
+  const frame = compositionFrame();
+  frame.sceneSize = [960, 540];
+  frame.sceneScale = [2, 2];
+  frame.atlasSize = [962, 542];
+  frame.canvasSize = [962, 542];
+  frame.owners[0]!.localSize = [480, 270];
+  frame.owners[0]!.localToWorld = [2, 0, 0, 2, 0, 0];
+  frame.captures[0]!.localToWorld = [0, -1, 1, 0, 200, 120];
+  frame.surfaces[0]!.sceneRect = [15, 20, 400, 220];
+  frame.surfaces[0]!.atlasRect = [1, 1, 400, 220];
+  const projection = projectNativeCompositionFrame(frame, {
+    ...expected,
+    width: 960,
+    height: 540,
+  });
+  expect(projection.viewport).toEqual({ width: 960, height: 540 });
+  expect(projection.groups[0]!.bounds).toEqual({
+    x: 0,
+    y: 0,
+    width: 960,
+    height: 540,
+  });
+  expect(projection.groups[0]!.affine).toEqual({
+    m00: 1,
+    m01: 0,
+    tx: 0,
+    m10: 0,
+    m11: 1,
+    ty: 0,
+  });
+  expect(projection.groups[0]!.children[1]).toMatchObject({
+    affine: { m00: 0, m01: 1, tx: 200, m10: -1, m11: 0, ty: 120 },
+  });
+});
+
+it("accepts only producer-classified exact viewport and image-bound clips", () => {
+  const frame = compositionFrame();
+  frame.owners[0]!.clipPresent = true;
+  frame.owners[0]!.clipKind = "viewport-bounds";
+  frame.captures[0]!.clipPresent = true;
+  frame.captures[0]!.clipKind = "image-bounds";
+  expect(() => project(frame)).not.toThrow();
+
+  const authoredOwnerClip = compositionFrame();
+  authoredOwnerClip.owners[0]!.clipPresent = true;
+  authoredOwnerClip.owners[0]!.clipKind = "authored";
+  expect(() => project(authoredOwnerClip)).toThrow(
+    "NATIVE_COMPOSITION_UNSUPPORTED_CLIP:owner:0:authored",
+  );
+
+  const nestedViewportClip = compositionFrame();
+  nestedViewportClip.owners.push({
+    nodeId: 1,
+    parentNodeId: 0,
+    paintOrder: 3,
+    localSize: [20, 20],
+    localToWorld: [1, 0, 0, 1, 0, 0],
     opacity: 1,
     visible: true,
-    blendMode: "difference",
-    bounds: { x: 0, y: 0, width: 800, height: 600 },
-    children: [{ kind: "solarBand", band: 2 }],
-  });
-  expect(projection.surfaces[2]).toMatchObject({
-    band: 2,
-    ownerId: blend.id,
-    ownerPath: [rootId, authoredRootId, blend.id],
-    coordinateSpace: "group-local",
-  });
-  const atlas = source.layout as {
-    children: Array<{
-      children: Array<{ children: Array<Record<string, unknown>> }>;
-    }>;
-  };
-  expect(atlas.children[2]!.children[0]!.children[0]).toMatchObject({
-    id: "image",
     blendMode: "normal",
-    opacity: 0.7,
-    rotation: 30,
+    maskPresent: false,
+    clipPresent: true,
+    clipKind: "viewport-bounds",
   });
-});
-
-it("propagates capture visibility through every native group and rejects unresolved bindings", () => {
-  const source = document(
-    frame("root", viewport, [
-      frame(
-        "hidden-frame",
-        { w: 300, h: 200 },
-        [
-          {
-            kind: "x-zab.capture",
-            id: "hidden-camera",
-            size: { w: 320, h: 180 },
-            visible: true,
-          },
-        ],
-        { visible: false },
-      ),
-      frame(
-        "bound-frame",
-        { w: 200, h: 120 },
-        [
-          {
-            kind: "x-zab.capture",
-            id: "bound-camera",
-            size: { w: 160, h: 90 },
-            bind: { visible: "capture-visible" },
-          },
-        ],
-        { bind: { visible: "frame-visible" } },
-      ),
-    ]),
-    { "frame-visible": true, "capture-visible": false },
+  expect(() => project(nestedViewportClip)).toThrow(
+    "NATIVE_COMPOSITION_UNSUPPORTED_CLIP:owner:1:viewport-bounds",
   );
 
-  const projection = prepareNativeComposition(source, viewport, maxTextureSize);
-  expect(
-    projection.groups.find((group) => group.id === "hidden-frame")!.visible,
-  ).toBe(false);
-  expect(
-    projection.groups.find((group) => group.id === "bound-frame")!.visible,
-  ).toBe(true);
-  expect(
-    projection.groups
-      .flatMap((group) => group.children)
-      .filter((child) => child.kind === "capture")
-      .map((child) => child.visible),
-  ).toEqual([false, false]);
-  expect(projection.geometryBindings).toContain("frame-visible");
-  expect(projection.geometryBindings).toContain("capture-visible");
-
-  const invalid = document(
-    frame("root", viewport, [
-      {
-        kind: "x-zab.capture",
-        id: "camera",
-        size: { w: 320, h: 180 },
-        bind: { visible: "visible" },
-      },
-    ]),
-    { visible: "false" },
-  );
-  expect(() =>
-    prepareNativeComposition(invalid, viewport, maxTextureSize),
-  ).toThrow("NATIVE_COMPOSITION_INVALID_BOOLEAN:camera.visible:visible");
-});
-
-it("rejects unresolved capture layouts, reserved IDs and texture over-budget atlases", () => {
-  const repeated = document(
-    frame("root", viewport, [
-      {
-        kind: "repeat",
-        id: "dynamic-list",
-        template: { kind: "x-zab.capture", id: "camera" },
-      },
-    ]),
-  );
-  expect(() =>
-    prepareNativeComposition(repeated, viewport, maxTextureSize),
-  ).toThrow("NATIVE_COMPOSITION_UNRESOLVED_LAYOUT:dynamic-list");
-
-  const collision = document(
-    frame(rootId, viewport, [
-      { kind: "x-zab.capture", id: "camera", size: { w: 320, h: 180 } },
-    ]),
-  );
-  expect(() =>
-    prepareNativeComposition(collision, viewport, maxTextureSize),
-  ).toThrow(`NATIVE_COMPOSITION_RESERVED_GROUP_ID:${rootId}`);
-
-  const authoredRootCollision = document(
-    frame("root", viewport, [
-      frame(authoredRootId, { w: 300, h: 200 }, [
-        { kind: "x-zab.capture", id: "camera", size: { w: 320, h: 180 } },
-      ]),
-    ]),
-  );
-  const unmodifiedLayout = structuredClone(authoredRootCollision.layout);
-  expect(() =>
-    prepareNativeComposition(authoredRootCollision, viewport, maxTextureSize),
-  ).toThrow(`NATIVE_COMPOSITION_RESERVED_GROUP_ID:${authoredRootId}`);
-  expect(authoredRootCollision.layout).toEqual(unmodifiedLayout);
-
-  const overBudget = document(
-    frame("root", viewport, [
-      { kind: "shape", id: "before" },
-      { kind: "x-zab.capture", id: "camera", size: { w: 320, h: 180 } },
-      { kind: "text", id: "after" },
-    ]),
-  );
-  expect(() => prepareNativeComposition(overBudget, viewport, 1000)).toThrow(
-    "NATIVE_COMPOSITION_SURFACE_LIMIT:800x1200:1000",
+  const authoredCaptureClip = compositionFrame();
+  authoredCaptureClip.captures[0]!.clipPresent = true;
+  authoredCaptureClip.captures[0]!.clipKind = "authored";
+  expect(() => project(authoredCaptureClip)).toThrow(
+    "NATIVE_COMPOSITION_UNSUPPORTED_CLIP:capture:2:authored",
   );
 });
 
-it("hashes active source and graph content while excluding the Main producer nonce", () => {
-  const projection = prepareNativeComposition(
-    document(
-      frame("layout", viewport, [
-        { kind: "x-zab.capture", id: "camera", size: { w: 320, h: 180 } },
-      ]),
+it("refuses masks and unsupported blend modes without dropping their facts", () => {
+  const masked = compositionFrame();
+  masked.owners[0]!.maskPresent = true;
+  expect(() => project(masked)).toThrow(
+    "NATIVE_COMPOSITION_UNSUPPORTED_MASK:owner:0",
+  );
+
+  const blend = compositionFrame();
+  blend.captures[0]!.blendMode = "difference";
+  expect(() => project(blend)).toThrow(
+    "NATIVE_COMPOSITION_UNSUPPORTED_BLEND:capture:2:difference",
+  );
+});
+
+it("refuses canvas-limit, stale-identity and invalid-clip receipts", () => {
+  expect(() =>
+    projectNativeCompositionFrame(compositionFrame(), {
+      ...expected,
+      maxTextureSize: 1000,
+    }),
+  ).toThrow("NATIVE_COMPOSITION_SURFACE_LIMIT:1922x1082:1000");
+  expect(() =>
+    projectNativeCompositionFrame(
+      { ...compositionFrame(), sceneVersion: "retired" },
+      expected,
     ),
-    viewport,
-    maxTextureSize,
+  ).toThrow("VISION_NATIVE_COMPOSITION_FRAME_INVALID");
+  const inconsistent = compositionFrame();
+  inconsistent.captures[0]!.clipPresent = true;
+  inconsistent.captures[0]!.clipKind = "none";
+  expect(() => project(inconsistent)).toThrow(
+    "VISION_NATIVE_COMPOSITION_FRAME_INVALID",
   );
+});
+
+it("binds the published projection to the exact LSDP hash and receipt geometry", () => {
+  const base = compositionFrame();
   const source = {
     resource: "solar/lane-a",
-    scene_id: "scene-a",
-    scene_version: "sha256:revision-a",
-    stateHash: "tree-sha256:state-a",
+    scene_id: "scene",
+    scene_version: "v1",
+    stateHash: "sha256:state-7",
   };
-  const first = withNativeCompositionSource(projection, "host-a-1", source);
-  const otherOwner = withNativeCompositionSource(
-    projection,
-    "host-a-2",
-    source,
-  );
-  const nextState = withNativeCompositionSource(projection, "host-a-1", {
+  const first = withNativeCompositionSource(project(base), "solar-a", source);
+  const mutated = structuredClone(base);
+  mutated.captures[0]!.localToWorld = [0.5, 0, 0, 0.5, 55, 70];
+  mutated.captures[0]!.sourceCropPercent = {
+    left: 0,
+    top: 20,
+    right: 0,
+    bottom: 0,
+  };
+  mutated.layoutProjectionRevision = "3";
+  const second = withNativeCompositionSource(project(mutated), "solar-a", {
     ...source,
-    stateHash: "tree-sha256:state-b",
+    stateHash: "sha256:state-8",
   });
 
-  expect(first.planHash).toMatch(/^sha256:[a-f0-9]{64}$/);
-  expect(otherOwner.planHash).toBe(first.planHash);
-  expect(nextState.planHash).not.toBe(first.planHash);
+  expect(first.source.stateHash).toBe("sha256:state-7");
+  expect(first.planHash).not.toBe(second.planHash);
+  expect(first.groups[0]!.children[1]).toMatchObject({
+    affine: { m00: 2, m01: 0, tx: 20, m10: 0, m11: 2, ty: 40 },
+    cropPercent: { left: 0, top: 10, right: 0, bottom: 15 },
+  });
 });

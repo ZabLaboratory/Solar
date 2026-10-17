@@ -294,17 +294,17 @@ export class NativeLsdpRuntime {
         async (patch, receipts) => {
           await this.visual(async () => {
             receipts.forEach((receipt) => receipt.check());
-            await this.current!.scene.applyPatch(patch);
+            const submittedScene = this.current?.scene;
+            if (!submittedScene) throw new Error("NATIVE_SCENE_NOT_ACTIVE");
+            await submittedScene.applyPatch(patch);
             receipts.forEach((receipt) => receipt.check());
             const last = receipts.at(-1)!.detail;
             this.presentedDocument = receipts.at(-1)!.document;
-            const latestReceipt = receipts.at(-1)!;
-            if (this.current)
-              this.composition.acceptDocument(
-                latestReceipt.document,
-                this.frames,
-                last.stateHash,
-              );
+            this.acceptComposition(
+              receipts.at(-1)!.document,
+              submittedScene,
+              last.stateHash,
+            );
             for (const receipt of receipts)
               this.options.target.dispatchEvent(
                 new CustomEvent("solar:lsdp-applied", {
@@ -423,19 +423,17 @@ export class NativeLsdpRuntime {
               ? jsonPatch.compare(this.presentedDocument, document)
               : null;
           const patch = operations ? defaultsPatch(operations, document) : null;
-          const compositionNeedsRebuild =
-            patch !== null && this.composition.requiresRebuild(patch);
           if (
             patch &&
             this.current &&
-            !compositionNeedsRebuild &&
             this.current.scene.canApplyPatch?.(patch) !== false
           ) {
             await this.visual(async () => {
               check();
-              await this.current!.scene.applyPatch(patch);
-              if (this.current)
-                this.composition.acceptDocument(document, this.frames, hash);
+              const submittedScene = this.current?.scene;
+              if (!submittedScene) throw new Error("NATIVE_SCENE_NOT_ACTIVE");
+              await submittedScene.applyPatch(patch);
+              this.acceptComposition(document, submittedScene, hash);
             });
           } else
             await this.visual(() =>
@@ -554,9 +552,7 @@ export class NativeLsdpRuntime {
           })) as Operation[])
       : mutation.operations;
     const changed = selectedOperations.length > 0;
-    // Absolute native assignments also carry coordinator metadata. Compare the
-    // accepted document before treating the assignment as a structural change;
-    // finalization must not mount the just-prepared Vision scene a second time.
+    // Coordinator assignments may finalize an already prepared Vision scene.
     const patch = next
       ? (defaultsPatch(selectedOperations, next) ??
         (this.presentedDocument?.scene_id === next.scene_id &&
@@ -564,12 +560,9 @@ export class NativeLsdpRuntime {
           ? defaultsPatch(jsonPatch.compare(this.presentedDocument, next), next)
           : null))
       : null;
-    const compositionNeedsRebuild =
-      patch !== null && this.composition.requiresRebuild(patch);
     this.measure("classify", classifiedAt);
-    // Only replaceable scalar state can share a frame. Native transport receives
-    // an honest "received" receipt; presentation receipts still follow Vision.
-    // Commands, structure and coordinated lane transitions remain synchronous.
+    // Scalar transport reports "received"; Vision owns apply ACKs. Commands,
+    // structure and coordinated lane transitions remain synchronous.
     const scalar = scalarOperations(selectedOperations);
     if (
       next &&
@@ -577,7 +570,6 @@ export class NativeLsdpRuntime {
       patch &&
       this.current &&
       this.patches &&
-      !compositionNeedsRebuild &&
       this.current.scene.canApplyPatch?.(patch) !== false &&
       this.document?.scene_id === next?.scene_id &&
       this.document?.scene_version === next?.scene_version &&
@@ -636,7 +628,6 @@ export class NativeLsdpRuntime {
       next &&
       patch &&
       this.current &&
-      !compositionNeedsRebuild &&
       this.current.scene.canApplyPatch?.(patch) !== false &&
       this.document?.scene_id === next.scene_id &&
       this.document?.scene_version === next.scene_version
@@ -645,9 +636,10 @@ export class NativeLsdpRuntime {
       const patchedDocument = next;
       await this.visual(async () => {
         check();
-        await this.current!.scene.applyPatch(patch);
-        if (this.current)
-          this.composition.acceptDocument(patchedDocument, this.frames, hash);
+        const submittedScene = this.current?.scene;
+        if (!submittedScene) throw new Error("NATIVE_SCENE_NOT_ACTIVE");
+        await submittedScene.applyPatch(patch);
+        this.acceptComposition(patchedDocument, submittedScene, hash);
       });
     } else {
       rendering = "document";
@@ -669,8 +661,7 @@ export class NativeLsdpRuntime {
     this.hash = hash;
     this.sequence = event.sequence;
     if (next && changed) this.reserved(next);
-    // This subscriber ACK follows Vision's frame submission. The writer's
-    // earlier authoritative-server ACK alone does not prove rendering.
+    // This ACK follows Vision submission; the writer's ACK alone proves no render.
     const detail = {
       transactionId: mutation.id,
       target: resource,
@@ -932,8 +923,7 @@ export class NativeLsdpRuntime {
     const previous = this.current;
     let committed = false;
     try {
-      // Vision's main-thread WebGL canvases must not overlap old camera renders
-      // with staging/teardown of the next engine. Tracks stay acquired.
+      // Avoid overlapping Vision WebGL renders; keep tracks during replacement.
       await previous?.media.pause();
       await previous?.scene.flush?.();
       check();
@@ -983,6 +973,16 @@ export class NativeLsdpRuntime {
       this.current?.media.resume();
     }
   }
+
+  private acceptComposition(
+    document: LSMLDocument,
+    scene: VisionSceneHandle,
+    hash: unknown,
+  ): void {
+    if (this.current?.scene !== scene) return;
+    this.composition.acceptDocument(document, scene, this.frames, hash);
+  }
+
   private reserved(document: LSMLDocument): void {
     this.peers.onReservedLeaves?.(
       readReservedPeerLeaves(document.defaults ?? {}),

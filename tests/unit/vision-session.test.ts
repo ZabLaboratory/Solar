@@ -6,6 +6,8 @@ import {
   visionMaxTextureSize,
 } from "../../src/engine/vision-presenter";
 import { nativeManifest } from "../helpers/native-source";
+import { compositionFrame } from "../helpers/vision-composition-frame";
+import { VisionMediaBridge } from "../../src/engine/vision-media-bridge";
 
 const fake = vi.hoisted(() => ({
   heldTypes: new Set<string>(),
@@ -27,11 +29,15 @@ const fake = vi.hoisted(() => ({
   failTerminate: false,
   failLoads: 0,
   requests: [] as string[],
+  composition: null as unknown,
+  canvasSizeOverride: null as [number, number] | null,
+  refuseNativeMode: false,
 }));
 
 vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
   createMainThreadPresenter: (canvas: HTMLCanvasElement) => {
     fake.created++;
+    let nativeComposition = false;
     let listener:
       | ((event: {
           data: {
@@ -40,6 +46,8 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
             timing?: Record<string, unknown>;
             phase?: string;
             message?: string;
+            enabled?: boolean;
+            composition?: unknown;
           };
         }) => void)
       | null = null;
@@ -52,6 +60,18 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
         canvas.width = 1920;
         canvas.height = 1080;
         const type = String(request.type);
+        if (type === "native-composition-mode")
+          nativeComposition = request.enabled === true;
+        const composition = fake.composition as {
+          canvasSize?: number[];
+        } | null;
+        if (nativeComposition && composition?.canvasSize) {
+          canvas.width = composition.canvasSize[0]!;
+          canvas.height = composition.canvasSize[1]!;
+        }
+        if (fake.canvasSizeOverride) {
+          [canvas.width, canvas.height] = fake.canvasSizeOverride;
+        }
         fake.requests.push(type);
         const rejectLoad = type === "load" && fake.failLoads > 0;
         if (rejectLoad) fake.failLoads--;
@@ -66,8 +86,22 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
                 }
               : {
                   type:
-                    type === "init-empty" ? "engine-ready" : "frame-submitted",
+                    type === "init-empty"
+                      ? "engine-ready"
+                      : type === "native-composition-mode"
+                        ? "native-composition-mode-set"
+                        : "frame-submitted",
                   seq: request.seq as number,
+                  ...(type === "native-composition-mode"
+                    ? {
+                        enabled: fake.refuseNativeMode
+                          ? false
+                          : nativeComposition,
+                      }
+                    : {}),
+                  ...(nativeComposition && type !== "native-composition-mode"
+                    ? { composition: fake.composition }
+                    : {}),
                   timing: { gpuSubmitCallMs: 2.5 },
                 },
           });
@@ -136,6 +170,9 @@ afterEach(() => {
   fake.failTerminate = false;
   fake.failLoads = 0;
   fake.requests.length = 0;
+  fake.composition = null;
+  fake.canvasSizeOverride = null;
+  fake.refuseNativeMode = false;
 });
 
 it("prepares the empty engine and installation fonts before any scene, then reuses them", async () => {
@@ -166,6 +203,94 @@ it("prepares the empty engine and installation fonts before any scene, then reus
   expect(fake.requests.filter((x) => x === "load")).toHaveLength(1);
   scene.dispose();
 });
+
+it("enables native atlas mode before loading and returns only the matching submitted frame", async () => {
+  const { target, delivery, pack } = setup();
+  // This suite mocks the presenter rather than constructing a WASM media engine.
+  vi.spyOn(VisionMediaBridge.prototype, "upload").mockImplementation(() => {});
+  fake.composition = compositionFrame();
+  const scene = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    { ...pack, nativeComposition: true, lsmlDefaults: true },
+    true,
+  );
+  expect(fake.requests.indexOf("native-composition-mode")).toBeLessThan(
+    fake.requests.indexOf("load"),
+  );
+  expect(scene.compositionFrame?.canvasSize).toEqual([1922, 1082]);
+  expect((target.firstElementChild as HTMLElement).style.width).toBe("1922px");
+  expect((target.firstElementChild as HTMLElement).style.height).toBe("1082px");
+  const accepted = scene.compositionFrame;
+  fake.composition = { ...compositionFrame(), sceneVersion: "stale" };
+  await expect(scene.applyPatch({ opacity: 0.5 })).rejects.toThrow(
+    "VISION_NATIVE_COMPOSITION_FRAME_INVALID",
+  );
+  expect(scene.compositionFrame).toBe(accepted);
+  expect(fake.created).toBe(1);
+});
+
+it("disables atlas output when the same engine later renders a canonical scene", async () => {
+  const { target, delivery, pack } = setup();
+  fake.composition = compositionFrame();
+  const atlas = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    { ...pack, nativeComposition: true },
+    true,
+  );
+  const canonical = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    pack,
+    true,
+  );
+  expect(fake.created).toBe(1);
+  expect(
+    fake.requests.filter((type) => type === "native-composition-mode"),
+  ).toHaveLength(2);
+  expect(canonical.compositionFrame).toBeNull();
+  expect(atlas.compositionFrame).toBeNull();
+  atlas.dispose();
+  canonical.dispose();
+});
+
+it.each(["missing receipt", "wrong canvas", "refused mode"])(
+  "refuses %s before accepting native atlas output",
+  async (reason) => {
+    const { target, delivery, pack } = setup();
+    fake.composition = reason === "missing receipt" ? null : compositionFrame();
+    fake.canvasSizeOverride = reason === "wrong canvas" ? [1920, 1080] : null;
+    fake.refuseNativeMode = reason === "refused mode";
+    await expect(
+      mountVisionScene(
+        target,
+        delivery,
+        {},
+        vi.fn(),
+        vi.fn(),
+        { ...pack, nativeComposition: true },
+        true,
+      ),
+    ).rejects.toThrow(
+      reason === "missing receipt"
+        ? "VISION_NATIVE_COMPOSITION_FRAME_INVALID"
+        : reason === "wrong canvas"
+          ? "VISION_NATIVE_COMPOSITION_CANVAS_MISMATCH"
+          : "VISION_NATIVE_COMPOSITION_MODE_REFUSED",
+    );
+    if (reason === "refused mode") expect(fake.requests).not.toContain("load");
+  },
+);
 
 it("reports an unclaimed Vision context-restoration error to the host", async () => {
   const { target, delivery, pack } = setup();

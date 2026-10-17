@@ -3,13 +3,11 @@ import {
   type NativeCompositionPeerFactory,
   type NativeCompositionPublishResult,
 } from "./native-composition-publisher";
-import {
-  nativeCompositionRequiresRebuild,
-  type NativeCompositionProjection,
-} from "../scenes/native-composition";
+import { type NativeCompositionProjection } from "../scenes/native-composition";
 import type { LSMLDocument } from "../scenes/native-document";
 import type { MountOptions } from "../types";
 import type { NativeSceneFrames } from "./native-scene-frames";
+import type { VisionSceneHandle } from "./vision-contracts";
 
 interface AcceptedPublication {
   projection: NativeCompositionProjection | null;
@@ -77,20 +75,16 @@ export class NativeCompositionSession {
   }
 
   project(
-    document: LSMLDocument,
+    scene: VisionSceneHandle,
     frames: NativeSceneFrames,
   ): NativeCompositionProjection | null {
     return this.options.nativeCompositionLSDP
-      ? frames.projectComposition(document)
+      ? frames.projectComposition(scene)
       : null;
   }
 
   use(projection: NativeCompositionProjection | null): void {
     this.activeProjection = projection;
-  }
-
-  requiresRebuild(patch: Record<string, unknown>): boolean {
-    return nativeCompositionRequiresRebuild(this.activeProjection, patch);
   }
 
   publish(
@@ -122,10 +116,17 @@ export class NativeCompositionSession {
 
   acceptDocument(
     document: LSMLDocument,
+    scene: VisionSceneHandle,
     frames: NativeSceneFrames,
     stateHash: unknown,
   ): void {
-    this.accept(this.project(document, frames), document, stateHash);
+    if (!this.options.nativeCompositionLSDP) {
+      this.accept(null, document, stateHash);
+      return;
+    }
+    if (scene.sceneId !== document.scene_id)
+      throw new Error("NATIVE_COMPOSITION_SCENE_IDENTITY_MISMATCH");
+    this.accept(this.project(scene, frames), document, stateHash);
   }
 
   clear(): void {

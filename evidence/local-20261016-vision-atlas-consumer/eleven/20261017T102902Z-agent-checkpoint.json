@@ -1,0 +1,32 @@
+{
+  "captured_utc": "2026-10-17T10:29:02.805Z",
+  "work_unit": "local-20261016-vision-atlas-consumer",
+  "branch": "eleven/local-20261016-vision-atlas-consumer",
+  "base": "22af74c2a001850c0fb1c660a38162a16fe018af",
+  "head_before_checkpoint": "14982236c306054e70d3df18e611bbe5d21e2b2f",
+  "scope": "Validate same-submission Vision composition receipts; explicit persistent engine mode and canvas ownership; exact global atlas metadata; extract existing font acquisition responsibility.",
+  "validation": {
+    "typescript": "PASS: tsc -b --force --pretty false after disk recovery",
+    "architecture": "PASS: source usage, code map, documentation, file size guard",
+    "eslint": "PASS scoped changed files",
+    "diff_check": "PASS",
+    "unit_tests": {
+      "total": 424,
+      "passed": 424,
+      "failed": 0,
+      "success": true,
+      "report": "evidence/local-20261016-vision-atlas-consumer/eleven/20261017T102802Z-unit-tests.json"
+    }
+  },
+  "limits": [
+    "NativeSceneFrames still uses previous owner-local LSML projection; receipt production integration remains open.",
+    "No new WASM assets pinned, no common runtime installed, no broad native pixel parity claim.",
+    "Vision worktree recovery and GPU/WASM qualification owned by repeat_native_parity.",
+    "Transition and scene-switch duration excluded."
+  ],
+  "incident": {
+    "disk_full": "D was full; partial generated declarations rebuilt successfully after external space release.",
+    "preserved_snapshot": "C:/Users/Mathias/AppData/Local/Temp/codex-zab/01a11a8b-8f4f-7fc2-abc4-7983042e4f63/20261016T035301Z-solar-atlas-working-snapshot.json"
+  },
+  "next": "Map accepted Vision graph receipt to native composition, remove LSML geometry authority from that production path, qualify exact pixels with coherent Vision/Pulsar candidate."
+}

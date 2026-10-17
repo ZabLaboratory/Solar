@@ -10,11 +10,7 @@ import { prepareInstanceImages } from "./instance-images";
 import type { PreparedInstanceSource } from "./instance-images";
 import { prepareAnimationBindings } from "../engine/animations";
 import { compileSound } from "../engine/sound/catalogue";
-import {
-  prepareEditableBindings,
-  prepareNativeComposition,
-} from "./editable-bindings";
-import type { NativeCompositionProjection } from "./native-composition";
+import { prepareEditableBindings } from "./editable-bindings";
 
 export type LSMLDocument = Record<string, unknown> & {
   scene_id: string;
@@ -713,7 +709,6 @@ export class NativeSceneAssets {
     nativeComposition?: {
       width: number;
       height: number;
-      maxTextureSize: number;
     },
     separateFonts = false,
     directParts = false,
@@ -736,7 +731,6 @@ export class NativeSceneAssets {
     surface?: {
       width: number;
       height: number;
-      composition?: NativeCompositionProjection;
     };
   }> {
     if (
@@ -762,16 +756,6 @@ export class NativeSceneAssets {
     );
     const geometryBindings = prepareEditableBindings(variant);
     const animationBindings = prepareAnimationBindings(variant);
-    const composition = nativeComposition
-      ? prepareNativeComposition(
-          variant,
-          {
-            width: nativeComposition.width,
-            height: nativeComposition.height,
-          },
-          nativeComposition.maxTextureSize,
-        )
-      : undefined;
     const textBindings = prepareTextBindings(variant);
     const [preparedImages, sources] = await Promise.all([
       this.prepareImageBindings(variant, document, signal),
@@ -862,12 +846,11 @@ export class NativeSceneAssets {
         animationBindings,
         geometryBindings,
         ...(separateFonts ? { hostFonts: fonts } : {}),
-        ...(composition
+        ...(nativeComposition
           ? {
               surface: {
-                width: composition.width,
-                height: composition.height,
-                ...(composition.groups.length ? { composition } : {}),
+                width: nativeComposition.width,
+                height: nativeComposition.height,
               },
             }
           : {}),

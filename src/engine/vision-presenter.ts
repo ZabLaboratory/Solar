@@ -1,3 +1,5 @@
+import { VISION_COMPLETED_REQUESTS } from "./vision-contracts";
+import { loadHostFonts, visionFontResponse } from "./vision-font-assets";
 import type {
   VisionLiveMediaSource,
   VisionMediaSubmitReceipt,
@@ -18,46 +20,10 @@ import { visionImageValue, visionTextPatch } from "../scenes/native-document";
 import { CanvasPresentation } from "./canvas-presentation";
 import { VisionFrames } from "./vision-frames";
 import { VisionMediaBridge } from "./vision-media-bridge";
-
-const COMPLETED_REQUESTS = new Set([
-  "frame-submitted",
-  "engine-ready",
-  "fonts-ready",
-  "scene-cleared",
-  "media-applied",
-  "media-cleared",
-  "resize-unchanged",
-]);
-
-// Published LSML may name the shared editor families without embedding them.
-// Admit the licensed host faces once, alongside any scene-owned font assets.
-const hostFonts = [
-  "geist-latin.woff2",
-  "geist-mono-latin.woff2",
-  "figtree-variable.ttf",
-  "alex-brush-400.woff2",
-  "ibm-plex-mono-400.woff2",
-  "ibm-plex-mono-500.woff2",
-  "ibm-plex-mono-600.woff2",
-  "space-grotesk-400.woff2",
-  "space-grotesk-500.woff2",
-  "space-grotesk-600.woff2",
-  "space-grotesk-700.woff2",
-];
-let hostFontBytes: Promise<Uint8Array[]> | null = null;
-function loadHostFonts(): Promise<Uint8Array[]> {
-  hostFontBytes ??= Promise.all(
-    hostFonts.map(async (path) => {
-      const response = await fetch(new URL(`fonts/${path}`, document.baseURI));
-      if (!response.ok) throw new Error(`Solar host font unavailable: ${path}`);
-      return new Uint8Array(await response.arrayBuffer());
-    }),
-  ).catch((error) => {
-    hostFontBytes = null;
-    throw error;
-  });
-  return hostFontBytes;
-}
+import {
+  acceptVisionCompositionFrame,
+  type VisionCompositionFrame,
+} from "./vision-composition-frame";
 
 interface PresenterEvent {
   data: VisionPresenterMessage;
@@ -91,6 +57,7 @@ interface PersistentVisionSession {
   owner: object;
   closed: boolean;
   fontsReady: boolean;
+  nativeComposition?: boolean;
   admittedFonts: Set<string>;
   onMessage: (event: PresenterEvent) => void;
   retire: (error: Error) => void;
@@ -356,6 +323,8 @@ async function mountVisionSceneNow(
   lifetime: PersistentVisionLifetime | null = null,
   installationFonts?: () => AsyncIterable<Uint8Array[]>,
 ): Promise<VisionSceneHandle | null> {
+  if (renderPackage?.nativeComposition && !persistent)
+    throw new Error("VISION_NATIVE_COMPOSITION_REQUIRES_PERSISTENT_ENGINE");
   if (persistent) {
     if (!lifetime) throw new Error("Persistent Vision lifetime is missing.");
     assertCurrentLifetime(target, lifetime);
@@ -478,6 +447,7 @@ async function mountVisionSceneNow(
     Object.assign(error, { phase: message.phase });
     return error;
   };
+  let compositionFrame: VisionCompositionFrame | null = null;
   const onMessage = (event: PresenterEvent): void => {
     if (
       disposed ||
@@ -506,7 +476,31 @@ async function mountVisionSceneNow(
     }
     if (message.type === "frame-submitted") {
       try {
+        let acceptedComposition: VisionCompositionFrame | null = null;
+        if (renderPackage?.nativeComposition) {
+          acceptedComposition = acceptVisionCompositionFrame(
+            message.composition,
+            {
+              sceneId: delivery!.sceneId,
+              sceneVersion: renderPackage.sceneVersion,
+              width,
+              height,
+            },
+            compositionFrame,
+          );
+          if (
+            canvas.width !== acceptedComposition.canvasSize[0] ||
+            canvas.height !== acceptedComposition.canvasSize[1]
+          )
+            throw new Error("VISION_NATIVE_COMPOSITION_CANVAS_MISMATCH");
+        }
         presentation.submit();
+        if (acceptedComposition)
+          Object.assign(layer.style, {
+            width: `${canvas.width}px`,
+            height: `${canvas.height}px`,
+          });
+        compositionFrame = acceptedComposition;
       } catch (error) {
         const failure =
           error instanceof Error ? error : new Error(String(error));
@@ -518,7 +512,10 @@ async function mountVisionSceneNow(
         return;
       }
     }
-    if (!COMPLETED_REQUESTS.has(message.type) || message.seq === undefined)
+    if (
+      !VISION_COMPLETED_REQUESTS.has(message.type) ||
+      message.seq === undefined
+    )
       return;
     const waiter = waiters.get(message.seq);
     if (waiter) {
@@ -588,26 +585,11 @@ async function mountVisionSceneNow(
                   },
                 );
               }
-              if (String(input) === "/fonts")
-                return Response.json(
-                  [...hostFonts, ...(renderPackage?.hostFonts ?? [])].map(
-                    (_, i) => `/fonts/${i}`,
-                  ),
-                );
-              if (String(input).startsWith("/fonts/")) {
-                const index = Number(String(input).slice(7));
-                const bytes = Number.isInteger(index)
-                  ? [
-                      ...(await loadHostFonts()),
-                      ...(renderPackage?.hostFonts ?? []).map((font) =>
-                        VerifiedFont.isVerified(font) ? font.copy() : font,
-                      ),
-                    ][index]
-                  : undefined;
-                return bytes
-                  ? new Response(new Uint8Array(bytes))
-                  : new Response(null, { status: 404 });
-              }
+              const fontResponse = await visionFontResponse(
+                String(input),
+                renderPackage?.hostFonts ?? [],
+              );
+              if (fontResponse) return fontResponse;
               return fetch(input, init);
             },
             loadWasm: async () =>
@@ -716,6 +698,19 @@ async function mountVisionSceneNow(
       for (const digest of renderPackage?.requiredFontDigests ?? [])
         if (!session?.admittedFonts.has(digest))
           throw new Error(`SOLAR_AUTHORING_FONT_NOT_ADMITTED: ${digest}`);
+      if (renderPackage?.nativeComposition || session?.nativeComposition) {
+        const enabled = renderPackage?.nativeComposition === true;
+        const mode = await requestFrame({
+          type: "native-composition-mode",
+          enabled,
+        });
+        if (
+          mode.type !== "native-composition-mode-set" ||
+          mode.enabled !== enabled
+        )
+          throw new Error("VISION_NATIVE_COMPOSITION_MODE_REFUSED");
+        if (session) session.nativeComposition = enabled;
+      }
       await requestFrame({
         type: "load",
         ...(renderPackage?.assets ? { assets: renderPackage.assets } : {}),
@@ -839,6 +834,12 @@ async function mountVisionSceneNow(
     const handle: VisionSceneHandle = {
       sceneId: delivery.sceneId,
       sceneVersion: renderPackage?.sceneVersion ?? delivery.sceneVersion,
+      get compositionFrame() {
+        return disposed ||
+          (session && (session.closed || session.owner !== owner))
+          ? null
+          : compositionFrame;
+      },
       get mediaSources() {
         return mediaSources;
       },

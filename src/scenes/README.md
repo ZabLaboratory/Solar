@@ -120,24 +120,28 @@ licensed host faces, and the trusted authenticated loopback Prism font registry.
 Host font acquisition verifies hashes, caches verified bytes, and completes
 before scene admission. Mutations reuse the admitted font set.
 
-The trusted `nativeComposition` option projects a private pixel atlas matching
-Prism capture bands. Local capture nodes become empty frames because Pulsar owns
-their pixels; Meet peer nodes retain their Solar rendering. Root background paint
-appears only in the first band. The presentation surface has fixed pixel
-dimensions, independent of a stale warm CEF viewport, and native scene items
-compose each band with the captures in authored paint order.
+The trusted `nativeComposition` option keeps the canonical private LSML package
+and supplies a fixed viewport surface to Vision. It enables Vision's native GPU
+composition mode; Solar does not split LSML into atlas pages or calculate layout.
+After the first submitted frame, the engine reads the accepted
+`vision.native-composition-frame/1` receipt and projects its exact owners,
+captures and global-texel bands into the native plan.
 
-Capture-only trailing bands stay transparent in the browser without allocating
-Vision GPU/front-canvas pixels for them. Inner empty bands retain their offsets
-so capture/overlay paint order remains exact. The atlas contract test covers both.
-
-The composition projection returns its surface dimensions explicitly: one band
-uses the native viewport; multiple bands use viewport height times band count.
-Authored root size is optional and never determines that presentation surface.
-If that root size is absent, the private render projection supplies the viewport
-size required by Vision; explicitly authored sizes and saved sources stay intact.
-Scene packaging tests cover absent root size, smaller authored roots, and
-capture-only scenes without modifying the source document.
+Native owner groups retain each Vision owner opacity/visibility/blend fact and
+use identity affine plus viewport bounds. Captures receive unique occurrence IDs
+(`vision.capture.<nodeId>`) and their base author component ID separately, with
+the receipt's full `localToWorld` affine, own opacity, crop and nullable source
+framing values. The framing carries both nullable-axis `authoredSize` and required
+positive upload `sourceSize`; Main can scale source-box coordinates to computed
+occurrence dimensions without a second LSML read. Bands keep their exact scene/atlas rectangles and paint order;
+their global coordinates are never transformed by an owner a second time.
+Capture-only frames use Vision's transparent 1px canvas. Masked or non-normal
+blend nodes, authored clips, and any other unrepresented effect fail with an
+explicit composition error; only Rust-classified root viewport clips and capture
+image-bounds clips are representable by the current native group contract.
+The source-hash helper binds the resulting projection to the exact LSDP state
+hash. Scalar patches publish the newly accepted receipt from the same scene
+handle; they never reproject compositor geometry from the LSML document.
 
 `native-document.ts` owns private render aliases and allowed-host image acquisition.
 Solar retains source/assets only for the active scene and its continuous mutations.
@@ -206,15 +210,21 @@ rebuilds. Plain delivery arrays are copied on acquisition, so subsequent caller
 mutation cannot invalidate that verification. This active owner is released on
 scene change; no scene instance or inactive asset owner is retained.
 
-`native-composition.ts` derives the ordered group graph and local Solar surface
-slots from the active LSML snapshot. Its fixed-frame planner carries authored
-capture IDs, local sizes, transforms, opacity, effective visibility and crop;
-unresolved auto-layout and texture limits fail explicitly. The synthetic root
-stays neutral and authored root styles live on one child group. The private
-atlas is rendered by the existing Vision session using its actual
-`MAX_TEXTURE_SIZE`, without creating another rendering context. The plan hash
-covers schema, source identity/hash, viewport, groups and surfaces; the Main
-assigned producer nonce is deliberately outside that hash.
+`native-composition.ts` projects the exact accepted Vision receipt into the
+ordered group graph and global Solar surface slots. Owners keep their own
+opacity, effective visibility and blend facts; owner groups use identity affine
+and canonical viewport bounds because surfaces and capture affines are already
+in global scene texels. Captures use unique Vision occurrence IDs plus their
+base author component IDs, full `localToWorld` affines, own opacity, crop and
+source framing. The source framing values are passed through with their nullable
+fields intact: `contentBox` retains source/LSML units, `objectPosition` retains
+its normalized coordinates, and Solar does not inject defaults. The single
+root owner maps directly to `prism.native-composition.root.v1`; nested owners
+use `vision.owner.<nodeId>`. The projector checks the receipt canvas against Vision's actual
+`MAX_TEXTURE_SIZE` and refuses effects the native plan cannot represent.
+`native-composition-plan.ts` hashes `{schema,coordinateSpace,atlasSize,source,
+viewport,groups,surfaces}`; the Main-assigned producer nonce is deliberately
+outside that hash.
 
 `native-composition-plan.ts` stamps that plan with the active snapshot's exact
 LSDP `stateHash`. The engine publishes only to the optional, separate

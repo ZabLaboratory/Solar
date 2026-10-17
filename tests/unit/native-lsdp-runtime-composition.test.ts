@@ -7,6 +7,7 @@ import { NativeLsdpReconnect } from "../../src/engine/native-lsdp-reconnect";
 import type { MountOptions } from "../../src/types";
 import type { SceneSourceDelivery } from "../../src/scenes/types";
 import { nativeManifest } from "../helpers/native-source";
+import { compositionFrame } from "../helpers/vision-composition-frame";
 
 const mocks = vi.hoisted(() => ({
   compositionPublisherOptions: null as unknown,
@@ -121,16 +122,54 @@ const origin: SceneSourceDelivery = {
 };
 
 async function setup(initial: unknown, token: MountOptions["token"] = "") {
+  let handleSceneId = "";
+  let handleSceneVersion = "";
+  let acceptedFrame: ReturnType<typeof compositionFrame> | null = null;
   const scene = {
-    applyPatch: vi.fn(async () => {}),
+    get sceneId() {
+      return handleSceneId;
+    },
+    get sceneVersion() {
+      return handleSceneVersion;
+    },
+    get compositionFrame() {
+      return acceptedFrame;
+    },
+    applyPatch: vi.fn(async () => {
+      if (acceptedFrame)
+        acceptedFrame = {
+          ...acceptedFrame,
+          pixelRevision: (BigInt(acceptedFrame.pixelRevision) + 1n).toString(),
+        };
+    }),
     clearMedia: vi.fn(async () => {}),
     canApplyPatch: vi.fn(() => true),
     dispose: vi.fn(),
     mediaSources: [],
     activate: vi.fn(),
     feedback: vi.fn(async () => {}),
+    flush: vi.fn(async () => {}),
   };
-  mocks.mount.mockResolvedValue(scene);
+  mocks.mount.mockImplementation(async (...args: unknown[]) => {
+    const source = args[1] as SceneSourceDelivery;
+    const renderPackage = args[5] as { sceneVersion: string };
+    handleSceneId = source.sceneId;
+    handleSceneVersion = renderPackage.sceneVersion;
+    const frame = compositionFrame();
+    frame.sceneId = source.sceneId;
+    frame.sceneVersion = renderPackage.sceneVersion;
+    frame.sceneSize = [640, 480];
+    frame.sceneScale = [1, 1];
+    frame.atlasSize = [640, 480];
+    frame.canvasSize = [640, 480];
+    frame.owners[0]!.localSize = [640, 480];
+    frame.owners[0]!.localToWorld = [1, 0, 0, 1, 0, 0];
+    frame.captures[0]!.localToWorld = [1, 0, 0, 1, 20, 30];
+    frame.surfaces[0]!.sceneRect = [0, 0, 640, 480];
+    frame.surfaces[0]!.atlasRect = [0, 0, 640, 480];
+    acceptedFrame = frame;
+    return scene;
+  });
   const resource = "solar/lane-a";
   const options: MountOptions = {
     target: documentElement(),
@@ -219,7 +258,7 @@ describe("native Solar composition attachment", () => {
     mocks.compositionPublisherOptions = null;
   });
 
-  it("publishes the active LSML projection and subsequent scalar state", async () => {
+  it("publishes the accepted Vision receipt and refreshes it after a scalar patch", async () => {
     const initial = {
       ...structuredClone(document),
       layout: {
@@ -240,32 +279,36 @@ describe("native Solar composition attachment", () => {
     expect(initialPublication).toBeDefined();
     const [projection, initialDocument, initialHash] = initialPublication!;
     expect(projection).toMatchObject({
+      coordinateSpace: "global-scene-texels",
+      atlasSize: { width: 640, height: 480 },
       groups: [
         {
           id: "prism.native-composition.root.v1",
           children: [
-            { kind: "group", id: "solar.native-composition.authored-root.v1" },
-          ],
-        },
-        {
-          id: "solar.native-composition.authored-root.v1",
-          children: [
             { kind: "solarBand", band: 0 },
-            { kind: "capture", componentId: "camera.main" },
+            {
+              kind: "capture",
+              componentId: "vision.capture.2",
+              sourceComponentId: "camera",
+            },
           ],
         },
       ],
       surfaces: [
         {
           band: 0,
-          ownerId: "solar.native-composition.authored-root.v1",
-          coordinateSpace: "group-local",
+          ownerId: "prism.native-composition.root.v1",
+          coordinateSpace: "global-scene-texels",
           rect: { x: 0, y: 0, width: 640, height: 480 },
         },
       ],
     });
     expect(initialDocument).toEqual(initial);
     expect(initialHash).toBe(nativeTreeHash(initial));
+    expect(mocks.mount.mock.calls[0]?.[5]).toMatchObject({
+      nativeComposition: true,
+      surface: { width: 640, height: 480 },
+    });
     expect(mocks.compositionPublisherOptions).toMatchObject({
       resource: "solar/composition",
       graph: "A",
@@ -283,6 +326,8 @@ describe("native Solar composition attachment", () => {
     };
     expect(nextPublication[1]).toEqual(nextDocument);
     expect(nextPublication[2]).toBe(nativeTreeHash(nextDocument));
+    expect(nextPublication[0]).toEqual(projection);
+    expect(mocks.mount).toHaveBeenCalledOnce();
     expect(ready.scene.applyPatch).toHaveBeenCalledWith({
       "__lit.text.title": "edited",
     });
