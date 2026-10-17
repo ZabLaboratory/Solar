@@ -145,7 +145,7 @@ handle; they never reproject compositor geometry from the LSML document.
 
 `native-document.ts` owns private render aliases and allowed-host image acquisition.
 Solar retains source/assets only for the active scene and its continuous mutations.
-A scene change acquires the incoming source anew; returning A → B → A fetches A
+A scene change acquires the incoming source anew; returning A â†’ B â†’ A fetches A
 again and mounts a fresh Vision frame. Inactive frames are disposed, never cached.
 Independent image requests for the active scene deduplicate by URL and run concurrently.
 URL lookup is a 128-entry LRU; decoded response bytes are deduplicated by content
@@ -224,7 +224,14 @@ use `vision.owner.<nodeId>`. The projector checks the receipt canvas against Vis
 `MAX_TEXTURE_SIZE` and refuses effects the native plan cannot represent.
 `native-composition-plan.ts` hashes `{schema,coordinateSpace,atlasSize,source,
 viewport,groups,surfaces}`; the Main-assigned producer nonce is deliberately
-outside that hash.
+outside that hash. The nominal `/1` content remains unchanged. A Vision `/2`
+receipt produces a `/2` plan with `coverageSurfaces` included in the hash, even
+when the list is empty for blend-only frames. Each mask is a surface index; its
+exact target occurrence and scene/atlas rectangles are validated before use.
+Coverage is auxiliary alpha supplied by Vision in the same GPU frame, never a
+visible SolarBand or another LSML mask implementation. Capture occurrences carry
+their own `/2` blend mode and optional mask reference without folding opacity
+into the mask or changing source framing.
 
 `native-composition-plan.ts` stamps that plan with the active snapshot's exact
 LSDP `stateHash`. The engine publishes only to the optional, separate
@@ -238,8 +245,11 @@ results are not LSML mutation or Vision frame receipts. Existing mutation IDs,
 receipts and frame coverage are unchanged.
 
 Pulsar's isolated native probe now covers Solar surface bands composed with a
-capture under group opacity; non-null masks and unsupported blend modes remain
-refused. This does not yet qualify the browser-produced Solar atlas routed
+capture under group opacity. Solar now projects versioned mask coverage and
+the 16 CSS blend modes from Vision receipts; `/1` continues to refuse these
+extensions and `/2` refuses unknown modes, mismatched or orphan coverage,
+missing gutters and resampling. The extended native consumer and its GPU pixels
+require separate qualification before this is an installed-runtime claim. This does not yet qualify the browser-produced Solar atlas routed
 through the external Main consumer and Pulsar together. Solar plan tests
 establish ordering, ownership, geometry and refusal conditions only.
 Auto-layout/grid/repeat and effects outside owner bounds also remain unresolved.

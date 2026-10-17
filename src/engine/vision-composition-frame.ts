@@ -1,3 +1,22 @@
+export const VISION_NATIVE_COMPOSITION_BLEND_MODES = [
+  "normal",
+  "multiply",
+  "screen",
+  "hard-light",
+  "soft-light",
+  "overlay",
+  "darken",
+  "lighten",
+  "difference",
+  "exclusion",
+  "color-dodge",
+  "color-burn",
+  "hue",
+  "saturation",
+  "color",
+  "luminosity",
+] as const;
+
 /** Accepted GPU graph facts from the persistent Vision presenter, never an LSML layout. */
 export interface VisionCompositionOwner {
   nodeId: number;
@@ -9,6 +28,8 @@ export interface VisionCompositionOwner {
   visible: boolean;
   blendMode: string;
   maskPresent: boolean;
+  /** /2 only: index into this frame's resolved GPU coverage surfaces. */
+  maskSurfaceIndex?: number | null;
   clipPresent: boolean;
   clipKind: "none" | "viewport-bounds" | "authored";
 }
@@ -28,6 +49,8 @@ export interface VisionCompositionCapture {
   sourceSize: [number, number];
   blendMode: string;
   maskPresent: boolean;
+  /** /2 only: index into this frame's resolved GPU coverage surfaces. */
+  maskSurfaceIndex?: number | null;
   clipPresent: boolean;
   clipKind: "none" | "image-bounds" | "authored";
   fit: string | null;
@@ -58,8 +81,17 @@ export interface VisionCompositionSurface {
   atlasRect: [number, number, number, number];
 }
 
+export interface VisionCompositionCoverageSurface {
+  targetNodeId: number;
+  coordinateSpace: "global-scene-texels";
+  sceneRect: [number, number, number, number];
+  atlasRect: [number, number, number, number];
+}
+
 export interface VisionCompositionFrame {
-  schema: "vision.native-composition-frame/1";
+  schema:
+    | "vision.native-composition-frame/1"
+    | "vision.native-composition-frame/2";
   coordinateSpace: "global-scene-texels";
   sceneId: string;
   sceneVersion: string;
@@ -74,6 +106,7 @@ export interface VisionCompositionFrame {
   owners: VisionCompositionOwner[];
   captures: VisionCompositionCapture[];
   surfaces: VisionCompositionSurface[];
+  coverageSurfaces?: VisionCompositionCoverageSurface[];
 }
 
 const object = (value: unknown): Record<string, unknown> | null =>
@@ -165,7 +198,8 @@ export function acceptVisionCompositionFrame(
   const frame = object(input);
   if (
     !frame ||
-    frame.schema !== "vision.native-composition-frame/1" ||
+    (frame.schema !== "vision.native-composition-frame/1" &&
+      frame.schema !== "vision.native-composition-frame/2") ||
     frame.coordinateSpace !== "global-scene-texels" ||
     frame.gpuSubmission !== "present-queued" ||
     frame.physicalPresentation !== "not-measured" ||
@@ -197,12 +231,28 @@ export function acceptVisionCompositionFrame(
         BigInt(previous.layoutProjectionRevision))
   )
     throw new Error("VISION_NATIVE_COMPOSITION_FRAME_STALE");
+  const extended = frame.schema === "vision.native-composition-frame/2";
+  if (
+    extended
+      ? !Array.isArray(frame.coverageSurfaces)
+      : frame.coverageSurfaces !== undefined
+  )
+    invalid();
+  const coverage = (frame.coverageSurfaces ?? []) as unknown[];
+  if (
+    frame.owners.length +
+      frame.captures.length +
+      frame.surfaces.length +
+      coverage.length >
+    100000
+  )
+    invalid();
   const empty = frame.atlasSize[0] === 0 && frame.atlasSize[1] === 0;
   if (
     (frame.atlasSize[0] === 0) !== (frame.atlasSize[1] === 0) ||
     frame.canvasSize[0] !== (empty ? 1 : frame.atlasSize[0]) ||
     frame.canvasSize[1] !== (empty ? 1 : frame.atlasSize[1]) ||
-    empty !== (frame.surfaces.length === 0)
+    empty !== (frame.surfaces.length + coverage.length === 0)
   )
     invalid();
   const owners = new Map<number, Record<string, unknown>>();
@@ -312,5 +362,66 @@ export function acceptVisionCompositionFrame(
         invalid();
     bands.add(key);
   }
+  const targets = new Set<number>();
+  for (const raw of coverage) {
+    const surface = object(raw);
+    if (
+      !surface ||
+      !id(surface.targetNodeId) ||
+      targets.has(surface.targetNodeId) ||
+      (!owners.has(surface.targetNodeId) &&
+        !captures.has(surface.targetNodeId)) ||
+      surface.coordinateSpace !== "global-scene-texels" ||
+      !tuple(surface.sceneRect, 4, id) ||
+      !tuple(surface.atlasRect, 4, id)
+    )
+      invalid();
+    const scene = surface.sceneRect,
+      atlas = surface.atlasRect;
+    if (
+      atlas[0]! < 1 ||
+      atlas[1]! < 1 ||
+      atlas[0]! + atlas[2]! >= frame.canvasSize[0]! ||
+      atlas[1]! + atlas[3]! >= frame.canvasSize[1]! ||
+      scene[2]! < 1 ||
+      scene[3]! < 1 ||
+      scene[2] !== atlas[2] ||
+      scene[3] !== atlas[3] ||
+      scene[0]! + scene[2]! > expected.width ||
+      scene[1]! + scene[3]! > expected.height ||
+      atlas[0]! + atlas[2]! > frame.canvasSize[0]! ||
+      atlas[1]! + atlas[3]! > frame.canvasSize[1]!
+    )
+      invalid();
+    targets.add(surface.targetNodeId);
+  }
+  const referenced = new Set<number>();
+  for (const raw of [...frame.owners, ...frame.captures]) {
+    const item = object(raw)!;
+    if (!extended) {
+      if (item.maskSurfaceIndex !== undefined) invalid();
+      continue;
+    }
+    if (
+      !VISION_NATIVE_COMPOSITION_BLEND_MODES.some(
+        (mode) => mode === item.blendMode,
+      )
+    )
+      invalid();
+    const index = item.maskSurfaceIndex;
+    if (item.maskPresent !== (index !== null) || (index !== null && !id(index)))
+      invalid();
+    if (index !== null) {
+      const surface = object(coverage[index as number]);
+      if (
+        !surface ||
+        surface.targetNodeId !== item.nodeId ||
+        referenced.has(index as number)
+      )
+        invalid();
+      referenced.add(index as number);
+    }
+  }
+  if (referenced.size !== coverage.length) invalid();
   return input as VisionCompositionFrame;
 }

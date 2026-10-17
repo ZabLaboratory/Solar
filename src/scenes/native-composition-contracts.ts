@@ -26,6 +26,9 @@ export type NativeCompositionChild =
       affine: NativeCompositionAffine;
       localOpacity: number;
       visible: boolean;
+      /** /2 appearance is applied once to this occurrence in native composition. */
+      blendMode?: string;
+      mask?: { surface: number } | null;
       cropPercent: { left: number; top: number; right: number; bottom: number };
       sourceFraming: {
         fit: string | null;
@@ -66,6 +69,13 @@ export interface NativeCompositionSurface {
   affine: NativeCompositionAffine;
 }
 
+export interface NativeCompositionCoverageSurface {
+  targetId: string;
+  coordinateSpace: "global-scene-texels";
+  rect: NativeCompositionRect;
+  atlasRect: NativeCompositionRect;
+}
+
 export interface NativeCompositionProjection {
   coordinateSpace: "global-scene-texels";
   /** Actual CEF canvas size, including atlas gutters or a transparent 1px canvas. */
@@ -75,6 +85,8 @@ export interface NativeCompositionProjection {
   viewport: { width: number; height: number };
   groups: NativeCompositionGroup[];
   surfaces: NativeCompositionSurface[];
+  /** Present only for /2, including an empty list for blend-only plans. */
+  coverageSurfaces?: NativeCompositionCoverageSurface[];
 }
 
 export interface NativeCompositionSource {
@@ -86,7 +98,7 @@ export interface NativeCompositionSource {
 }
 
 export interface NativeCompositionPlan {
-  schema: "solar.native-composition.plan/1";
+  schema: "solar.native-composition.plan/1" | "solar.native-composition.plan/2";
   coordinateSpace: "global-scene-texels";
   atlasSize: { width: number; height: number };
   producer_id: string;
@@ -95,4 +107,6 @@ export interface NativeCompositionPlan {
   viewport: { width: number; height: number };
   groups: NativeCompositionGroup[];
   surfaces: NativeCompositionSurface[];
+  /** Present only for /2, including an empty list for blend-only plans. */
+  coverageSurfaces?: NativeCompositionCoverageSurface[];
 }

@@ -1,0 +1,37 @@
+{
+  "schema": "zab.agent-checkpoint/1",
+  "workUnit": "eleven-local-20261017-native-mask-projection",
+  "path": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261017-native-mask-projection",
+  "branch": "eleven/local-20261017-native-mask-projection",
+  "base": "7f4837e904475d467a02b7739bbd71a3680a59f1",
+  "scope": "Same-frame native mask coverage and CSS blend projection; no transition or scene-switch duration changes",
+  "changes": [
+    "Accept Vision /2 coverage references with exact target, identity, revision, integer geometry, size, gutter and resource-budget checks",
+    "Project auxiliary coverage separately from painted bands and preserve each capture occurrence's blend and nullable mask reference",
+    "Hash coverage geometry and references into Solar plan /2 while retaining the nominal /1 wire format",
+    "Accept both plan envelopes during shared LSDP state reads, preserving producer ownership, CAS and retirement"
+  ],
+  "validation": {
+    "historicalSourceNegative": { "report": "20261017T133012Z-old-source-negative.json", "failed": 2, "reason": "Historical /1 source rejects valid /2 receipt and coverage-only atlas" },
+    "focused": { "report": "20261017T133308Z-composition-tests.json", "passed": 96, "failed": 0 },
+    "unitSuite": { "report": "20261017T133441Z-unit-tests-patched-runtime.json", "passed": 482, "failed": 0 },
+    "typecheck": "tsc -b --pretty false: exit 0",
+    "lint": "Eight changed TypeScript files: exit 0",
+    "discovery": "70 source files current and reachable; no unused sources, exports, dependencies or problems",
+    "documentation": "31 documents, 195 local links, 92 npm commands, 174 path references, 82 tool references; zero failures",
+    "fileSize": "315 text files, four reviewed exceptions, no growth",
+    "diffCheck": "git diff --check: exit 0"
+  },
+  "intermediateFailures": [
+    "Legacy run before local exact-lock dependencies were installed: dependency resolution failed; not a product regression",
+    "First historical-source negative: test setup imported a new constant absent from the historical source; zero assertions, not counted as a negative control",
+    "Full unit suite before the repository's postinstall WebRTC compatibility patch: 475 passed, seven failed; applying the existing script only to this worktree's dependencies restored 482/482",
+    "Publisher test fixture initially inferred producers as A-only; corrected its fixture type through explicit A/B initialization; subsequent typecheck passed"
+  ],
+  "remaining": [
+    "Prism must validate and bind /2 coverage to the exact CEF atlas item and forward the matching native protocol",
+    "Vision and Pulsar worker changes and GPU pixel qualification remain independent gates",
+    "No extended native pixels, installed runtime, physical source, endurance or stream qualification is claimed by these Solar tests",
+    "Common dev runtime was not changed; preserve worktree until coherent cross-repository integration is qualified"
+  ]
+}

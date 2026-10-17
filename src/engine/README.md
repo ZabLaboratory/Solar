@@ -395,3 +395,24 @@ peer pixels before/after mutation and resize, zero delegated-camera resolver
 calls and one peer subscription/retirement. The historical presenter negative
 control must fail on an escaped native capture. This private browser test does
 not cover physical camera permission, network Meet, native LSDP, Main or CEF.
+
+## Native coverage receipt extension
+
+`vision-composition-frame.ts` accepts nominal `/1` receipts unchanged and `/2`
+receipts carrying auxiliary `coverageSurfaces`. Each owner/capture in `/2` has
+an explicit nullable `maskSurfaceIndex`; a non-null index must match its exact
+node ID and mask presence. Every coverage is referenced once, in the same
+frame identity and monotonic pixel/layout revisions as paint. Global integer
+scene and atlas rectangles preserve size 1:1 and one-pixel atlas gutters.
+Capture-only content may have a coverage atlas with no visible raster band.
+The combined owner/capture/paint/coverage budget remains 100,000 entries.
+Vision resolves alpha/luminance/subtraction; Solar only validates and projects
+these references. This is not a CPU mask computation or physical-presentation
+receipt. `tests/unit/native-composition-coverage.test.ts` covers receipt and
+plan contracts; actual extended GPU composition remains a separate qualification.
+
+The LSDP publisher retains the shared state envelope `/1` while accepting both
+plan versions. It checks the schema and producer envelope (including the `/2`
+coverage list), preserves the other graph, and retains existing CAS/retirement
+rules. Frame validation and native admission own geometry and pixel validity;
+the publisher does not reinterpret another producer's rendering plan.
