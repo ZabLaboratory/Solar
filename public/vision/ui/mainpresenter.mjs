@@ -32,6 +32,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
   let queue = Promise.resolve();
   let hasSubmittedFrame = false;
   let sceneLoaded = false;
+  let nativeCompositionMode = false;
   let disposed = false;
   let generation = 0;
   let context = null;
@@ -157,6 +158,22 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     ensureActive(ticket);
     if (request.type === "init" || request.type === "init-empty") {
       await initialize(request, receipt, ticket);
+      return;
+    }
+
+    if (request.type === "native-composition-mode") {
+      if (typeof request.enabled !== "boolean") {
+        throw withContext(new Error("Native composition mode requires an explicit enabled boolean."), "native-composition-mode", receipt);
+      }
+      if (!engine) {
+        throw withContext(new Error("The persistent Rust GPU engine is not ready for native composition."), "native-composition-mode", receipt);
+      }
+      if (request.enabled && typeof engine.render_contribution_atlas_to_canvas !== "function") {
+        throw withContext(new Error("The active WASM engine does not support native contribution-atlas presentation."), "native-composition-mode", receipt);
+      }
+      nativeCompositionMode = request.enabled;
+      ensureActive(ticket);
+      emit({ type: "native-composition-mode-set", seq: request.seq, enabled: nativeCompositionMode });
       return;
     }
 
@@ -565,8 +582,18 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     const info = readEngineInfo(engine);
     const startedAt = clock.now();
     let rawStats;
+    let composition = null;
     try {
-      rawStats = await engine.render(size.width, size.height);
+      if (nativeCompositionMode) {
+        if (typeof engine.render_contribution_atlas_to_canvas !== "function") {
+          throw new Error("Native contribution-atlas presentation was enabled but the active WASM engine does not provide that API.");
+        }
+        composition = await engine.render_contribution_atlas_to_canvas(size.width, size.height);
+        validateNativeCompositionReceipt(composition, size);
+        rawStats = composition.stats;
+      } else {
+        rawStats = await engine.render(size.width, size.height);
+      }
       ensureActive(ticket);
     } catch (error) {
       throw withContext(error, "render", { ...timing, gpuSubmitCallMs: elapsedSince(startedAt) });
@@ -582,7 +609,9 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
 
     let stats;
     try {
-      stats = parseJsonRecord(rawStats, "render()");
+      stats = composition
+        ? nativeCompositionStats(composition.stats)
+        : parseJsonRecord(rawStats, "render()");
     } catch (error) {
       throw withContext(error, "render", { ...timing, gpuSubmitCallMs });
     }
@@ -593,6 +622,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       width: size.width,
       height: size.height,
       stats,
+      ...(composition ? { composition } : {}),
       info,
       presenterInfo: { name: "HTMLCanvas · WebGL2", desynchronized: true },
       timing: { ...timing, gpuSubmitCallMs },
@@ -672,6 +702,49 @@ function readEngineInfo(instance) {
 
 function authoredSurfaceSize(info) {
   return checkedSize(Math.ceil(info.width), Math.ceil(info.height));
+}
+
+function validateNativeCompositionReceipt(receipt, requestedSize) {
+  if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)
+      || receipt.schema !== "vision.native-composition-frame/1"
+      || receipt.gpuSubmission !== "present-queued"
+      || receipt.physicalPresentation !== "not-measured"
+      || receipt.coordinateSpace !== "global-scene-texels") {
+    throw new Error("The Rust engine returned an invalid native composition frame receipt.");
+  }
+  const isPair = value => Array.isArray(value) && value.length === 2
+    && value.every(item => Number.isSafeInteger(item) && item >= 0);
+  if (!isPair(receipt.sceneSize) || receipt.sceneSize[0] !== requestedSize.width
+      || receipt.sceneSize[1] !== requestedSize.height
+      || !isPair(receipt.canvasSize) || receipt.canvasSize[0] < 1 || receipt.canvasSize[1] < 1
+      || !isPair(receipt.atlasSize) || !Array.isArray(receipt.surfaces)
+      || !Array.isArray(receipt.owners) || !Array.isArray(receipt.captures)) {
+    throw new Error("The Rust engine returned inconsistent native composition dimensions or metadata.");
+  }
+  const hasAtlas = receipt.surfaces.length > 0;
+  if (hasAtlas) {
+    if (receipt.atlasSize[0] < 1 || receipt.atlasSize[1] < 1
+        || receipt.canvasSize[0] !== receipt.atlasSize[0]
+        || receipt.canvasSize[1] !== receipt.atlasSize[1]) {
+      throw new Error("The native composition canvas must exactly match the packed atlas dimensions.");
+    }
+  } else if (receipt.atlasSize[0] !== 0 || receipt.atlasSize[1] !== 0
+      || receipt.canvasSize[0] !== 1 || receipt.canvasSize[1] !== 1) {
+    throw new Error("A capture-only or empty composition must use a transparent one-pixel canvas.");
+  }
+  if (!receipt.stats || typeof receipt.stats !== "object" || Array.isArray(receipt.stats)) {
+    throw new Error("The Rust engine returned no native composition submission statistics.");
+  }
+}
+
+function nativeCompositionStats(value) {
+  const stats = typeof value === "string"
+    ? parseJsonRecord(value, "render_contribution_atlas_to_canvas().stats")
+    : value;
+  if (!stats || typeof stats !== "object" || Array.isArray(stats)) {
+    throw new Error("The Rust engine returned invalid native composition submission statistics.");
+  }
+  return stats;
 }
 
 function checkedSize(width, height) {

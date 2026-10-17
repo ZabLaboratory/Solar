@@ -6,6 +6,9 @@ vendor/lsdp-native-browser/src/error.js -text whitespace=cr-at-eol
 vendor/lsdp-native-browser/src/strict-json.js -text whitespace=cr-at-eol
 vendor/lsdp-native-browser/tree-vectors.json -text whitespace=cr-at-eol
 
+# Keep the qualified upstream presenter bytes identical to vision-assets.json.
+public/vision/ui/mainpresenter.mjs -text whitespace=cr-at-eol
+
 *.png binary
 *.jpg binary
 *.jpeg binary

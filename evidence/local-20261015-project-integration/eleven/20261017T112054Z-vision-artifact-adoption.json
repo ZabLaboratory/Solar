@@ -1,0 +1,37 @@
+{
+  "captured_utc": "2026-10-17T11:20:54.928138+00:00",
+  "solar_base": "b1f7caee41373c1054f4f2e03a4199f96f1c385d",
+  "vision_signed_source": "4f466e8f424ab8afb968d88d9e64310de87122a4",
+  "vision_integrated_merge": "e079bd252d85c4f82db28bc92691f904e26158ac",
+  "artifact_pins": {
+    "ui/mainpresenter.mjs": {
+      "bytes": 33312,
+      "sha256": "a33fb071774f92a96f4877b2a6288899abc8c22c6a4a313adddad6c557a91e59"
+    },
+    "ui/fonts.mjs": {
+      "bytes": 1977,
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+    },
+    "pkg/lumencast_vision_web.js": {
+      "bytes": 157201,
+      "sha256": "ccf4c8faca3cc28f082b623688f6d8538a4a1cdfe08b76a710e2220f64806bdf"
+    },
+    "pkg/lumencast_vision_web_bg.wasm": {
+      "bytes": 10587601,
+      "sha256": "b46d3c0087bad929a44cf150daf888a2aacfaedf2f29ab338d4b1e872b051d4a"
+    }
+  },
+  "git_index_exact_bytes": true,
+  "build": "npm run build PASS: library, host, host HTML, reception server, layout",
+  "bundle": "npm run check:bundle PASS: host chunks, peer support, all four Vision pins",
+  "real_receipt_projection": "20261017T111452Z-real-vision-receipt-projection.json",
+  "runtime_installed": false,
+  "remaining": [
+    "native complete composition qualification",
+    "Solar duplicate capture acquisition fix pending",
+    "common runtime admission",
+    "unsupported clips masks and nonnormal blends"
+  ],
+  "transition_changed": false,
+  "switch_duration_changed": false
+}

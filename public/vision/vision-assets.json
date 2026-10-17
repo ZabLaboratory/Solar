@@ -2,43 +2,46 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "19493a3938e4a0bd2aede614450a3245bbf6989c",
-  "source_state": "Signed Vision image-lifetime source 48a44d6567ec80563ee0955161be2503c6742e90 (tree d2f188dc399ec1e75480a388f2940394720f8927) rebuilt with scripts/vision/build-web.ps1 and wasm-bindgen 0.2.129. All four Solar-facing artifacts match source bytes and hashes below. Private headless Chrome qualification passed 512 distinct dynamic PNGs, source-byte immutability, rejected-path frame retention, native snapshot reconnect without a manufactured applied event, a subsequent presented image delta, and real WEBGL_lose_context restoration; see evidence/local-20261015-image-lifetime-adoption/eleven/20261015T173140Z-native-image-lifetime.json. GPU memory totals, GPU completion/physical scanout, CEF, scene switching and transition/readiness are outside this proof. This is a local Solar candidate, not a deployed runtime.",
+  "source_revision": "4f466e8f424ab8afb968d88d9e64310de87122a4",
+  "source_state": "Signed Vision native contribution atlas source 4f466e8f424ab8afb968d88d9e64310de87122a4 rebuilt with scripts/vision/build-web.ps1 and wasm-bindgen 0.2.129. Existing persistent GPU engine presents the atlas directly to its WebGL2 canvas. Actual Chromium/ANGLE D3D11 receipt and paint mutation qualify submission, not physical presentation. Solar independently accepted the exact producer receipts. Native Pulsar composition and common runtime admission remain pending. Owner masks, nonnormal blends and unsupported authored clipping remain open; this local candidate does not claim full editor parity.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "bytes": 28820,
-      "sha256": "ace16d4d0e3e538be4caae1fdc0b354ba5f80089be6fa3745352e4c20ffae4a2"
+      "bytes": 33312,
+      "sha256": "a33fb071774f92a96f4877b2a6288899abc8c22c6a4a313adddad6c557a91e59"
     },
     "ui/fonts.mjs": {
       "bytes": 1977,
       "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
     },
     "pkg/lumencast_vision_web.js": {
-      "bytes": 153481,
-      "sha256": "60d005a85bc6fdc5e87bd451e21ee68f16e4f7be116767ef7fb4868743e1b31b"
+      "bytes": 157201,
+      "sha256": "ccf4c8faca3cc28f082b623688f6d8538a4a1cdfe08b76a710e2220f64806bdf"
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10507364,
-      "sha256": "e5c3a72cd1a87689e5a3d05e24cfb089b552247264791479c8595f12be70f364"
+      "bytes": 10587601,
+      "sha256": "b46d3c0087bad929a44cf150daf888a2aacfaedf2f29ab338d4b1e872b051d4a"
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_base": "19493a3938e4a0bd2aede614450a3245bbf6989c",
-    "engine_branch": "eleven/local-20261015-dynamic-image-lifetime",
-    "engine_commit": "48a44d6567ec80563ee0955161be2503c6742e90",
-    "engine_tree": "d2f188dc399ec1e75480a388f2940394720f8927",
-    "engine_evidence": "evidence/local-20261015-dynamic-image-lifetime/eleven/20261015T165710Z-agent-report.md",
+    "engine_base": "fa87adc2b131b8bb3f08dce2a7a2de7f42a3913d",
+    "engine_branch": "eleven/local-20261016-native-contribution-atlas",
+    "engine_commit": "4f466e8f424ab8afb968d88d9e64310de87122a4",
+    "engine_tree": "89ce586771da345144636da50e01630287732095",
+    "engine_evidence": "evidence/local-20261016-native-contribution-atlas/eleven/20261017T111545Z-agent-checkpoint.md",
+    "artifact_manifest": "evidence/local-20261016-native-contribution-atlas/eleven/20261017T111545Z-artifact-hashes.json",
+    "browser_receipt": "evidence/local-20261016-native-contribution-atlas/eleven/20261017T111143Z-browser-proof.json",
+    "browser_receipt_sha256": "d5c7e3edd4bb7decab45a06a647f07f5ae05e729ff0b96c528d8cb9229a1ff23",
     "source_files": {
-      "README.md": "10cd4a952e25a39ad8c23f2f65e84b45c122adfe0a9740da5c53cb405daa7c12",
-      "crates/vision-web/README.md": "2862e9ac061daa42419ecfe87678e086feeebb6e3ab2d3286f96d3ba76e5f579",
-      "crates/vision-web/src/lib.rs": "09f7140d6c02652bec754cc299070ab70078eb3e520fd262b037062c627e5dab",
-      "crates/vision-web/ui/mainpresenter.mjs": "ace16d4d0e3e538be4caae1fdc0b354ba5f80089be6fa3745352e4c20ffae4a2",
-      "crates/vision-web/ui/fonts.mjs": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
-      "crates/vision-web/ui/tests/mainpresenter.test.mjs": "eb02db968d2acd74b834272fcc0e480da6b9922ef89d6232818ec06496b4eb4a",
-      "crates/vision-gpu/src/renderer.rs": "ea5357b82ccf835282f3ae4100d0009b98439cb31271f9e7898ac4dc9b7e71f0"
+      "crates/vision-gpu/src/renderer/contribution.rs": "522a35426c97c32c9a5a32dad8719e715558a4eb91f743f3ffa3a660c86b395a",
+      "crates/vision-gpu/src/renderer.rs": "e2438bf28372a429ca578b403567d2394db13ca12bb78e9f36b1c6b19434f3d2",
+      "crates/vision-web/src/lib.rs": "6662dd82ca5566d99f726b3f99fbc53c7deac3d8c0ea266bed40b78f40184f5f",
+      "crates/vision-web/ui/mainpresenter.mjs": "a33fb071774f92a96f4877b2a6288899abc8c22c6a4a313adddad6c557a91e59",
+      "crates/vision-web/tests/contribution-webgl2-proof/probe.mjs": "e906bc045b50217ab199deae8729f0f8096c58cbb7493b36645d8a20bf234eea",
+      "crates/vision-web/tests/contribution-webgl2-proof/contribution-scene.lsml": "103930a1a01c9de4cab71feb6ed31cc9bafdd0411dcbaf2e0914a91c3b47b064"
     },
+    "source_hash_basis": "Exact qualified working-file bytes; Git may normalize CRLF presenter to LF in its blob. Artifact hashes always refer to delivered bytes.",
     "uncommitted_qualified_source": false,
     "build_command": "& .\\scripts\\vision\\build-web.ps1"
-  },
-  "source_revision": "48a44d6567ec80563ee0955161be2503c6742e90"
+  }
 }
