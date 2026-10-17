@@ -8,21 +8,17 @@ import {
 import { nativeManifest } from "../helpers/native-source";
 import { compositionFrame } from "../helpers/vision-composition-frame";
 import { VisionMediaBridge } from "../../src/engine/vision-media-bridge";
+import { LiveMediaController } from "../../src/engine/live-media";
+import type {
+  VisionLiveMediaSource,
+  VisionPresenterMessage,
+} from "../../src/engine/vision-contracts";
 
 const fake = vi.hoisted(() => ({
   heldTypes: new Set<string>(),
   held: [] as Array<{ type: string; deliver: () => void }>,
   listeners: [] as Array<
-    | ((event: {
-        data: {
-          type: string;
-          seq: number;
-          timing?: Record<string, unknown>;
-          phase?: string;
-          message?: string;
-        };
-      }) => void)
-    | null
+    ((event: { data: VisionPresenterMessage }) => void) | null
   >,
   created: 0,
   terminated: 0,
@@ -38,19 +34,8 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
   createMainThreadPresenter: (canvas: HTMLCanvasElement) => {
     fake.created++;
     let nativeComposition = false;
-    let listener:
-      | ((event: {
-          data: {
-            type: string;
-            seq: number;
-            timing?: Record<string, unknown>;
-            phase?: string;
-            message?: string;
-            enabled?: boolean;
-            composition?: unknown;
-          };
-        }) => void)
-      | null = null;
+    let listener: ((event: { data: VisionPresenterMessage }) => void) | null =
+      null;
     return {
       addEventListener: (_type: string, next: typeof listener) => {
         listener = next;
@@ -668,4 +653,147 @@ it("ignores a retired presenter callback after termination fails and the target 
   switched.dispose();
   disconnectVisionSession(target);
   expect(fake.terminated).toBe(2);
+});
+
+function captureSource(path: string): VisionLiveMediaSource {
+  return {
+    path,
+    type: "capture",
+    source_kind: "media.webcam",
+    device_ref: "native-camera",
+    width: 320,
+    height: 180,
+  };
+}
+const peerSource: VisionLiveMediaSource = {
+  path: "live/peer",
+  type: "peer",
+  slot_ref: "peer-slot",
+  width: 320,
+  height: 180,
+};
+function emitPresenter(message: VisionPresenterMessage): void {
+  const listener = fake.listeners.at(-1);
+  if (!listener) throw new Error("missing active presenter listener");
+  listener({ data: message });
+}
+
+it("delegates native captures only after their matching frame and keeps peer raster inputs", async () => {
+  const { target, delivery, pack } = setup();
+  // The presenter is mocked; media ownership is checked without a WASM upload engine.
+  vi.spyOn(VisionMediaBridge.prototype, "upload").mockImplementation(() => {});
+  fake.composition = compositionFrame();
+  const resolveCaptureDevice = vi.fn(async () => ({
+    deviceId: "must-not-open",
+  }));
+  const unsubscribePeer = vi.fn();
+  const subscribePeerStream = vi.fn(() => unsubscribePeer);
+  const controller = new LiveMediaController({
+    liveAudio: false,
+    resolveCaptureDevice,
+    peers: {
+      resolvePeerStream: () => null,
+      subscribePeerStream,
+      dispose: vi.fn(),
+    },
+    onError: vi.fn(),
+    getScene: () => null,
+  });
+  const onMedia = vi.fn((sources: readonly VisionLiveMediaSource[]) =>
+    controller.update(sources),
+  );
+  const scene = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    onMedia,
+    vi.fn(),
+    { ...pack, nativeComposition: true },
+    true,
+  );
+  emitPresenter({
+    type: "patch-applied",
+    mediaSources: [captureSource("live/camera"), peerSource],
+  });
+  expect(onMedia).not.toHaveBeenCalled();
+  expect(scene.mediaSources).toEqual([]);
+  await scene.applyPatch({ opacity: 0.75 });
+  expect(scene.mediaSources).toEqual([peerSource]);
+  expect(onMedia).toHaveBeenLastCalledWith([peerSource]);
+
+  const resized = compositionFrame();
+  resized.pixelRevision = "5";
+  resized.captures[0]!.liveMediaPath = "live/resized-camera";
+  fake.composition = resized;
+  const calls = onMedia.mock.calls.length;
+  emitPresenter({
+    type: "patch-applied",
+    mediaSources: [captureSource("live/resized-camera"), peerSource],
+  });
+  expect(onMedia).toHaveBeenCalledTimes(calls);
+  await scene.applyPatch({ opacity: 0.5 });
+  expect(scene.mediaSources).toEqual([peerSource]);
+  expect(onMedia.mock.calls.flatMap(([sources]) => sources)).not.toContainEqual(
+    expect.objectContaining({ type: "capture" }),
+  );
+  emitPresenter({ type: "patch-applied", mediaSources: [] });
+  expect(scene.mediaSources).toEqual([peerSource]);
+  await scene.applyPatch({ opacity: 0.25 });
+  expect(scene.mediaSources).toEqual([]);
+  expect(onMedia).toHaveBeenLastCalledWith([]);
+  expect(resolveCaptureDevice).not.toHaveBeenCalled();
+  expect(subscribePeerStream).toHaveBeenCalledTimes(1);
+  expect(unsubscribePeer).toHaveBeenCalledTimes(1);
+  controller.dispose();
+});
+
+it("retains accepted native media when the next receipt is rejected", async () => {
+  const { target, delivery, pack } = setup();
+  // The presenter is mocked; media ownership is checked without a WASM upload engine.
+  vi.spyOn(VisionMediaBridge.prototype, "upload").mockImplementation(() => {});
+  fake.composition = compositionFrame();
+  const onMedia = vi.fn();
+  const scene = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    onMedia,
+    vi.fn(),
+    { ...pack, nativeComposition: true },
+    true,
+  );
+  emitPresenter({ type: "patch-applied", mediaSources: [peerSource] });
+  await scene.applyPatch({ opacity: 0.75 });
+  onMedia.mockClear();
+  emitPresenter({
+    type: "patch-applied",
+    mediaSources: [
+      captureSource("live/resized-camera"),
+      { ...peerSource, path: "live/new-peer" },
+    ],
+  });
+  fake.composition = { ...compositionFrame(), sceneVersion: "stale" };
+  await expect(scene.applyPatch({ opacity: 0.5 })).rejects.toThrow(
+    "VISION_NATIVE_COMPOSITION_FRAME_INVALID",
+  );
+  expect(onMedia).not.toHaveBeenCalled();
+  expect(scene.mediaSources).toEqual([peerSource]);
+});
+
+it("keeps immediate canonical media updates including physical captures", async () => {
+  const { target, delivery, pack } = setup();
+  const onMedia = vi.fn();
+  const scene = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    onMedia,
+    vi.fn(),
+    pack,
+    true,
+  );
+  const sources = [captureSource("live/camera"), peerSource];
+  emitPresenter({ type: "patch-applied", mediaSources: sources });
+  expect(onMedia).toHaveBeenLastCalledWith(sources);
+  expect(scene.mediaSources).toEqual(sources);
 });

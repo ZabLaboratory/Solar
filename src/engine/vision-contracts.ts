@@ -40,6 +40,7 @@ export interface VisionMediaSubmitReceipt {
 export interface VisionSceneHandle {
   readonly sceneId: string;
   readonly sceneVersion: string;
+  /** Raster inputs owned by Vision; native delegated captures are excluded after frame acceptance. */
   readonly mediaSources: readonly VisionLiveMediaSource[];
   /** Graph metadata accepted from the same submitted GPU frame. */
   readonly compositionFrame?: VisionCompositionFrame | null;

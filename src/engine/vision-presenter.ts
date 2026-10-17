@@ -19,7 +19,7 @@ import type { SceneRenderDelivery } from "../scenes/types";
 import { visionImageValue, visionTextPatch } from "../scenes/native-document";
 import { CanvasPresentation } from "./canvas-presentation";
 import { VisionFrames } from "./vision-frames";
-import { VisionMediaBridge } from "./vision-media-bridge";
+import { VisionMediaBridge, VisionMediaSources } from "./vision-media-bridge";
 import {
   acceptVisionCompositionFrame,
   type VisionCompositionFrame,
@@ -381,7 +381,10 @@ async function mountVisionSceneNow(
     renderPackage?.surface?.height ?? Math.max(1, target.clientHeight || 1080);
   if (renderPackage?.surface)
     Object.assign(layer.style, { width: `${width}px`, height: `${height}px` });
-  let mediaSources: readonly VisionLiveMediaSource[] = [];
+  const mediaSources = new VisionMediaSources(
+    renderPackage?.nativeComposition === true,
+    onMediaSources,
+  );
   let resizeObserver: ResizeObserver | null = null;
   let removeWindowResize: (() => void) | null = null;
   let termination: Promise<void> | null = null;
@@ -456,10 +459,8 @@ async function mountVisionSceneNow(
     )
       return;
     const message = event.data;
-    if (message.mediaSources) {
-      mediaSources = message.mediaSources;
-      onMediaSources(mediaSources);
-    }
+    if (message.mediaSources)
+      mediaSources.update(message.mediaSources, message.type === "error");
     if (message.type === "error") {
       const error = presentError(message);
       let rejectedRequest = false;
@@ -511,6 +512,7 @@ async function mountVisionSceneNow(
         else onError(failure);
         return;
       }
+      mediaSources.accept(compositionFrame);
     }
     if (
       !VISION_COMPLETED_REQUESTS.has(message.type) ||
@@ -841,7 +843,7 @@ async function mountVisionSceneNow(
           : compositionFrame;
       },
       get mediaSources() {
-        return mediaSources;
+        return mediaSources.current;
       },
       canApplyPatch: (patch) =>
         Boolean(renderPackage?.resolveImages) ||
@@ -906,8 +908,7 @@ async function mountVisionSceneNow(
       clearMedia: (paths) => {
         // A reused media controller can retire paths from the previous scene.
         // Only textures owned by this accepted scene can be cleared in its engine.
-        const owned = new Set(mediaSources.map((source) => source.path));
-        const current = paths.filter((path) => owned.has(path));
+        const current = mediaSources.filterOwned(paths);
         if (current.length === 0) return Promise.resolve();
         return frameQueue!
           .flush()

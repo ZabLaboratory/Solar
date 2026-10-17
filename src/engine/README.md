@@ -375,3 +375,15 @@ re-exports their existing names for its consumers and continues to own the
 persistent host, load, patch, frame and teardown implementations. Verified active
 instance packages travel in the existing load message; dependency fetching remains
 with `scenes/instances.ts`, and instance state/rendering remains with Vision.
+
+In native composition mode, the presenter stages media descriptors from early
+patch ACKs until the matching frame receipt has been accepted. It then excludes
+local capture paths explicitly delegated by that receipt to Main/Pulsar from
+`VisionSceneHandle.mediaSources` and its media callback. Peer inputs remain
+Vision raster inputs. No physical capture resolver/upload is started for those
+delegated paths; rejected frames retain the previous accepted media list.
+Canonical rendering keeps its existing immediate media descriptor updates.
+The accepted/pending descriptor state lives in `VisionMediaSources` beside the
+existing WASM media bridge. The presenter calls `accept` only after identity,
+revision and canvas validation; this is media ownership, without an extra render,
+wait, engine or transition/readiness step.
