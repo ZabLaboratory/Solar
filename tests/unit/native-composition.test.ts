@@ -527,4 +527,37 @@ it("hashes active source and graph content while excluding the Main producer non
   expect(first.planHash).toMatch(/^sha256:[a-f0-9]{64}$/);
   expect(otherOwner.planHash).toBe(first.planHash);
   expect(nextState.planHash).not.toBe(first.planHash);
+  const global = withNativeCompositionSource(
+    {
+      ...projection,
+      coordinateSpace: "global-scene-texels",
+      atlasSize: { width: 802, height: 602 },
+    },
+    "host-a-1",
+    source,
+  );
+  expect(global.coordinateSpace).toBe("global-scene-texels");
+  expect(global.atlasSize).toEqual({ width: 802, height: 602 });
+  expect(global.planHash).not.toBe(first.planHash);
+  const changedExtent = withNativeCompositionSource(
+    {
+      ...projection,
+      coordinateSpace: "global-scene-texels",
+      atlasSize: { width: 803, height: 602 },
+    },
+    "host-a-1",
+    source,
+  );
+  expect(changedExtent.planHash).not.toBe(global.planHash);
+  expect(
+    withNativeCompositionSource(
+      {
+        ...projection,
+        coordinateSpace: "global-scene-texels",
+        atlasSize: { width: 802, height: 602 },
+      },
+      "host-a-2",
+      source,
+    ).planHash,
+  ).toBe(global.planHash);
 });

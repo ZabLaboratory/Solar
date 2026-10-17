@@ -48,13 +48,16 @@ export interface NativeCompositionSurface {
   band: number;
   ownerId: string;
   ownerPath: string[];
-  coordinateSpace: "scene-root" | "group-local";
+  coordinateSpace: "scene-root" | "group-local" | "global-scene-texels";
   rect: NativeCompositionRect;
   atlasRect: NativeCompositionRect;
   affine: NativeCompositionAffine;
 }
 
 export interface NativeCompositionProjection {
+  coordinateSpace?: "owner-local" | "global-scene-texels";
+  /** Actual CEF canvas size, including atlas gutters or a transparent 1px canvas. */
+  atlasSize?: { width: number; height: number };
   width: number;
   height: number;
   viewport: { width: number; height: number };
@@ -76,6 +79,8 @@ export interface NativeCompositionSource {
 
 export interface NativeCompositionPlan {
   schema: "solar.native-composition.plan/1";
+  coordinateSpace?: "owner-local" | "global-scene-texels";
+  atlasSize?: { width: number; height: number };
   producer_id: string;
   source: NativeCompositionSource;
   planHash: string;

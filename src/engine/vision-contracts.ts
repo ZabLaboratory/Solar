@@ -1,5 +1,6 @@
 import type { VerifiedFont } from "../scenes/verified-font";
 import type { NativeCompositionProjection } from "../scenes/native-composition";
+import type { VisionCompositionFrame } from "./vision-composition-frame";
 
 /** Host/presenter wire messages and scene ownership handles. Implementations remain in vision-presenter. */
 export interface VisionLiveMediaSource {
@@ -26,6 +27,8 @@ export interface VisionPresenterMessage {
   phase?: string;
   timing?: Record<string, unknown>;
   mediaSources?: VisionLiveMediaSource[];
+  enabled?: boolean;
+  composition?: unknown;
 }
 
 export interface VisionMediaSubmitReceipt {
@@ -39,6 +42,8 @@ export interface VisionSceneHandle {
   readonly sceneId: string;
   readonly sceneVersion: string;
   readonly mediaSources: readonly VisionLiveMediaSource[];
+  /** Graph metadata accepted from the same submitted GPU frame. */
+  readonly compositionFrame?: VisionCompositionFrame | null;
   applyPatch(patch: Record<string, unknown>): Promise<void>;
   canApplyPatch?(patch: Record<string, unknown>): boolean;
   resize(width: number, height: number): Promise<void>;
@@ -65,6 +70,8 @@ export interface VisionRenderPackage {
   }>;
   assets?: Array<{ path: string; bytes: Uint8Array }>;
   sceneVersion: string;
+  /** Present the canonical contribution atlas on this same persistent engine canvas. */
+  nativeComposition?: boolean;
   /** Native defaults include LSML-owned __lit bindings. Camera control stays separate. */
   lsmlDefaults?: boolean;
   textBindings?: Record<string, string>;
@@ -88,3 +95,15 @@ export interface VisionRenderPackage {
     release?: () => void;
   }>;
 }
+
+/** Terminal presenter acknowledgements that settle one queued host request. */
+export const VISION_COMPLETED_REQUESTS = new Set([
+  "frame-submitted",
+  "engine-ready",
+  "fonts-ready",
+  "scene-cleared",
+  "media-applied",
+  "media-cleared",
+  "resize-unchanged",
+  "native-composition-mode-set",
+]);

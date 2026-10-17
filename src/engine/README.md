@@ -1,5 +1,23 @@
 # LSDP and Vision runtime
 
+`vision-composition-frame.ts` validates the typed `vision.native-composition-frame/1`
+receipt emitted by the same GPU submission as the presenter's canvas. It checks
+the exact render-variant scene identity, canonical scene grid, atlas canvas extent,
+integer 1:1 bands, graph ownership and monotonic accepted pixel/layout revisions.
+It does not derive layout from LSML or certify physical scanout. The persistent
+presenter can explicitly enable native atlas output before loading; its mode ACK
+is required, and a later canonical load disables that mode on the same engine.
+`VisionSceneHandle.compositionFrame` exposes only a matching accepted receipt for
+the current scene owner. `tests/unit/vision-composition-frame.test.ts` and
+`tests/unit/vision-session.test.ts` cover these refusals and lifetime boundaries.
+The native scene preparation path still uses the earlier owner-local projection;
+adoption of the new receipt and coherent upstream assets remains in progress.
+
+`vision-font-assets.ts` owns the existing host font catalog, shared acquisition
+promise and legacy virtual font URLs used by `vision-presenter.ts`. Acquisition
+failure clears that promise so the next attempt can retry. This extraction keeps
+font ownership separate from scene receipts; it introduces no second font cache.
+
 [`sound/`](sound/README.md) owns authored scene audio: hash-pinned packaged clips,
 composed cues, routed DSP buses, live mix mutations, shared motion transport and
 offline PCM. This experimental browser extension is enabled by `sceneAudio`;
