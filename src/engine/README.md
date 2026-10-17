@@ -387,3 +387,11 @@ The accepted/pending descriptor state lives in `VisionMediaSources` beside the
 existing WASM media bridge. The presenter calls `accept` only after identity,
 revision and canvas validation; this is media ownership, without an extra render,
 wait, engine or transition/readiness step.
+
+`tests/browser/native-media-ownership.html`, driven by
+`scripts/qualify-native-media.mjs`, exercises this boundary with the actual
+presenter, pinned Vision WASM and a canvas-generated peer stream. It checks
+peer pixels before/after mutation and resize, zero delegated-camera resolver
+calls and one peer subscription/retirement. The historical presenter negative
+control must fail on an escaped native capture. This private browser test does
+not cover physical camera permission, network Meet, native LSDP, Main or CEF.

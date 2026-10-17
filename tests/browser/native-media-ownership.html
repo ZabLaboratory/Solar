@@ -1,0 +1,276 @@
+<!doctype html>
+<meta charset="utf-8" />
+<base href="/" />
+<title>Solar native capture ownership qualification</title>
+<style>
+  body {
+    background: #222;
+    color: white;
+    font: 14px sans-serif;
+  }
+  #target {
+    position: relative;
+    width: 640px;
+    height: 720px;
+  }
+</style>
+<h1>Real Solar presenter, Vision atlas and synthetic peer</h1>
+<div id="target"></div>
+<pre id="result" data-status="running">Running private qualification</pre>
+<script type="module">
+  import { bundleAddress, canonicalize } from "@lumencast/canonical";
+  import { strToU8, zipSync } from "fflate";
+  import { nativeManifest } from "/tests/helpers/native-source.ts";
+  import {
+    mountVisionScene,
+    disconnectVisionSession,
+  } from "/src/engine/vision-presenter.ts";
+  import { LiveMediaController } from "/src/engine/live-media.ts";
+
+  const target = document.querySelector("#target");
+  const result = document.querySelector("#result");
+  const errors = [],
+    mediaLists = [],
+    samples = [];
+  let report;
+  let scene,
+    controller,
+    stream,
+    painting,
+    captures = 0,
+    subscriptions = 0,
+    retirements = 0;
+  const assert = (condition, message) => {
+    if (!condition) throw Error(message);
+  };
+  const pattern = document.createElement("canvas");
+  pattern.width = pattern.height = 64;
+  const paint = pattern.getContext("2d");
+  let color = "#00ff00";
+  const redraw = () => {
+    paint.fillStyle = color;
+    paint.fillRect(0, 0, 64, 64);
+  };
+  const readPeer = () => {
+    const frame = scene.compositionFrame;
+    const surface = frame.surfaces.at(-1);
+    const canvas = target.querySelector("canvas");
+    const probe = document.createElement("canvas");
+    probe.width = probe.height = 1;
+    const context = probe.getContext("2d");
+    context.drawImage(
+      canvas,
+      surface.atlasRect[0] + Math.floor(232 * frame.sceneScale[0]),
+      surface.atlasRect[1] + Math.floor(52 * frame.sceneScale[1]),
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+    );
+    return [...context.getImageData(0, 0, 1, 1).data];
+  };
+  async function waitPeer(channel) {
+    const deadline = performance.now() + 10000;
+    while (performance.now() < deadline) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      const rgba = readPeer();
+      if (
+        rgba[channel] > 220 &&
+        rgba[(channel + 1) % 3] < 30 &&
+        rgba[(channel + 2) % 3] < 30
+      )
+        return rgba;
+    }
+    throw Error(
+      `Synthetic peer did not render expected channel ${channel}: ${readPeer()}`,
+    );
+  }
+  try {
+    redraw();
+    stream = pattern.captureStream(15);
+    painting = setInterval(redraw, 60);
+    controller = new LiveMediaController({
+      liveAudio: false,
+      resolveCaptureDevice: async () => {
+        captures++;
+        throw Error(
+          "Native delegated camera must never reach Solar's device resolver",
+        );
+      },
+      peers: {
+        resolvePeerStream: () => stream,
+        subscribePeerStream: () => {
+          subscriptions++;
+          return () => {
+            retirements++;
+          };
+        },
+        dispose: () => {},
+      },
+      onError: (error) => errors.push(String(error.message ?? error)),
+      getScene: () => scene ?? null,
+    });
+    const source = {
+      lsml: "1.1",
+      scene_id: "solar-native-media-ownership",
+      scene_version: "",
+      profiles: ["x-zab.capture/1", "x-zab.meet-peer/1"],
+      defaults: { "proof.color": "#ff8000" },
+      layout: {
+        kind: "frame",
+        id: "root",
+        size: { w: 320, h: 180 },
+        children: [
+          {
+            kind: "shape",
+            id: "before",
+            geometry: "rect",
+            position: { x: 12, y: 20 },
+            size: { w: 50, h: 100 },
+            bind: { fill: "proof.color" },
+          },
+          {
+            kind: "x-zab.capture",
+            id: "camera",
+            "x-zab.sourceKind": "media.webcam",
+            "x-zab.deviceRef": "never-opened-by-fixture",
+            position: { x: 90, y: 20 },
+            size: { w: 80, h: 100 },
+          },
+          {
+            kind: "x-zab.meet-peer",
+            id: "peer",
+            "x-zab.slotRef": "@0",
+            position: { x: 200, y: 20 },
+            size: { w: 64, h: 64 },
+          },
+        ],
+      },
+    };
+    source.scene_version = await bundleAddress(source);
+    const bytes = strToU8(canonicalize(source));
+    const data = zipSync({ "scene.lsml": bytes }, { level: 0 });
+    const delivery = {
+      sceneId: source.scene_id,
+      sceneVersion: source.scene_version,
+      revision: 1,
+      sourceDigest: "private-fixture-only",
+      format: "lsmlz",
+      data,
+      assets: new Map(),
+      blueManifest: nativeManifest(source.scene_id, source.scene_version),
+    };
+    scene = await mountVisionScene(
+      target,
+      delivery,
+      {},
+      (sources) => {
+        mediaLists.push(sources.map(({ path, type }) => ({ path, type })));
+        controller.update(sources);
+      },
+      (error) => errors.push(String(error)),
+      {
+        data,
+        sceneVersion: source.scene_version,
+        nativeComposition: true,
+        lsmlDefaults: true,
+        surface: { width: 320, height: 180 },
+        installationFonts: async function* () {},
+      },
+      true,
+    );
+    assert(
+      scene.compositionFrame.captures.length === 1,
+      "Expected one native capture boundary",
+    );
+    assert(
+      scene.compositionFrame.surfaces.length === 2,
+      "Expected bands before and after capture",
+    );
+    samples.push({
+      phase: "initial",
+      peer: await waitPeer(1),
+      frame: scene.compositionFrame,
+    });
+    color = "#0000ff";
+    await scene.applyPatch({ "proof.color": "#ff00ff" });
+    samples.push({
+      phase: "mutation",
+      peer: await waitPeer(2),
+      frame: scene.compositionFrame,
+    });
+    assert(
+      BigInt(samples[1].frame.pixelRevision) >
+        BigInt(samples[0].frame.pixelRevision),
+      "Mutation did not advance pixels",
+    );
+    await scene.resize(640, 360);
+    samples.push({
+      phase: "resize",
+      peer: await waitPeer(2),
+      frame: scene.compositionFrame,
+    });
+    assert(
+      scene.compositionFrame.sceneSize[0] === 640,
+      "Resize receipt has stale dimensions",
+    );
+    assert(
+      mediaLists.length > 0 &&
+        mediaLists.every((list) =>
+          list.every((source) => source.type === "peer"),
+        ),
+      "A native capture escaped into Solar media ownership",
+    );
+    assert(
+      captures === 0 && subscriptions === 1,
+      "Duplicate physical capture or peer subscription",
+    );
+    controller.dispose();
+    assert(retirements === 1, "Peer subscription was not retired");
+    assert(errors.length === 0, `Runtime errors: ${errors.join("; ")}`);
+    report = {
+      passed: true,
+      captures,
+      subscriptions,
+      retirements,
+      mediaLists,
+      samples,
+      limits:
+        "Private real Solar presenter/WASM/WebGL2 and synthetic canvas peer. No physical camera, network Meet, LSDP, Main bridge, CEF, installed runtime or physical presentation qualification.",
+    };
+  } catch (error) {
+    report = {
+      passed: false,
+      error: String(error),
+      errors,
+      captures,
+      subscriptions,
+      retirements,
+      mediaLists,
+      samples,
+    };
+  } finally {
+    clearInterval(painting);
+    controller?.dispose();
+    stream?.getTracks().forEach((track) => track.stop());
+    scene?.dispose();
+    disconnectVisionSession(target);
+    report.cleanup = {
+      peerRetirements: retirements,
+      liveSyntheticTracks:
+        stream?.getTracks().filter((track) => track.readyState === "live")
+          .length ?? 0,
+    };
+    if (
+      report.cleanup.liveSyntheticTracks !== 0 ||
+      retirements !== subscriptions
+    ) {
+      report.passed = false;
+      report.error = "Private media cleanup did not retire all owned resources";
+    }
+    result.textContent = JSON.stringify(report);
+    result.dataset.status = report.passed ? "passed" : "failed";
+  }
+</script>

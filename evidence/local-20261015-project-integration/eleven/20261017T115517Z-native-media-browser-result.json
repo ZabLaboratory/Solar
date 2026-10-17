@@ -1,0 +1,521 @@
+{
+  "passed": true,
+  "captures": 0,
+  "subscriptions": 1,
+  "retirements": 1,
+  "mediaLists": [
+    [
+      {
+        "path": "__vision_live_media__/64x64/1",
+        "type": "peer"
+      }
+    ],
+    [
+      {
+        "path": "__vision_live_media__/64x64/1",
+        "type": "peer"
+      }
+    ],
+    [
+      {
+        "path": "__vision_live_media__/64x64/1",
+        "type": "peer"
+      }
+    ]
+  ],
+  "samples": [
+    {
+      "phase": "initial",
+      "peer": [
+        0,
+        255,
+        0,
+        255
+      ],
+      "frame": {
+        "schema": "vision.native-composition-frame/1",
+        "gpuSubmission": "present-queued",
+        "physicalPresentation": "not-measured",
+        "sceneId": "solar-native-media-ownership",
+        "sceneVersion": "sha256:85be841ce2476a29da72f132c12541eec9a9150ab5ca4ab4faefa6540a6045f0",
+        "pixelRevision": "0",
+        "layoutProjectionRevision": "0",
+        "width": 320,
+        "height": 180,
+        "atlasSize": [
+          322,
+          364
+        ],
+        "owners": [
+          {
+            "nodeId": 0,
+            "parentNodeId": null,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "viewport-bounds"
+          }
+        ],
+        "captures": [
+          {
+            "nodeId": 2,
+            "ownerNodeId": 0,
+            "paintOrder": 2,
+            "localToOwner": [
+              1,
+              0,
+              0,
+              1,
+              90,
+              20
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              90,
+              20
+            ],
+            "localSize": [
+              80,
+              100
+            ],
+            "localOpacity": 1,
+            "liveMediaPath": "__vision_live_media__/80x100/0",
+            "effectiveComponentId": "camera",
+            "sourceSize": [
+              80,
+              100
+            ],
+            "authoredSize": [
+              80,
+              100
+            ],
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "image-bounds",
+            "fit": "cover",
+            "sourceCropPercent": {
+              "left": 0,
+              "top": 0,
+              "right": 0,
+              "bottom": 0
+            },
+            "contentBox": null,
+            "sourceZoom": null,
+            "objectPosition": null
+          }
+        ],
+        "surfaces": [
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 0,
+            "paintOrder": 0,
+            "beforeNodeId": 2,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              1,
+              320,
+              180
+            ]
+          },
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 1,
+            "paintOrder": 1,
+            "beforeNodeId": null,
+            "afterNodeId": 2,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              183,
+              320,
+              180
+            ]
+          }
+        ],
+        "stats": {
+          "rebuiltNodes": 2,
+          "reusedNodes": 1,
+          "compositionPasses": 3,
+          "partialCompositionPixels": "0"
+        },
+        "coordinateSpace": "global-scene-texels",
+        "sceneSize": [
+          320,
+          180
+        ],
+        "canvasSize": [
+          322,
+          364
+        ],
+        "sceneScale": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "phase": "mutation",
+      "peer": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "frame": {
+        "schema": "vision.native-composition-frame/1",
+        "gpuSubmission": "present-queued",
+        "physicalPresentation": "not-measured",
+        "sceneId": "solar-native-media-ownership",
+        "sceneVersion": "sha256:85be841ce2476a29da72f132c12541eec9a9150ab5ca4ab4faefa6540a6045f0",
+        "pixelRevision": "1",
+        "layoutProjectionRevision": "0",
+        "width": 320,
+        "height": 180,
+        "atlasSize": [
+          322,
+          364
+        ],
+        "owners": [
+          {
+            "nodeId": 0,
+            "parentNodeId": null,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "viewport-bounds"
+          }
+        ],
+        "captures": [
+          {
+            "nodeId": 2,
+            "ownerNodeId": 0,
+            "paintOrder": 2,
+            "localToOwner": [
+              1,
+              0,
+              0,
+              1,
+              90,
+              20
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              90,
+              20
+            ],
+            "localSize": [
+              80,
+              100
+            ],
+            "localOpacity": 1,
+            "liveMediaPath": "__vision_live_media__/80x100/0",
+            "effectiveComponentId": "camera",
+            "sourceSize": [
+              80,
+              100
+            ],
+            "authoredSize": [
+              80,
+              100
+            ],
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "image-bounds",
+            "fit": "cover",
+            "sourceCropPercent": {
+              "left": 0,
+              "top": 0,
+              "right": 0,
+              "bottom": 0
+            },
+            "contentBox": null,
+            "sourceZoom": null,
+            "objectPosition": null
+          }
+        ],
+        "surfaces": [
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 0,
+            "paintOrder": 0,
+            "beforeNodeId": 2,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              1,
+              320,
+              180
+            ]
+          },
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 1,
+            "paintOrder": 1,
+            "beforeNodeId": null,
+            "afterNodeId": 2,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              183,
+              320,
+              180
+            ]
+          }
+        ],
+        "stats": {
+          "rebuiltNodes": 2,
+          "reusedNodes": 0,
+          "compositionPasses": 1,
+          "partialCompositionPixels": "0"
+        },
+        "coordinateSpace": "global-scene-texels",
+        "sceneSize": [
+          320,
+          180
+        ],
+        "canvasSize": [
+          322,
+          364
+        ],
+        "sceneScale": [
+          1,
+          1
+        ]
+      }
+    },
+    {
+      "phase": "resize",
+      "peer": [
+        0,
+        0,
+        255,
+        255
+      ],
+      "frame": {
+        "schema": "vision.native-composition-frame/1",
+        "gpuSubmission": "present-queued",
+        "physicalPresentation": "not-measured",
+        "sceneId": "solar-native-media-ownership",
+        "sceneVersion": "sha256:85be841ce2476a29da72f132c12541eec9a9150ab5ca4ab4faefa6540a6045f0",
+        "pixelRevision": "1",
+        "layoutProjectionRevision": "0",
+        "width": 640,
+        "height": 360,
+        "atlasSize": [
+          642,
+          724
+        ],
+        "owners": [
+          {
+            "nodeId": 0,
+            "parentNodeId": null,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              2,
+              0,
+              0,
+              2,
+              0,
+              0
+            ],
+            "paintOrder": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "viewport-bounds"
+          }
+        ],
+        "captures": [
+          {
+            "nodeId": 2,
+            "ownerNodeId": 0,
+            "paintOrder": 2,
+            "localToOwner": [
+              1,
+              0,
+              0,
+              1,
+              90,
+              20
+            ],
+            "localToWorld": [
+              2,
+              0,
+              0,
+              2,
+              180,
+              40
+            ],
+            "localSize": [
+              80,
+              100
+            ],
+            "localOpacity": 1,
+            "liveMediaPath": "__vision_live_media__/80x100/0",
+            "effectiveComponentId": "camera",
+            "sourceSize": [
+              80,
+              100
+            ],
+            "authoredSize": [
+              80,
+              100
+            ],
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "image-bounds",
+            "fit": "cover",
+            "sourceCropPercent": {
+              "left": 0,
+              "top": 0,
+              "right": 0,
+              "bottom": 0
+            },
+            "contentBox": null,
+            "sourceZoom": null,
+            "objectPosition": null
+          }
+        ],
+        "surfaces": [
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 0,
+            "paintOrder": 0,
+            "beforeNodeId": 2,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              640,
+              360
+            ],
+            "atlasRect": [
+              1,
+              1,
+              640,
+              360
+            ]
+          },
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 1,
+            "paintOrder": 1,
+            "beforeNodeId": null,
+            "afterNodeId": 2,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              640,
+              360
+            ],
+            "atlasRect": [
+              1,
+              363,
+              640,
+              360
+            ]
+          }
+        ],
+        "stats": {
+          "rebuiltNodes": 3,
+          "reusedNodes": 0,
+          "compositionPasses": 3,
+          "partialCompositionPixels": "0"
+        },
+        "coordinateSpace": "global-scene-texels",
+        "sceneSize": [
+          640,
+          360
+        ],
+        "canvasSize": [
+          642,
+          724
+        ],
+        "sceneScale": [
+          2,
+          2
+        ]
+      }
+    }
+  ],
+  "limits": "Private real Solar presenter/WASM/WebGL2 and synthetic canvas peer. No physical camera, network Meet, LSDP, Main bridge, CEF, installed runtime or physical presentation qualification.",
+  "browser": "155.0.8059.80",
+  "pageErrors": [],
+  "capturedUtc": "2026-10-17T11:55:17.945867+00:00"
+}
