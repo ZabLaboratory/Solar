@@ -1,0 +1,1244 @@
+{
+  "passed": true,
+  "capturedUtc": "2026-10-17T14:30:16.325Z",
+  "input": "D:/Documents/Lumencast/lumencast-vision/.worktrees/eleven-local-20261017-native-mask-coverage/evidence/local-20261017-native-mask-coverage/eleven/20261017T142335Z-browser-proof.json",
+  "inputSha256": "976bdb6c91c0ebf1b327667571478663ec517893cfbd192499694f4b0a8d818c",
+  "visionSource": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
+  "visionQualification": "85c49664a029744369b063ddffaa92415a59c8a8",
+  "solarSource": "ebda7b1d3827d36d47193757377050ec19ed1d62",
+  "limits": "Actual persisted browser receipts through unchanged Solar projector; not a running CEF/LSDP/native presentation chain.",
+  "admitted": [
+    {
+      "frame": {
+        "schema": "vision.native-composition-frame/1",
+        "gpuSubmission": "present-queued",
+        "physicalPresentation": "not-measured",
+        "sceneId": "vision-contribution-browser-proof",
+        "sceneVersion": "sha256:97b38a2a742207f30bf7447fa9d48c2f763df0a298d955de9b2d38538419be99",
+        "pixelRevision": "0",
+        "layoutProjectionRevision": "0",
+        "width": 320,
+        "height": 180,
+        "atlasSize": [
+          322,
+          364
+        ],
+        "owners": [
+          {
+            "nodeId": 0,
+            "parentNodeId": null,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": false,
+            "clipKind": "none"
+          },
+          {
+            "nodeId": 1,
+            "parentNodeId": 0,
+            "localSize": [
+              288,
+              156
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 1,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": false,
+            "clipKind": "none"
+          }
+        ],
+        "captures": [
+          {
+            "nodeId": 3,
+            "ownerNodeId": 1,
+            "paintOrder": 3,
+            "localToOwner": [
+              1,
+              0,
+              0,
+              1,
+              52,
+              0
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              52,
+              0
+            ],
+            "localSize": [
+              132,
+              72
+            ],
+            "localOpacity": 1,
+            "liveMediaPath": "__vision_live_media__/132x72/0",
+            "effectiveComponentId": "capture-proof",
+            "sourceSize": [
+              132,
+              72
+            ],
+            "authoredSize": [
+              132,
+              72
+            ],
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "clipPresent": true,
+            "clipKind": "image-bounds",
+            "fit": "contain",
+            "sourceCropPercent": {
+              "left": 4,
+              "top": 8,
+              "right": 12,
+              "bottom": 16
+            },
+            "contentBox": {
+              "x": 3,
+              "y": 5,
+              "width": 120,
+              "height": 70
+            },
+            "sourceZoom": 1.25,
+            "objectPosition": {
+              "x": 0.30000001192092896,
+              "y": 0.699999988079071
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "ownerNodeId": 1,
+            "bandIndex": 0,
+            "paintOrder": 0,
+            "beforeNodeId": 3,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              1,
+              320,
+              180
+            ]
+          },
+          {
+            "ownerNodeId": 1,
+            "bandIndex": 1,
+            "paintOrder": 1,
+            "beforeNodeId": null,
+            "afterNodeId": 3,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              183,
+              320,
+              180
+            ]
+          }
+        ],
+        "stats": {
+          "rebuiltNodes": 0,
+          "reusedNodes": 1,
+          "compositionPasses": 0,
+          "partialCompositionPixels": "0"
+        },
+        "coordinateSpace": "global-scene-texels",
+        "sceneSize": [
+          320,
+          180
+        ],
+        "canvasSize": [
+          322,
+          364
+        ],
+        "sceneScale": [
+          1,
+          1
+        ]
+      },
+      "projection": {
+        "coordinateSpace": "global-scene-texels",
+        "atlasSize": {
+          "width": 322,
+          "height": 364
+        },
+        "width": 322,
+        "height": 364,
+        "viewport": {
+          "width": 320,
+          "height": 180
+        },
+        "groups": [
+          {
+            "id": "prism.native-composition.root.v1",
+            "parentId": null,
+            "order": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            },
+            "children": [
+              {
+                "kind": "group",
+                "id": "vision.owner.1"
+              }
+            ],
+            "mask": null
+          },
+          {
+            "id": "vision.owner.1",
+            "parentId": "prism.native-composition.root.v1",
+            "order": 1,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            },
+            "children": [
+              {
+                "kind": "solarBand",
+                "band": 0
+              },
+              {
+                "kind": "solarBand",
+                "band": 1
+              },
+              {
+                "kind": "capture",
+                "componentId": "vision.capture.3",
+                "sourceComponentId": "capture-proof",
+                "localSize": {
+                  "width": 132,
+                  "height": 72
+                },
+                "affine": {
+                  "m00": 1,
+                  "m01": 0,
+                  "tx": 52,
+                  "m10": 0,
+                  "m11": 1,
+                  "ty": 0
+                },
+                "localOpacity": 1,
+                "visible": true,
+                "cropPercent": {
+                  "left": 4,
+                  "top": 8,
+                  "right": 12,
+                  "bottom": 16
+                },
+                "sourceFraming": {
+                  "fit": "contain",
+                  "contentBox": {
+                    "x": 3,
+                    "y": 5,
+                    "width": 120,
+                    "height": 70
+                  },
+                  "sourceZoom": 1.25,
+                  "objectPosition": {
+                    "x": 0.30000001192092896,
+                    "y": 0.699999988079071
+                  },
+                  "authoredSize": [
+                    132,
+                    72
+                  ],
+                  "sourceSize": [
+                    132,
+                    72
+                  ]
+                }
+              }
+            ],
+            "mask": null
+          }
+        ],
+        "surfaces": [
+          {
+            "band": 0,
+            "ownerId": "vision.owner.1",
+            "ownerPath": [
+              "prism.native-composition.root.v1",
+              "vision.owner.1"
+            ],
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 1,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            }
+          },
+          {
+            "band": 1,
+            "ownerId": "vision.owner.1",
+            "ownerPath": [
+              "prism.native-composition.root.v1",
+              "vision.owner.1"
+            ],
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 183,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            }
+          }
+        ]
+      }
+    },
+    {
+      "frame": {
+        "schema": "vision.native-composition-frame/2",
+        "gpuSubmission": "present-queued",
+        "physicalPresentation": "not-measured",
+        "sceneId": "vision-contribution-browser-proof",
+        "sceneVersion": "sha256:9c57383ee00f891ce1fc528ca4d6207149808a07587906d0421007cd65e38dd8",
+        "pixelRevision": "0",
+        "layoutProjectionRevision": "0",
+        "width": 320,
+        "height": 180,
+        "atlasSize": [
+          322,
+          728
+        ],
+        "owners": [
+          {
+            "nodeId": 0,
+            "parentNodeId": null,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "maskSurfaceIndex": null,
+            "clipPresent": false,
+            "clipKind": "none"
+          },
+          {
+            "nodeId": 1,
+            "parentNodeId": 0,
+            "localSize": [
+              288,
+              156
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 1,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": true,
+            "maskSurfaceIndex": 0,
+            "clipPresent": false,
+            "clipKind": "none"
+          }
+        ],
+        "captures": [
+          {
+            "nodeId": 3,
+            "ownerNodeId": 1,
+            "paintOrder": 3,
+            "localToOwner": [
+              0.5179855823516846,
+              0,
+              0,
+              1,
+              26.935251235961914,
+              0
+            ],
+            "localToWorld": [
+              0.5179855823516846,
+              0,
+              0,
+              1,
+              26.935251235961914,
+              0
+            ],
+            "localSize": [
+              132,
+              72
+            ],
+            "localOpacity": 1,
+            "liveMediaPath": "__vision_live_media__/132x72/0",
+            "effectiveComponentId": "capture-proof",
+            "sourceSize": [
+              132,
+              72
+            ],
+            "authoredSize": [
+              132,
+              72
+            ],
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": true,
+            "maskSurfaceIndex": 1,
+            "clipPresent": true,
+            "clipKind": "image-bounds",
+            "fit": "contain",
+            "sourceCropPercent": {
+              "left": 4,
+              "top": 8,
+              "right": 12,
+              "bottom": 16
+            },
+            "contentBox": {
+              "x": 3,
+              "y": 5,
+              "width": 120,
+              "height": 70
+            },
+            "sourceZoom": 1.25,
+            "objectPosition": {
+              "x": 0.30000001192092896,
+              "y": 0.699999988079071
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "ownerNodeId": 1,
+            "bandIndex": 0,
+            "paintOrder": 0,
+            "beforeNodeId": 3,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              1,
+              320,
+              180
+            ]
+          },
+          {
+            "ownerNodeId": 1,
+            "bandIndex": 1,
+            "paintOrder": 1,
+            "beforeNodeId": null,
+            "afterNodeId": 3,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              183,
+              320,
+              180
+            ]
+          }
+        ],
+        "coverageSurfaces": [
+          {
+            "targetNodeId": 1,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              365,
+              320,
+              180
+            ]
+          },
+          {
+            "targetNodeId": 3,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              547,
+              320,
+              180
+            ]
+          }
+        ],
+        "stats": {
+          "rebuiltNodes": 0,
+          "reusedNodes": 1,
+          "compositionPasses": 0,
+          "partialCompositionPixels": "0"
+        },
+        "coordinateSpace": "global-scene-texels",
+        "sceneSize": [
+          320,
+          180
+        ],
+        "canvasSize": [
+          322,
+          728
+        ],
+        "sceneScale": [
+          1,
+          1
+        ]
+      },
+      "projection": {
+        "coordinateSpace": "global-scene-texels",
+        "atlasSize": {
+          "width": 322,
+          "height": 728
+        },
+        "width": 322,
+        "height": 728,
+        "viewport": {
+          "width": 320,
+          "height": 180
+        },
+        "groups": [
+          {
+            "id": "prism.native-composition.root.v1",
+            "parentId": null,
+            "order": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            },
+            "children": [
+              {
+                "kind": "group",
+                "id": "vision.owner.1"
+              }
+            ],
+            "mask": null
+          },
+          {
+            "id": "vision.owner.1",
+            "parentId": "prism.native-composition.root.v1",
+            "order": 1,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            },
+            "children": [
+              {
+                "kind": "solarBand",
+                "band": 0
+              },
+              {
+                "kind": "solarBand",
+                "band": 1
+              },
+              {
+                "kind": "capture",
+                "componentId": "vision.capture.3",
+                "sourceComponentId": "capture-proof",
+                "localSize": {
+                  "width": 132,
+                  "height": 72
+                },
+                "affine": {
+                  "m00": 0.5179855823516846,
+                  "m01": 0,
+                  "tx": 26.935251235961914,
+                  "m10": 0,
+                  "m11": 1,
+                  "ty": 0
+                },
+                "localOpacity": 1,
+                "visible": true,
+                "blendMode": "normal",
+                "mask": {
+                  "surface": 1
+                },
+                "cropPercent": {
+                  "left": 4,
+                  "top": 8,
+                  "right": 12,
+                  "bottom": 16
+                },
+                "sourceFraming": {
+                  "fit": "contain",
+                  "contentBox": {
+                    "x": 3,
+                    "y": 5,
+                    "width": 120,
+                    "height": 70
+                  },
+                  "sourceZoom": 1.25,
+                  "objectPosition": {
+                    "x": 0.30000001192092896,
+                    "y": 0.699999988079071
+                  },
+                  "authoredSize": [
+                    132,
+                    72
+                  ],
+                  "sourceSize": [
+                    132,
+                    72
+                  ]
+                }
+              }
+            ],
+            "mask": {
+              "surface": 0
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "band": 0,
+            "ownerId": "vision.owner.1",
+            "ownerPath": [
+              "prism.native-composition.root.v1",
+              "vision.owner.1"
+            ],
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 1,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            }
+          },
+          {
+            "band": 1,
+            "ownerId": "vision.owner.1",
+            "ownerPath": [
+              "prism.native-composition.root.v1",
+              "vision.owner.1"
+            ],
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 183,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            }
+          }
+        ],
+        "coverageSurfaces": [
+          {
+            "targetId": "vision.owner.1",
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 365,
+              "width": 320,
+              "height": 180
+            }
+          },
+          {
+            "targetId": "vision.capture.3",
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 547,
+              "width": 320,
+              "height": 180
+            }
+          }
+        ]
+      }
+    },
+    {
+      "frame": {
+        "schema": "vision.native-composition-frame/2",
+        "gpuSubmission": "present-queued",
+        "physicalPresentation": "not-measured",
+        "sceneId": "vision-frame-mask-browser-proof",
+        "sceneVersion": "sha256:9c8038d08bebe7bb3e847e90b40d1c93dbb78cbc7831f83a176a8e26488edfeb",
+        "pixelRevision": "0",
+        "layoutProjectionRevision": "0",
+        "width": 320,
+        "height": 180,
+        "atlasSize": [
+          322,
+          546
+        ],
+        "owners": [
+          {
+            "nodeId": 0,
+            "parentNodeId": null,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "maskSurfaceIndex": null,
+            "clipPresent": false,
+            "clipKind": "none"
+          },
+          {
+            "nodeId": 1,
+            "parentNodeId": 0,
+            "localSize": [
+              320,
+              180
+            ],
+            "localToWorld": [
+              1,
+              0,
+              0,
+              1,
+              0,
+              0
+            ],
+            "paintOrder": 1,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": true,
+            "maskSurfaceIndex": 0,
+            "clipPresent": false,
+            "clipKind": "none"
+          }
+        ],
+        "captures": [
+          {
+            "nodeId": 3,
+            "ownerNodeId": 1,
+            "paintOrder": 3,
+            "localToOwner": [
+              0.9090908765792847,
+              0,
+              0,
+              1,
+              290.9090881347656,
+              0
+            ],
+            "localToWorld": [
+              0.9090908765792847,
+              0,
+              0,
+              1,
+              290.9090881347656,
+              0
+            ],
+            "localSize": [
+              32,
+              32
+            ],
+            "localOpacity": 1,
+            "liveMediaPath": "__vision_live_media__/32x32/0",
+            "effectiveComponentId": "frame-mask-browser-capture",
+            "sourceSize": [
+              32,
+              32
+            ],
+            "authoredSize": [
+              32,
+              32
+            ],
+            "visible": true,
+            "blendMode": "normal",
+            "maskPresent": false,
+            "maskSurfaceIndex": null,
+            "clipPresent": true,
+            "clipKind": "image-bounds",
+            "fit": "contain",
+            "sourceCropPercent": {
+              "left": 4,
+              "top": 8,
+              "right": 12,
+              "bottom": 16
+            },
+            "contentBox": {
+              "x": 3,
+              "y": 5,
+              "width": 120,
+              "height": 70
+            },
+            "sourceZoom": 1.25,
+            "objectPosition": {
+              "x": 0.30000001192092896,
+              "y": 0.699999988079071
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "ownerNodeId": 0,
+            "bandIndex": 0,
+            "paintOrder": 0,
+            "beforeNodeId": 1,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              1,
+              320,
+              180
+            ]
+          },
+          {
+            "ownerNodeId": 1,
+            "bandIndex": 0,
+            "paintOrder": 1,
+            "beforeNodeId": 3,
+            "afterNodeId": null,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              183,
+              320,
+              180
+            ]
+          }
+        ],
+        "coverageSurfaces": [
+          {
+            "targetNodeId": 1,
+            "coordinateSpace": "global-scene-texels",
+            "sceneRect": [
+              0,
+              0,
+              320,
+              180
+            ],
+            "atlasRect": [
+              1,
+              365,
+              320,
+              180
+            ]
+          }
+        ],
+        "stats": {
+          "rebuiltNodes": 0,
+          "reusedNodes": 1,
+          "compositionPasses": 0,
+          "partialCompositionPixels": "0"
+        },
+        "coordinateSpace": "global-scene-texels",
+        "sceneSize": [
+          320,
+          180
+        ],
+        "canvasSize": [
+          322,
+          546
+        ],
+        "sceneScale": [
+          1,
+          1
+        ]
+      },
+      "projection": {
+        "coordinateSpace": "global-scene-texels",
+        "atlasSize": {
+          "width": 322,
+          "height": 546
+        },
+        "width": 322,
+        "height": 546,
+        "viewport": {
+          "width": 320,
+          "height": 180
+        },
+        "groups": [
+          {
+            "id": "prism.native-composition.root.v1",
+            "parentId": null,
+            "order": 0,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            },
+            "children": [
+              {
+                "kind": "solarBand",
+                "band": 0
+              },
+              {
+                "kind": "group",
+                "id": "vision.owner.1"
+              }
+            ],
+            "mask": null
+          },
+          {
+            "id": "vision.owner.1",
+            "parentId": "prism.native-composition.root.v1",
+            "order": 1,
+            "opacity": 1,
+            "visible": true,
+            "blendMode": "normal",
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            },
+            "children": [
+              {
+                "kind": "solarBand",
+                "band": 1
+              },
+              {
+                "kind": "capture",
+                "componentId": "vision.capture.3",
+                "sourceComponentId": "frame-mask-browser-capture",
+                "localSize": {
+                  "width": 32,
+                  "height": 32
+                },
+                "affine": {
+                  "m00": 0.9090908765792847,
+                  "m01": 0,
+                  "tx": 290.9090881347656,
+                  "m10": 0,
+                  "m11": 1,
+                  "ty": 0
+                },
+                "localOpacity": 1,
+                "visible": true,
+                "blendMode": "normal",
+                "mask": null,
+                "cropPercent": {
+                  "left": 4,
+                  "top": 8,
+                  "right": 12,
+                  "bottom": 16
+                },
+                "sourceFraming": {
+                  "fit": "contain",
+                  "contentBox": {
+                    "x": 3,
+                    "y": 5,
+                    "width": 120,
+                    "height": 70
+                  },
+                  "sourceZoom": 1.25,
+                  "objectPosition": {
+                    "x": 0.30000001192092896,
+                    "y": 0.699999988079071
+                  },
+                  "authoredSize": [
+                    32,
+                    32
+                  ],
+                  "sourceSize": [
+                    32,
+                    32
+                  ]
+                }
+              }
+            ],
+            "mask": {
+              "surface": 0
+            }
+          }
+        ],
+        "surfaces": [
+          {
+            "band": 0,
+            "ownerId": "prism.native-composition.root.v1",
+            "ownerPath": [
+              "prism.native-composition.root.v1"
+            ],
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 1,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            }
+          },
+          {
+            "band": 1,
+            "ownerId": "vision.owner.1",
+            "ownerPath": [
+              "prism.native-composition.root.v1",
+              "vision.owner.1"
+            ],
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 183,
+              "width": 320,
+              "height": 180
+            },
+            "affine": {
+              "m00": 1,
+              "m01": 0,
+              "tx": 0,
+              "m10": 0,
+              "m11": 1,
+              "ty": 0
+            }
+          }
+        ],
+        "coverageSurfaces": [
+          {
+            "targetId": "vision.owner.1",
+            "coordinateSpace": "global-scene-texels",
+            "rect": {
+              "x": 0,
+              "y": 0,
+              "width": 320,
+              "height": 180
+            },
+            "atlasRect": {
+              "x": 1,
+              "y": 365,
+              "width": 320,
+              "height": 180
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

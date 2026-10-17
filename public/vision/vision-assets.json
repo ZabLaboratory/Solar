@@ -1,47 +1,48 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "19493a3938e4a0bd2aede614450a3245bbf6989c",
-  "source_revision": "4f466e8f424ab8afb968d88d9e64310de87122a4",
-  "source_state": "Signed Vision native contribution atlas source 4f466e8f424ab8afb968d88d9e64310de87122a4 rebuilt with scripts/vision/build-web.ps1 and wasm-bindgen 0.2.129. Existing persistent GPU engine presents the atlas directly to its WebGL2 canvas. Actual Chromium/ANGLE D3D11 receipt and paint mutation qualify submission, not physical presentation. Solar independently accepted the exact producer receipts. Native Pulsar composition and common runtime admission remain pending. Owner masks, nonnormal blends and unsupported authored clipping remain open; this local candidate does not claim full editor parity.",
+  "base_revision": "e079bd252d85c4f82db28bc92691f904e26158ac",
+  "source_revision": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
+  "source_state": "Signed Vision /2 same-atlas coverage, frame clips and nested opacity source. Existing WASM build qualified in actual Chrome WebGL2 by proof commit85c49664. Exact engine/presenter bytes copied without rebuild. Private native Prism-wire GPU proof exists separately; actual CEF/Solar/Prism/native chain and installed/endurance/physical qualification remain open. No full stencil effect parity claim.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "bytes": 33312,
-      "sha256": "a33fb071774f92a96f4877b2a6288899abc8c22c6a4a313adddad6c557a91e59"
+      "sha256": "607eee787387a887e22b24573e5a33d60a8cee1e6233feef5f1d21a32e188b3d",
+      "bytes": 32634
     },
     "ui/fonts.mjs": {
-      "bytes": 1977,
-      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
+      "bytes": 1977
     },
     "pkg/lumencast_vision_web.js": {
-      "bytes": 157201,
-      "sha256": "ccf4c8faca3cc28f082b623688f6d8538a4a1cdfe08b76a710e2220f64806bdf"
+      "sha256": "2661fc24146f703adcfa1b94769d9c789b707abf0027792b6f4287fb40bc04e6",
+      "bytes": 157228
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "bytes": 10587601,
-      "sha256": "b46d3c0087bad929a44cf150daf888a2aacfaedf2f29ab338d4b1e872b051d4a"
+      "sha256": "39c64876a92c0d8d5a104fa8366dc437520140be92e8376db59ed127420ab4a9",
+      "bytes": 10618773
     }
   },
   "source_provenance": {
-    "repository": "Lumencast/lumencast-vision",
-    "engine_base": "fa87adc2b131b8bb3f08dce2a7a2de7f42a3913d",
-    "engine_branch": "eleven/local-20261016-native-contribution-atlas",
-    "engine_commit": "4f466e8f424ab8afb968d88d9e64310de87122a4",
-    "engine_tree": "89ce586771da345144636da50e01630287732095",
-    "engine_evidence": "evidence/local-20261016-native-contribution-atlas/eleven/20261017T111545Z-agent-checkpoint.md",
-    "artifact_manifest": "evidence/local-20261016-native-contribution-atlas/eleven/20261017T111545Z-artifact-hashes.json",
-    "browser_receipt": "evidence/local-20261016-native-contribution-atlas/eleven/20261017T111143Z-browser-proof.json",
-    "browser_receipt_sha256": "d5c7e3edd4bb7decab45a06a647f07f5ae05e729ff0b96c528d8cb9229a1ff23",
-    "source_files": {
-      "crates/vision-gpu/src/renderer/contribution.rs": "522a35426c97c32c9a5a32dad8719e715558a4eb91f743f3ffa3a660c86b395a",
-      "crates/vision-gpu/src/renderer.rs": "e2438bf28372a429ca578b403567d2394db13ca12bb78e9f36b1c6b19434f3d2",
-      "crates/vision-web/src/lib.rs": "6662dd82ca5566d99f726b3f99fbc53c7deac3d8c0ea266bed40b78f40184f5f",
-      "crates/vision-web/ui/mainpresenter.mjs": "a33fb071774f92a96f4877b2a6288899abc8c22c6a4a313adddad6c557a91e59",
-      "crates/vision-web/tests/contribution-webgl2-proof/probe.mjs": "e906bc045b50217ab199deae8729f0f8096c58cbb7493b36645d8a20bf234eea",
-      "crates/vision-web/tests/contribution-webgl2-proof/contribution-scene.lsml": "103930a1a01c9de4cab71feb6ed31cc9bafdd0411dcbaf2e0914a91c3b47b064"
-    },
-    "source_hash_basis": "Exact qualified working-file bytes; Git may normalize CRLF presenter to LF in its blob. Artifact hashes always refer to delivered bytes.",
+    "browser_receipt_sha256": "976bdb6c91c0ebf1b327667571478663ec517893cfbd192499694f4b0a8d818c",
     "uncommitted_qualified_source": false,
-    "build_command": "& .\\scripts\\vision\\build-web.ps1"
+    "browser_receipt": "evidence/local-20261017-native-mask-coverage/eleven/20261017T142335Z-browser-proof.json",
+    "source_hash_basis": "Exact qualified working-file bytes; Git may normalize text. Artifact hashes refer to copied delivery bytes.",
+    "engine_base": "e079bd252d85c4f82db28bc92691f904e26158ac",
+    "source_files": {
+      "crates/vision-web/ui/mainpresenter.mjs": "607eee787387a887e22b24573e5a33d60a8cee1e6233feef5f1d21a32e188b3d",
+      "crates/vision-gpu/src/renderer/contribution.rs": "08f67e84a8a9ef591d649b41d903896b50c25d72260441f98d3206148588de1a",
+      "crates/vision-gpu/src/renderer.rs": "24d14bc7f5bc85e14deb83306339a2cad71d3bc2e520f6268cd82b1d25511693",
+      "crates/vision-web/src/lib.rs": "587928532cd9a94b999c9f4fedbef93b408e68b390ff85a1e781dfe1e802a432",
+      "crates/vision-gpu-scene/src/lib.rs": "ace3b5bc70b63fbab88481557b0d1e2e0bc12ec3b8c718e89322330781932df6",
+      "crates/vision-web/tests/contribution-webgl2-proof/run-browser-proof.mjs": "ab0796504876de1b8c522a13303b9cc5afa6f516b936092d18634fef6f012990",
+      "crates/vision-web/tests/contribution-webgl2-proof/probe.mjs": "d4fa69dc22ed69905a27b104a333ad1b9d6d8ecb6de1e25a23321280ceea0eb3"
+    },
+    "engine_commit": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
+    "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
+    "qualification_commit": "85c49664a029744369b063ddffaa92415a59c8a8",
+    "engine_tree": "62829837f5601a13860fec638b52d18e8b58ff7c",
+    "engine_branch": "eleven/local-20261017-native-mask-coverage",
+    "engine_evidence": "evidence/local-20261017-native-mask-coverage/eleven/20261017T142508Z-agent-checkpoint.md",
+    "repository": "Lumencast/lumencast-vision"
   }
 }

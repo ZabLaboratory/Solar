@@ -1,0 +1,96 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "name": "halfOpacityNonOverlap",
+      "point": [
+        52,
+        401
+      ],
+      "decoded": [
+        133,
+        136,
+        140
+      ],
+      "expected": [
+        133,
+        136,
+        140
+      ],
+      "maxChannelError": 0
+    },
+    {
+      "name": "halfOpacityOverlap",
+      "point": [
+        111,
+        401
+      ],
+      "decoded": [
+        133,
+        136,
+        140
+      ],
+      "expected": [
+        133,
+        136,
+        140
+      ],
+      "maxChannelError": 0
+    },
+    {
+      "name": "nestedFrameClip",
+      "point": [
+        189,
+        401
+      ],
+      "decoded": [
+        12,
+        17,
+        25
+      ],
+      "expected": [
+        12,
+        17,
+        25
+      ],
+      "maxChannelError": 0
+    },
+    {
+      "name": "unclippedNestedOverflow",
+      "point": [
+        332,
+        401
+      ],
+      "decoded": [
+        133,
+        136,
+        140
+      ],
+      "expected": [
+        133,
+        136,
+        140
+      ],
+      "maxChannelError": 0
+    },
+    {
+      "name": "rootFrameClip",
+      "point": [
+        374,
+        401
+      ],
+      "decoded": [
+        12,
+        17,
+        25
+      ],
+      "expected": [
+        12,
+        17,
+        25
+      ],
+      "maxChannelError": 0
+    }
+  ],
+  "limits": "Independent PNG verification of five actual browser canvas pixels; no physical presentation or CEF/LSDP chain proof."
+}
