@@ -1,0 +1,79 @@
+{
+  "timestampUtc": "2026-10-17T14:22:34.5739587Z",
+  "integrationHead": "d42e92127749494cf7b95603348feab01003fb4b",
+  "qualifiedSource": "ebe3e6bb9b049667932a6b5a6e094107718debfa",
+  "sourceIdentity": [
+    {
+      "gitBlob": "9e5a98df14162d26c0a6f2afbd28d7cfa09b9aaa",
+      "matches": true,
+      "path": "docs/development/code-map.md"
+    },
+    {
+      "gitBlob": "e33d1e16863ac3c53a519b142f1a34c4a48b3ace",
+      "matches": true,
+      "path": "src/engine/README.md"
+    },
+    {
+      "gitBlob": "3ed6335536c2a971033f87f8a2597ed96c9f0c7f",
+      "matches": true,
+      "path": "src/engine/native-composition-publisher.ts"
+    },
+    {
+      "gitBlob": "a1bead110a343eabe60e6f1dab1b26a47dcaa3ab",
+      "matches": true,
+      "path": "src/engine/vision-composition-frame.ts"
+    },
+    {
+      "gitBlob": "9672adbbdc794754adbeed04ef5a752f0151d0ff",
+      "matches": true,
+      "path": "src/scenes/README.md"
+    },
+    {
+      "gitBlob": "15429d90899df3f19e7cbc91429cb9b335bc50e8",
+      "matches": true,
+      "path": "src/scenes/native-composition-contracts.ts"
+    },
+    {
+      "gitBlob": "b25a21c2f5613a70a819f64ab8ef365c51c4c442",
+      "matches": true,
+      "path": "src/scenes/native-composition-plan.ts"
+    },
+    {
+      "gitBlob": "68c247ae84b058c7b02db2d9d44b906b234942a1",
+      "matches": true,
+      "path": "src/scenes/native-composition.ts"
+    },
+    {
+      "gitBlob": "76f7a2a96f222deb6d09bcbcd877630a6dfb736f",
+      "matches": true,
+      "path": "tests/helpers/vision-composition-coverage.ts"
+    },
+    {
+      "gitBlob": "0682c7b592bdb270e986f9e041bdf392b657f4f6",
+      "matches": true,
+      "path": "tests/unit/native-composition-coverage.test.ts"
+    },
+    {
+      "gitBlob": "4a68cd4f454ca8fc3f8b08032435166853186763",
+      "matches": true,
+      "path": "tests/unit/native-composition-publisher.test.ts"
+    }
+  ],
+  "unitTests": {
+    "pending": 0,
+    "failed": 0,
+    "passed": 482,
+    "report": "20261017T142200Z-native-coverage-unit-tests.json"
+  },
+  "typecheck": "node node_modules/typescript/bin/tsc -b --pretty false: exit0",
+  "architecture": {
+    "report": "20261017T142300Z-native-coverage-architecture.txt",
+    "command": "npm run check:architecture",
+    "exitCode": 0
+  },
+  "limits": [
+    "Source-level local integration; prior Vision artifact remains pinned until rebuilt /2 engine qualification finishes.",
+    "No common runtime replacement, installed capture, LSDP end-to-end or endurance proof.",
+    "Transitions and scene switch duration unchanged."
+  ]
+}
