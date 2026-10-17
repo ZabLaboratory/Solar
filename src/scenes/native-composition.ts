@@ -1,5 +1,6 @@
 import {
   acceptVisionCompositionFrame,
+  VISION_NATIVE_COMPOSITION_BLEND_MODES,
   type VisionCompositionCapture,
   type VisionCompositionFrame,
   type VisionCompositionOwner,
@@ -56,8 +57,9 @@ function assertSupportedAppearance(
   item: VisionCompositionOwner | VisionCompositionCapture,
   kind: "owner" | "capture",
   rootOwner = false,
+  extended = false,
 ): void {
-  if (item.maskPresent)
+  if (item.maskPresent && !extended)
     throw new Error(
       `NATIVE_COMPOSITION_UNSUPPORTED_MASK:${kind}:${item.nodeId}`,
     );
@@ -69,7 +71,12 @@ function assertSupportedAppearance(
     throw new Error(
       `NATIVE_COMPOSITION_UNSUPPORTED_CLIP:${kind}:${item.nodeId}:${item.clipKind}`,
     );
-  if (item.blendMode !== "normal")
+  const supportedBlend =
+    extended &&
+    VISION_NATIVE_COMPOSITION_BLEND_MODES.some(
+      (mode) => mode === item.blendMode,
+    );
+  if (item.blendMode !== "normal" && !supportedBlend)
     throw new Error(
       `NATIVE_COMPOSITION_UNSUPPORTED_BLEND:${kind}:${item.nodeId}:${item.blendMode}`,
     );
@@ -134,6 +141,9 @@ export function projectNativeCompositionFrame(
       `NATIVE_COMPOSITION_SURFACE_LIMIT:${frame.canvasSize[0]}x${frame.canvasSize[1]}:${expected.maxTextureSize}`,
     );
 
+  const extended = frame.schema === "vision.native-composition-frame/2";
+  const mask = (index: number | null | undefined) =>
+    index == null ? null : { surface: index };
   const owners = new Map<number, VisionCompositionOwner>();
   const nativeIds = new Map<number, string>();
   const depth = new Map<number, number>();
@@ -144,7 +154,12 @@ export function projectNativeCompositionFrame(
     throw new Error("VISION_NATIVE_COMPOSITION_ROOT_OWNER_REQUIRED");
   const rootOwner = rootOwners[0]!;
   for (const owner of frame.owners) {
-    assertSupportedAppearance(owner, "owner", owner.parentNodeId === null);
+    assertSupportedAppearance(
+      owner,
+      "owner",
+      owner.parentNodeId === null,
+      extended,
+    );
     owners.set(owner.nodeId, owner);
     nativeIds.set(owner.nodeId, nativeOwnerId(owner.nodeId, rootOwner.nodeId));
   }
@@ -189,7 +204,7 @@ export function projectNativeCompositionFrame(
       bounds: { ...viewport },
       affine: identityAffine(),
       children: [],
-      mask: null,
+      mask: mask(owner.maskSurfaceIndex),
     });
     children.set(owner.nodeId, []);
     if (owner.parentNodeId !== null)
@@ -228,7 +243,7 @@ export function projectNativeCompositionFrame(
   }
 
   for (const capture of frame.captures) {
-    assertSupportedAppearance(capture, "capture");
+    assertSupportedAppearance(capture, "capture", false, extended);
     if (
       typeof capture.effectiveComponentId !== "string" ||
       capture.effectiveComponentId.trim().length === 0
@@ -259,6 +274,12 @@ export function projectNativeCompositionFrame(
         affine: affine(capture.localToWorld),
         localOpacity: capture.localOpacity,
         visible: capture.visible,
+        ...(extended
+          ? {
+              blendMode: capture.blendMode,
+              mask: mask(capture.maskSurfaceIndex),
+            }
+          : {}),
         cropPercent: capture.sourceCropPercent ?? {
           left: 0,
           top: 0,
@@ -298,6 +319,18 @@ export function projectNativeCompositionFrame(
     viewport: { width: frame.sceneSize[0], height: frame.sceneSize[1] },
     groups,
     surfaces: projectedSurfaces,
+    ...(extended
+      ? {
+          coverageSurfaces: frame.coverageSurfaces!.map((surface) => ({
+            targetId:
+              nativeIds.get(surface.targetNodeId) ??
+              captureComponentId(surface.targetNodeId),
+            coordinateSpace: "global-scene-texels" as const,
+            rect: rect(surface.sceneRect),
+            atlasRect: rect(surface.atlasRect),
+          })),
+        }
+      : {}),
   };
 }
 

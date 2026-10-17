@@ -98,7 +98,10 @@ function compositionState(value: unknown): CompositionState {
     const plan = record(graph);
     if (
       !plan ||
-      plan.schema !== "solar.native-composition.plan/1" ||
+      (plan.schema !== "solar.native-composition.plan/1" &&
+        plan.schema !== "solar.native-composition.plan/2") ||
+      (plan.schema === "solar.native-composition.plan/2" &&
+        !Array.isArray(plan.coverageSurfaces)) ||
       typeof plan.producer_id !== "string" ||
       typeof plan.planHash !== "string"
     )

@@ -89,6 +89,70 @@ function captureOnlyProjection(): NativeCompositionProjection {
   return result;
 }
 
+it("updates and retires a coverage graph while preserving the other producer", async () => {
+  const extended = captureOnlyProjection();
+  extended.coverageSurfaces = [
+    {
+      targetId: "vision.capture.2",
+      coordinateSpace: "global-scene-texels",
+      rect: { x: 0, y: 0, width: 320, height: 180 },
+      atlasRect: { x: 1, y: 1, width: 320, height: 180 },
+    },
+  ];
+  extended.atlasSize = { width: 322, height: 182 };
+  const capture = extended.groups[0]!.children[0]!;
+  if (capture.kind !== "capture") throw new Error("expected capture fixture");
+  capture.mask = { surface: 0 };
+  capture.blendMode = "multiply";
+  const peerGraph = {
+    schema: "solar.native-composition.plan/2",
+    producer_id: "host-b-incarnation-1",
+    planHash: `sha256:${"b".repeat(64)}`,
+    coverageSurfaces: [],
+  };
+  const initial = {
+    ...claimedState("host-a-incarnation-1"),
+    producers: { A: "host-a-incarnation-1", B: peerGraph.producer_id },
+  };
+  initial.graphs.B = peerGraph;
+  const shared: FakeShared = { state: initial, staleOnce: false, applied: [] };
+  const errors: unknown[] = [];
+  const publisher = new NativeCompositionPublisher(
+    options(),
+    (error) => errors.push(error),
+    fakePeerFactory(shared),
+  );
+  const doc = { scene_id: "scene-a", scene_version: "sha256:revision-a" };
+  await expect(
+    publisher.publish(extended, doc, "tree-sha256:state-a"),
+  ).resolves.toBe("completed");
+  const first = (shared.state.graphs as Record<string, NativeCompositionPlan>)
+    .A!;
+  expect(first.schema).toBe("solar.native-composition.plan/2");
+  expect(first.coverageSurfaces).toEqual(extended.coverageSurfaces);
+  expect(first.groups[0]!.children[0]).toMatchObject({
+    mask: { surface: 0 },
+    blendMode: "multiply",
+  });
+  capture.localOpacity = 0.25;
+  await expect(
+    publisher.publish(extended, doc, "tree-sha256:state-b"),
+  ).resolves.toBe("completed");
+  const second = (shared.state.graphs as Record<string, NativeCompositionPlan>)
+    .A!;
+  expect(second.planHash).not.toBe(first.planHash);
+  expect(second.source.stateHash).toBe("tree-sha256:state-b");
+  expect(second.groups[0]!.children[0]).toMatchObject({ localOpacity: 0.25 });
+  await publisher.retire();
+  expect(shared.state.graphs).toEqual({ B: peerGraph });
+  expect(shared.applied.map(({ path }) => path)).toEqual([
+    "/graphs/A",
+    "/graphs/A",
+    "/graphs/A",
+  ]);
+  expect(errors).toEqual([]);
+});
+
 function fakePeerFactory(shared: FakeShared): NativeCompositionPeerFactory {
   return (_url, options): NativeCompositionPeer => ({
     ready: Promise.resolve(),
