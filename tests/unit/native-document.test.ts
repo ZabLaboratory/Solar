@@ -68,43 +68,12 @@ describe("native Merkle hash compatibility", () => {
 
 describe("native LSML mutation and runtime package", () => {
   it.each([
-    [{ kind: "stack", children: [] }, "vertical"],
-    [{ kind: "stack", direction: "horizontal", children: [] }, "horizontal"],
-    [{ kind: "stack", direction: "diagonal", children: [] }, "diagonal"],
-    [{ kind: "stack", children: [{ kind: "frame", children: [] }] }, undefined],
+    { kind: "stack", children: [] },
+    { kind: "stack", direction: "horizontal", children: [] },
+    { kind: "stack", direction: "diagonal", children: [] },
+    { kind: "stack", children: [{ kind: "frame", children: [] }] },
   ])(
-    "projects only a legacy empty root with omitted stack direction",
-    async (layout, direction) => {
-      const scene = { ...document, layout };
-      const original = structuredClone(scene);
-      const assets = new NativeSceneAssets({
-        sceneId: scene.scene_id,
-        sceneVersion: version,
-        revision: 1,
-        format: "lsml",
-        data: strToU8(JSON.stringify(scene)),
-        assets: new Map(),
-        sourceDigest: version,
-        blueManifest: nativeManifest(scene.scene_id, version),
-      });
-      const runtime = await assets.renderPackage(scene, undefined, {
-        width: 1920,
-        height: 1080,
-        maxTextureSize: 8192,
-      });
-      const rendering = JSON.parse(
-        strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
-      );
-      expect(rendering.layout.direction).toBe(direction);
-      expect(scene).toEqual(original);
-      expect(rendering.scene_version).toBe(await bundleAddress(rendering));
-    },
-  );
-  it.each([
-    { kind: "frame", children: [] },
-    { kind: "frame", size: { w: 640, h: 360 }, children: [] },
-  ])(
-    "uses the native viewport for a single-band surface independently of root size",
+    "keeps the private LSML geometry unchanged when a fixed native surface is requested",
     async (layout) => {
       const scene = { ...document, layout };
       const original = structuredClone(scene);
@@ -118,22 +87,22 @@ describe("native LSML mutation and runtime package", () => {
         sourceDigest: version,
         blueManifest: nativeManifest(scene.scene_id, version),
       });
-      const runtime = await assets.renderPackage(scene, undefined, {
-        width: 1920,
-        height: 1080,
-        maxTextureSize: 8192,
-      });
-      expect(runtime.surface).toEqual({ width: 1920, height: 1080 });
-      const rendering = JSON.parse(
-        strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
-      );
-      expect(rendering.layout.size).toEqual(
-        "size" in layout ? layout.size : { w: 1920, h: 1080 },
-      );
+      const [ordinary, native] = await Promise.all([
+        assets.renderPackage(scene),
+        assets.renderPackage(scene, undefined, { width: 1920, height: 1080 }),
+      ]);
+      const ordinaryLayout = JSON.parse(
+        strFromU8(unzipSync(ordinary.data)["scene.lsml"]!),
+      ).layout;
+      const nativeLayout = JSON.parse(
+        strFromU8(unzipSync(native.data)["scene.lsml"]!),
+      ).layout;
+      expect(native.surface).toEqual({ width: 1920, height: 1080 });
+      expect(nativeLayout).toEqual(ordinaryLayout);
       expect(scene).toEqual(original);
     },
   );
-  it("exports exact local capture dimensions for the native compositor", async () => {
+  it("preserves capture geometry and bindings in the canonical package", async () => {
     const scene = {
       ...document,
       layout: {
@@ -144,10 +113,17 @@ describe("native LSML mutation and runtime package", () => {
             kind: "x-zab.capture",
             id: "camera",
             size: { w: 320, h: 180 },
+            position: { x: 125, y: 30 },
+            rotation: 23,
+            opacity: 0.6,
+            bind: { "position.x": "camera-x" },
+            crop: { top: 12 },
           },
         ],
       },
+      defaults: { ...document.defaults, "camera-x": 42 },
     };
+    const original = structuredClone(scene);
     const assets = new NativeSceneAssets({
       sceneId: scene.scene_id,
       sceneVersion: version,
@@ -158,23 +134,27 @@ describe("native LSML mutation and runtime package", () => {
       sourceDigest: version,
       blueManifest: nativeManifest(scene.scene_id, version),
     });
-    const runtime = await assets.renderPackage(scene, undefined, {
-      width: 1920,
-      height: 1080,
-      maxTextureSize: 8192,
+    const [ordinary, native] = await Promise.all([
+      assets.renderPackage(scene),
+      assets.renderPackage(scene, undefined, { width: 1920, height: 1080 }),
+    ]);
+    const ordinaryLayout = JSON.parse(
+      strFromU8(unzipSync(ordinary.data)["scene.lsml"]!),
+    ).layout;
+    const nativeLayout = JSON.parse(
+      strFromU8(unzipSync(native.data)["scene.lsml"]!),
+    ).layout;
+    expect(native.surface).toEqual({ width: 1920, height: 1080 });
+    expect(nativeLayout).toEqual(ordinaryLayout);
+    expect(nativeLayout.children[0]).toMatchObject({
+      position: { x: 125, y: 30 },
+      rotation: 23,
+      opacity: 0.6,
+      crop: { top: 12 },
     });
-
-    expect(runtime.surface?.composition?.groups[1]?.children).toContainEqual({
-      kind: "capture",
-      componentId: "camera",
-      localSize: { width: 320, height: 180 },
-      affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
-      localOpacity: 1,
-      visible: true,
-      cropPercent: { left: 0, top: 0, right: 0, bottom: 0 },
-    });
+    expect(scene).toEqual(original);
   });
-  it("rejects a capture with no authored local dimensions", async () => {
+  it("does not ask LSML packaging to infer missing capture bounds", async () => {
     const scene = {
       ...document,
       layout: {
@@ -193,13 +173,18 @@ describe("native LSML mutation and runtime package", () => {
       blueManifest: nativeManifest(scene.scene_id, version),
     });
 
-    await expect(
-      assets.renderPackage(scene, undefined, {
-        width: 1920,
-        height: 1080,
-        maxTextureSize: 8192,
-      }),
-    ).rejects.toThrow("NATIVE_COMPOSITION_UNRESOLVED_BOUNDS:camera");
+    const runtime = await assets.renderPackage(scene, undefined, {
+      width: 1920,
+      height: 1080,
+    });
+    expect(runtime.surface).toEqual({ width: 1920, height: 1080 });
+    const rendering = JSON.parse(
+      strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
+    );
+    expect(rendering.layout.children[0]).toMatchObject({
+      kind: "x-zab.capture",
+    });
+    expect(rendering.layout.children[0]).not.toHaveProperty("size");
   });
   it("separates fonts only for persistent runtime transfer and keeps source packaging intact", async () => {
     const font = new Uint8Array([1, 2, 3]);

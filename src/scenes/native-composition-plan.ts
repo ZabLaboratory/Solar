@@ -22,12 +22,8 @@ export function withNativeCompositionSource(
     throw new Error("NATIVE_COMPOSITION_PRODUCER_ID_INVALID");
   const content = {
     schema: "solar.native-composition.plan/1" as const,
-    ...(projection.coordinateSpace !== undefined
-      ? { coordinateSpace: projection.coordinateSpace }
-      : {}),
-    ...(projection.atlasSize !== undefined
-      ? { atlasSize: structuredClone(projection.atlasSize) }
-      : {}),
+    coordinateSpace: projection.coordinateSpace,
+    atlasSize: structuredClone(projection.atlasSize),
     source: structuredClone(source),
     viewport: structuredClone(projection.viewport),
     groups: structuredClone(projection.groups),

@@ -10,6 +10,7 @@ export interface VisionCompositionOwner {
   blendMode: string;
   maskPresent: boolean;
   clipPresent: boolean;
+  clipKind: "none" | "viewport-bounds" | "authored";
 }
 
 export interface VisionCompositionCapture {
@@ -23,10 +24,12 @@ export interface VisionCompositionCapture {
   visible: boolean;
   effectiveComponentId: string | null;
   liveMediaPath: string | null;
-  sourceSize: [number, number] | null;
+  authoredSize: [number | null, number | null];
+  sourceSize: [number, number];
   blendMode: string;
   maskPresent: boolean;
   clipPresent: boolean;
+  clipKind: "none" | "image-bounds" | "authored";
   fit: string | null;
   sourceCropPercent: {
     left: number;
@@ -91,6 +94,10 @@ const tuple = (
   Array.isArray(value) && value.length === length && value.every(valid);
 const size = (value: unknown): value is number[] =>
   tuple(value, 2, (part): part is number => id(part) && part > 0);
+const nullableSize = (value: unknown): boolean =>
+  Array.isArray(value) &&
+  value.length === 2 &&
+  value.every((part) => part === null || finite(part));
 const opacity = (value: unknown): boolean =>
   finite(value) && value >= 0 && value <= 1;
 const nullableId = (value: unknown): boolean => value === null || id(value);
@@ -98,12 +105,18 @@ const optionalText = (value: unknown): boolean =>
   value === null ||
   (typeof value === "string" && value.length > 0 && value.length <= 4096);
 
-function appearance(value: Record<string, unknown>): boolean {
+function appearance(
+  value: Record<string, unknown>,
+  clipKinds: readonly string[],
+): boolean {
   return (
     typeof value.blendMode === "string" &&
     optionalText(value.blendMode) &&
     typeof value.maskPresent === "boolean" &&
-    typeof value.clipPresent === "boolean"
+    typeof value.clipPresent === "boolean" &&
+    typeof value.clipKind === "string" &&
+    clipKinds.includes(value.clipKind) &&
+    value.clipPresent === (value.clipKind !== "none")
   );
 }
 
@@ -209,7 +222,7 @@ export function acceptVisionCompositionFrame(
       !tuple(owner.localToWorld, 6) ||
       !opacity(owner.opacity) ||
       typeof owner.visible !== "boolean" ||
-      !appearance(owner)
+      !appearance(owner, ["none", "viewport-bounds", "authored"])
     )
       invalid();
     owners.set(owner.nodeId, owner);
@@ -252,8 +265,9 @@ export function acceptVisionCompositionFrame(
       typeof capture.visible !== "boolean" ||
       !optionalText(capture.effectiveComponentId) ||
       !optionalText(capture.liveMediaPath) ||
-      !(capture.sourceSize === null || size(capture.sourceSize)) ||
-      !appearance(capture) ||
+      !nullableSize(capture.authoredSize) ||
+      !size(capture.sourceSize) ||
+      !appearance(capture, ["none", "image-bounds", "authored"]) ||
       !framing(capture)
     )
       invalid();

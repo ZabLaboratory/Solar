@@ -23,12 +23,14 @@ Scene-intent, editable and camera responses await native application ACK.
 ## Derived native composition plan
 
 A trusted physical lane host can opt into `nativeComposition` and
-`nativeCompositionLSDP` in the Solar mount options. Solar derives the plan from
-the LSML document already selected by that lane's active LSDP snapshot; it does
-not fetch a second scene, rewrite the snapshot or publish through the
-transition-feedback resource. `source` identifies the active native resource,
-optional selector, scene ID/version and exact LSDP state hash. `planHash` is
-`sha256:` plus SHA-256 of canonical UTF-8 JSON for `{schema,source,viewport,
+`nativeCompositionLSDP` in the Solar mount options. Solar loads the canonical
+private LSML package on a fixed viewport surface, then projects only the
+`vision.native-composition-frame/1` receipt accepted for that scene's submitted
+GPU frame. It does not derive graph geometry from LSML, fetch a second scene,
+rewrite the snapshot or publish through the transition-feedback resource.
+`source` identifies the active native resource, optional selector, scene
+ID/version and exact LSDP state hash. `planHash` is `sha256:` plus SHA-256 of
+canonical UTF-8 JSON for `{schema,coordinateSpace,atlasSize,source,viewport,
 groups,surfaces}`; it excludes the Main-assigned `producer_id`.
 
 The separate `solar/composition` state is
@@ -60,14 +62,28 @@ a primary reconnect takes priority on the shared timer, and runtime disconnect
 cancels a pending composition retry. This recovers the derived side channel; it
 does not create an LSML receipt or retain prior scene plans.
 
-The current Solar planner accepts only resolved fixed frames for native group
-bounds and reads `MAX_TEXTURE_SIZE` from the existing Vision WebGL2 session.
-Unresolved grid/repeat/auto-layout geometry and over-budget atlases fail closed.
-Pulsar's isolated native probe now covers Solar surface bands composed with a
-capture under group opacity. Non-null masks and unsupported group blend modes
-remain refused. Solar's local plan tests do not qualify atlas routing through
-the external Main consumer and Pulsar together, so they are not proof of
-end-to-end mixed composition pixels. See `tests/unit/native-composition.test.ts`,
+Solar preserves each owner's own opacity and effective visibility while giving
+all owner groups identity affine and canonical viewport bounds. Capture nodes
+use unique occurrence IDs, base component IDs, the receipt's full global affine,
+own opacity, crop and nullable source framing. Framing includes nullable-axis
+`authoredSize` and the required positive upload `sourceSize`; Main uses those facts
+to scale source-box coordinates to the occurrence's computed local dimensions,
+without rereading LSML. Global raster bands retain their
+exact scene and atlas rectangles and are not transformed by owners a second
+time. The projector checks `MAX_TEXTURE_SIZE` against the exact submitted canvas.
+The receipt's single top-level owner maps to `prism.native-composition.root.v1`;
+descendant owners use `vision.owner.<nodeId>`, and captures use
+`vision.capture.<nodeId>` with `sourceComponentId` preserving the base author ID.
+Nullable framing is passed through without defaults: `contentBox` is in authored
+source-box units and `objectPosition` is normalized. Missing or invalid authored
+or upload dimensions invalidate the Vision receipt instead of triggering an LSML
+fallback.
+Rust classifies the only currently representable clips: the root owner's exact
+viewport bounds and a capture's own image bounds. Masks, authored clips, non-root
+clips and non-normal blends fail visibly; Solar does not flatten or strip them.
+Solar's local plan tests do not qualify atlas routing through the external Main
+consumer and Pulsar together, so they are not proof of end-to-end mixed
+composition pixels. See `tests/unit/native-composition.test.ts`,
 `tests/unit/native-composition-publisher.test.ts`,
 `tests/unit/native-composition-session.test.ts` and
 `tests/unit/native-lsdp-runtime-composition.test.ts` plus

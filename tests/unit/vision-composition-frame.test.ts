@@ -98,6 +98,24 @@ it.each<[string, (frame: VisionCompositionFrame) => void]>([
     },
   ],
   [
+    "missing clip classification",
+    (frame) => {
+      Reflect.deleteProperty(frame.captures[0]!, "clipKind");
+    },
+  ],
+  [
+    "clip classification contradicts raw clip fact",
+    (frame) => {
+      frame.captures[0]!.clipPresent = true;
+    },
+  ],
+  [
+    "unknown clip classification",
+    (frame) => {
+      frame.captures[0]!.clipKind = "rectangle" as never;
+    },
+  ],
+  [
     "infinite zoom",
     (frame) => {
       frame.captures[0]!.sourceZoom = Infinity;
@@ -204,6 +222,24 @@ it.each<[string, (frame: VisionCompositionFrame) => void]>([
     "invalid capture source size",
     (frame) => {
       frame.captures[0]!.sourceSize = [0, 1];
+    },
+  ],
+  [
+    "missing capture source size",
+    (frame) => {
+      Reflect.deleteProperty(frame.captures[0]!, "sourceSize");
+    },
+  ],
+  [
+    "missing authored size",
+    (frame) => {
+      Reflect.deleteProperty(frame.captures[0]!, "authoredSize");
+    },
+  ],
+  [
+    "non-finite authored size",
+    (frame) => {
+      frame.captures[0]!.authoredSize[0] = Infinity;
     },
   ],
   [

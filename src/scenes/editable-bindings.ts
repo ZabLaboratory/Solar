@@ -1,5 +1,4 @@
 import type { LSMLDocument } from "./native-document";
-export { prepareNativeComposition } from "./native-composition";
 
 /** Runtime-only projection of the former DOM wrapper vocabulary to Vision LSML. */
 export function prepareEditableBindings(

@@ -10,6 +10,7 @@ import type {
 } from "../../src/scenes/native-composition";
 import type { LSMLDocument } from "../../src/scenes/native-document";
 import type { NativeSceneFrames } from "../../src/engine/native-scene-frames";
+import type { VisionSceneHandle } from "../../src/engine/vision-contracts";
 import type { MountOptions } from "../../src/types";
 
 interface SharedCompositionState {
@@ -20,6 +21,8 @@ interface SharedCompositionState {
 
 function projection(width: number): NativeCompositionProjection {
   return {
+    coordinateSpace: "global-scene-texels",
+    atlasSize: { width, height: 480 },
     width,
     height: 480,
     viewport: { width, height: 480 },
@@ -38,8 +41,6 @@ function projection(width: number): NativeCompositionProjection {
       },
     ],
     surfaces: [],
-    geometryBindings: [],
-    rebuildBindings: [],
   };
 }
 
@@ -135,10 +136,25 @@ it("replays the latest accepted LSML composition after the peer was offline", as
   const sceneB = scene("scene-b", "b");
   const projectionA = projection(640);
   const projectionB = projection(800);
+  const visionScene = (document: LSMLDocument): VisionSceneHandle =>
+    ({
+      sceneId: document.scene_id,
+      sceneVersion: document.scene_version,
+      mediaSources: [],
+      compositionFrame: {} as VisionSceneHandle["compositionFrame"],
+      applyPatch: vi.fn(async () => {}),
+      resize: vi.fn(async () => {}),
+      activate: vi.fn(),
+      updateMedia: vi.fn(async () => {}),
+      clearMedia: vi.fn(async () => {}),
+      dispose: vi.fn(),
+    }) as VisionSceneHandle;
+  const handleA = visionScene(sceneA);
+  const handleB = visionScene(sceneB);
   const mountOptions = options();
   const frames = {
-    projectComposition: (document: LSMLDocument) =>
-      document.scene_id === "scene-b" ? projectionB : projectionA,
+    projectComposition: (handle: VisionSceneHandle) =>
+      handle === handleB ? projectionB : projectionA,
   } as unknown as NativeSceneFrames;
   const recovered = vi.fn();
   const session = new NativeCompositionSession(
@@ -149,7 +165,7 @@ it("replays the latest accepted LSML composition after the peer was offline", as
   );
 
   session.start("token-a");
-  session.acceptDocument(sceneA, frames, nativeTreeHash(sceneA));
+  session.acceptDocument(sceneA, handleA, frames, nativeTreeHash(sceneA));
   await vi.waitFor(() =>
     expect(state.graphs.A?.source.scene_id).toBe("scene-a"),
   );
@@ -164,8 +180,8 @@ it("replays the latest accepted LSML composition after the peer was offline", as
       recoverable: true,
     }),
   );
-  expect(session.project(sceneB, frames)).toBe(projectionB);
-  session.acceptDocument(sceneB, frames, nativeTreeHash(sceneB));
+  expect(session.project(handleB, frames)).toBe(projectionB);
+  session.acceptDocument(sceneB, handleB, frames, nativeTreeHash(sceneB));
   expect(state.graphs.A?.source.scene_id).toBe("scene-a");
   expect(session.currentProjection).toBe(projectionB);
 
@@ -183,4 +199,37 @@ it("replays the latest accepted LSML composition after the peer was offline", as
 
   session.retire();
   await vi.waitFor(() => expect(state.graphs.A).toBeUndefined());
+});
+
+it("refuses to accept a receipt from a different scene identity", () => {
+  const session = new NativeCompositionSession(options());
+  const documentA = scene("scene-a", "a");
+  const documentB = scene("scene-b", "b");
+  const handle: VisionSceneHandle = {
+    sceneId: documentA.scene_id,
+    sceneVersion: documentA.scene_version,
+    mediaSources: [],
+    compositionFrame: {} as VisionSceneHandle["compositionFrame"],
+    applyPatch: vi.fn(async () => {}),
+    resize: vi.fn(async () => {}),
+    activate: vi.fn(),
+    updateMedia: vi.fn(async () => {}),
+    clearMedia: vi.fn(async () => {}),
+    dispose: vi.fn(),
+  };
+  const frames = {
+    projectComposition: vi.fn(() => projection(640)),
+  } as unknown as NativeSceneFrames;
+
+  expect(() =>
+    session.acceptDocument(
+      documentB,
+      handle,
+      frames,
+      nativeTreeHash(documentB),
+    ),
+  ).toThrow("NATIVE_COMPOSITION_SCENE_IDENTITY_MISMATCH");
+  expect(frames.projectComposition).not.toHaveBeenCalled();
+  expect(session.currentProjection).toBeNull();
+  session.retire();
 });

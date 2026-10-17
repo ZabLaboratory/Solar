@@ -10,8 +10,10 @@ import {
   visionMaxTextureSize,
   type VisionSceneHandle,
 } from "./vision-presenter";
-import type { NativeCompositionProjection } from "../scenes/native-composition";
-import { prepareNativeComposition } from "../scenes/native-composition";
+import {
+  projectNativeCompositionFrame,
+  type NativeCompositionProjection,
+} from "../scenes/native-composition";
 
 /** Prepare the active scene; inactive sources and GPU frames are never retained. */
 export class NativeSceneFrames {
@@ -31,17 +33,21 @@ export class NativeSceneFrames {
     scene.dispose();
   }
 
-  /** Recompute compositor metadata for a scalar LSML update without loading a scene. */
+  /** Project the exact accepted GPU receipt from the supplied scene lifetime. */
   projectComposition(
-    document: LSMLDocument,
+    scene: VisionSceneHandle,
   ): NativeCompositionProjection | null {
     const viewport = this.options.nativeComposition;
     if (!viewport) return null;
-    return prepareNativeComposition(
-      structuredClone(document),
-      viewport,
-      visionMaxTextureSize(this.options.target),
-    );
+    const receipt = scene.compositionFrame;
+    if (!receipt) throw new Error("VISION_NATIVE_COMPOSITION_FRAME_REQUIRED");
+    return projectNativeCompositionFrame(receipt, {
+      sceneId: scene.sceneId,
+      sceneVersion: scene.sceneVersion,
+      width: viewport.width,
+      height: viewport.height,
+      maxTextureSize: visionMaxTextureSize(this.options.target),
+    });
   }
 
   async prepare(
@@ -92,7 +98,6 @@ export class NativeSceneFrames {
     const nativeComposition = this.options.nativeComposition
       ? {
           ...this.options.nativeComposition,
-          maxTextureSize: visionMaxTextureSize(this.options.target),
         }
       : undefined;
     const instanceSources = acquireInstanceSources(
@@ -147,6 +152,7 @@ export class NativeSceneFrames {
         this.onError,
         {
           ...renderPackage,
+          ...(nativeComposition ? { nativeComposition: true } : {}),
           hostFonts: [...(renderPackage.hostFonts ?? []), ...(hostFonts ?? [])],
           installationFonts: this.options.installationFonts,
           requiredFontDigests:
@@ -165,10 +171,13 @@ export class NativeSceneFrames {
       await scene.flush?.();
       this.measure("vision", started, { sceneId: document.scene_id });
       check();
+      const composition = nativeComposition
+        ? this.projectComposition(scene)
+        : null;
       return {
         scene,
         assets,
-        composition: renderPackage.surface?.composition ?? null,
+        composition,
       };
     } catch (error) {
       scene?.dispose();

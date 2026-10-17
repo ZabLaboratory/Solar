@@ -30,6 +30,8 @@ interface FakeShared {
 
 function projection(): NativeCompositionProjection {
   return {
+    coordinateSpace: "global-scene-texels",
+    atlasSize: { width: 640, height: 480 },
     width: 640,
     height: 480,
     viewport: { width: 640, height: 480 },
@@ -37,20 +39,6 @@ function projection(): NativeCompositionProjection {
       {
         id: "prism.native-composition.root.v1",
         parentId: null,
-        order: 0,
-        opacity: 1,
-        visible: true,
-        blendMode: "normal",
-        bounds: { x: 0, y: 0, width: 640, height: 480 },
-        affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
-        children: [
-          { kind: "group", id: "solar.native-composition.authored-root.v1" },
-        ],
-        mask: null,
-      },
-      {
-        id: "solar.native-composition.authored-root.v1",
-        parentId: "prism.native-composition.root.v1",
         order: 0,
         opacity: 0.5,
         visible: true,
@@ -64,33 +52,37 @@ function projection(): NativeCompositionProjection {
     surfaces: [
       {
         band: 0,
-        ownerId: "solar.native-composition.authored-root.v1",
-        ownerPath: [
-          "prism.native-composition.root.v1",
-          "solar.native-composition.authored-root.v1",
-        ],
-        coordinateSpace: "group-local",
+        ownerId: "prism.native-composition.root.v1",
+        ownerPath: ["prism.native-composition.root.v1"],
+        coordinateSpace: "global-scene-texels",
         rect: { x: 0, y: 0, width: 640, height: 480 },
         atlasRect: { x: 0, y: 0, width: 640, height: 480 },
         affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
       },
     ],
-    geometryBindings: [],
-    rebuildBindings: [],
   };
 }
 
 function captureOnlyProjection(): NativeCompositionProjection {
   const result = projection();
-  result.groups[1]!.children = [
+  result.groups[0]!.children = [
     {
       kind: "capture",
-      componentId: "camera",
+      componentId: "vision.capture.2",
+      sourceComponentId: "camera",
       localSize: { width: 320, height: 180 },
       affine: { m00: 1, m01: 0, tx: 0, m10: 0, m11: 1, ty: 0 },
       localOpacity: 1,
       visible: true,
       cropPercent: { left: 0, top: 0, right: 0, bottom: 0 },
+      sourceFraming: {
+        fit: null,
+        contentBox: null,
+        sourceZoom: null,
+        objectPosition: null,
+        authoredSize: [null, null],
+        sourceSize: [320, 180],
+      },
     },
   ];
   result.surfaces = [];
@@ -321,9 +313,10 @@ it("publishes a capture-only graph with no Solar surface bands", async () => {
 
   const plan = (shared.state.graphs as Record<string, NativeCompositionPlan>)
     .A!;
-  expect(plan.groups[1]?.children[0]).toMatchObject({
+  expect(plan.groups[0]?.children[0]).toMatchObject({
     kind: "capture",
-    componentId: "camera",
+    componentId: "vision.capture.2",
+    sourceComponentId: "camera",
   });
   expect(plan.surfaces).toEqual([]);
   expect(shared.applied).toHaveLength(1);

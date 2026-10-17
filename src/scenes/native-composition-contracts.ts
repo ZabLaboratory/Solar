@@ -1,6 +1,4 @@
 export const NATIVE_COMPOSITION_ROOT_ID = "prism.native-composition.root.v1";
-export const NATIVE_COMPOSITION_AUTHORED_ROOT_ID =
-  "solar.native-composition.authored-root.v1";
 
 export interface NativeCompositionAffine {
   m00: number;
@@ -23,11 +21,25 @@ export type NativeCompositionChild =
   | {
       kind: "capture";
       componentId: string;
+      sourceComponentId: string;
       localSize: { width: number; height: number };
       affine: NativeCompositionAffine;
       localOpacity: number;
       visible: boolean;
       cropPercent: { left: number; top: number; right: number; bottom: number };
+      sourceFraming: {
+        fit: string | null;
+        contentBox: {
+          x: number | null;
+          y: number | null;
+          width: number | null;
+          height: number | null;
+        } | null;
+        sourceZoom: number | null;
+        objectPosition: { x: number | null; y: number | null } | null;
+        authoredSize: [number | null, number | null];
+        sourceSize: [number, number];
+      };
     }
   | { kind: "group"; id: string };
 
@@ -55,18 +67,14 @@ export interface NativeCompositionSurface {
 }
 
 export interface NativeCompositionProjection {
-  coordinateSpace?: "owner-local" | "global-scene-texels";
+  coordinateSpace: "global-scene-texels";
   /** Actual CEF canvas size, including atlas gutters or a transparent 1px canvas. */
-  atlasSize?: { width: number; height: number };
+  atlasSize: { width: number; height: number };
   width: number;
   height: number;
   viewport: { width: number; height: number };
   groups: NativeCompositionGroup[];
   surfaces: NativeCompositionSurface[];
-  /** Default paths that affect a compositor transform or local surface size. */
-  geometryBindings: string[];
-  /** Default paths whose value changes require rerendering the atlas pages. */
-  rebuildBindings: string[];
 }
 
 export interface NativeCompositionSource {
@@ -79,8 +87,8 @@ export interface NativeCompositionSource {
 
 export interface NativeCompositionPlan {
   schema: "solar.native-composition.plan/1";
-  coordinateSpace?: "owner-local" | "global-scene-texels";
-  atlasSize?: { width: number; height: number };
+  coordinateSpace: "global-scene-texels";
+  atlasSize: { width: number; height: number };
   producer_id: string;
   source: NativeCompositionSource;
   planHash: string;

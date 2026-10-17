@@ -1,5 +1,4 @@
 import type { VerifiedFont } from "../scenes/verified-font";
-import type { NativeCompositionProjection } from "../scenes/native-composition";
 import type { VisionCompositionFrame } from "./vision-composition-frame";
 
 /** Host/presenter wire messages and scene ownership handles. Implementations remain in vision-presenter. */
@@ -85,7 +84,6 @@ export interface VisionRenderPackage {
   surface?: {
     width: number;
     height: number;
-    composition?: NativeCompositionProjection;
   };
   installationFonts?: () => AsyncIterable<Uint8Array[]>;
   resolveImages?: (patch: Record<string, unknown>) => Promise<{
