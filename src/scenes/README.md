@@ -243,6 +243,8 @@ plan pending. A replaced pending promise resolves as `superseded`, a completed
 operation as `completed`, and later work after retirement as `retired`; these
 results are not LSML mutation or Vision frame receipts. Existing mutation IDs,
 receipts and frame coverage are unchanged.
+`native-composition-state.ts` owns the shared `/1` state-envelope validator used
+by this publisher and the Node receiver for declared seeds and full replacements.
 
 Pulsar's isolated native probe now covers Solar surface bands composed with a
 capture under group opacity. Solar now projects versioned mask coverage and

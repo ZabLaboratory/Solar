@@ -13,12 +13,13 @@ import { fileURLToPath } from "node:url";
 import { BrowserLSDP } from "../../vendor/lsdp-native-browser/src/browser.js";
 import { nativeTreeHash, validateNativeJSON } from "../internal/native-tree";
 import { requireLSML } from "../scenes/native-document";
+import { requireNativeCompositionState } from "../scenes/native-composition-state";
 import type { Operation } from "fast-json-patch";
 import { NativeState } from "../internal/native-state";
 
 export const NATIVE_WIRE = "LSDP-TCP/2.0-draft2";
 export interface ReceptionResource {
-  type: "solar.lsml/1" | "orion.state/1";
+  type: "solar.lsml/1" | "orion.state/1" | "solar.native-composition/1";
   /** null means no scene has been selected. It is not a renderable fixture. */
   initial: unknown;
 }
@@ -70,11 +71,17 @@ export function receptionSettings(
     if (
       !targetPattern.test(target) ||
       target.includes("//") ||
-      !["solar.lsml/1", "orion.state/1"].includes(resource.type)
+      !["solar.lsml/1", "orion.state/1", "solar.native-composition/1"].includes(
+        resource.type,
+      ) ||
+      (resource.type === "solar.native-composition/1" &&
+        target !== "solar/composition")
     )
       throw new Error("LSDP_RESOURCE_INVALID");
     if (resource.type === "solar.lsml/1" && resource.initial !== null)
       requireLSML(resource.initial);
+    if (resource.type === "solar.native-composition/1")
+      requireNativeCompositionState(resource.initial);
     nativeTreeHash(resource.initial); // Reject nonportable JSON before starting a process.
     resources[target] = structuredClone(resource.initial);
     links[target] = {
@@ -468,6 +475,8 @@ export class SolarReceptionServer {
     const resource = this.resource(target);
     if (resource.type === "solar.lsml/1" && desired !== null)
       requireLSML(desired);
+    if (resource.type === "solar.native-composition/1")
+      requireNativeCompositionState(desired);
     validateNativeJSON(desired);
     // The existing Rust state route reads B and computes its Merkle diff to A.
     // No root-replace shortcut and no JavaScript diff here.

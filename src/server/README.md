@@ -10,6 +10,19 @@ resource subscriptions or JavaScript recovery mirror. `replace()` sends the full
 state route, which computes the diff. `apply()` sends explicit operations with a
 baseline precondition. `stop()` cancels requests and reaps the owned process.
 
+The receiver also accepts the exact `solar/composition` resource with type
+`solar.native-composition/1`. Its declared seed and full replacements must satisfy
+the same `solar.native-composition.state/1` envelope used by the browser publisher:
+only A/B producer claims and their owned A/B graphs are valid. Arbitrary resource
+types, this type on another target, and malformed seeds are rejected before the
+native process starts. `apply()` retains native atomic patch and hash-precondition
+semantics for producer claims and graph updates; consumers read/watch the one Rust
+resource. Recovery restores the declared empty composition seed, so the active
+publisher must republish its current graph. The built host contract advertises
+`solar.native-composition.resource.v1` for package admission; this does not change
+the `solar.host.v2` protocol or the LSML renderer. The real-process regression is
+`scripts/test-composition-reception.mjs` with an exact `lsdpd` binary path.
+
 The application main host is the lifecycle authority: supply its local HTTP origin, distribute the
 TCP/WebSocket addresses and invalidate readiness on terminal `onFailure`.
 Rust alone owns accepted resource state. A failed child is replaced on the same

@@ -17,6 +17,7 @@
 import { existsSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { hostContract } from "./host-contract.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
@@ -74,20 +75,7 @@ writeFileSync(served, html);
 
 writeFileSync(
   resolve(hostDir, "solar-host-contract.json"),
-  JSON.stringify(
-    {
-      schema_version: "solar.host.contract.v1",
-      protocol_version: "solar.host.v2",
-      capabilities: [
-        "solar.vision.lsml.v1",
-        "solar.native-lsdp.v1",
-        "solar.source-provider.v1",
-        "prism.camera.routing-readback.v1",
-      ],
-    },
-    null,
-    2,
-  ) + "\n",
+  JSON.stringify(hostContract, null, 2) + "\n",
 );
 
 const bytes = Buffer.byteLength(html, "utf8");
