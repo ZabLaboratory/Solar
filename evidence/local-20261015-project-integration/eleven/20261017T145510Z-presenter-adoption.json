@@ -1,0 +1,46 @@
+{
+  "capturedUtc": "2026-10-17T14:55:10.993134+00:00",
+  "solarBase": "11323fb7949fac0b039964de9c25fa614e1f3e85",
+  "visionSource": "044ddb62df050eee9869150a69a1b88fd26f2962",
+  "visionMerged": "78f01930cf04ba5188b992686e91e03bd1cc6262",
+  "qualifiedPresenterSha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
+  "wasmUnchanged": true,
+  "wasmRebuilt": false,
+  "checks": [
+    {
+      "file": "ui/mainpresenter.mjs",
+      "sha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
+      "bytes": 43272,
+      "distByteEquality": true
+    },
+    {
+      "file": "ui/fonts.mjs",
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
+      "bytes": 1977,
+      "distByteEquality": true
+    },
+    {
+      "file": "pkg/lumencast_vision_web.js",
+      "sha256": "2661fc24146f703adcfa1b94769d9c789b707abf0027792b6f4287fb40bc04e6",
+      "bytes": 157228,
+      "distByteEquality": true
+    },
+    {
+      "file": "pkg/lumencast_vision_web_bg.wasm",
+      "sha256": "39c64876a92c0d8d5a104fa8366dc437520140be92e8376db59ed127420ab4a9",
+      "bytes": 10618773,
+      "distByteEquality": true
+    }
+  ],
+  "build": "PASS",
+  "bundle": "PASS",
+  "browserProof": "Vision evidence/local-20261017-native-mask-coverage/eleven/20261017T145039Z-browser-proof.json SHA88fedc049b62fd8c0aecc20cfaa3f60230abc4dfb66d377a57ce1c735d1d1b63",
+  "independentProofs": [
+    "20261017T144942Z-presenter-receipt-verification.json",
+    "20261017T145018Z-presenter-independent-pixels.json",
+    "20261017T145148Z-presenter-independent-pixels.json",
+    "20261017T145148Z-presenter-receipt-verification.json"
+  ],
+  "negative": "Exact old presenter rejects actual WASM /2 receipt without frame-submitted. Solar rejects nonexistent coverage target.",
+  "limits": "Actual browser presenter and persisted receipt through real Solar projector, plus independent PNG pixels. No installed dev/CEF/LSDP/native whole-chain or physical presentation claim; native reset defect remains open."
+}

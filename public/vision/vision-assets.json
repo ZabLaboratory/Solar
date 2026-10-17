@@ -2,12 +2,12 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "e079bd252d85c4f82db28bc92691f904e26158ac",
-  "source_revision": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
-  "source_state": "Signed Vision /2 same-atlas coverage, frame clips and nested opacity source. Existing WASM build qualified in actual Chrome WebGL2 by proof commit85c49664. Exact engine/presenter bytes copied without rebuild. Private native Prism-wire GPU proof exists separately; actual CEF/Solar/Prism/native chain and installed/endurance/physical qualification remain open. No full stencil effect parity claim.",
+  "source_revision": "044ddb62df050eee9869150a69a1b88fd26f2962",
+  "source_state": "Signed Vision presenter accepts /2 coverage receipts and coverage-only atlases with strict references, geometry and disjoint gutters. Actual WASM presenter positive and old-presenter negative qualified; Solar independently accepts exact submitted receipt and verifies PNG pixels. Existing WASM unchanged, no rebuild. CEF/Solar/Prism/native whole chain, native reset stability and installed/endurance/physical qualification remain open.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "sha256": "607eee787387a887e22b24573e5a33d60a8cee1e6233feef5f1d21a32e188b3d",
-      "bytes": 32634
+      "sha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
+      "bytes": 43272
     },
     "ui/fonts.mjs": {
       "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
@@ -23,26 +23,28 @@
     }
   },
   "source_provenance": {
-    "browser_receipt_sha256": "976bdb6c91c0ebf1b327667571478663ec517893cfbd192499694f4b0a8d818c",
+    "browser_receipt_sha256": "88fedc049b62fd8c0aecc20cfaa3f60230abc4dfb66d377a57ce1c735d1d1b63",
     "uncommitted_qualified_source": false,
-    "browser_receipt": "evidence/local-20261017-native-mask-coverage/eleven/20261017T142335Z-browser-proof.json",
+    "browser_receipt": "evidence/local-20261017-native-mask-coverage/eleven/20261017T145039Z-browser-proof.json",
     "source_hash_basis": "Exact qualified working-file bytes; Git may normalize text. Artifact hashes refer to copied delivery bytes.",
     "engine_base": "e079bd252d85c4f82db28bc92691f904e26158ac",
     "source_files": {
-      "crates/vision-web/ui/mainpresenter.mjs": "607eee787387a887e22b24573e5a33d60a8cee1e6233feef5f1d21a32e188b3d",
+      "crates/vision-web/ui/mainpresenter.mjs": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
       "crates/vision-gpu/src/renderer/contribution.rs": "08f67e84a8a9ef591d649b41d903896b50c25d72260441f98d3206148588de1a",
       "crates/vision-gpu/src/renderer.rs": "24d14bc7f5bc85e14deb83306339a2cad71d3bc2e520f6268cd82b1d25511693",
       "crates/vision-web/src/lib.rs": "587928532cd9a94b999c9f4fedbef93b408e68b390ff85a1e781dfe1e802a432",
       "crates/vision-gpu-scene/src/lib.rs": "ace3b5bc70b63fbab88481557b0d1e2e0bc12ec3b8c718e89322330781932df6",
-      "crates/vision-web/tests/contribution-webgl2-proof/run-browser-proof.mjs": "ab0796504876de1b8c522a13303b9cc5afa6f516b936092d18634fef6f012990",
-      "crates/vision-web/tests/contribution-webgl2-proof/probe.mjs": "d4fa69dc22ed69905a27b104a333ad1b9d6d8ecb6de1e25a23321280ceea0eb3"
+      "crates/vision-web/tests/contribution-webgl2-proof/run-browser-proof.mjs": "01cf224eaec7def61d8b08904890c861ddfc5ba77f3fc086021716ec3fb42af5",
+      "crates/vision-web/tests/contribution-webgl2-proof/probe.mjs": "fd4676d56877573a7a750abd756a819523cfc722223c737af18718b8b8923669"
     },
     "engine_commit": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
     "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
-    "qualification_commit": "85c49664a029744369b063ddffaa92415a59c8a8",
+    "qualification_commit": "044ddb62df050eee9869150a69a1b88fd26f2962",
     "engine_tree": "62829837f5601a13860fec638b52d18e8b58ff7c",
     "engine_branch": "eleven/local-20261017-native-mask-coverage",
-    "engine_evidence": "evidence/local-20261017-native-mask-coverage/eleven/20261017T142508Z-agent-checkpoint.md",
-    "repository": "Lumencast/lumencast-vision"
+    "engine_evidence": "evidence/local-20261017-native-mask-coverage/eleven/20261017T145200Z-agent-checkpoint.md",
+    "repository": "Lumencast/lumencast-vision",
+    "presenter_commit": "044ddb62df050eee9869150a69a1b88fd26f2962",
+    "engine_qualification_commit": "85c49664a029744369b063ddffaa92415a59c8a8"
   }
 }

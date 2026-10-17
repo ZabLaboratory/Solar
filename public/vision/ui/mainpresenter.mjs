@@ -705,35 +705,189 @@ function authoredSurfaceSize(info) {
 }
 
 function validateNativeCompositionReceipt(receipt, requestedSize) {
+  const maxU32 = 0xffffffff;
+  const maxF32 = 3.4028234663852886e38;
+  const isRecord = value => value !== null && typeof value === "object" && !Array.isArray(value);
+  const isId = value => Number.isSafeInteger(value) && value >= 0 && value <= maxU32;
+  const isFinite = value => typeof value === "number" && Number.isFinite(value) && Math.abs(value) <= maxF32;
+  const isRevision = value => typeof value === "string" && /^(0|[1-9][0-9]{0,19})$/.test(value)
+    && BigInt(value) <= 18446744073709551615n;
+  const isPair = (value, valid = isId) => Array.isArray(value) && value.length === 2 && value.every(valid);
+  const isRect = value => Array.isArray(value) && value.length === 4 && value.every(isId);
+  const isTuple = (value, length, valid = isFinite) => Array.isArray(value) && value.length === length && value.every(valid);
+  const optionalText = value => value === null || (typeof value === "string" && value.length > 0 && value.length <= 4096);
+  const nullableNumbers = (value, fields) => value === null || (isRecord(value)
+    && fields.every(field => value[field] === null || isFinite(value[field])));
+  const validAppearance = (item, clipKinds) => typeof item.blendMode === "string"
+    && typeof item.maskPresent === "boolean"
+    && typeof item.clipPresent === "boolean"
+    && typeof item.clipKind === "string"
+    && clipKinds.includes(item.clipKind)
+    && item.clipPresent === (item.clipKind !== "none");
+  const validStats = value => isRecord(value)
+    && [value.rebuiltNodes, value.reusedNodes, value.compositionPasses]
+      .every(item => isId(item))
+    && typeof value.partialCompositionPixels === "string"
+    && /^(0|[1-9][0-9]{0,19})$/.test(value.partialCompositionPixels)
+    && BigInt(value.partialCompositionPixels) <= 18446744073709551615n;
+  const invalid = () => { throw new Error("The Rust engine returned an invalid native composition frame receipt."); };
+  const extended = receipt?.schema === "vision.native-composition-frame/2";
   if (!receipt || typeof receipt !== "object" || Array.isArray(receipt)
-      || receipt.schema !== "vision.native-composition-frame/1"
+      || (!extended && receipt.schema !== "vision.native-composition-frame/1")
       || receipt.gpuSubmission !== "present-queued"
       || receipt.physicalPresentation !== "not-measured"
       || receipt.coordinateSpace !== "global-scene-texels") {
-    throw new Error("The Rust engine returned an invalid native composition frame receipt.");
+    invalid();
   }
-  const isPair = value => Array.isArray(value) && value.length === 2
-    && value.every(item => Number.isSafeInteger(item) && item >= 0);
   if (!isPair(receipt.sceneSize) || receipt.sceneSize[0] !== requestedSize.width
       || receipt.sceneSize[1] !== requestedSize.height
-      || !isPair(receipt.canvasSize) || receipt.canvasSize[0] < 1 || receipt.canvasSize[1] < 1
+      || !isPair(receipt.canvasSize, value => isId(value) && value > 0)
       || !isPair(receipt.atlasSize) || !Array.isArray(receipt.surfaces)
-      || !Array.isArray(receipt.owners) || !Array.isArray(receipt.captures)) {
-    throw new Error("The Rust engine returned inconsistent native composition dimensions or metadata.");
+      || !Array.isArray(receipt.owners) || !Array.isArray(receipt.captures)
+      || !isPair(receipt.sceneScale, value => Number.isFinite(value) && value > 0)
+      || typeof receipt.sceneId !== "string" || receipt.sceneId.length === 0
+      || typeof receipt.sceneVersion !== "string" || receipt.sceneVersion.length === 0
+      || !isRevision(receipt.pixelRevision) || !isRevision(receipt.layoutProjectionRevision)
+      || !validStats(receipt.stats)
+      || receipt.owners.length + receipt.captures.length + receipt.surfaces.length > 100000) {
+    invalid();
   }
-  const hasAtlas = receipt.surfaces.length > 0;
+
+  if (extended ? !Array.isArray(receipt.coverageSurfaces) : Object.hasOwn(receipt, "coverageSurfaces"))
+    invalid();
+  const coverageSurfaces = extended ? receipt.coverageSurfaces : [];
+  if (receipt.owners.length + receipt.captures.length + receipt.surfaces.length + coverageSurfaces.length > 100000)
+    invalid();
+
+  const ownerIds = new Set();
+  const captureIds = new Set();
+  const references = new Map();
+  const ownersById = new Map();
+  const blendModes = new Set([
+    "normal", "multiply", "screen", "hard-light", "soft-light", "overlay",
+    "darken", "lighten", "difference", "exclusion", "color-dodge", "color-burn",
+    "hue", "saturation", "color", "luminosity",
+  ]);
+  for (const [items, ids] of [[receipt.owners, ownerIds], [receipt.captures, captureIds]]) {
+    for (const item of items) {
+      if (!isRecord(item) || !isId(item.nodeId) || ownerIds.has(item.nodeId) || captureIds.has(item.nodeId)
+          || !isId(item.paintOrder) || !isPair(item.localSize, value => isFinite(value) && value > 0)
+          || typeof item.visible !== "boolean")
+        invalid();
+      ids.add(item.nodeId);
+      if (ids === ownerIds) {
+        if (!(item.parentNodeId === null || isId(item.parentNodeId))
+            || !isTuple(item.localToWorld, 6)
+            || !isFinite(item.opacity) || item.opacity < 0 || item.opacity > 1
+            || !validAppearance(item, ["none", "viewport-bounds", "authored"])) invalid();
+        ownersById.set(item.nodeId, item);
+      } else {
+        if (!isId(item.ownerNodeId) || !isTuple(item.localToOwner, 6)
+            || !isTuple(item.localToWorld, 6)
+            || !isFinite(item.localOpacity) || item.localOpacity < 0 || item.localOpacity > 1
+            || !optionalText(item.effectiveComponentId) || !optionalText(item.liveMediaPath)
+            || !(item.sourceSize === null || isPair(item.sourceSize, value => isId(value) && value > 0))
+            || !isPair(item.authoredSize, value => value === null || isFinite(value))
+            || !validAppearance(item, ["none", "image-bounds", "authored"])
+            || !optionalText(item.fit)
+            || !(item.sourceCropPercent === null || (isRecord(item.sourceCropPercent)
+              && ["left", "top", "right", "bottom"].every(key => isFinite(item.sourceCropPercent[key])
+                && item.sourceCropPercent[key] >= 0 && item.sourceCropPercent[key] <= 99)
+              && item.sourceCropPercent.left + item.sourceCropPercent.right <= 99.00001
+              && item.sourceCropPercent.top + item.sourceCropPercent.bottom <= 99.00001))
+            || !nullableNumbers(item.contentBox, ["x", "y", "width", "height"])
+            || !(item.sourceZoom === null || isFinite(item.sourceZoom))
+            || !nullableNumbers(item.objectPosition, ["x", "y"])) invalid();
+      }
+      if (extended) {
+        if (!Object.hasOwn(item, "maskSurfaceIndex") || !blendModes.has(item.blendMode)) invalid();
+        const index = item.maskSurfaceIndex;
+        if (item.maskPresent !== (index !== null) || (index !== null && !isId(index))) invalid();
+        if (index !== null) {
+          if (references.has(index)) invalid();
+          references.set(index, item.nodeId);
+        }
+      } else if (Object.hasOwn(item, "maskSurfaceIndex") || item.maskPresent || item.blendMode !== "normal") {
+        invalid();
+      }
+    }
+  }
+  if ([...ownerIds].some(nodeId => captureIds.has(nodeId))) invalid();
+  for (const capture of receipt.captures) {
+    if (!ownersById.has(capture.ownerNodeId)) invalid();
+  }
+
+  let rootOwners = 0;
+  const resolvedOwners = new Set();
+  for (const owner of receipt.owners) {
+    if (owner.parentNodeId === null) rootOwners += 1;
+    const visiting = new Set();
+    const path = [];
+    let nodeId = owner.nodeId;
+    while (nodeId !== null && !resolvedOwners.has(nodeId)) {
+      if (visiting.has(nodeId)) invalid();
+      const current = ownersById.get(nodeId);
+      if (!current) invalid();
+      visiting.add(nodeId);
+      path.push(nodeId);
+      nodeId = current.parentNodeId;
+    }
+    for (const resolved of path) resolvedOwners.add(resolved);
+  }
+  if (ownerIds.size > 0 && rootOwners !== 1) invalid();
+
+  const surfaceIds = new Set();
+  const atlasRects = [];
+  for (const surface of receipt.surfaces) {
+    if (!isRecord(surface) || !isId(surface.ownerNodeId) || !ownerIds.has(surface.ownerNodeId)
+        || !isId(surface.bandIndex) || !isId(surface.paintOrder)
+        || !(surface.beforeNodeId === null || isId(surface.beforeNodeId))
+        || !(surface.afterNodeId === null || isId(surface.afterNodeId))
+        || surface.coordinateSpace !== "global-scene-texels"
+        || !isRect(surface.sceneRect) || !isRect(surface.atlasRect)) invalid();
+    const [sx, sy, sw, sh] = surface.sceneRect;
+    const [ax, ay, aw, ah] = surface.atlasRect;
+    const key = `${surface.ownerNodeId}:${surface.bandIndex}`;
+    if (surfaceIds.has(key) || sw < 1 || sh < 1 || sw !== aw || sh !== ah
+        || sx > requestedSize.width - sw || sy > requestedSize.height - sh
+        || ax < 1 || ay < 1 || ax >= receipt.canvasSize[0] || ay >= receipt.canvasSize[1]
+        || aw >= receipt.canvasSize[0] - ax || ah >= receipt.canvasSize[1] - ay
+        || (surface.beforeNodeId !== null && !ownerIds.has(surface.beforeNodeId) && !captureIds.has(surface.beforeNodeId))
+        || (surface.afterNodeId !== null && !ownerIds.has(surface.afterNodeId) && !captureIds.has(surface.afterNodeId))) invalid();
+    surfaceIds.add(key);
+    atlasRects.push(surface.atlasRect);
+  }
+
+  const targets = new Set();
+  for (let index = 0; index < coverageSurfaces.length; index++) {
+    const surface = coverageSurfaces[index];
+    if (!isRecord(surface) || !isId(surface.targetNodeId) || targets.has(surface.targetNodeId)
+        || (!ownerIds.has(surface.targetNodeId) && !captureIds.has(surface.targetNodeId))
+        || surface.coordinateSpace !== "global-scene-texels"
+        || !isRect(surface.sceneRect) || !isRect(surface.atlasRect)) invalid();
+    const [sx, sy, sw, sh] = surface.sceneRect;
+    const [ax, ay, aw, ah] = surface.atlasRect;
+    if (sx !== 0 || sy !== 0 || sw !== requestedSize.width || sh !== requestedSize.height
+        || ax < 1 || ay < 1 || aw !== sw || ah !== sh
+        || ax >= receipt.canvasSize[0] || ay >= receipt.canvasSize[1]
+        || aw >= receipt.canvasSize[0] - ax || ah >= receipt.canvasSize[1] - ay
+        || references.get(index) !== surface.targetNodeId) invalid();
+    targets.add(surface.targetNodeId);
+    atlasRects.push(surface.atlasRect);
+  }
+  if (extended && references.size !== coverageSurfaces.length) invalid();
+  if (!atlasRectsAreDisjoint(atlasRects)) invalid();
+
+  const hasAtlas = receipt.surfaces.length + coverageSurfaces.length > 0;
   if (hasAtlas) {
     if (receipt.atlasSize[0] < 1 || receipt.atlasSize[1] < 1
         || receipt.canvasSize[0] !== receipt.atlasSize[0]
         || receipt.canvasSize[1] !== receipt.atlasSize[1]) {
-      throw new Error("The native composition canvas must exactly match the packed atlas dimensions.");
+      invalid();
     }
   } else if (receipt.atlasSize[0] !== 0 || receipt.atlasSize[1] !== 0
       || receipt.canvasSize[0] !== 1 || receipt.canvasSize[1] !== 1) {
-    throw new Error("A capture-only or empty composition must use a transparent one-pixel canvas.");
-  }
-  if (!receipt.stats || typeof receipt.stats !== "object" || Array.isArray(receipt.stats)) {
-    throw new Error("The Rust engine returned no native composition submission statistics.");
+    invalid();
   }
 }
 
@@ -745,6 +899,61 @@ function nativeCompositionStats(value) {
     throw new Error("The Rust engine returned invalid native composition submission statistics.");
   }
   return stats;
+}
+
+function atlasRectsAreDisjoint(rects) {
+  if (rects.length < 2) return true;
+  const yCoordinates = [...new Set(rects.flatMap(([, y, , height]) => [y - 1, y + height + 1]))]
+    .sort((left, right) => left - right);
+  const yIndexes = new Map(yCoordinates.map((value, index) => [value, index]));
+  const events = [];
+  for (const [x, y, width, height] of rects) {
+    events.push({ x: x - 1, delta: 1, top: yIndexes.get(y - 1), bottom: yIndexes.get(y + height + 1) - 1 });
+    events.push({ x: x + width + 1, delta: -1, top: yIndexes.get(y - 1), bottom: yIndexes.get(y + height + 1) - 1 });
+  }
+  events.sort((left, right) => left.x - right.x || left.delta - right.delta);
+
+  const segmentCount = yCoordinates.length - 1;
+  const maximum = new Int32Array(segmentCount * 4);
+  const lazy = new Int32Array(segmentCount * 4);
+  const push = (node) => {
+    if (lazy[node] === 0) return;
+    for (const child of [node * 2, node * 2 + 1]) {
+      maximum[child] += lazy[node];
+      lazy[child] += lazy[node];
+    }
+    lazy[node] = 0;
+  };
+  const add = (node, start, end, from, to, delta) => {
+    if (from <= start && end <= to) {
+      maximum[node] += delta;
+      lazy[node] += delta;
+      return;
+    }
+    push(node);
+    const middle = Math.floor((start + end) / 2);
+    if (from <= middle) add(node * 2, start, middle, from, to, delta);
+    if (to > middle) add(node * 2 + 1, middle + 1, end, from, to, delta);
+    maximum[node] = Math.max(maximum[node * 2], maximum[node * 2 + 1]);
+  };
+  const query = (node, start, end, from, to) => {
+    if (from <= start && end <= to) return maximum[node];
+    push(node);
+    const middle = Math.floor((start + end) / 2);
+    let result = 0;
+    if (from <= middle) result = Math.max(result, query(node * 2, start, middle, from, to));
+    if (to > middle) result = Math.max(result, query(node * 2 + 1, middle + 1, end, from, to));
+    return result;
+  };
+  for (const event of events) {
+    if (event.delta < 0) {
+      add(1, 0, segmentCount - 1, event.top, event.bottom, -1);
+      continue;
+    }
+    if (query(1, 0, segmentCount - 1, event.top, event.bottom) > 0) return false;
+    add(1, 0, segmentCount - 1, event.top, event.bottom, 1);
+  }
+  return true;
 }
 
 function checkedSize(width, height) {
