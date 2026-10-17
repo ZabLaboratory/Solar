@@ -1,0 +1,26 @@
+{
+  "capturedUtc": "2026-10-17T11:30:24.534Z",
+  "passed": true,
+  "sourceReceipt": "D:/Documents/Lumencast/lumencast-vision/.worktrees/eleven-local-20261016-native-contribution-atlas/evidence/local-20261016-native-contribution-atlas/eleven/20261017T111143Z-browser-proof.json",
+  "inputReceiptSha256": "d5c7e3edd4bb7decab45a06a647f07f5ae05e729ff0b96c528d8cb9229a1ff23",
+  "fixturePath": "D:/Documents/Lumencast/lumencast-vision/.worktrees/eleven-local-20261016-native-contribution-atlas/crates/vision-web/tests/contribution-webgl2-proof/contribution-scene.lsml",
+  "fixtureSha256": "103930a1a01c9de4cab71feb6ed31cc9bafdd0411dcbaf2e0914a91c3b47b064",
+  "reconstructedSceneVersion": "sha256:97b38a2a742207f30bf7447fa9d48c2f763df0a298d955de9b2d38538419be99",
+  "mainSourceFile": "src/main/broadcast/engine/capture/native-composition-consumer.ts",
+  "mainWorkingSourceSha256": "fecb61e9e61449160c5241a8fffc4310d15783edcfdae6b3d8d1cdc9384b1ff3",
+  "checks": [
+    "actual stack-root fixture used by WASM probe reconstructed with identical scene version",
+    "Solar receipt plan accepted by Main source and topology validation",
+    "capture occurrence and raw plan hash retained",
+    "wrong state hash refused",
+    "missing physical binding refused"
+  ],
+  "limits": [
+    "Source stateHash and physical bindings are synthetic contract-test inputs; not a real LSDP/native host run",
+    "Final native pixels, real CEF atlas and physical captures remain unqualified"
+  ],
+  "accepted": [
+    "vision.capture.3"
+  ],
+  "planHash": "sha256:73fa669393a9860066a2cc5d89639b5a072f87caff57c6cc7cccf4552ad14e30"
+}
