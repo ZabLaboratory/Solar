@@ -1,0 +1,17 @@
+{
+  "captured_utc": "2026-10-17T10:32:15.454Z",
+  "scope": "Validate active Vision capture framing and appearance facts, preserving nullable fields and f32 normalized crop without LSML projection.",
+  "validation": {
+    "targeted_tests": "55/55 PASS",
+    "report": "evidence/local-20261016-vision-atlas-consumer/eleven/20261017T103156Z-framing-tests.json",
+    "typescript": "tsc -b PASS",
+    "eslint": "scoped PASS",
+    "architecture": "PASS",
+    "diff": "PASS"
+  },
+  "limits": [
+    "Source contract validation only; no production native projection adoption or installed runtime claim.",
+    "No mask/blend/effect capability inferred from metadata acceptance.",
+    "No transition or scene-switch-duration changes."
+  ]
+}

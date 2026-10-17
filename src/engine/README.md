@@ -4,6 +4,10 @@
 receipt emitted by the same GPU submission as the presenter's canvas. It checks
 the exact render-variant scene identity, canonical scene grid, atlas canvas extent,
 integer 1:1 bands, graph ownership and monotonic accepted pixel/layout revisions.
+Capture framing remains explicit in this receipt: fit, normalized source crop,
+nullable content box/position fields and zoom come from the active Vision graph.
+Blend, mask and clip presence are checked as graph facts; acceptance does not
+claim that the native compositor supports every such effect.
 It does not derive layout from LSML or certify physical scanout. The persistent
 presenter can explicitly enable native atlas output before loading; its mode ACK
 is required, and a later canonical load disables that mode on the same engine.

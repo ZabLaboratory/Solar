@@ -7,6 +7,9 @@ export interface VisionCompositionOwner {
   localToWorld: [number, number, number, number, number, number];
   opacity: number;
   visible: boolean;
+  blendMode: string;
+  maskPresent: boolean;
+  clipPresent: boolean;
 }
 
 export interface VisionCompositionCapture {
@@ -21,6 +24,24 @@ export interface VisionCompositionCapture {
   effectiveComponentId: string | null;
   liveMediaPath: string | null;
   sourceSize: [number, number] | null;
+  blendMode: string;
+  maskPresent: boolean;
+  clipPresent: boolean;
+  fit: string | null;
+  sourceCropPercent: {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+  } | null;
+  contentBox: {
+    x: number | null;
+    y: number | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  sourceZoom: number | null;
+  objectPosition: { x: number | null; y: number | null } | null;
 }
 
 export interface VisionCompositionSurface {
@@ -76,6 +97,42 @@ const nullableId = (value: unknown): boolean => value === null || id(value);
 const optionalText = (value: unknown): boolean =>
   value === null ||
   (typeof value === "string" && value.length > 0 && value.length <= 4096);
+
+function appearance(value: Record<string, unknown>): boolean {
+  return (
+    typeof value.blendMode === "string" &&
+    optionalText(value.blendMode) &&
+    typeof value.maskPresent === "boolean" &&
+    typeof value.clipPresent === "boolean"
+  );
+}
+
+function nullableFields(value: unknown, fields: string[]): boolean {
+  if (value === null) return true;
+  const record = object(value);
+  return (
+    !!record &&
+    fields.every((key) => record[key] === null || finite(record[key]))
+  );
+}
+
+function framing(value: Record<string, unknown>): boolean {
+  const crop = object(value.sourceCropPercent);
+  return (
+    optionalText(value.fit) &&
+    (value.sourceCropPercent === null ||
+      (!!crop &&
+        [crop.left, crop.top, crop.right, crop.bottom].every(
+          (part) => finite(part) && part >= 0 && part <= 99,
+        ) &&
+        // Rust normalizes with f32 arithmetic; allow its rounding at the 99% boundary.
+        (crop.left as number) + (crop.right as number) <= 99.00001 &&
+        (crop.top as number) + (crop.bottom as number) <= 99.00001)) &&
+    nullableFields(value.contentBox, ["x", "y", "width", "height"]) &&
+    (value.sourceZoom === null || finite(value.sourceZoom)) &&
+    nullableFields(value.objectPosition, ["x", "y"])
+  );
+}
 
 function invalid(): never {
   throw new Error("VISION_NATIVE_COMPOSITION_FRAME_INVALID");
@@ -151,7 +208,8 @@ export function acceptVisionCompositionFrame(
       ) ||
       !tuple(owner.localToWorld, 6) ||
       !opacity(owner.opacity) ||
-      typeof owner.visible !== "boolean"
+      typeof owner.visible !== "boolean" ||
+      !appearance(owner)
     )
       invalid();
     owners.set(owner.nodeId, owner);
@@ -194,7 +252,9 @@ export function acceptVisionCompositionFrame(
       typeof capture.visible !== "boolean" ||
       !optionalText(capture.effectiveComponentId) ||
       !optionalText(capture.liveMediaPath) ||
-      !(capture.sourceSize === null || size(capture.sourceSize))
+      !(capture.sourceSize === null || size(capture.sourceSize)) ||
+      !appearance(capture) ||
+      !framing(capture)
     )
       invalid();
     captures.add(capture.nodeId);

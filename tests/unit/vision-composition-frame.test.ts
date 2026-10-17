@@ -18,6 +18,42 @@ it("accepts exact scene-grid transforms, authoring scale and gutter-preserving a
   expect(accepted).toBe(frame);
   expect(accepted.captures[0]!.localToWorld).toEqual([2, 0, 0, 2, 20, 40]);
   expect(accepted.canvasSize).toEqual([1922, 1082]);
+  expect(accepted.captures[0]!.sourceCropPercent).toEqual({
+    left: 0,
+    top: 10,
+    right: 0,
+    bottom: 15,
+  });
+  expect(accepted.captures[0]!.contentBox).toEqual({
+    x: 5,
+    y: null,
+    width: 300,
+    height: null,
+  });
+  expect(accepted.captures[0]!.objectPosition).toEqual({ x: 0.25, y: null });
+});
+
+it("keeps absent framing explicit and accepts Rust f32 crop normalization without recomputing it", () => {
+  const frame = compositionFrame();
+  const capture = frame.captures[0]!;
+  capture.fit = null;
+  capture.contentBox = null;
+  capture.objectPosition = null;
+  capture.sourceZoom = null;
+  capture.sourceCropPercent = {
+    left: 49.500003814697266,
+    right: 49.500003814697266,
+    top: 0,
+    bottom: 0,
+  };
+  expect(acceptVisionCompositionFrame(frame, expected).captures[0]).toBe(
+    capture,
+  );
+  capture.sourceCropPercent = null;
+  expect(
+    acceptVisionCompositionFrame(frame, expected).captures[0]!
+      .sourceCropPercent,
+  ).toBeNull();
 });
 
 it("accepts the transparent 1px canvas of a capture-only frame without inventing a raster band", () => {
@@ -49,6 +85,55 @@ it("refuses a regressing accepted pixel or layout revision, while allowing a con
 });
 
 it.each<[string, (frame: VisionCompositionFrame) => void]>([
+  [
+    "invalid owner blend",
+    (frame) => {
+      frame.owners[0]!.blendMode = "";
+    },
+  ],
+  [
+    "missing clip fact",
+    (frame) => {
+      Reflect.deleteProperty(frame.captures[0]!, "clipPresent");
+    },
+  ],
+  [
+    "infinite zoom",
+    (frame) => {
+      frame.captures[0]!.sourceZoom = Infinity;
+    },
+  ],
+  [
+    "crop over normalized limit",
+    (frame) => {
+      frame.captures[0]!.sourceCropPercent!.left = 99;
+      frame.captures[0]!.sourceCropPercent!.right = 1;
+    },
+  ],
+  [
+    "negative crop",
+    (frame) => {
+      frame.captures[0]!.sourceCropPercent!.top = -1;
+    },
+  ],
+  [
+    "infinite content box",
+    (frame) => {
+      frame.captures[0]!.contentBox!.width = Infinity;
+    },
+  ],
+  [
+    "infinite source position",
+    (frame) => {
+      frame.captures[0]!.objectPosition!.x = Infinity;
+    },
+  ],
+  [
+    "missing framing field",
+    (frame) => {
+      Reflect.deleteProperty(frame.captures[0]!, "fit");
+    },
+  ],
   [
     "wrong scene",
     (frame) => {
