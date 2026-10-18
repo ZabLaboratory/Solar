@@ -7,6 +7,10 @@
     "max_lines": 1024,
     "reason": "This existing LSDP event owner retains the accepted snapshot, patch and committed-frame boundaries. Composition planning, queued publication, source selection, metrics and errors are extracted; the remaining composition calls are the exact points that bind those actions to the current document. Moving them would introduce a second apply/publish coordinator. Revisit if the runtime lifecycle is split."
   },
+  "src/engine/vision-presenter.ts": {
+    "max_lines": 1020,
+    "reason": "The persistent Vision session owns engine acknowledgement, installation-font admission and serialized scene loads on one presenter and canvas per host lifetime. Tracking engine readiness separately from font readiness lets failed initialization retire an incomplete presenter while failed font admission reuses the acknowledged engine. Keep this recovery state with its lifecycle owner; revisit after a lifecycle extraction preserves the single presenter and queue owner."
+  },
   "scripts/proof/qualify-repeat-runtime.mjs": {
     "max_lines": 1500,
     "reason": "This retained qualification intentionally drives one Prism-exported scene through a single RAM-only native server, Solar host, Vision engine and browser session. Keeping the initial Repeat mutations, malformed replacement, reconnecting snapshot and later presented mutations in one run is necessary to prove recovery without resetting the active runtime between phases. Revisit the ceiling if this driver expands beyond the one-session Repeat contract."
