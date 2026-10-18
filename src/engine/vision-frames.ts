@@ -1,3 +1,5 @@
+import type { VisionMediaSubmitReceipt } from "./vision-contracts";
+
 export interface VisionFrame {
   patch: Record<string, unknown>;
   frames: Array<{ path: string; bitmap: ImageBitmap }>;
@@ -12,15 +14,19 @@ export class VisionFrames {
   private waiting: Array<{
     resolve: () => void;
     reject: (error: Error) => void;
+    onSubmission?: (receipt: VisionMediaSubmitReceipt | null) => void;
   }> = [];
   private running: Promise<void> = Promise.resolve();
   private busy = false;
   private closed = false;
   private scheduled = false;
-  private mediaTimer: ReturnType<typeof setTimeout> | null = null;
   private readonly channel = new MessageChannel();
 
-  constructor(private readonly submit: (frame: VisionFrame) => Promise<void>) {
+  constructor(
+    private readonly submit: (
+      frame: VisionFrame,
+    ) => Promise<VisionMediaSubmitReceipt | null | void>,
+  ) {
     this.channel.port1.onmessage = () => {
       this.scheduled = false;
       void this.flush().catch(() => {}); // Each caller receives its rejection.
@@ -38,7 +44,10 @@ export class VisionFrames {
     return this.pending();
   }
 
-  addMedia(frames: VisionFrame["frames"]): Promise<void> {
+  addMedia(
+    frames: VisionFrame["frames"],
+    onSubmission?: (receipt: VisionMediaSubmitReceipt | null) => void,
+  ): Promise<void> {
     if (this.closed) {
       frames.forEach(({ bitmap }) => bitmap.close());
       return Promise.reject(new Error("Vision frame queue closed."));
@@ -47,12 +56,14 @@ export class VisionFrames {
       this.frames.get(path)?.close();
       this.frames.set(path, bitmap);
     }
-    return this.pending();
+    return this.pending(onSubmission);
   }
 
-  private pending(): Promise<void> {
+  private pending(
+    onSubmission?: (receipt: VisionMediaSubmitReceipt | null) => void,
+  ): Promise<void> {
     const result = new Promise<void>((resolve, reject) =>
-      this.waiting.push({ resolve, reject }),
+      this.waiting.push({ resolve, reject, ...(onSubmission ? { onSubmission } : {}) }),
     );
     this.schedule();
     return result;
@@ -61,26 +72,12 @@ export class VisionFrames {
   private schedule(): void {
     if (this.closed || this.busy || this.scheduled || !this.waiting.length)
       return;
-    if (Object.keys(this.patch).length === 0) {
-      // A camera-only frame may wait one 120 Hz interval for an arriving patch.
-      // Patch arrival or an explicit flush bypasses this bounded media grace.
-      this.mediaTimer ??= setTimeout(() => {
-        this.mediaTimer = null;
-        this.scheduled = true;
-        this.channel.port2.postMessage(null);
-      }, 1000 / 120);
-      return;
-    }
-    if (this.mediaTimer !== null) clearTimeout(this.mediaTimer);
-    this.mediaTimer = null;
     this.scheduled = true;
     // Rendering must not be capped by the host's 60 Hz RAF or nested timer clamp.
     this.channel.port2.postMessage(null);
   }
 
   flush(): Promise<void> {
-    if (this.mediaTimer !== null) clearTimeout(this.mediaTimer);
-    this.mediaTimer = null;
     if (this.busy) return this.running.then(() => this.flush());
     if (this.closed || this.waiting.length === 0) return Promise.resolve();
     const waiting = this.waiting.splice(0);
@@ -98,9 +95,18 @@ export class VisionFrames {
     this.running = Promise.resolve().then(async () => {
       try {
         if (this.closed) throw new Error("Vision frame queue closed.");
-        await this.submit(frame);
+        const receipt = await this.submit(frame);
         if (this.closed) throw new Error("Vision frame queue closed.");
-        waiting.forEach(({ resolve }) => resolve());
+        waiting.forEach(({ resolve, onSubmission }) => {
+          if (onSubmission) {
+            try {
+              onSubmission(receipt ?? null);
+            } catch {
+              // Diagnostics must not change frame ownership or waiter completion.
+            }
+          }
+          resolve();
+        });
       } catch (failure) {
         const error =
           failure instanceof Error ? failure : new Error(String(failure));
@@ -118,8 +124,6 @@ export class VisionFrames {
   close(): void {
     if (this.closed) return;
     this.closed = true;
-    if (this.mediaTimer !== null) clearTimeout(this.mediaTimer);
-    this.mediaTimer = null;
     this.channel.port1.close();
     this.channel.port2.close();
     this.frames.forEach((bitmap) => bitmap.close());

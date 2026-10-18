@@ -1,0 +1,13 @@
+# Solar and LSDP-native consolidation refresh
+
+Owner: Eleven/Main1. Continuation of the existing integration work unit; user explicitly requested gathering all discovered Solar and LSDP-native modifications. Existing local and foreign worktrees remain untouched. Transition and switch-duration product changes remain excluded.
+
+Inventory refreshed at 20261015T150630Z: 31 Solar worktrees and four native worktrees. Relative to the preserved source snapshots, no additional unmatched product working file was discovered. Historical non-ancestor commits are accounted for by source selection, equivalent patches, retained archives or superseding implementations; this is not a claim that every historical commit is an ancestor. For example worker lifecycle ae502a3 and font recovery 7448575/dbd723b are patch-equivalent in the integration. Meet framing 3c6290b has later corrections; the follow-up 31665ce is patch-equivalent. Do not merge old branches wholesale over current fixes.
+
+New signed Solar merge 39f1a8f590dac4e3fe6c9c2d2e83e1b108162968 integrates fdf0f1e1c41e0a1346c60b95cda961b03e9a1886: actual native/browser qualification harness, fixture, tests and evidence only. No src/public/package runtime byte changed. Fresh integration run: node --test tests/proof/native-burst-analysis.test.mjs, eight passed; git diff --check passed. Worker checks: 41 files / 361 tests, typecheck, lint, architecture passed.
+
+The real sustained measurement received/applied all 512 native transactions at 131.51 tx/s, p95 3.00ms receive-to-applied after Vision submission/retained copy, no resync. An immediate 512-transaction burst received native ACKs for every commit but only 44 reached the Solar event boundary before SUBSCRIBER_LAGGED; final pixels/state recovered after resync. This is an open overload/transport investigation, not a throughput fix or display-frame-count proof. See evidence/local-20261015-native-burst-qualification/eleven/20261015T150406Z-agent-report.md.
+
+Native source integration f8c003bedebf0eed6b0fe8b9b47d8032cf5d4da4 already gathers application budgets/adoption changes and persisted unknown-ACK receiver recovery tests. Release product source 4d197aefbde76cacc8ffd70cb84edec031575f5b and daemon SHA256 083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448 remain unchanged. Active subscriber throughput research is a separate work unit and must return a signed reviewed checkpoint before integration.
+
+Common dev remains Main2's admitted 954b449c package; this consolidation does not replace its processes, settings, DLLs, package or fallback. No remote push/merge or public output occurred. Source consolidation and runtime admission remain separate.

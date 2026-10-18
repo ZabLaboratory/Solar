@@ -1,0 +1,5 @@
+# Vision package integrated build
+
+Candidate source 8863c37 on eleven/local-20261015-project-integration now contains the complete 16e91b7 qualification unit. No conflict or partial baseline selection. The actual integration worktree was rebuilt: full lib, host and server build PASS; runtime layout, self-contained host bundle and four Vision artifact pins PASS. Manifest contains 62 emitted files with SHA-256.
+
+The 310 tests and four synthetic-peer GPU pixel states are qualified in the byte-identical unit, recorded in evidence/local-20261015-vision-meet-package/eleven/20261015T095128Z-agent-report.md; they were not needlessly repeated after this clean cherry-pick. This integration build has not been admitted into the shared dev session. No CEF, real Meet, LSDP pixel or 1080p60 claim is made. No transition or switch-duration modification.

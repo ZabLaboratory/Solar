@@ -1,0 +1,3 @@
+# Installation font diagnostics
+
+Owner Main1; branch eleven/local-20261015-font-report; base 4926afc5793f36c5c71689b0ed0f9a8c0155015e. Scope: point32 truthful preparation counts, file formats, exclusions and bounded failure diagnostics through existing authenticated font endpoint and receiver status. Reuse InstallationFonts/server lifecycle; no second catalogue/provider or scene cache. Discovery code:read fonts + code:find installationFont identifies current owners and consumers. Preserve wire manifest array consumed by browser batching. Do not change runtime, pins, transitions or admission limits. Matching instance/pin worker owns separate unit. Validation: real loopback auth/manifest/report tests, failure state and lifecycle, full Solar tests/type/lint/architecture.

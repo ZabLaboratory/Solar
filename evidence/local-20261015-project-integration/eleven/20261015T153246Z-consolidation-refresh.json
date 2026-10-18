@@ -1,0 +1,950 @@
+{
+  "integration_head": "411461bbaddcf3dec45bff5de1c3c965d430d801",
+  "worktrees": [
+    {
+      "source": "D:/Documents/Zab/Solar",
+      "head": "f5c303f4709d12caa8f2e0c4ae263aa53717591d",
+      "source_commits_not_ancestors": [],
+      "working_files": [
+        {
+          "path": "docs/development/workspace-layout-repair-20261006.md",
+          "sha256": "f2bf8674e2721fb9b1d57559275281faa4db80facea49ced64fa6e788b4cbca2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20260919-feature-modules",
+      "head": "c8dda46e78062e275138082f3d2c3796032d02d3",
+      "source_commits_not_ancestors": [
+        "51c9749 refactor: organize scene features and enforce file size ceilings"
+      ],
+      "working_files": [
+        {
+          "path": "docs/development/workspace-layout-repair-20261006.md",
+          "sha256": "f2bf8674e2721fb9b1d57559275281faa4db80facea49ced64fa6e788b4cbca2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20260928-lumencast-runtime-adoption",
+      "head": "9e583913aa59f3d8e8397f2f238bda46001aecd9",
+      "source_commits_not_ancestors": [
+        "2740745 feat(solar): pin merged Lumencast runtime for binary assets"
+      ],
+      "working_files": [
+        {
+          "path": "docs/development/workspace-layout-repair-20261006.md",
+          "sha256": "f2bf8674e2721fb9b1d57559275281faa4db80facea49ced64fa6e788b4cbca2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20260929-camera-routing",
+      "head": "537b606f9ecf97b5e0ce0f5bd80e88350f0823d5",
+      "source_commits_not_ancestors": [],
+      "working_files": [
+        {
+          "path": "scripts/build-host-html.mjs",
+          "sha256": "9da7b2f757ab046d935c58d3ec3dc717f1f629401466a1354210327968e9650a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/mount.ts",
+          "sha256": "ff6789f3146ed5da512b7be084703ac7384611077fadb98f241d51bb5ce9ae98",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/peer-viewer/host-contract.json",
+          "sha256": "584d196eb1dbc029f9ba6739725e1e77602c04881075d74cd8ace5536aa64132",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/peer-viewer/slot-binding.ts",
+          "sha256": "45b0131bfdccafae0cc559c07f2f6839a235ae397467448cfed1fd59cffc4414",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/peer-viewer-glue.test.ts",
+          "sha256": "189d806ceb39d4b170bf45b2860023775c2becaecd8af41b0e2de8af61a58952",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261006-solar-editable-cache",
+      "head": "5deffc0b9d996fd97d9f791d508696d16d317403",
+      "source_commits_not_ancestors": [
+        "5deffc0 perf(preview): cache editable convergence targets"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261006-solar-render-asset-batch",
+      "head": "9109e4ca4200037732910d20688a82f18eba038c",
+      "source_commits_not_ancestors": [
+        "9109e4c perf(solar): reduce repeated render asset frame work"
+      ],
+      "working_files": [
+        {
+          "path": "docs/development/workspace-layout-repair-20261006.md",
+          "sha256": "f2bf8674e2721fb9b1d57559275281faa4db80facea49ced64fa6e788b4cbca2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261006-solar-render-asset-sites",
+      "head": "ea85c44d3859fee4009687139ca82d139be5cb55",
+      "source_commits_not_ancestors": [
+        "ea85c44 perf(solar): skip empty cached-asset hydration waits"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-capability-audit",
+      "head": "421495ae759e7f69728507d557030eef640b66a3",
+      "source_commits_not_ancestors": [
+        "421495a perf(solar): preserve Vision engine and streamline scene admission",
+        "ec2d06a perf(vision): omit empty trailing capture surfaces",
+        "076e69f feat(vision): integrate native authoring and capture composition",
+        "b77a0b5 fix(authoring): admit standard system font envelopes",
+        "08e7f70 feat(vision): render addressed editable drafts with native bindings",
+        "4f0d602 fix(host): publish Vision contract and linked qualification records",
+        "34cd6e8 feat(solar): render direct LSML with Vision and native LSDP"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261009-inspector-stroke",
+      "head": "421495ae759e7f69728507d557030eef640b66a3",
+      "source_commits_not_ancestors": [
+        "421495a perf(solar): preserve Vision engine and streamline scene admission",
+        "ec2d06a perf(vision): omit empty trailing capture surfaces",
+        "076e69f feat(vision): integrate native authoring and capture composition",
+        "b77a0b5 fix(authoring): admit standard system font envelopes",
+        "08e7f70 feat(vision): render addressed editable drafts with native bindings",
+        "4f0d602 fix(host): publish Vision contract and linked qualification records",
+        "34cd6e8 feat(solar): render direct LSML with Vision and native LSDP"
+      ],
+      "working_files": [
+        {
+          "path": "docs/development/code-map.md",
+          "sha256": "8ded25973103e2d9990bd3cd7ba06e277a64cc90d09bd77582290f119724efd1",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/pkg/lumencast_vision_web.js",
+          "sha256": "79d6765349c14b1f1d16d9f8324c5102697d0df2c8f8c82d9fd1f411b14cfc6b",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/pkg/lumencast_vision_web_bg.wasm",
+          "sha256": "1b988197ce4dd94bb1c6c9aef860467df7a71136706d3ba68f8c3ddaa8e037b7",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/vision-assets.json",
+          "sha256": "2fa43814f54475e4bf3a2b5c2a6aa1114263997e66ca1e9b4c100c190d32509a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "scripts/README.md",
+          "sha256": "bc03b91e54da9a4c2e6fa44739bd20503518c1b54031b32e0819fbeb12719a8d",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/README.md",
+          "sha256": "c71d554fb26ff8878f8e8afe3a95fd6634d1dcfd6d0a59aded2d98ae1ba02f10",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/vision-presenter.ts",
+          "sha256": "5da1150a03acf80eb944396de7b2d70a664338fe1ac1487429241857d66a3b4e",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/host-entry.ts",
+          "sha256": "1f6fe36321db71873712b1c15f8ac1385953d00bb401f2226e499f9e12ea1cdc",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/README.md",
+          "sha256": "a795a38b93abfb86b65367d9749661103ce49ea8423c87c819fb5e97ecdbf59e",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/canvas.ts",
+          "sha256": "31955f03d907961b2c6254b9a32565082b15394df5c8f06495cd81bab7715f6d",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/editable-bindings.ts",
+          "sha256": "0ddb7c624d534bd5f09078be15d0447005f1be044cb8f43c49705741733475f5",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/local-library.ts",
+          "sha256": "b96e753b10410df07d505af65efaa8bae6e3f95abd63209ba4c0cf93aa33ba0a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/startup.ts",
+          "sha256": "e041e7e7b8cebb494e7efae167f23ed41ce1ae28bc9d6595c044a80a8e7d76fb",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/types.ts",
+          "sha256": "1c0a51ec2fed7dbc42f66e09b4b72a1e8149fcaa50a997f7262c2440adcffdce",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/server/README.md",
+          "sha256": "cd8765dbeb5062867743293bb7b961b5371b5ae5b36dd67c8fe1411487490fdc",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/server/index.ts",
+          "sha256": "31d2f557df49a293d62ead69efa1665a24ded3c7663022d31dfdddd4159f6f75",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "src/server/scene-library.ts",
+          "sha256": "29a15ef6e9dbfb321cad628a11a1cc34ebd5c3be81bae5efb2b6bce537a8f867",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/editable-bindings.test.ts",
+          "sha256": "eb841e1f002c9cba6bf4d0b748bf2a2d6c49aec4c774b1f390ac16807b32a7fc",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/scene-library.test.ts",
+          "sha256": "57e315896e5b58e83dc1dcc0ad948a2514ad433c7c064f3228148585ba246eab",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/startup-cache.test.ts",
+          "sha256": "5002c26f25c6095a83165fc0bc08f3d59b622be373f12955edbdc4b4de68fe15",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/vision-session.test.ts",
+          "sha256": "f38eecd59f1c4b5b43d38d4618403e617a4fdeda3804b034953eba3db3067d1b",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-kumiki-motion",
+      "head": "2f97657b756619f97e6d07620d62a0eee65c3181",
+      "source_commits_not_ancestors": [
+        "2f97657 feat(demo): choreograph Kumiki vector unweaving in LSML"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-sound-design",
+      "head": "a81519e3b425247c62093e6cd841ca7590d904e3",
+      "source_commits_not_ancestors": [
+        "a81519e fix(animation): use the admitted Figtree font in Kumiki lockup",
+        "31f6a21 docs(sound): include the new brand lockup in the exported reader",
+        "6c948fd feat(animation): reveal Kumiki hero signature with sound",
+        "13507b0 fix(sound): schedule cues and bus ramps ahead of GPU stalls",
+        "332a962 feat(sound): add authored scene audio and original Kumiki study"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261010-sponsor-motion",
+      "head": "94608bc4d3c0afbd8f8d9faceca8cc97583a4033",
+      "source_commits_not_ancestors": [
+        "be932c7 fix: reconstruct reference bounces and preserve topology changes",
+        "b75bd2f feat: reconstruct reference motion with retained vector tracks",
+        "4db02dc feat(solar): compose retained motion timelines and native controls",
+        "88fe96c fix(solar): render sponsor waves continuously at measured cadence",
+        "ae098da feat(solar): demonstrate LSML traveling wave motion",
+        "30c80ed feat(solar): demonstrate retained LSML sponsor transitions",
+        "421495a perf(solar): preserve Vision engine and streamline scene admission",
+        "ec2d06a perf(vision): omit empty trailing capture surfaces",
+        "076e69f feat(vision): integrate native authoring and capture composition",
+        "b77a0b5 fix(authoring): admit standard system font envelopes",
+        "08e7f70 feat(vision): render addressed editable drafts with native bindings",
+        "4f0d602 fix(host): publish Vision contract and linked qualification records",
+        "34cd6e8 feat(solar): render direct LSML with Vision and native LSDP"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261011-source-box",
+      "head": "c0d4b3425a5fafc2bc96367390d877717df5bb2a",
+      "source_commits_not_ancestors": [],
+      "working_files": [
+        {
+          "path": "public/vision/pkg/lumencast_vision_web.js",
+          "sha256": "b9175e0eae61977925f6600398bfe4001f47875c3bec469439c36f928b6aea5a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/pkg/lumencast_vision_web_bg.wasm",
+          "sha256": "df8307b8ed411dd66cb177da2cae62a77f14aaae6609ed45595d50495c0bfad1",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/vision-assets.json",
+          "sha256": "39029d72d61c2cfed22f29ddb0f5a5b0d4167411bb2d45b914d9bb7d84dbccc6",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/README.md",
+          "sha256": "19ea851cca4b8cae18de91a292be5138816ed192a2796a0617f7a0dd4cf63ed0",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/native-lsdp-runtime.ts",
+          "sha256": "64f65d20b5003718840ed06d0dfa3620bdfdb0aad4d15554e49809dab0c64ff2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/README.md",
+          "sha256": "3f95d623716756c4297a87ff2318e9736b0a7499d6ce7b5595eaf5630da6b5ad",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/editable-bindings.ts",
+          "sha256": "8e937c9ce092a649ff581efc614ec4ac0d41d850f5b90953385d488d71e8f94f",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "src/scenes/native-document.ts",
+          "sha256": "5a91e7c6578aa563b828d1064a857b6b440cc6955814646f644c294c8737c897",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/native-document.test.ts",
+          "sha256": "6f17d683a243d0560d981edcacac5f475c8666587e21aa0153371467453e1520",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/native-lsdp-runtime.test.ts",
+          "sha256": "5ee0a3a0cd8e481cc4dfe1cac69a28470134998933108c342bc2159108eb6bb7",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261012-kumiki-ribbon-loop",
+      "head": "2f97657b756619f97e6d07620d62a0eee65c3181",
+      "source_commits_not_ancestors": [
+        "2f97657 feat(demo): choreograph Kumiki vector unweaving in LSML"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261012-kumiki-source-morph",
+      "head": "2f97657b756619f97e6d07620d62a0eee65c3181",
+      "source_commits_not_ancestors": [
+        "2f97657 feat(demo): choreograph Kumiki vector unweaving in LSML"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261012-zab-z-bug",
+      "head": "8657a0770482d5848dcddbf99224c9cf43961238",
+      "source_commits_not_ancestors": [
+        "8657a07 Synchronize arrow draw elasticity and tighten Z assembly",
+        "d0330c4 Tighten Z arrow fusion timing and settle",
+        "bdaacc0 Animate the Z arrow ribbons drawing before fusion",
+        "2140caf Extract complete nested Z arrows without diagonal cuts",
+        "ed6912e Animate two vector arrow gestures into stream Z",
+        "9f454d2 feat(demo): add vector Z stream corner motion proof",
+        "2f97657 feat(demo): choreograph Kumiki vector unweaving in LSML"
+      ],
+      "working_files": [
+        {
+          "path": "scripts/z-bug/README.md",
+          "sha256": "cafe7879465f42927d279f2fe860213b4c1d387255ed7f8e54579a0cce248d0c",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "scripts/z-bug/contact.py",
+          "sha256": "5ac1957ca1577beeb4c50bc2c0447d20e22a00263b623c2cf250884763a9c9e6",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "scripts/z-bug/extract.py",
+          "sha256": "769ca6356e17fa9eae11e6cd513fa90a47bea6d2c72cb13586dab4f0fa92c345",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "scripts/z-bug/generate.mjs",
+          "sha256": "ee686528ece86f993097ac5ff7f40125027d2a9992b7ceb832ee13402ee22835",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "scripts/z-bug/storyboard.py",
+          "sha256": "2edc7daf11957e5cb747ab53908f6cd228a56c5198d42082fc3b9ec18aa6695e",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "scripts/z-bug/validate.py",
+          "sha256": "386b47474beb73bd9bc6880d20a503f2cc12a25f06a6ab9249ee3ecfe64c3fbf",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261013-prism-calm-motion",
+      "head": "94608bc4d3c0afbd8f8d9faceca8cc97583a4033",
+      "source_commits_not_ancestors": [
+        "be932c7 fix: reconstruct reference bounces and preserve topology changes",
+        "b75bd2f feat: reconstruct reference motion with retained vector tracks",
+        "4db02dc feat(solar): compose retained motion timelines and native controls",
+        "88fe96c fix(solar): render sponsor waves continuously at measured cadence",
+        "ae098da feat(solar): demonstrate LSML traveling wave motion",
+        "30c80ed feat(solar): demonstrate retained LSML sponsor transitions",
+        "421495a perf(solar): preserve Vision engine and streamline scene admission",
+        "ec2d06a perf(vision): omit empty trailing capture surfaces",
+        "076e69f feat(vision): integrate native authoring and capture composition",
+        "b77a0b5 fix(authoring): admit standard system font envelopes",
+        "08e7f70 feat(vision): render addressed editable drafts with native bindings",
+        "4f0d602 fix(host): publish Vision contract and linked qualification records",
+        "34cd6e8 feat(solar): render direct LSML with Vision and native LSDP"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261013-solar-qualification",
+      "head": "c0d4b3425a5fafc2bc96367390d877717df5bb2a",
+      "source_commits_not_ancestors": [],
+      "working_files": [
+        {
+          "path": "docs/development/code-map.md",
+          "sha256": "bfce20a1f18ab7a1820eab77dd6775ab84535d018ad72640248e1282ffcbfc72",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/native-lsdp.md",
+          "sha256": "6b870980bdec4c563aed73a1378198e4bbc4c39a697b5dcc92e19a901b5026f2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/render-cadence.md",
+          "sha256": "13f8225f12ad81f3cce2f7da5e02c13cc38902fcf27b726f2fc3d3951031cfae",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/scene-feature-map.md",
+          "sha256": "892fac8574849a87502b7430af909cc954b0e6f4e25493a5093d7a694e007fd2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "eslint.config.mjs",
+          "sha256": "9e5e580649733cf48b49fca59f92989d8027d76b2d27010c1d5a9999bc704d9d",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "public/vision/pkg/lumencast_vision_web.js",
+          "sha256": "b9175e0eae61977925f6600398bfe4001f47875c3bec469439c36f928b6aea5a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/pkg/lumencast_vision_web_bg.wasm",
+          "sha256": "b990a76e55c0fa6c60f252ecb9cfb18f453759022be4308c15be82b40246626e",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "public/vision/vision-assets.json",
+          "sha256": "a018677488bdafc720dc24c4848a720b28ee55134826da6f09c7c0f1c03ea7c9",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/README.md",
+          "sha256": "a3930f2c3b95d03da116754b6c18d0a1daeddff31a0577644931e80f8192742f",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/live-media.ts",
+          "sha256": "ea3b4f983c8cbcdc26c80810040537e51c7d0463af73ecd03ee443b8a8d2ae6e",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/native-lsdp-runtime.ts",
+          "sha256": "96839ac4a13e4523771d3507139dc31fe047aebf50237ecf5ac14b0d0f36cdf5",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/vision-frames.ts",
+          "sha256": "b59a4b150b58875c61b266fb7ee2e2b1cc0192dba0aeb876cfee462ff36d6d11",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/vision-presenter.ts",
+          "sha256": "a75a41eff229eb8ab12cb8150ff59e5a08072940a5c52a61c1d58d1464609cbe",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/README.md",
+          "sha256": "3f95d623716756c4297a87ff2318e9736b0a7499d6ce7b5595eaf5630da6b5ad",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/editable-bindings.ts",
+          "sha256": "8e937c9ce092a649ff581efc614ec4ac0d41d850f5b90953385d488d71e8f94f",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "src/scenes/native-document.ts",
+          "sha256": "5a91e7c6578aa563b828d1064a857b6b440cc6955814646f644c294c8737c897",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/live-media.test.ts",
+          "sha256": "bc3e57bbdf46b202126a1fd6e5c55372b967801026a4771f7e399ab5118a0881",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/native-document.test.ts",
+          "sha256": "6f17d683a243d0560d981edcacac5f475c8666587e21aa0153371467453e1520",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/native-lsdp-runtime.test.ts",
+          "sha256": "12223045787af323a7aa620f71891dca70288fccaae98452539534a0d3666fa7",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/vision-frames.test.ts",
+          "sha256": "298e154c924ce5948bc11f11b6e787c324d4b20c47f9b5449dc8c9cd62a61479",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/vision-session.test.ts",
+          "sha256": "a386c1e772abcc359dbc1f8ad08bb44ddd9106b31cb086c490a2a84e78c5e973",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-camera-routing-readback",
+      "head": "8a467cd618ce2bbaa70a8572269e1d7cbee7734f",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-capture-stage-metrics",
+      "head": "2d245d6d71b8e612cf94c1e565c7bb82b7534535",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-font-index-recovery",
+      "head": "dbd723b467344d00ecdb6712cdf8d10c77233012",
+      "source_commits_not_ancestors": [
+        "7448575 fix(fonts): recover corrupt installation cache"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-gpu-recovery",
+      "head": "411461bbaddcf3dec45bff5de1c3c965d430d801",
+      "source_commits_not_ancestors": [],
+      "working_files": [
+        {
+          "path": "scripts/qualify-instance-runtime.mjs",
+          "sha256": "4a670643c769491eeae442b6dd3e2ce27322f65e7a8c178ff776eda68da696e9",
+          "same_as_previous_snapshot": false,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/README.md",
+          "sha256": "b97a113da4f661ea8ce221ddb00d4b9e21025e06f9505cee1c2131d60d85fac2",
+          "same_as_previous_snapshot": false,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/browser/instance-runtime.html",
+          "sha256": "95555858ffbc796ca1e483344c2a991eebc509b6a660078972c5b0175424ac1a",
+          "same_as_previous_snapshot": false,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/vision-session.test.ts",
+          "sha256": "812e1f3db14d2cb28030ec49d265578bb300011d439426889ea72810e4086ee7",
+          "same_as_previous_snapshot": false,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-instance-asset-parity",
+      "head": "b0afd2fcca10181a42282951ff4ec22af5785e6f",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-instance-sources",
+      "head": "94fd95d5269567dbde057b2801633f862ec1ca59",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-lsdp-bursts",
+      "head": "694f1c148e731bfd24ffab1106d0d6acb5dfa03b",
+      "source_commits_not_ancestors": [
+        "694f1c1 Bound scalar LSDP receipts at main admission"
+      ],
+      "working_files": [
+        {
+          "path": "docs/development/code-map.md",
+          "sha256": "bfce20a1f18ab7a1820eab77dd6775ab84535d018ad72640248e1282ffcbfc72",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/native-lsdp.md",
+          "sha256": "1877fe210802e915aec9dcd7315a9b58e9a0d5ff80da73ecf82b61f93179cebe",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/render-cadence.md",
+          "sha256": "13f8225f12ad81f3cce2f7da5e02c13cc38902fcf27b726f2fc3d3951031cfae",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/scene-feature-map.md",
+          "sha256": "892fac8574849a87502b7430af909cc954b0e6f4e25493a5093d7a694e007fd2",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "eslint.config.mjs",
+          "sha256": "9e5e580649733cf48b49fca59f92989d8027d76b2d27010c1d5a9999bc704d9d",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "src/engine/README.md",
+          "sha256": "885f2e4828093c1ee57526ab0f5c9bf21219561c319b8c98f7f0f465fe7d9f14",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/live-media.ts",
+          "sha256": "ea3b4f983c8cbcdc26c80810040537e51c7d0463af73ecd03ee443b8a8d2ae6e",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/native-lsdp-runtime.ts",
+          "sha256": "96839ac4a13e4523771d3507139dc31fe047aebf50237ecf5ac14b0d0f36cdf5",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/vision-frames.ts",
+          "sha256": "b59a4b150b58875c61b266fb7ee2e2b1cc0192dba0aeb876cfee462ff36d6d11",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/engine/vision-presenter.ts",
+          "sha256": "a75a41eff229eb8ab12cb8150ff59e5a08072940a5c52a61c1d58d1464609cbe",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/README.md",
+          "sha256": "3f95d623716756c4297a87ff2318e9736b0a7499d6ce7b5595eaf5630da6b5ad",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/editable-bindings.ts",
+          "sha256": "8e937c9ce092a649ff581efc614ec4ac0d41d850f5b90953385d488d71e8f94f",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "src/scenes/native-document.ts",
+          "sha256": "5a91e7c6578aa563b828d1064a857b6b440cc6955814646f644c294c8737c897",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/live-media.test.ts",
+          "sha256": "bc3e57bbdf46b202126a1fd6e5c55372b967801026a4771f7e399ab5118a0881",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/native-document.test.ts",
+          "sha256": "6f17d683a243d0560d981edcacac5f475c8666587e21aa0153371467453e1520",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/native-lsdp-runtime.test.ts",
+          "sha256": "12223045787af323a7aa620f71891dca70288fccaae98452539534a0d3666fa7",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/vision-frames.test.ts",
+          "sha256": "298e154c924ce5948bc11f11b6e787c324d4b20c47f9b5449dc8c9cd62a61479",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/vision-session.test.ts",
+          "sha256": "a386c1e772abcc359dbc1f8ad08bb44ddd9106b31cb086c490a2a84e78c5e973",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-meet-framing",
+      "head": "31665ce13e8dfe3142248fd1b69e29761ab5fb24",
+      "source_commits_not_ancestors": [
+        "31665ce fix(solar): tolerate null Meet crop descriptors",
+        "3c6290b feat(solar): apply Meet framing to peer bitmaps"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-native-burst-qualification",
+      "head": "fdf0f1e1c41e0a1346c60b95cda961b03e9a1886",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-project-integration",
+      "head": "411461bbaddcf3dec45bff5de1c3c965d430d801",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-solar-consolidation",
+      "head": "7e14b24af90b3d3b0f402c7609f35eea53120156",
+      "source_commits_not_ancestors": [],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-vision-meet-package",
+      "head": "16e91b7aa4bc61cc6d540484b82f531b7308fd53",
+      "source_commits_not_ancestors": [
+        "16e91b7 fix(vision): pin compiled Meet framing engine with GPU pixel proof"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/eleven-local-20261015-worker-delivery",
+      "head": "ae502a3c213536091e0c6def4325c7617f97b1a6",
+      "source_commits_not_ancestors": [
+        "ae502a3 fix(solar): guard worker lifecycle observers"
+      ],
+      "working_files": []
+    },
+    {
+      "source": "D:/Documents/Zab/Solar/.worktrees/forge-local-20261003-source-resolution",
+      "head": "421495ae759e7f69728507d557030eef640b66a3",
+      "source_commits_not_ancestors": [
+        "421495a perf(solar): preserve Vision engine and streamline scene admission",
+        "ec2d06a perf(vision): omit empty trailing capture surfaces",
+        "076e69f feat(vision): integrate native authoring and capture composition",
+        "b77a0b5 fix(authoring): admit standard system font envelopes",
+        "08e7f70 feat(vision): render addressed editable drafts with native bindings",
+        "4f0d602 fix(host): publish Vision contract and linked qualification records",
+        "34cd6e8 feat(solar): render direct LSML with Vision and native LSDP"
+      ],
+      "working_files": [
+        {
+          "path": "CLAUDE.md",
+          "sha256": "fad7331017927511a5cc256e4a48994a594c488a2251747b23d130954df5c944",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/architecture.md",
+          "sha256": "888bbe461bcc1a13d7a53179c34db22e719d17aa3bb0d194670bbbba2615047a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/code-map.md",
+          "sha256": "2e469edf2b54c64df7e41491576be094815fab24a45ac9a8a0c89f8767204182",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/maturity.md",
+          "sha256": "39260255b481019e2e0b82473c7384c86aefe1550ab271a0af9ea93693c2b810",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/source-cache.md",
+          "sha256": "d6bcfec5878bc20411683b5cc3c0f9334ea4d42f97ef9eb4983912bd733e4ff0",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/development/workspace-layout-repair-20261006.md",
+          "sha256": "06867f4de747d2e93234f83b99d237eef7f6b29e253c470a02f727b5727d066a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "docs/runbooks/qualification.md",
+          "sha256": "db9320d900d78b95442f715459fa44132b89ef9de5b5b4fdf776d213230b7cb0",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "scripts/README.md",
+          "sha256": "bc03b91e54da9a4c2e6fa44739bd20503518c1b54031b32e0819fbeb12719a8d",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/host-entry.ts",
+          "sha256": "1f6fe36321db71873712b1c15f8ac1385953d00bb401f2226e499f9e12ea1cdc",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/README.md",
+          "sha256": "7271308635f3e08091b6c46304f59d88b406cbc309d02e0fcb6bbda1f75083fc",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/canvas.ts",
+          "sha256": "31955f03d907961b2c6254b9a32565082b15394df5c8f06495cd81bab7715f6d",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/local-library.ts",
+          "sha256": "b96e753b10410df07d505af65efaa8bae6e3f95abd63209ba4c0cf93aa33ba0a",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/startup.ts",
+          "sha256": "e041e7e7b8cebb494e7efae167f23ed41ce1ae28bc9d6595c044a80a8e7d76fb",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/scenes/types.ts",
+          "sha256": "1c0a51ec2fed7dbc42f66e09b4b72a1e8149fcaa50a997f7262c2440adcffdce",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/server/README.md",
+          "sha256": "cd8765dbeb5062867743293bb7b961b5371b5ae5b36dd67c8fe1411487490fdc",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "src/server/index.ts",
+          "sha256": "31d2f557df49a293d62ead69efa1665a24ded3c7663022d31dfdddd4159f6f75",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "src/server/scene-library.ts",
+          "sha256": "29a15ef6e9dbfb321cad628a11a1cc34ebd5c3be81bae5efb2b6bce537a8f867",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": true
+        },
+        {
+          "path": "tests/unit/scene-library.test.ts",
+          "sha256": "57e315896e5b58e83dc1dcc0ad948a2514ad433c7c064f3228148585ba246eab",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        },
+        {
+          "path": "tests/unit/startup-cache.test.ts",
+          "sha256": "5002c26f25c6095a83165fc0bc08f3d59b622be373f12955edbdc4b4de68fe15",
+          "same_as_previous_snapshot": true,
+          "same_as_integration": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "timestampUtc": "2026-10-17T14:31:24.1521554Z",
+  "sourceBeforeAdoption": "ebda7b1d3827d36d47193757377050ec19ed1d62",
+  "visionSource": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
+  "visionProof": "85c49664a029744369b063ddffaa92415a59c8a8",
+  "visionIntegration": "6ecc563d92d676d1b8595571a7f835c3345432c4",
+  "deliveredArtifactPins": [
+    {
+      "bytes": 32634,
+      "path": "dist\\host\\vision\\ui\\mainpresenter.mjs",
+      "sha256": "607eee787387a887e22b24573e5a33d60a8cee1e6233feef5f1d21a32e188b3d"
+    },
+    {
+      "bytes": 1977,
+      "path": "dist\\host\\vision\\ui\\fonts.mjs",
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+    },
+    {
+      "bytes": 157228,
+      "path": "dist\\host\\vision\\pkg\\lumencast_vision_web.js",
+      "sha256": "2661fc24146f703adcfa1b94769d9c789b707abf0027792b6f4287fb40bc04e6"
+    },
+    {
+      "bytes": 10618773,
+      "path": "dist\\host\\vision\\pkg\\lumencast_vision_web_bg.wasm",
+      "sha256": "39c64876a92c0d8d5a104fa8366dc437520140be92e8376db59ed127420ab4a9"
+    }
+  ],
+  "checks": {
+    "independentWasmCanvas": "5 decoded pixels PASS",
+    "actualVisionReceipts": "3 admitted: /1 nominal, /2 owner+capture, /2 frame clip+opacity",
+    "build": "PASS",
+    "sourcePins": "PASS",
+    "bundle": "PASS"
+  },
+  "evidence": [
+    "20261017T142900Z-coverage-vision-build.txt",
+    "20261017T142900Z-coverage-vision-bundle.txt",
+    "20261017T143100Z-vision-solar-receipts.json",
+    "20261017T143100Z-independent-wasm-pixels.json"
+  ],
+  "limitations": [
+    "Exact already-qualified WASM copied; no rebuild.",
+    "Actual CEF/Solar/Prism/native chain remains pending separate unit.",
+    "No common runtime installation, physical capture, endurance or stream qualification.",
+    "Unsupported stencil child masks, text, child shadows and surface-effect parity remain open.",
+    "Transitions and scene-switch duration unchanged."
+  ]
+}

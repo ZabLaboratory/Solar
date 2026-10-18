@@ -28,8 +28,14 @@ export type SolarErrorCode =
   | "SOURCE_DESCRIPTOR_INVALID"
   | "SOURCE_RESOURCE_LIMIT"
   | "SOURCE_INTEGRITY_FAILED"
+  | "BUNDLE_FETCH_FAILED"
+  | "INSTANCE_CYCLE"
+  | "INSTANCE_RESOURCE_LIMIT"
+  | "INSTANCE_SOURCE_INVALID"
   | "VISION_INIT_FAILED"
   | "VISION_PATCH_FAILED"
+  | "NATIVE_COMPOSITION_FAILED"
+  | "SOUND_FAILED"
   | "CAMERA_CAPTURE_FAILED";
 
 export interface SolarError {
@@ -39,8 +45,10 @@ export interface SolarError {
 }
 
 export interface MountOptions {
-  /** Trusted native compositor viewport; local capture pixels remain host-owned. */
+  /** Trusted physical compositor viewport; capture pixels remain host-owned. */
   nativeComposition?: { width: number; height: number };
+  /** Optional derived-plan channel, valid only for a physical A/B lane host. */
+  nativeCompositionLSDP?: NativeCompositionLSDPOptions;
   /** Trusted host-supplied font bytes; source identity and assets stay pinned. */
   fontAssetsProvider?: (
     signal: AbortSignal,
@@ -59,6 +67,8 @@ export interface MountOptions {
   onStatus?: (status: SolarStatus) => void;
   /** Unmute receive-only peer audio in the on-air/recording page mix. */
   liveAudio?: boolean;
+  /** Enable LSML scene sound. Control hosts remain silent unless explicitly enabled. */
+  sceneAudio?: boolean;
   /** Maps validated local LSML device references to host-owned capture IDs. */
   resolveCaptureDevice?: ResolveCaptureDevice;
 }
@@ -68,6 +78,15 @@ export interface NativeLSDPOptions {
   resource: string;
   /** Exact entry of a native generation/session collection, never a role fallback. */
   selector?: string;
+}
+
+export interface NativeCompositionLSDPOptions {
+  url: string;
+  resource: "solar/composition";
+  /** Physical lane slot, not a Preview/Program role. */
+  graph: "A" | "B";
+  /** Main-assigned nonce claimed in `producers[graph]` before this host publishes. */
+  producer_id: string;
 }
 
 export type ResolveCaptureDevice = (
@@ -81,4 +100,10 @@ export type ResolveCaptureDevice = (
 export interface SolarHandle {
   disconnect: () => void;
   setToken: (token: SolarToken) => void;
+  audio?: {
+    resume: () => Promise<void>;
+    stream: () => MediaStream | null;
+    status: () => import("../engine/sound/controller").SoundStatus;
+    render: (animationId: string) => Promise<AudioBuffer>;
+  };
 }

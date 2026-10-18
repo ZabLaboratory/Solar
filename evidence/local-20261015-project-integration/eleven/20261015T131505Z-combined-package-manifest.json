@@ -1,0 +1,498 @@
+{
+  "source_revision": "92d00ede6543128e32db5a6ec31c40b155c14c7c",
+  "installed": false,
+  "artifacts": [
+    {
+      "path": "dist/solar.js",
+      "bytes": 259329,
+      "sha256": "af6dc09b176bfe9a702b1248528adea9ed0a3c954d90a15a3d70108c83f93b39"
+    },
+    {
+      "path": "dist/server/index.mjs",
+      "bytes": 185092,
+      "sha256": "3ccfbec0b3e7553445ef904066e5398480ce50f835b0d303b308e674da44708d"
+    },
+    {
+      "path": "dist/host/index.html",
+      "bytes": 1000,
+      "sha256": "4744068c8af3be8bbb5fb0073c02904f6c028b0ea3d72e257799a9ddfe9f86fe"
+    },
+    {
+      "path": "dist/native/manifest.json",
+      "bytes": 305,
+      "sha256": "06f97366f339911d04b2529ed6177a01c4ebf337b80fda86523cfc52845d7116"
+    },
+    {
+      "path": "dist/native/win32-x64/lsdpd.exe",
+      "bytes": 5255168,
+      "sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448"
+    },
+    {
+      "path": "public/vision/vision-assets.json",
+      "bytes": 2762,
+      "sha256": "791439d70d1f1eff864c49bb56c5d1ac60b66426d7a90d64ccc12ea613529e2c"
+    }
+  ],
+  "dist_files": [
+    {
+      "path": "dist/host/assets/host-aVNQiBPB.js",
+      "bytes": 186822,
+      "sha256": "cf0e9aca6ee4b1ceedf1d7564629cd116a7bc4fc3a38f9e793ab60f1277c3694"
+    },
+    {
+      "path": "dist/host/assets/host-aVNQiBPB.js.map",
+      "bytes": 849153,
+      "sha256": "9a6e7fdfe66d0e2ad0186a67d533bca47113df68f738da5407ee2c2f797d65a5"
+    },
+    {
+      "path": "dist/host/assets/native-worker-ubPqxztq.js",
+      "bytes": 37451,
+      "sha256": "8a2c61517f22583f09e66a6e5c4765a4617a7bf6fe2f4b86f401568dd6179316"
+    },
+    {
+      "path": "dist/host/assets/native-worker-ubPqxztq.js.map",
+      "bytes": 169796,
+      "sha256": "c149a7aeeb679766012e43494ad4ad980c6fd629cee392953199bc50f4f27e03"
+    },
+    {
+      "path": "dist/host/fonts/alex-brush-400.woff2",
+      "bytes": 33288,
+      "sha256": "461b4c649c372f274cbea95758990e3a6e98524fe7fcbab22dcd9809a1715c49"
+    },
+    {
+      "path": "dist/host/fonts/figtree-variable.ttf",
+      "bytes": 62712,
+      "sha256": "26ad3db9b31ff7dde67a91ff515d022d2f495cd506590699cf264f0bfe6fb714"
+    },
+    {
+      "path": "dist/host/fonts/geist-latin.woff2",
+      "bytes": 29400,
+      "sha256": "19f9c92546aa300c312235e3125af1b81394d8db9a4bc4a425cd5b641d2d54e1"
+    },
+    {
+      "path": "dist/host/fonts/geist-mono-latin.woff2",
+      "bytes": 23128,
+      "sha256": "684ad5b531f81d43c1e8c7038262d5db7cdc1f68006e04d6c7769efa8d33c8cc"
+    },
+    {
+      "path": "dist/host/fonts/ibm-plex-mono-400.woff2",
+      "bytes": 14708,
+      "sha256": "08949f728dc52d528e69b1667d15c89a5686a4ee9a296ff90983985f99c380f7"
+    },
+    {
+      "path": "dist/host/fonts/ibm-plex-mono-500.woff2",
+      "bytes": 14888,
+      "sha256": "01d285447409c8a588692162439a038b8cbd7871309ee20267b0d2d91c6e8e22"
+    },
+    {
+      "path": "dist/host/fonts/ibm-plex-mono-600.woff2",
+      "bytes": 15620,
+      "sha256": "0d1f0b8d0722224e32e9f28261bdc86c79115be73444ae5eceb73976a1bcdf83"
+    },
+    {
+      "path": "dist/host/fonts/LICENSE-AlexBrush.txt",
+      "bytes": 4406,
+      "sha256": "7d3566c1561f834e5cdbf32da1e0d40f9e324fa631a4c0228be2aeb851819f6d"
+    },
+    {
+      "path": "dist/host/fonts/LICENSE-Figtree.txt",
+      "bytes": 4388,
+      "sha256": "140d37233e7f3ce7313798befa9600893bcceaf41a55fa0fa5ad52f7f657a268"
+    },
+    {
+      "path": "dist/host/fonts/LICENSE-Geist.txt",
+      "bytes": 4383,
+      "sha256": "c683bfbcc7e087f5d37a54ef628f10387c451a83ddc459b151403a164ac46c90"
+    },
+    {
+      "path": "dist/host/fonts/LICENSE-IBMPlexMono.txt",
+      "bytes": 5299,
+      "sha256": "23b0a9d0c6d3f140a0b77e483c5cfa6bba574325ef5cb189ed9f2fec4884533f"
+    },
+    {
+      "path": "dist/host/fonts/LICENSE-SpaceGrotesk.txt",
+      "bytes": 4401,
+      "sha256": "18a4de52385f6b988782639d5d0cc1326e5a8c2de9a7f01d7b20d9aedcc60943"
+    },
+    {
+      "path": "dist/host/fonts/space-grotesk-400.woff2",
+      "bytes": 13388,
+      "sha256": "65fd17fcbd2e2f522940b5f67ead3d23329e02891aa5495e74d11a499c0b0673"
+    },
+    {
+      "path": "dist/host/fonts/space-grotesk-500.woff2",
+      "bytes": 13312,
+      "sha256": "1b1a8131d9edf975d9decee81e2f2bf504812f7a4f498e5500f28a613e22e64c"
+    },
+    {
+      "path": "dist/host/fonts/space-grotesk-600.woff2",
+      "bytes": 13284,
+      "sha256": "685bbbf69fa616df1ef81847c85fc76be097ddfb3468ff2257be54511ab3130f"
+    },
+    {
+      "path": "dist/host/fonts/space-grotesk-700.woff2",
+      "bytes": 12840,
+      "sha256": "35f8aec56cfd5cbfdb03cc68733a54a0b05bb3617ffcd5fd332badc0b045ca55"
+    },
+    {
+      "path": "dist/host/index.html",
+      "bytes": 1000,
+      "sha256": "4744068c8af3be8bbb5fb0073c02904f6c028b0ea3d72e257799a9ddfe9f86fe"
+    },
+    {
+      "path": "dist/host/solar-host-contract.json",
+      "bytes": 240,
+      "sha256": "cfe5750bf133609f4aae8b22a814149f88c4c638f73cf60b6f8e40e072ebeb35"
+    },
+    {
+      "path": "dist/host/vision/pkg/lumencast_vision_web.js",
+      "bytes": 152321,
+      "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d"
+    },
+    {
+      "path": "dist/host/vision/pkg/lumencast_vision_web_bg.wasm",
+      "bytes": 10491253,
+      "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd"
+    },
+    {
+      "path": "dist/host/vision/ui/fonts.mjs",
+      "bytes": 1977,
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+    },
+    {
+      "path": "dist/host/vision/ui/mainpresenter.mjs",
+      "bytes": 27634,
+      "sha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
+    },
+    {
+      "path": "dist/host/vision/vision-assets.json",
+      "bytes": 2762,
+      "sha256": "791439d70d1f1eff864c49bb56c5d1ac60b66426d7a90d64ccc12ea613529e2c"
+    },
+    {
+      "path": "dist/index.d.ts",
+      "bytes": 9206,
+      "sha256": "dd637874279bd39e1ee3bb060b4707e43fb5d6a12641fdde523c2f9bc56fa20b"
+    },
+    {
+      "path": "dist/native/manifest.json",
+      "bytes": 305,
+      "sha256": "06f97366f339911d04b2529ed6177a01c4ebf337b80fda86523cfc52845d7116"
+    },
+    {
+      "path": "dist/native/win32-x64/lsdpd.exe",
+      "bytes": 5255168,
+      "sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448"
+    },
+    {
+      "path": "dist/server/index.mjs",
+      "bytes": 185092,
+      "sha256": "3ccfbec0b3e7553445ef904066e5398480ce50f835b0d303b308e674da44708d"
+    },
+    {
+      "path": "dist/server/index.mjs.map",
+      "bytes": 489882,
+      "sha256": "79e3f37e46137b973def62db2d536244cb3b489d00ef35be7d5b0f3346a5ab76"
+    },
+    {
+      "path": "dist/server/types/engine/animations.d.ts",
+      "bytes": 1128,
+      "sha256": "58bed13e774d37837bcf7a40751719d559af008cd422a7a8fbbc97dab246c905"
+    },
+    {
+      "path": "dist/server/types/engine/animations.d.ts.map",
+      "bytes": 830,
+      "sha256": "d335b05cf7c7828ea1e1756b52304c41cfd0cbaaa7ccaab1aadbf190bf7b2d83"
+    },
+    {
+      "path": "dist/server/types/engine/motion/curves.d.ts",
+      "bytes": 613,
+      "sha256": "1389193ca66e86a5a78468569fc74d877f1f056c458ea216330245cb7d014c23"
+    },
+    {
+      "path": "dist/server/types/engine/motion/curves.d.ts.map",
+      "bytes": 669,
+      "sha256": "72fdcf1bb699564c609507947f3d66131ca29ea3a80944b0d6210f03973adeb8"
+    },
+    {
+      "path": "dist/server/types/engine/motion/player.d.ts",
+      "bytes": 1747,
+      "sha256": "6926da3fc8d4637a0e2c5170d145f1e0369a045f704174db10453eef70309970"
+    },
+    {
+      "path": "dist/server/types/engine/motion/player.d.ts.map",
+      "bytes": 1667,
+      "sha256": "1b30f3120358e455b47bfa922b88401565b23ebdae31c978fe3528ebda3d3811"
+    },
+    {
+      "path": "dist/server/types/engine/motion/timeline.d.ts",
+      "bytes": 1745,
+      "sha256": "fc6fcd1bdcf7dbf35e51d33ba830274bd5034809622c63421e2536d459118aa1"
+    },
+    {
+      "path": "dist/server/types/engine/motion/timeline.d.ts.map",
+      "bytes": 1713,
+      "sha256": "914a18b1b73002e510a3bb4d6cf9377991ef3aa3793183d030ab75420bb37480"
+    },
+    {
+      "path": "dist/server/types/engine/motion/vector.d.ts",
+      "bytes": 443,
+      "sha256": "84e4eaf7dcbb08e95550f51165173b610656b872c26427cefd0fe85a3faaa995"
+    },
+    {
+      "path": "dist/server/types/engine/motion/vector.d.ts.map",
+      "bytes": 406,
+      "sha256": "2cccc7ebd57752c15c8cd67a824502cc7c91c8336bbad36bcda520ff608a2145"
+    },
+    {
+      "path": "dist/server/types/engine/sound/assets.d.ts",
+      "bytes": 446,
+      "sha256": "5fb2e76a58aa084ad359d2564660b5f4706991fc93f15d224e956277de141edf"
+    },
+    {
+      "path": "dist/server/types/engine/sound/assets.d.ts.map",
+      "bytes": 431,
+      "sha256": "537b68dca2298eb1961b9d1dd478340e07a11f1f0177e8883f2e35bb1d7fe911"
+    },
+    {
+      "path": "dist/server/types/engine/sound/automation.d.ts",
+      "bytes": 543,
+      "sha256": "75a42c7caec1255de2857579c74f73807305abcffe12642ad144802c2a535f01"
+    },
+    {
+      "path": "dist/server/types/engine/sound/automation.d.ts.map",
+      "bytes": 539,
+      "sha256": "c73b114124f1ba2bb758a4f6e7d4ad5c5ce6b0830813266719b1ab86dbc4335a"
+    },
+    {
+      "path": "dist/server/types/engine/sound/catalogue.d.ts",
+      "bytes": 1646,
+      "sha256": "f58f743ca3870c6818baf328db0c834d671c0f03b5d73597fa00fdabc8d4ae5f"
+    },
+    {
+      "path": "dist/server/types/engine/sound/catalogue.d.ts.map",
+      "bytes": 1853,
+      "sha256": "d99927f590c89910afcf82f967d43b8483f4108716b162d3bf185bb31f9bc78c"
+    },
+    {
+      "path": "dist/server/types/engine/sound/controller.d.ts",
+      "bytes": 1506,
+      "sha256": "b5f4574e9170cfc9ae86d287694bca725b2f10656c591b3635a9099d4828d9f1"
+    },
+    {
+      "path": "dist/server/types/engine/sound/controller.d.ts.map",
+      "bytes": 1583,
+      "sha256": "9ef11659cae0eadf7d451734b02c8c418230ad9c2365123168716c3cd06e8d0e"
+    },
+    {
+      "path": "dist/server/types/engine/sound/graph.d.ts",
+      "bytes": 729,
+      "sha256": "8dbe5eb705e26d49252de07fedcf0ef6d9e8ad12ef7b3bed669ef615e2632f3f"
+    },
+    {
+      "path": "dist/server/types/engine/sound/graph.d.ts.map",
+      "bytes": 781,
+      "sha256": "5d14271582be74806f942de59bcaf1a92aeb3d57b15755a6fdbb33f0aa2761dc"
+    },
+    {
+      "path": "dist/server/types/engine/sound/voice.d.ts",
+      "bytes": 437,
+      "sha256": "e8a4a53f1c1861c644ac6e20df76c07dee3b913e6d1b5b3ab02695b017780c7e"
+    },
+    {
+      "path": "dist/server/types/engine/sound/voice.d.ts.map",
+      "bytes": 496,
+      "sha256": "b9030677bb30b1f1e94fa5bf42f46affcd836434bda79465e06e6468f71c73ce"
+    },
+    {
+      "path": "dist/server/types/internal/native-state.d.ts",
+      "bytes": 514,
+      "sha256": "7ac036bafdcf1e356d7c5147a4f7ebc14fab03dab391148d5e56454596207022"
+    },
+    {
+      "path": "dist/server/types/internal/native-state.d.ts.map",
+      "bytes": 480,
+      "sha256": "1161392ceed1736236fe13544209ebbc323e8d5080cedc9c3b0821c76a07c175"
+    },
+    {
+      "path": "dist/server/types/internal/native-tree.d.ts",
+      "bytes": 866,
+      "sha256": "33f353753e2d41736cf80cc6fdf3689db835ab2aba1d0aabfc78d34d77a06c76"
+    },
+    {
+      "path": "dist/server/types/internal/native-tree.d.ts.map",
+      "bytes": 682,
+      "sha256": "eff0bde3143047f8b9b6addbf754871ad1529a3f314e12dbd8cf84b5578dddcb"
+    },
+    {
+      "path": "dist/server/types/scenes/cache.d.ts",
+      "bytes": 1131,
+      "sha256": "2095d24085618fe9d2807cc9fb536dd136756bd6dac0443f1b6798ece8909434"
+    },
+    {
+      "path": "dist/server/types/scenes/cache.d.ts.map",
+      "bytes": 893,
+      "sha256": "2d41c497f1b8ef1a3d048618d7d4bbba8e91fec7126dbfb4c3489784b7063fb2"
+    },
+    {
+      "path": "dist/server/types/scenes/canonical-render.d.ts",
+      "bytes": 266,
+      "sha256": "e77fb0dbf7825afd7c04b2f48fbde2c65259a09d7b3385b892d0d868e6a831bf"
+    },
+    {
+      "path": "dist/server/types/scenes/canonical-render.d.ts.map",
+      "bytes": 301,
+      "sha256": "f33ad3ba6bff4b8bebf43dc244d6786d888612de62bcc0d58f343fa330db0c3d"
+    },
+    {
+      "path": "dist/server/types/scenes/canvas.d.ts",
+      "bytes": 849,
+      "sha256": "a428946d8aa5e872279b69f0e112a8fc64793643102f332f850baefd4a0294d9"
+    },
+    {
+      "path": "dist/server/types/scenes/canvas.d.ts.map",
+      "bytes": 529,
+      "sha256": "b90a367d37d337036d1c39f01c4daae054857b1b8e82be998a2d3c59c9011aa3"
+    },
+    {
+      "path": "dist/server/types/scenes/editable-bindings.d.ts",
+      "bytes": 549,
+      "sha256": "991119ac1eb0205e6b79930a8d8b9fefff905b6e373a3834730afcfc581aa5e5"
+    },
+    {
+      "path": "dist/server/types/scenes/editable-bindings.d.ts.map",
+      "bytes": 499,
+      "sha256": "e8d5cfc5d0c28d8a4366eb63d30032c066d060033516fb002f7051bdeeb94500"
+    },
+    {
+      "path": "dist/server/types/scenes/native-document.d.ts",
+      "bytes": 2802,
+      "sha256": "7fef34417fa0da73a2c7faf03859030e3f871ac4da082cff8be108e43f9572aa"
+    },
+    {
+      "path": "dist/server/types/scenes/native-document.d.ts.map",
+      "bytes": 2671,
+      "sha256": "25ed8e7d1214b28102cfedf2e375f9ee79e8e64aa148ac30535b4866c32115ee"
+    },
+    {
+      "path": "dist/server/types/scenes/startup.d.ts",
+      "bytes": 997,
+      "sha256": "f6d96f41ee57d340dcb7862bd6f7d22ec4ca5d1d1509d953ca0fc92a224ea0d4"
+    },
+    {
+      "path": "dist/server/types/scenes/startup.d.ts.map",
+      "bytes": 824,
+      "sha256": "8e69784631b3b97815ff5f6add3071ca4c222773df1cd1bf2da81d81dc8bdcd9"
+    },
+    {
+      "path": "dist/server/types/scenes/types.d.ts",
+      "bytes": 2852,
+      "sha256": "df00eb6174ddde96175d47f98653022bb140d680cb6317c5ec1b89c30c5598bf"
+    },
+    {
+      "path": "dist/server/types/scenes/types.d.ts.map",
+      "bytes": 2027,
+      "sha256": "47a281a4f70c3ef5390bd2f93ebc1e6fcda437542062acf08f0dd3508b0898d0"
+    },
+    {
+      "path": "dist/server/types/scenes/verified-font.d.ts",
+      "bytes": 424,
+      "sha256": "3b1abef92dd40b5742768e176975e60b0285ac99ecf8f27a805bc0558d4d95e1"
+    },
+    {
+      "path": "dist/server/types/scenes/verified-font.d.ts.map",
+      "bytes": 409,
+      "sha256": "d2a056c03c811e9ed4974246cdfcf8e6dbd5bc6fe36a2defaff60d37fa347771"
+    },
+    {
+      "path": "dist/server/types/server/index.d.ts",
+      "bytes": 435,
+      "sha256": "104c2a729dcaed67c5d9fa7c3f8c3c22f0155ca1ed4158efdf8f4966c72d25c1"
+    },
+    {
+      "path": "dist/server/types/server/index.d.ts.map",
+      "bytes": 415,
+      "sha256": "8db0ff3a8712eccb789034979bd1c1264e2cba00c2636ab327b123aad0388e83"
+    },
+    {
+      "path": "dist/server/types/server/installation-fonts.d.ts",
+      "bytes": 1667,
+      "sha256": "b94b93c2443c478e937cd0fbc215817a3ae8c5ecf8809eca2589ae920bcecf95"
+    },
+    {
+      "path": "dist/server/types/server/installation-fonts.d.ts.map",
+      "bytes": 1285,
+      "sha256": "3a482f627d9e2c06a1778f8330d55f67e30d1a355f08c30acf162369dbae4307"
+    },
+    {
+      "path": "dist/server/types/server/native-server.d.ts",
+      "bytes": 2921,
+      "sha256": "672b46b26d3b53be5ec28d37cd20f3afb6e2c1cfd04fa95c11ea485ce8017a45"
+    },
+    {
+      "path": "dist/server/types/server/native-server.d.ts.map",
+      "bytes": 2714,
+      "sha256": "2932240147008daf367b6ff84daaa8d51f9032a2c52f65061370763b04155f81"
+    },
+    {
+      "path": "dist/server/types/server/scene-library.d.ts",
+      "bytes": 838,
+      "sha256": "e0c7049ca228ac030993c060a72dcf55ff0d10b7758341bf39b12d3e6fc9bedb"
+    },
+    {
+      "path": "dist/server/types/server/scene-library.d.ts.map",
+      "bytes": 684,
+      "sha256": "f81b477f9b970d54e449b9f2cf4c0a44a99e7f9c6edab24c5961e436f1033253"
+    },
+    {
+      "path": "dist/server/types/server/scene-store.d.ts",
+      "bytes": 443,
+      "sha256": "f4c1fbc8287c314a99a925daab8fdd71f12e927ad02908f3c2875c4e94fc2fad"
+    },
+    {
+      "path": "dist/server/types/server/scene-store.d.ts.map",
+      "bytes": 451,
+      "sha256": "70246bb7607c98efd7c6bef98ce99fab5ad8f52936a17085fbda6eecb43e33a5"
+    },
+    {
+      "path": "dist/server/types/server/windows-fonts.d.ts",
+      "bytes": 215,
+      "sha256": "6e0acedf180b2ae9b4a29e262f20284d3616d29867a8a2a0de500a9a661a044e"
+    },
+    {
+      "path": "dist/server/types/server/windows-fonts.d.ts.map",
+      "bytes": 225,
+      "sha256": "8853d271df1ea6e211f0ac8cfd9cad67b2f83f960bee3ab9a49220d0cf879904"
+    },
+    {
+      "path": "dist/server/types/types/index.d.ts",
+      "bytes": 3127,
+      "sha256": "7b32f5778893724e160c7131af03398e436c9fb5fa9ea8610f08ae2635583644"
+    },
+    {
+      "path": "dist/server/types/types/index.d.ts.map",
+      "bytes": 2324,
+      "sha256": "ea730250638d1e2f368f8552367842166969c2f56755e3b552890d341ca52664"
+    },
+    {
+      "path": "dist/solar.js",
+      "bytes": 259329,
+      "sha256": "af6dc09b176bfe9a702b1248528adea9ed0a3c954d90a15a3d70108c83f93b39"
+    },
+    {
+      "path": "dist/solar.js.map",
+      "bytes": 866334,
+      "sha256": "a9f10cea0370c7ca096901f04e1586650f4a79b1a45c00ea437dd0619c82bb80"
+    },
+    {
+      "path": "dist/workers/native-worker-ubPqxztq.js",
+      "bytes": 37451,
+      "sha256": "8a2c61517f22583f09e66a6e5c4765a4617a7bf6fe2f4b86f401568dd6179316"
+    },
+    {
+      "path": "dist/workers/native-worker-ubPqxztq.js.map",
+      "bytes": 169796,
+      "sha256": "c149a7aeeb679766012e43494ad4ad980c6fd629cee392953199bc50f4f27e03"
+    }
+  ]
+}

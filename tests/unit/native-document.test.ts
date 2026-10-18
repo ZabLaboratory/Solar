@@ -67,6 +67,125 @@ describe("native Merkle hash compatibility", () => {
 });
 
 describe("native LSML mutation and runtime package", () => {
+  it.each([
+    { kind: "stack", children: [] },
+    { kind: "stack", direction: "horizontal", children: [] },
+    { kind: "stack", direction: "diagonal", children: [] },
+    { kind: "stack", children: [{ kind: "frame", children: [] }] },
+  ])(
+    "keeps the private LSML geometry unchanged when a fixed native surface is requested",
+    async (layout) => {
+      const scene = { ...document, layout };
+      const original = structuredClone(scene);
+      const assets = new NativeSceneAssets({
+        sceneId: scene.scene_id,
+        sceneVersion: version,
+        revision: 1,
+        format: "lsml",
+        data: strToU8(JSON.stringify(scene)),
+        assets: new Map(),
+        sourceDigest: version,
+        blueManifest: nativeManifest(scene.scene_id, version),
+      });
+      const [ordinary, native] = await Promise.all([
+        assets.renderPackage(scene),
+        assets.renderPackage(scene, undefined, { width: 1920, height: 1080 }),
+      ]);
+      const ordinaryLayout = JSON.parse(
+        strFromU8(unzipSync(ordinary.data)["scene.lsml"]!),
+      ).layout;
+      const nativeLayout = JSON.parse(
+        strFromU8(unzipSync(native.data)["scene.lsml"]!),
+      ).layout;
+      expect(native.surface).toEqual({ width: 1920, height: 1080 });
+      expect(nativeLayout).toEqual(ordinaryLayout);
+      expect(scene).toEqual(original);
+    },
+  );
+  it("preserves capture geometry and bindings in the canonical package", async () => {
+    const scene = {
+      ...document,
+      layout: {
+        kind: "frame",
+        size: { w: 640, h: 360 },
+        children: [
+          {
+            kind: "x-zab.capture",
+            id: "camera",
+            size: { w: 320, h: 180 },
+            position: { x: 125, y: 30 },
+            rotation: 23,
+            opacity: 0.6,
+            bind: { "position.x": "camera-x" },
+            crop: { top: 12 },
+          },
+        ],
+      },
+      defaults: { ...document.defaults, "camera-x": 42 },
+    };
+    const original = structuredClone(scene);
+    const assets = new NativeSceneAssets({
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(scene)),
+      assets: new Map(),
+      sourceDigest: version,
+      blueManifest: nativeManifest(scene.scene_id, version),
+    });
+    const [ordinary, native] = await Promise.all([
+      assets.renderPackage(scene),
+      assets.renderPackage(scene, undefined, { width: 1920, height: 1080 }),
+    ]);
+    const ordinaryLayout = JSON.parse(
+      strFromU8(unzipSync(ordinary.data)["scene.lsml"]!),
+    ).layout;
+    const nativeLayout = JSON.parse(
+      strFromU8(unzipSync(native.data)["scene.lsml"]!),
+    ).layout;
+    expect(native.surface).toEqual({ width: 1920, height: 1080 });
+    expect(nativeLayout).toEqual(ordinaryLayout);
+    expect(nativeLayout.children[0]).toMatchObject({
+      position: { x: 125, y: 30 },
+      rotation: 23,
+      opacity: 0.6,
+      crop: { top: 12 },
+    });
+    expect(scene).toEqual(original);
+  });
+  it("does not ask LSML packaging to infer missing capture bounds", async () => {
+    const scene = {
+      ...document,
+      layout: {
+        kind: "frame",
+        children: [{ kind: "x-zab.capture", id: "camera" }],
+      },
+    };
+    const assets = new NativeSceneAssets({
+      sceneId: scene.scene_id,
+      sceneVersion: version,
+      revision: 1,
+      format: "lsml",
+      data: strToU8(JSON.stringify(scene)),
+      assets: new Map(),
+      sourceDigest: version,
+      blueManifest: nativeManifest(scene.scene_id, version),
+    });
+
+    const runtime = await assets.renderPackage(scene, undefined, {
+      width: 1920,
+      height: 1080,
+    });
+    expect(runtime.surface).toEqual({ width: 1920, height: 1080 });
+    const rendering = JSON.parse(
+      strFromU8(unzipSync(runtime.data)["scene.lsml"]!),
+    );
+    expect(rendering.layout.children[0]).toMatchObject({
+      kind: "x-zab.capture",
+    });
+    expect(rendering.layout.children[0]).not.toHaveProperty("size");
+  });
   it("separates fonts only for persistent runtime transfer and keeps source packaging intact", async () => {
     const font = new Uint8Array([1, 2, 3]);
     const origin: SceneSourceDelivery = {
@@ -163,6 +282,7 @@ describe("native LSML mutation and runtime package", () => {
     );
     expect(patch.values.logo).not.toBe(direct.imageValues.logo);
     expect(patch.assets[0]!.bytes).toEqual(new Uint8Array([2]));
+    patch.release();
     expect(fetchImage).toHaveBeenCalledTimes(2);
     expect(scene.defaults.logo).toBe("https://images.example/first.png");
   });
@@ -235,6 +355,7 @@ describe("native LSML mutation and runtime package", () => {
     );
     expect(patch.values).toEqual({ champion: path });
     expect(patch.assets).toEqual([{ path, bytes: image }]);
+    patch.release();
     await expect(
       assets.prepareImagePatch(
         { champion: "assets/missing.png" },
@@ -291,7 +412,7 @@ describe("native LSML mutation and runtime package", () => {
     const preparing = assets.renderPackage(scene);
     // The sequential implementation starts only one request and cannot satisfy
     // this barrier until the first response is released.
-    expect(fetchImage).toHaveBeenCalledTimes(2);
+    await vi.waitFor(() => expect(fetchImage).toHaveBeenCalledTimes(2));
     pending.forEach((resolve, index) =>
       resolve(
         new Response(new Uint8Array([index + 1]), {
@@ -335,11 +456,12 @@ describe("native LSML mutation and runtime package", () => {
     const fetchImage = vi.fn();
     const assets = new NativeSceneAssets(origin, fetchImage, { get });
     const rendered = await assets.renderPackage(scene);
-    await assets.prepareImagePatch(
+    const patch = await assets.prepareImagePatch(
       { logo: scene.defaults.logo },
       rendered.imageBindings,
       scene,
     );
+    patch.release();
     expect(get).toHaveBeenCalledOnce();
     expect(fetchImage).not.toHaveBeenCalled();
     expect(

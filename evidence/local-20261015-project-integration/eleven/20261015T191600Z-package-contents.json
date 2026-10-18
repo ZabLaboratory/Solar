@@ -1,0 +1,99 @@
+{
+  "result": "PASS",
+  "sourceRevision": "edf31bf1ea7a1e5f0205e39fe8637c1250389d43",
+  "release": {
+    "schema_version": "solar.runtime.manifest.v1",
+    "component": "solar",
+    "version": "3.0.0",
+    "release_tag": "v3.0.0-local-9adb76a60f7f2a1a",
+    "protocol_version": "solar.host.v2",
+    "artifact_url": "file:///D:/Documents/Zab/Prism/.worktrees/eleven-local-20261015-project-integration/.cache/solar-dev/solar-local.tgz",
+    "artifact_sha256": "9adb76a60f7f2a1a77441728a73522af89b93f615877db55f40655c520c180c5",
+    "source_revision": "edf31bf1ea7a1e5f0205e39fe8637c1250389d43"
+  },
+  "archiveBytes": 8138126,
+  "archiveFiles": 94,
+  "visionPins": {
+    "schema": "solar.vision-assets.v1",
+    "upstream": "Lumencast/lumencast-vision",
+    "base_revision": "19493a3938e4a0bd2aede614450a3245bbf6989c",
+    "source_state": "Signed Vision image-lifetime source 48a44d6567ec80563ee0955161be2503c6742e90 (tree d2f188dc399ec1e75480a388f2940394720f8927) rebuilt with scripts/vision/build-web.ps1 and wasm-bindgen 0.2.129. All four Solar-facing artifacts match source bytes and hashes below. Private headless Chrome qualification passed 512 distinct dynamic PNGs, source-byte immutability, rejected-path frame retention, native snapshot reconnect without a manufactured applied event, a subsequent presented image delta, and real WEBGL_lose_context restoration; see evidence/local-20261015-image-lifetime-adoption/eleven/20261015T173140Z-native-image-lifetime.json. GPU memory totals, GPU completion/physical scanout, CEF, scene switching and transition/readiness are outside this proof. This is a local Solar candidate, not a deployed runtime.",
+    "files": {
+      "ui/mainpresenter.mjs": {
+        "bytes": 28820,
+        "sha256": "ace16d4d0e3e538be4caae1fdc0b354ba5f80089be6fa3745352e4c20ffae4a2"
+      },
+      "ui/fonts.mjs": {
+        "bytes": 1977,
+        "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+      },
+      "pkg/lumencast_vision_web.js": {
+        "bytes": 153481,
+        "sha256": "60d005a85bc6fdc5e87bd451e21ee68f16e4f7be116767ef7fb4868743e1b31b"
+      },
+      "pkg/lumencast_vision_web_bg.wasm": {
+        "bytes": 10507364,
+        "sha256": "e5c3a72cd1a87689e5a3d05e24cfb089b552247264791479c8595f12be70f364"
+      }
+    },
+    "source_provenance": {
+      "repository": "Lumencast/lumencast-vision",
+      "engine_base": "19493a3938e4a0bd2aede614450a3245bbf6989c",
+      "engine_branch": "eleven/local-20261015-dynamic-image-lifetime",
+      "engine_commit": "48a44d6567ec80563ee0955161be2503c6742e90",
+      "engine_tree": "d2f188dc399ec1e75480a388f2940394720f8927",
+      "engine_evidence": "evidence/local-20261015-dynamic-image-lifetime/eleven/20261015T165710Z-agent-report.md",
+      "source_files": {
+        "README.md": "10cd4a952e25a39ad8c23f2f65e84b45c122adfe0a9740da5c53cb405daa7c12",
+        "crates/vision-web/README.md": "2862e9ac061daa42419ecfe87678e086feeebb6e3ab2d3286f96d3ba76e5f579",
+        "crates/vision-web/src/lib.rs": "09f7140d6c02652bec754cc299070ab70078eb3e520fd262b037062c627e5dab",
+        "crates/vision-web/ui/mainpresenter.mjs": "ace16d4d0e3e538be4caae1fdc0b354ba5f80089be6fa3745352e4c20ffae4a2",
+        "crates/vision-web/ui/fonts.mjs": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
+        "crates/vision-web/ui/tests/mainpresenter.test.mjs": "eb02db968d2acd74b834272fcc0e480da6b9922ef89d6232818ec06496b4eb4a",
+        "crates/vision-gpu/src/renderer.rs": "ea5357b82ccf835282f3ae4100d0009b98439cb31271f9e7898ac4dc9b7e71f0"
+      },
+      "uncommitted_qualified_source": false,
+      "build_command": "& .\\scripts\\vision\\build-web.ps1"
+    },
+    "source_revision": "48a44d6567ec80563ee0955161be2503c6742e90"
+  },
+  "verifiedVisionAssets": [
+    {
+      "file": "ui/mainpresenter.mjs",
+      "bytes": 28820,
+      "sha256": "ace16d4d0e3e538be4caae1fdc0b354ba5f80089be6fa3745352e4c20ffae4a2"
+    },
+    {
+      "file": "ui/fonts.mjs",
+      "bytes": 1977,
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+    },
+    {
+      "file": "pkg/lumencast_vision_web.js",
+      "bytes": 153481,
+      "sha256": "60d005a85bc6fdc5e87bd451e21ee68f16e4f7be116767ef7fb4868743e1b31b"
+    },
+    {
+      "file": "pkg/lumencast_vision_web_bg.wasm",
+      "bytes": 10507364,
+      "sha256": "e5c3a72cd1a87689e5a3d05e24cfb089b552247264791479c8595f12be70f364"
+    }
+  ],
+  "nativeManifest": {
+    "schema": "solar.native-server.v1",
+    "wire": "LSDP-TCP/2.0-draft2",
+    "source_revision": "4d197aefbde76cacc8ffd70cb84edec031575f5b",
+    "binaries": {
+      "win32-x64": {
+        "file": "win32-x64/lsdpd.exe",
+        "sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448"
+      }
+    }
+  },
+  "nativeExecutableBytes": 5255168,
+  "limits": [
+    "Archive content verification only; package not activated in shared application",
+    "Vision3D public API remains outside Solar2D host",
+    "Native binary was previously built and qualified, not rebuilt by this package operation"
+  ]
+}

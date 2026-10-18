@@ -1,5 +1,41 @@
 # LSDP and Vision runtime
 
+`vision-composition-frame.ts` validates the typed `vision.native-composition-frame/1`
+receipt emitted by the same GPU submission as the presenter's canvas. It checks
+the exact render-variant scene identity, canonical scene grid, atlas canvas extent,
+integer 1:1 bands, graph ownership and monotonic accepted pixel/layout revisions.
+Capture framing remains explicit in this receipt: fit, normalized source crop,
+nullable content box/position fields and zoom come from the active Vision graph.
+`authoredSize` preserves the source's authored box dimensions (nullable per axis);
+`sourceSize` is the required positive upload-texture size. Keeping both lets the
+Main consumer scale source-box framing into the occurrence's computed `localSize`
+without re-reading or re-projecting LSML.
+Blend, mask and clip presence are checked as graph facts, including the Rust
+`clipKind` classification that distinguishes an exact viewport/image bound from
+an authored clip. Acceptance does not claim that the native compositor supports
+every such effect.
+It does not derive layout from LSML or certify physical scanout. The persistent
+presenter can explicitly enable native atlas output before loading; its mode ACK
+is required, and a later canonical load disables that mode on the same engine.
+`VisionSceneHandle.compositionFrame` exposes only a matching accepted receipt for
+the current scene owner. `tests/unit/vision-composition-frame.test.ts` and
+`tests/unit/vision-session.test.ts` cover these refusals and lifetime boundaries.
+`NativeSceneFrames` projects this exact receipt only after the scene's frame queue
+flushes. The private LSML package keeps its canonical geometry; the native path
+sets a fixed viewport surface and enables the GPU composition mode without
+rewriting layout. Scalar patches project the receipt accepted by the same live
+scene handle, so transform/layout changes do not rebuild composition from LSML.
+
+`vision-font-assets.ts` owns the existing host font catalog, shared acquisition
+promise and legacy virtual font URLs used by `vision-presenter.ts`. Acquisition
+failure clears that promise so the next attempt can retry. This extraction keeps
+font ownership separate from scene receipts; it introduces no second font cache.
+
+[`sound/`](sound/README.md) owns authored scene audio: hash-pinned packaged clips,
+composed cues, routed DSP buses, live mix mutations, shared motion transport and
+offline PCM. This experimental browser extension is enabled by `sceneAudio`;
+it does not add a native Rust audio-device backend to Vision.
+
 `animations.ts` owns catalogue validation, easing and the local playback clock.
 Translation, rotation, opacity and blur patch private bindings in the active Vision
 scene. Translation adds the sampled offset to the current authored/bound position;
@@ -31,16 +67,66 @@ document rebuilds. See `docs/development/native-lsdp.md` for local operation.
 If preparation advances the resource between read and subscribe, BASE_MISMATCH
 causes a fresh read/render/hash check, bounded to four attempts on that connection.
 Other failures and repeated conflicts remain visible and reconnect normally.
+The separate composition publisher also handles its own terminal socket close:
+it is discarded without a remote clear, then the runtime's shared reconnect
+backoff refreshes its token and republishes only the latest accepted plan or
+clear. This retry leaves a healthy primary LSML connection in place; primary
+recovery takes priority and runtime disconnect cancels pending composition work.
+`NativeCompositionSession` stores accepted source state while the peer is absent
+and replays that latest state when a replacement peer starts; it reports retry
+success only after the replacement peer completes its first current publication.
+When the trusted host config enables `nativeCompositionLSDP`, the runtime projects
+compositor metadata from the accepted Vision receipt of that active scene and
+publishes it with the exact LSDP state hash to the separate `solar/composition`
+resource. It does not mutate the source LSML or insert plan fields into native
+snapshots; mutation and frame receipts do not wait for network publication to
+complete. Main claims the
+physical A/B producer nonce in that resource; Solar verifies the nonce before
+each graph CAS and never changes the owner map. Receipt projection and the
+canonical plan copy/hash run synchronously before Solar returns its applied
+mutation receipt; the network compare-and-set does not. The publisher keeps one
+read/write active and only the latest pending plan. Pending callers can receive
+`superseded`; this is not an LSML ACK. `clear` is an ordinary latest-state
+action and may be superseded by a newer plan. `retire` is terminal: it blocks
+later side-channel work and clears after the active operation before closing
+the peer. Publisher, session replay and reconnect paths have targeted Solar unit
+coverage; real cross-process/Main/Pulsar composition remains a separate qualification.
+`tests/bench/native-composition-capture-translation.bench.ts` isolates that CPU
+path with deterministic synthetic receipts that mutate one capture's x/y values.
+The 2026-10-18 Node 24.16.0 / Vitest 4.1.11 run measured mean totals of 0.119 ms
+for one capture, 3.183 ms for 64 captures and 48.934 ms for 1024 captures. Only
+the 1024-capture stress case exceeds a 16.67 ms 60 Hz budget. In that case plan
+cloning, canonical serialization and SHA-256 averaged 13.873 ms, 24.963 ms and
+5.034 ms respectively. This is an off-air benchmark, not CEF presentation,
+physical scanout or end-to-end Prism drag evidence; it does not establish the
+cause of a user-observed drag delay. Vision receipt validation remains enabled.
+The method, limits and result are recorded in
+[`20261018T142827Z-AGENT_REPORT.md`](../../evidence/local-20261018-solar-native-capture-translation/forge/20261018T142827Z-AGENT_REPORT.md),
+with raw output in the same evidence directory.
 `native-worker-client.ts` owns the dedicated `native-worker.ts` transport and
 LSML verification thread. It certifies each state through its private Worker
 channel; the render consumer reuses that exact structured-clone state instead of
 repeating Merkle hashing on the drawing thread. Certification is scoped to the
 callback context and removed after delivery, so network fields or caller-created
 contexts cannot claim it. Direct reception without a Worker retains full hashing.
-Simple state reception continues while CEF draws;
-snapshot, structure and command receipts still await the main consumer. Both
+Every native callback waits for the ordered main consumer. Scalar `received`
+returns after LSML verification and admission to `FramePatches`, before Vision
+submission; structural, snapshot and command receipts retain their stronger
+application/rendering boundary. The pinned browser adapter's existing 32-channel
+window therefore bounds worker deliveries while main admission is pending. Both
 sides abort on disconnect, including pending connection/request work. A snapshot
 can bypass the main notification queue to complete same-connection resync.
+Worker timing is best-effort: missing or throwing Performance APIs drop only the
+sample and cannot block a transaction receipt. A failed transaction is returned
+to the worker as an error before `onIncomingFailed` runs; if that lifecycle hook
+throws and an `onClose` handler is registered, its exception is forwarded through
+that lifecycle path. Exceptions from either observer are reported to the console
+and cannot turn the original transaction failure into a successful receipt or
+poison the ordered delivery queue.
+`tests/unit/native-worker.test.ts` exercises the worker callback itself: scalar
+receipts stay pending until main admission, and a refused admission propagates
+its typed error. The transport is mocked; this does not measure native window
+throughput or GPU presentation.
 `internal/native-stream.ts` owns notification identity/order/integrity and scalar
 classification. The worker uses a local SHA-256 implementation for native frame
 checksums; the byte-pinned upstream client still compares every checksum. This
@@ -60,6 +146,11 @@ Solar never queries `orion/state` or waits for Orion for these mutations. Events
 carry native transaction/state identity, without an `x-orion` projection. Only
 explicit scene-selection transition phases use `control-feedback.ts`; this is
 not a mutation application or presentation dependency.
+The physical resources `solar/lane-a` and `solar/lane-b` process these phases
+using the validated `x-solar-transition.lane` role. Either engine can acknowledge
+Preview or Program after Take; its physical name never fixes its logical role.
+Legacy logical resources keep their explicit Program/Preview role. Missing roles
+on physical transition metadata are rejected rather than silently ignored.
 Reserved `__cam.*` leaves stay in native authority, outside Vision defaults;
 positional camera names therefore cannot invalidate Vision's binding grammar.
 Native document replacement pauses video uploads and drains GPU work while
@@ -73,10 +164,30 @@ one generation/session into Vision. Updates to another entry are acknowledged
 without changing the visible scene. Missing or deleted entries clear the
 renderer. The old Orion LSDP/1 client has been removed from Solar.
 
+During an admitted coordinated transition, a null coordinator mirror seed keeps
+the committed presentation and its compensation frame until finalization. It
+does not discard the accepted scene or its active source assets before the
+finalize receipt. A null state after finalization still clears the renderer and
+retires both frames; ordinary clears outside that transition remain authoritative.
+Native runtime tests cover the null seed, cleanup without remount or refetch,
+and an actual clear after finalization.
+
 `vision-presenter.ts` owns one Vision engine, GPU canvas and presentation surface
-per native host target. An empty engine starts once; fresh scene packages use
-Vision's serialized `load` request on that same device/surface. The outgoing
-scene's images, graph, geometry and composition caches are released.
+per native host target. Fresh scene packages use Vision's serialized `load`
+request on that same device and surface. The outgoing scene's images, graph,
+geometry and composition caches are released.
+The native connection starts that empty engine and admits installation fonts
+before reading its first resource snapshot. Both physical hosts therefore warm
+independently of scene selection. Empty prewarm creates no LSML package, scene
+identity, media subscription or visible presentation; the first real load shares
+its lifetime and queue. Host disconnection aborts prewarm and queued admission.
+The `engine-ready` receipt is the reuse boundary: if `init-empty` fails before
+that receipt, Solar retires the incomplete presenter and hidden layer; a later
+prewarm creates a fresh presenter in the current host lifetime. A missing
+`engine-ready` receipt has a 30-second deadline; prewarm then rejects and
+reports the failure through the host error callback. If only installation-font
+admission fails, the acknowledged engine stays available for a retry of the
+incomplete font bank. Neither path retains a scene or starts a parallel engine.
 The engine-owned font registry survives scene replacement: installation fonts
 are preloaded once at engine startup, and additional scene fonts are admitted
 by content digest only when new. Scene-local layout and glyph caches remain fresh.
@@ -91,14 +202,38 @@ transparent; clearing actual live pixels still submits a frame.
 Scene handles close their observers and pending work on retirement without
 terminating the host engine. Stale handles cannot submit into a newer scene.
 Clearing the active scene keeps the engine ready; host disconnect terminates it.
+Each persistent mount captures the current host lifetime before it enters the
+serialized scene-load queue. Terminal disconnect aborts that lifetime immediately,
+including queued mounts and pending presenter/font/frame work; each settled wait
+removes its abort listener. A later explicit mount starts a fresh lifetime, while
+late work and callbacks from the retired lifetime cannot attach to or retire it.
+Disposing a scene handle or switching scenes remains nonterminal and retains the
+single host presenter.
+If a replacement `load` fails, Solar reports the Vision error, clears the failed
+engine scene, and leaves the layer's existing opacity unchanged. The retained
+front canvas is not cleared by that engine request, so an active scene keeps its
+last submitted frame visible; a first load or empty prewarm remains hidden because
+its layer starts hidden. The rejected transaction still has no applied-presentation
+receipt. A later valid snapshot reloads the same engine and the next valid mutation
+can resume normal presentation.
 Explicit WebGL context-loss recovery remains distinct from a scene switch.
+Solar's host path uses Vision's desynchronized WebGL2 main-thread presenter; it
+does not automatically switch to Vision's standalone WebGPU worker or its
+separate software renderer. On a recoverable loss, Vision retains accepted scene
+state, recreates the WebGL projection and re-registers its active images. Solar
+keeps the last submitted front canvas until the restored frame is submitted. A
+failed restoration is reported as a `context` presenter error and reaches the
+host error callback when no request waiter owns it. The private
+`qualify-instance-runtime.mjs --context-only true` mode exercises loss, restore
+and same-scene pixels without preparing a second scene.
 Absolute native assignments compare accepted
 documents before rendering, so finalization does not mount the prepared scene again.
 Preparation carries the current and candidate sources; compact commit/finalize
 assignments carry the candidate at the resource root. A fresh renderer reconstructs
 that stage from the root, while older payloads with an embedded source remain valid.
 Bounded `solar:native-stage` measures separate worker verification/delivery,
-classification, source/package/fonts, arena reuse, image resolution and feedback.
+main-consumer queue wait/depth/high-water, FramePatches pending count/high-water/oldest
+age, classification, source/package/fonts, arena reuse, image resolution and feedback.
 Their numeric durations and reuse categories contain no source values or tokens.
 Scene assets remain in LSMLZ and Vision
 loads them directly. There is no render-bundle URL, compile step, React render
@@ -112,12 +247,12 @@ the broadcast compositor.
 `vision-frames.ts` owns the submission barrier and uses a MessageChannel task
 instead of the host's 60 Hz RAF. Pending scalar values and the latest owned
 bitmap per camera can share one actual frame; every caller waits for completion.
-Camera-only work waits at most one 120 Hz interval for state to join it; a patch
-or explicit lifecycle barrier bypasses that grace. Superseded and consumed
+Camera-only work schedules the same immediate task as state; arrivals before
+that task share a submission without a fixed timer delay. Superseded and consumed
 bitmaps are released, and failure rejects all covered callers. The supported
 `loadWasm` dependency captures the real engine in `vision-media-bridge.ts`,
 allowing camera upload before the same patch submission. This scheduling
-interval is a policy, not evidence that the engine achieves 120 completed
+policy is not evidence that the engine achieves 120 completed
 mutation frames/s; fixed-window CEF measurements establish that separately.
 The retained Vision candidate, independent encoded-counter checks and fixed
 measurement boundaries are documented in
@@ -149,6 +284,61 @@ to its declared texture and sent to Vision as an `ImageBitmap`; disconnects
 clear the texture. Local references are resolved through `sources/capture.ts`;
 peer slots use `sources/peers.ts`. Neither source kind is gated on broadcast
 mode.
+
+Meet's `x-zab.meet-framing/1` LSML profile carries direct image framing
+(`object_fit`, `contentBox`, `sourceCrop`, `sourceZoom`, `objectPosition` and
+`clipEffects`). Vision projects fit and authored image bounds into the peer
+descriptor. `live-media.ts` applies crop, fit, zoom and position in the source
+bitmap, scaling the content box from authored dimensions to the bounded texture.
+Hot framing changes request a freshly prepared bitmap while retaining the peer
+subscription and active stream. Vision keeps `clipEffects` on the normalized
+image node, where its image renderer clips the effect boundary. Prism's older
+`metadata.figma.captureFraming` stays available as export compatibility data
+and is not the runtime rendering authority.
+
+Each media session owns one pending video-frame callback, or one animation-frame
+fallback. Repeated readiness from `play()` and `loadeddata` reuses that watcher;
+it cannot create another chain. A consumed callback clears its handle before
+rescheduling. Missing peer streams stop the chain, and a returning stream resumes
+it. Disposal cancels the remaining watcher and pending upload.
+Decode errors clear readiness and pending dirtiness before clearing the texture,
+so a fallback cannot upload stale pixels. Later `loadeddata` events can restart
+the same session after recovery; readiness/error listeners remain active.
+Each stream attachment or decode error advances a session revision. Bitmap
+preparation checks that revision after its asynchronous work and before sending
+the complete batch, so an obsolete image cannot restore a cleared texture after
+the stream has already recovered. Rejected bitmaps are closed locally.
+`live-media-metrics.ts` aggregates RVFC/RAF callback counts, presented-frame
+deltas where a continuous metadata baseline exists, callback coalescing, bitmap
+preparation outcomes and durations, and `updateMedia` acknowledgments. It emits
+bounded `solar:live-media-stage` Performance entries at most once per second and
+flushes the last partial sample on disposal after the rate limit permits it; the
+history is capped at 64 entries.
+The entry detail contains counts and durations only, never source paths. A null
+presented-frame delta means at least one callback in that sample had no usable
+baseline. `mediaUpdateAckMsTotal` measures Solar's `updateMedia` wait per request,
+while presenter frame-submitted receipts and `renderSubmitCallMsTotal` are counted
+once per queued presenter submission even when several requests are coalesced into
+it. The latter uses the pinned presenter's elapsed `engine.render()` call timing
+when supplied. These are submission/ack measurements, not GPU
+completion. The browser presenter exposes no GPU completion fence or readback to
+Solar, so `gpuCompletionAvailable` remains false and `gpuCompletionMs` remains
+null. The diagnostic sample is local to the Solar page and adds no per-frame IPC.
+The asynchronous `play()` completion and rejection also belong to that revision;
+obsolete completion cannot restore readiness, and obsolete rejection cannot report
+an error for a replacement stream. A new attachment clears readiness and dirtiness
+until its own readiness signal arrives.
+Texture size and fitting are presentation properties, not capture identity.
+Changing them resizes/refits the current texture, invalidates obsolete pending
+bitmaps and requests a fresh upload without stopping tracks or resolving the
+device again. A source kind, device reference or peer slot change still replaces
+the session and releases the old capture normally.
+Frame callbacks schedule one coalesced upload microtask instead of waiting for a
+second animation-frame boundary after a render completes. One upload remains in
+flight; dirty state retains only the latest pending video content. Pause and
+disposal invalidate the queued token, so an old callback cannot consume a resumed
+pump. The fallback video watcher still uses animation frames when the browser
+does not support video-frame callbacks.
 
 The active scene record keeps the ZabCanvas Blue manifest pinned to the source
 revision. This is the input needed by the synchronized local scene store; Blue
@@ -187,3 +377,63 @@ initial opacity-zero staging rule to the active layer. This also avoids detachin
 and reattaching its GPU/front canvases during ordinary document replacement.
 
 The pinned Vision engine accepts live text style leaves and stroke.width/stroke.color. Glyph outlines are tessellated by Rust in positioned scene pixels; Solar transports these as ordinary LSDP mutations.
+
+`scripts/qualify-meet-framing.mjs --out <directory> --playwright-root <existing-Prism-checkout>`
+is a retained development qualification for the committed Vision package. It owns
+a private ephemeral loopback server and Chrome instance, closes both, and drives
+the real `LiveMediaController` with a synthetic canvas `MediaStream`. The browser
+fixture in `tests/browser/meet-framing.html` checks literal pixel expectations for
+contain, fill and horizontal/vertical crop mutations in one Vision engine. This
+qualifies bitmap fitting and descriptor hot patches; it does not exercise LSDP,
+Meet signaling, physical capture, CEF, 1080p60 or switch timing. The caller owns
+the explicit output directory; no shared development session is attached.
+
+## Vision contracts
+
+`vision-contracts.ts` owns the host/presenter message, live-media descriptor,
+render-package and scene-handle TypeScript contracts. `vision-presenter.ts`
+re-exports their existing names for its consumers and continues to own the
+persistent host, load, patch, frame and teardown implementations. Verified active
+instance packages travel in the existing load message; dependency fetching remains
+with `scenes/instances.ts`, and instance state/rendering remains with Vision.
+
+In native composition mode, the presenter stages media descriptors from early
+patch ACKs until the matching frame receipt has been accepted. It then excludes
+local capture paths explicitly delegated by that receipt to Main/Pulsar from
+`VisionSceneHandle.mediaSources` and its media callback. Peer inputs remain
+Vision raster inputs. No physical capture resolver/upload is started for those
+delegated paths; rejected frames retain the previous accepted media list.
+Canonical rendering keeps its existing immediate media descriptor updates.
+The accepted/pending descriptor state lives in `VisionMediaSources` beside the
+existing WASM media bridge. The presenter calls `accept` only after identity,
+revision and canvas validation; this is media ownership, without an extra render,
+wait, engine or transition/readiness step.
+
+`tests/browser/native-media-ownership.html`, driven by
+`scripts/qualify-native-media.mjs`, exercises this boundary with the actual
+presenter, pinned Vision WASM and a canvas-generated peer stream. It checks
+peer pixels before/after mutation and resize, zero delegated-camera resolver
+calls and one peer subscription/retirement. The historical presenter negative
+control must fail on an escaped native capture. This private browser test does
+not cover physical camera permission, network Meet, native LSDP, Main or CEF.
+
+## Native coverage receipt extension
+
+`vision-composition-frame.ts` accepts nominal `/1` receipts unchanged and `/2`
+receipts carrying auxiliary `coverageSurfaces`. Each owner/capture in `/2` has
+an explicit nullable `maskSurfaceIndex`; a non-null index must match its exact
+node ID and mask presence. Every coverage is referenced once, in the same
+frame identity and monotonic pixel/layout revisions as paint. Global integer
+scene and atlas rectangles preserve size 1:1 and one-pixel atlas gutters.
+Capture-only content may have a coverage atlas with no visible raster band.
+The combined owner/capture/paint/coverage budget remains 100,000 entries.
+Vision resolves alpha/luminance/subtraction; Solar only validates and projects
+these references. This is not a CPU mask computation or physical-presentation
+receipt. `tests/unit/native-composition-coverage.test.ts` covers receipt and
+plan contracts; actual extended GPU composition remains a separate qualification.
+
+The LSDP publisher retains the shared state envelope `/1` while accepting both
+plan versions. It checks the schema and producer envelope (including the `/2`
+coverage list), preserves the other graph, and retains existing CAS/retirement
+rules. Frame validation and native admission own geometry and pixel validity;
+the publisher does not reinterpret another producer's rendering plan.

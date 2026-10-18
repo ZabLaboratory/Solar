@@ -21,6 +21,43 @@ export interface PeerSources {
   dispose: () => void;
 }
 
+interface PeerViewerRoutingMetadata {
+  revision: number;
+  slotRefs: string[];
+}
+
+const PEER_SLOT_REF = /^(?:@\d+|[a-z][a-z0-9-]{0,63})$/;
+const MAX_ROUTING_SLOT_REFS = 256;
+const MAX_ROUTING_READBACK_CHARS = 16_384;
+const PEER_VIEWER_CHANNEL_OPEN = 1;
+
+/** Optional Prism extension; older channel snapshots continue to route cameras. */
+function readPeerViewerRoutingMetadata(
+  state: Record<string, unknown>,
+): PeerViewerRoutingMetadata | null {
+  const revision = state.routingRevision;
+  const slotRefs = state.slotRefs;
+  if (
+    typeof revision !== "number" ||
+    !Number.isSafeInteger(revision) ||
+    revision < 0 ||
+    !Array.isArray(slotRefs) ||
+    slotRefs.length > MAX_ROUTING_SLOT_REFS
+  )
+    return null;
+  return {
+    revision,
+    slotRefs: [
+      ...new Set(
+        slotRefs.filter(
+          (ref): ref is string =>
+            typeof ref === "string" && PEER_SLOT_REF.test(ref),
+        ),
+      ),
+    ],
+  };
+}
+
 /**
  * The embedded Prism host and the standalone Antenne both use the same
  * receive-only viewer glue, but only the embedded host is guaranteed to have
@@ -145,10 +182,92 @@ export function createPeerSources(
     let channelRetry: ReturnType<typeof setTimeout> | null = null;
     let channelStopped = false;
     let stateUpdates = Promise.resolve();
+    let routingRevision: number | null = null;
+    let routingSlotRefs: string[] = [];
+    let routingUpdateInProgress = false;
+    let lastRoutingFrame: string | null = null;
+    const routingSubscriptions = new Map<string, () => void>();
+
+    const sendPeerViewerRouting = (): void => {
+      const socket = channelSocket;
+      if (
+        routingUpdateInProgress ||
+        routingRevision === null ||
+        socket === null ||
+        socket.readyState !== PEER_VIEWER_CHANNEL_OPEN
+      )
+        return;
+      try {
+        const resolvedSlots = Object.fromEntries(
+          routingSlotRefs.map((slotRef) => [
+            slotRef,
+            {
+              peerLabel: slots.resolvedPeer(slotRef),
+              available: slots.resolve(slotRef) !== null,
+            },
+          ]),
+        );
+        const frame = JSON.stringify({
+          type: "peer_viewer_routing",
+          revision: routingRevision,
+          slots: resolvedSlots,
+        });
+        // Prism bounds decoded frames to 16,384 UTF-16 code units. Large scenes keep
+        // their camera route; they simply do not publish a partial snapshot.
+        if (
+          frame.length > MAX_ROUTING_READBACK_CHARS ||
+          frame === lastRoutingFrame
+        )
+          return;
+        socket.send(frame);
+        lastRoutingFrame = frame;
+      } catch {
+        // Readback is observational and must never interrupt stream delivery.
+      }
+    };
+
+    const setPeerViewerRouting = (
+      metadata: PeerViewerRoutingMetadata | null,
+    ): void => {
+      const nextRefs = new Set(metadata?.slotRefs ?? []);
+      for (const [slotRef, unsubscribe] of routingSubscriptions) {
+        if (nextRefs.has(slotRef)) continue;
+        try {
+          unsubscribe();
+        } catch {
+          // A stale observer cannot block native slot reconciliation.
+        }
+        routingSubscriptions.delete(slotRef);
+      }
+      if (metadata === null || metadata.revision !== routingRevision)
+        lastRoutingFrame = null;
+      routingRevision = metadata?.revision ?? null;
+      routingSlotRefs = metadata?.slotRefs ?? [];
+      for (const slotRef of routingSlotRefs) {
+        if (routingSubscriptions.has(slotRef)) continue;
+        try {
+          routingSubscriptions.set(
+            slotRef,
+            slots.subscribe(slotRef, sendPeerViewerRouting),
+          );
+        } catch {
+          // The readback observer is best-effort; camera source subscriptions
+          // remain owned by the existing resolver path.
+        }
+      }
+    };
+
+    const clearPeerViewerRouting = (): void => {
+      setPeerViewerRouting(null);
+      lastRoutingFrame = null;
+    };
 
     const applyPeerViewerState = async (state: unknown): Promise<void> => {
       if (typeof state !== "object" || state === null) return;
-      const candidate = state as { rooms?: unknown; slots?: unknown };
+      const candidate = state as Record<string, unknown> & {
+        rooms?: unknown;
+        slots?: unknown;
+      };
       if (!Array.isArray(candidate.rooms)) return;
       // Keep the diagnostic global truthful for the already-mounted page. The
       // normaliser below still validates every room before it reaches Meet.
@@ -163,16 +282,23 @@ export function createPeerSources(
       // room id. Do not call `leave()` here: that would tear down both local
       // consumers before the replacement socket has delivered its first track.
       // The runtime owns the actual replacement lifecycle.
-      await peerViewer.setRooms(rooms);
-      for (const slotRef of Object.keys(currentSlotBindings)) {
-        if (!(slotRef in resolved.slotBindings)) slots.assign(slotRef, null);
+      routingUpdateInProgress = true;
+      try {
+        await peerViewer.setRooms(rooms);
+        for (const slotRef of Object.keys(currentSlotBindings)) {
+          if (!(slotRef in resolved.slotBindings)) slots.assign(slotRef, null);
+        }
+        for (const [slotRef, peerLabel] of Object.entries(
+          resolved.slotBindings,
+        )) {
+          slots.assign(slotRef, peerLabel);
+        }
+        currentSlotBindings = { ...resolved.slotBindings };
+        setPeerViewerRouting(readPeerViewerRoutingMetadata(candidate));
+      } finally {
+        routingUpdateInProgress = false;
+        sendPeerViewerRouting();
       }
-      for (const [slotRef, peerLabel] of Object.entries(
-        resolved.slotBindings,
-      )) {
-        slots.assign(slotRef, peerLabel);
-      }
-      currentSlotBindings = { ...resolved.slotBindings };
     };
 
     const connectPeerViewerChannel = (): void => {
@@ -182,6 +308,7 @@ export function createPeerSources(
         typeof globalThis.WebSocket !== "function"
       )
         return;
+      lastRoutingFrame = null;
       const socket = new globalThis.WebSocket(peerViewerChannel.url);
       channelSocket = socket;
       socket.addEventListener("message", (event) => {
@@ -200,7 +327,10 @@ export function createPeerSources(
         }
       });
       socket.addEventListener("close", () => {
-        if (channelSocket === socket) channelSocket = null;
+        if (channelSocket === socket) {
+          channelSocket = null;
+          lastRoutingFrame = null;
+        }
         if (channelStopped || channelRetry !== null) return;
         channelRetry = setTimeout(() => {
           channelRetry = null;
@@ -241,6 +371,7 @@ export function createPeerSources(
       channelStopped = true;
       if (channelRetry !== null) clearTimeout(channelRetry);
       channelRetry = null;
+      clearPeerViewerRouting();
       channelSocket?.close();
       channelSocket = null;
       peerViewer.leave();

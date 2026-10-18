@@ -1,0 +1,112 @@
+{
+  "source": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261013-solar-qualification",
+  "sourceHead": "c0d4b3425a5fafc2bc96367390d877717df5bb2a",
+  "policy": "Exact full tracked dirty source files preserved before integration; no new transition or timing edit. Existing product Vision JS/WASM/assets retained by hash, not rebuilt. Foreign untracked proof remains in its owner.",
+  "files": [
+    {
+      "path": "docs/development/code-map.md",
+      "bytes": 23090,
+      "sha256": "bfce20a1f18ab7a1820eab77dd6775ab84535d018ad72640248e1282ffcbfc72"
+    },
+    {
+      "path": "docs/development/native-lsdp.md",
+      "bytes": 11792,
+      "sha256": "6b870980bdec4c563aed73a1378198e4bbc4c39a697b5dcc92e19a901b5026f2"
+    },
+    {
+      "path": "docs/development/render-cadence.md",
+      "bytes": 6475,
+      "sha256": "13f8225f12ad81f3cce2f7da5e02c13cc38902fcf27b726f2fc3d3951031cfae"
+    },
+    {
+      "path": "docs/development/scene-feature-map.md",
+      "bytes": 7932,
+      "sha256": "892fac8574849a87502b7430af909cc954b0e6f4e25493a5093d7a694e007fd2"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "bytes": 1557,
+      "sha256": "9e5e580649733cf48b49fca59f92989d8027d76b2d27010c1d5a9999bc704d9d"
+    },
+    {
+      "path": "public/vision/pkg/lumencast_vision_web.js",
+      "bytes": 148483,
+      "sha256": "b9175e0eae61977925f6600398bfe4001f47875c3bec469439c36f928b6aea5a"
+    },
+    {
+      "path": "public/vision/pkg/lumencast_vision_web_bg.wasm",
+      "bytes": 10316335,
+      "sha256": "b990a76e55c0fa6c60f252ecb9cfb18f453759022be4308c15be82b40246626e"
+    },
+    {
+      "path": "public/vision/vision-assets.json",
+      "bytes": 1754,
+      "sha256": "a018677488bdafc720dc24c4848a720b28ee55134826da6f09c7c0f1c03ea7c9"
+    },
+    {
+      "path": "src/engine/README.md",
+      "bytes": 16979,
+      "sha256": "a3930f2c3b95d03da116754b6c18d0a1daeddff31a0577644931e80f8192742f"
+    },
+    {
+      "path": "src/engine/live-media.ts",
+      "bytes": 15611,
+      "sha256": "ea3b4f983c8cbcdc26c80810040537e51c7d0463af73ecd03ee443b8a8d2ae6e"
+    },
+    {
+      "path": "src/engine/native-lsdp-runtime.ts",
+      "bytes": 32963,
+      "sha256": "96839ac4a13e4523771d3507139dc31fe047aebf50237ecf5ac14b0d0f36cdf5"
+    },
+    {
+      "path": "src/engine/vision-frames.ts",
+      "bytes": 3800,
+      "sha256": "b59a4b150b58875c61b266fb7ee2e2b1cc0192dba0aeb876cfee462ff36d6d11"
+    },
+    {
+      "path": "src/engine/vision-presenter.ts",
+      "bytes": 32141,
+      "sha256": "a75a41eff229eb8ab12cb8150ff59e5a08072940a5c52a61c1d58d1464609cbe"
+    },
+    {
+      "path": "src/scenes/README.md",
+      "bytes": 10193,
+      "sha256": "3f95d623716756c4297a87ff2318e9736b0a7499d6ce7b5595eaf5630da6b5ad"
+    },
+    {
+      "path": "src/scenes/editable-bindings.ts",
+      "bytes": 6509,
+      "sha256": "8e937c9ce092a649ff581efc614ec4ac0d41d850f5b90953385d488d71e8f94f"
+    },
+    {
+      "path": "src/scenes/native-document.ts",
+      "bytes": 16627,
+      "sha256": "5a91e7c6578aa563b828d1064a857b6b440cc6955814646f644c294c8737c897"
+    },
+    {
+      "path": "tests/unit/live-media.test.ts",
+      "bytes": 20232,
+      "sha256": "bc3e57bbdf46b202126a1fd6e5c55372b967801026a4771f7e399ab5118a0881"
+    },
+    {
+      "path": "tests/unit/native-document.test.ts",
+      "bytes": 22461,
+      "sha256": "6f17d683a243d0560d981edcacac5f475c8666587e21aa0153371467453e1520"
+    },
+    {
+      "path": "tests/unit/native-lsdp-runtime.test.ts",
+      "bytes": 34645,
+      "sha256": "12223045787af323a7aa620f71891dca70288fccaae98452539534a0d3666fa7"
+    },
+    {
+      "path": "tests/unit/vision-frames.test.ts",
+      "bytes": 4637,
+      "sha256": "298e154c924ce5948bc11f11b6e787c324d4b20c47f9b5449dc8c9cd62a61479"
+    },
+    {
+      "path": "tests/unit/vision-session.test.ts",
+      "bytes": 10467,
+      "sha256": "a386c1e772abcc359dbc1f8ad08bb44ddd9106b31cb086c490a2a84e78c5e973"
+    }
+  ]
+}

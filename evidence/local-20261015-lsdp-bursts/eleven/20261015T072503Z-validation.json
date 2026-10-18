@@ -1,0 +1,59 @@
+{
+  "schema": "solar.lsdp-burst-validation.v1",
+  "capturedUtc": "2026-10-15T07:25:03Z",
+  "worktree": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-lsdp-bursts",
+  "branch": "eleven/local-20261015-lsdp-bursts",
+  "base": "c0d4b3425a5fafc2bc96367390d877717df5bb2a",
+  "commands": [
+    {
+      "name": "focused-vitest",
+      "exitCode": 0,
+      "command": "vitest run --maxWorkers=1 --no-file-parallelism tests/unit/frame-patches.test.ts tests/unit/native-worker-client.test.ts",
+      "log": "20261015T072100Z-vitest.txt",
+      "sha256": "e3bf335008a03bcbccfacb52abfedfa44bcd52a85729c136f6716091d8218d8c"
+    },
+    {
+      "name": "focused-eslint",
+      "exitCode": 0,
+      "command": "eslint src/engine/native-worker.ts src/engine/native-worker-client.ts src/engine/frame-patches.ts tests/unit/native-worker-client.test.ts tests/unit/frame-patches.test.ts",
+      "log": "20261015T072100Z-eslint.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "focused-prettier",
+      "exitCode": 0,
+      "command": "prettier --check src/engine/native-worker.ts src/engine/native-worker-client.ts src/engine/frame-patches.ts tests/unit/native-worker-client.test.ts tests/unit/frame-patches.test.ts src/engine/README.md docs/development/native-lsdp.md",
+      "log": "20261015T072100Z-prettier.txt",
+      "sha256": "f20510a9da4717c51c4cffee6d0dd88d6c9a723d0a83711d01216f5b48961283"
+    },
+    {
+      "name": "focused-typescript",
+      "exitCode": 0,
+      "command": "tsc --noEmit --strict --noUnusedLocals --noUnusedParameters --target ES2022 --module ESNext --moduleResolution bundler --lib ES2022,DOM,DOM.Iterable --types node,vite/client src/engine/native-worker-client.ts src/engine/frame-patches.ts tests/unit/native-worker-client.test.ts tests/unit/frame-patches.test.ts",
+      "log": "20261015T072100Z-tsc.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "code-map-check",
+      "exitCode": 0,
+      "command": "node scripts/code/cli.mjs check",
+      "log": "20261015T072100Z-code-check.txt",
+      "sha256": "33a5cb123eb1c1b52e07b4dfd8ff93118f9e039b8c2b35faae3a1caf553ac4e4"
+    },
+    {
+      "name": "staged-diff-whitespace",
+      "exitCode": 0,
+      "command": "git diff --cached --check and git diff --check",
+      "log": "20261015T072100Z-diff-check.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "documentation-check",
+      "exitCode": 1,
+      "command": "node scripts/check-documentation.mjs",
+      "log": "20261015T072356Z-documentation-check.txt",
+      "sha256": "4fb141c7ec7d701f7eb9cc6d4c45f76448d43c3b6aac4dc91523eea19d4bc3e8",
+      "limitation": "Sparse checkout omits paths and evidence referenced by the repository-wide documentation index."
+    }
+  ]
+}

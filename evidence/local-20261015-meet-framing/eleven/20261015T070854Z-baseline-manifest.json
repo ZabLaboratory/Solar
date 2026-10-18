@@ -1,0 +1,35 @@
+{
+  "targetWorktree": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-meet-framing",
+  "files": [
+    {
+      "Bytes": 15611,
+      "Path": "src/engine/live-media.ts",
+      "SourceSha256": "EA3B4F983C8CBCDC26C80810040537E51C7D0463AF73ECD03EE443B8A8D2AE6E",
+      "CopiedBaselineSha256": "EA3B4F983C8CBCDC26C80810040537E51C7D0463AF73ECD03EE443B8A8D2AE6E"
+    },
+    {
+      "Bytes": 32141,
+      "Path": "src/engine/vision-presenter.ts",
+      "SourceSha256": "A75A41EFF229EB8AB12CB8150FF59E5A08072940A5C52A61C1D58D1464609CBE",
+      "CopiedBaselineSha256": "A75A41EFF229EB8AB12CB8150FF59E5A08072940A5C52A61C1D58D1464609CBE"
+    },
+    {
+      "Bytes": 20232,
+      "Path": "tests/unit/live-media.test.ts",
+      "SourceSha256": "BC3E57BBDF46B202126A1FD6E5C55372B967801026A4771F7E399AB5118A0881",
+      "CopiedBaselineSha256": "BC3E57BBDF46B202126A1FD6E5C55372B967801026A4771F7E399AB5118A0881"
+    },
+    {
+      "Bytes": 16979,
+      "Path": "src/engine/README.md",
+      "SourceSha256": "A3930F2C3B95D03DA116754B6C18D0A1DAEDDFF31A0577644931E80F8192742F",
+      "CopiedBaselineSha256": "A3930F2C3B95D03DA116754B6C18D0A1DAEDDFF31A0577644931E80F8192742F"
+    }
+  ],
+  "targetBranch": "eleven/local-20261015-meet-framing",
+  "base": "c0d4b3425a5fafc2bc96367390d877717df5bb2a",
+  "sourceWorktree": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261013-solar-qualification",
+  "repository": "Solar",
+  "copiedBytes": 84963.0,
+  "sourceHead": "c0d4b3425a5fafc2bc96367390d877717df5bb2a"
+}

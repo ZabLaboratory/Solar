@@ -1,0 +1,340 @@
+{
+  "passed": true,
+  "boundary": "real Solar LiveMediaController + synthetic canvas MediaStream + committed Vision WASM/WebGL; no LSDP, real Meet signaling or physical camera",
+  "engine": {
+    "backend": "wgpu fixed Rust scene graph",
+    "height": 96,
+    "instance_sources": [],
+    "layout_node_count": 2,
+    "node_count": 2,
+    "scene_id": "private-meet-framing",
+    "scene_version": "sha256:8c3e222a9ea4cae76dff173d5bcbe7001b8716a00270a3f709284360a8329a28",
+    "text_preparation_ms": 0.4,
+    "width": 128
+  },
+  "samples": [
+    {
+      "name": "contain",
+      "actual": {
+        "top": [
+          17,
+          34,
+          51,
+          255
+        ],
+        "inside": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "expected": {
+        "top": [
+          17,
+          34,
+          51,
+          255
+        ],
+        "inside": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "descriptors": [
+        {
+          "contentBox": {
+            "height": 48,
+            "width": 48,
+            "x": 8,
+            "y": 8
+          },
+          "fit": "contain",
+          "height": 64,
+          "node_id": 1,
+          "objectPosition": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "path": "__vision_live_media__/64x64/0",
+          "size": {
+            "h": 64,
+            "w": 64
+          },
+          "slot_ref": "@0",
+          "sourceCrop": {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0
+          },
+          "sourceZoom": 1,
+          "type": "peer",
+          "width": 64
+        }
+      ],
+      "uploads": 1
+    },
+    {
+      "name": "fill",
+      "actual": {
+        "top": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "inside": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "expected": {
+        "top": [
+          255,
+          0,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "descriptors": [
+        {
+          "contentBox": {
+            "height": 48,
+            "width": 48,
+            "x": 8,
+            "y": 8
+          },
+          "fit": "fill",
+          "height": 64,
+          "node_id": 1,
+          "objectPosition": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "path": "__vision_live_media__/64x64/0",
+          "size": {
+            "h": 64,
+            "w": 64
+          },
+          "slot_ref": "@0",
+          "sourceCrop": {
+            "bottom": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0
+          },
+          "sourceZoom": 1,
+          "type": "peer",
+          "width": 64
+        }
+      ],
+      "uploads": 2
+    },
+    {
+      "name": "crop left 50%",
+      "actual": {
+        "top": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "inside": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "expected": {
+        "top": [
+          0,
+          255,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "descriptors": [
+        {
+          "contentBox": {
+            "height": 48,
+            "width": 48,
+            "x": 8,
+            "y": 8
+          },
+          "fit": "fill",
+          "height": 64,
+          "node_id": 1,
+          "objectPosition": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "path": "__vision_live_media__/64x64/0",
+          "size": {
+            "h": 64,
+            "w": 64
+          },
+          "slot_ref": "@0",
+          "sourceCrop": {
+            "bottom": 0,
+            "left": 50,
+            "right": 0,
+            "top": 0
+          },
+          "sourceZoom": 1,
+          "type": "peer",
+          "width": 64
+        }
+      ],
+      "uploads": 3
+    },
+    {
+      "name": "crop top 50%",
+      "actual": {
+        "top": [
+          255,
+          255,
+          0,
+          255
+        ],
+        "inside": [
+          255,
+          255,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "expected": {
+        "top": [
+          255,
+          255,
+          0,
+          255
+        ],
+        "outside": [
+          17,
+          34,
+          51,
+          255
+        ]
+      },
+      "descriptors": [
+        {
+          "contentBox": {
+            "height": 48,
+            "width": 48,
+            "x": 8,
+            "y": 8
+          },
+          "fit": "fill",
+          "height": 64,
+          "node_id": 1,
+          "objectPosition": {
+            "x": 0.5,
+            "y": 0.5
+          },
+          "path": "__vision_live_media__/64x64/0",
+          "size": {
+            "h": 64,
+            "w": 64
+          },
+          "slot_ref": "@0",
+          "sourceCrop": {
+            "bottom": 0,
+            "left": 50,
+            "right": 0,
+            "top": 50
+          },
+          "sourceZoom": 1,
+          "type": "peer",
+          "width": 64
+        }
+      ],
+      "uploads": 4
+    }
+  ],
+  "uploads": 4,
+  "errors": [],
+  "performanceProbe": {
+    "supported": true,
+    "error": null
+  },
+  "stageMetrics": [
+    {
+      "emittedAtMs": 3083.5,
+      "sample": {
+        "windowMs": 1000.2000000476837,
+        "rvfcCallbacks": 0,
+        "animationFrameCallbacks": 0,
+        "presentedFrameDelta": null,
+        "presentedFrameDeltaUnavailableCallbacks": 0,
+        "coalescedInputs": 0,
+        "bitmapStarts": 4,
+        "bitmapSuccesses": 4,
+        "bitmapFailures": 0,
+        "bitmapStaleDiscards": 0,
+        "bitmapPreparationMsTotal": 1.7999999523162842,
+        "mediaUpdateRequests": 4,
+        "mediaUpdateBitmaps": 4,
+        "mediaUpdateAcknowledgements": 4,
+        "mediaUpdateFailures": 0,
+        "mediaUpdateAckMsTotal": 64.29999995231628,
+        "presenterFrameSubmittedAcks": 0,
+        "renderSubmitCallSamples": 0,
+        "renderSubmitCallMsTotal": null,
+        "renderSubmitCallUnavailable": 4,
+        "gpuCompletionAvailable": false,
+        "gpuCompletionMs": null
+      }
+    }
+  ],
+  "browser": "154.0.8037.98",
+  "pageErrors": []
+}

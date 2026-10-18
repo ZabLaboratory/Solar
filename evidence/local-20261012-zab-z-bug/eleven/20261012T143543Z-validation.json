@@ -1,0 +1,22 @@
+{
+  "schema": "solar.z-bug.validation.v1",
+  "scene_version": "sha256:03a1e4fb6e9b4f28cb0bf5df4e3ca24baf4b2f99794bad6dd6291f7ceff9a7b4",
+  "artifact": "D:\\Documents\\Zab\\Artifacts\\2026-10-12\\zab-z-corner-motion",
+  "source_sha256": "bd60a9e912f680e6e278e6987b75cdcbcf860ce74e5e3c4c5e661441e59a3141",
+  "checks": {
+    "source_pixel_partition": "exact RGBA reconstruction; two connected parts",
+    "lsml_nodes": "two native path shapes, zero image nodes",
+    "solar_build": "npm run build passed",
+    "solar_docs": "npm run check:docs passed",
+    "solar_code_map": "npm run code:check passed",
+    "real_canvas_storyboard": "127 native seek positions captured without browser errors",
+    "actual_canvas_alpha": "transparent corner alpha=0",
+    "export": "1920x1080 60 fps; VP9 alpha_mode=1; decoded alpha checked",
+    "final_mask_iou": 0.957841,
+    "start_end": "identical canvas RGBA frame 0 and frame 359"
+  },
+  "limitations": [
+    "local Solar/Vision preview; no Prism Program or OBS test",
+    "60 fps export sampled via native seek; not a live scanout cadence measurement"
+  ]
+}

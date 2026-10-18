@@ -1,0 +1,69 @@
+{
+  "timestampUtc": "2026-10-17T11:57:37.962778+00:00",
+  "productCommit": "69bb5f55f587b96c5fff764720a96f6c058aacf1",
+  "baselinePresenterCommit": "608d0a6c13ae79cc4d5376562a69ee15894da1fc",
+  "positive": {
+    "path": "20261017T115640Z-native-media-final-result.json",
+    "sha256": "ad8b7585ac57c1e5f5f397e9cab906f8044f4cc35423543eb81cc0502ec6c707",
+    "captureResolverCalls": 0,
+    "peerSubscriptions": 1,
+    "peerRetirements": 1,
+    "phases": [
+      "initial",
+      "mutation",
+      "resize"
+    ],
+    "peerPixels": [
+      [
+        0,
+        255,
+        0,
+        255
+      ],
+      [
+        0,
+        0,
+        255,
+        255
+      ],
+      [
+        0,
+        0,
+        255,
+        255
+      ]
+    ]
+  },
+  "negativeControl": {
+    "path": "20261017T115645Z-native-media-negative-control-result.json",
+    "sha256": "50a1cd820dc14dfa10aebdfd4e77d64dc7dd81bb18ff05cad1d499fcdb0d68b1",
+    "expectedFailure": "Error: A native capture escaped into Solar media ownership",
+    "captureResolverCalls": 1,
+    "injectionScope": "Only exact old presenter source from Git is substituted in the private Vite fixture; current dependencies and pinned WASM unchanged.",
+    "cleanup": {
+      "peerRetirements": 1,
+      "liveSyntheticTracks": 0
+    }
+  },
+  "validation": {
+    "privateChrome": "PASS real Solar presenter and pinned Vision WASM; current passes, previous presenter fails on escaped native capture",
+    "scopedEslint": "PASS",
+    "architecture": "PASS 70 sources, 84 tools, docs current, 310 text files within ceilings",
+    "diffCheck": "PASS"
+  },
+  "sourceSha256": {
+    "scripts/qualify-native-media.mjs": "6d5c61d440ce3d97b782554759a9fc7cec2b3eb40cab0d4ef81b48ecee17f9c9",
+    "tests/browser/native-media-ownership.html": "cd1412d02711cd0f23c30e2fdcd1334b1bb9d80401056bea48065c38d76d45b6",
+    "scripts/README.md": "b8c3993decc9b6f07cba0a74a03c4e0d9fe6fe2aa4d130f7c8ec032b3f0a005a",
+    "src/engine/README.md": "081f21b4b278b33ae09dab672a04c48f4047fdedbdf4790c464a8c5c59da9a94"
+  },
+  "limits": "Private real Solar presenter/WASM/WebGL2 and synthetic canvas peer. No physical camera, network Meet, LSDP, Main bridge, CEF, installed runtime or physical presentation qualification.",
+  "reportTimestampCorrection": {
+    "20261017T115700Z-native-media-browser-result.json": "20261017T115517Z-native-media-browser-result.json",
+    "20261017T115900Z-native-media-baseline-result.json": "20261017T115608Z-native-media-baseline-result.json",
+    "20261017T120000Z-native-media-final-result.json": "20261017T115640Z-native-media-final-result.json",
+    "20261017T120010Z-native-media-negative-control-result.json": "20261017T115645Z-native-media-negative-control-result.json"
+  },
+  "sharedRuntime": "untouched",
+  "excludedScope": "No transition/readiness/switch-duration behavior changed."
+}

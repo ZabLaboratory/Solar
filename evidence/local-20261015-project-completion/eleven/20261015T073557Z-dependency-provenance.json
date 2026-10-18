@@ -1,0 +1,29 @@
+{
+  "packages": [
+    {
+      "name": "fast-json-patch",
+      "version": "3.1.1",
+      "lockIntegrity": "sha512-vf6IHUX2SBcA+5/+4883dsIjpBTqmfBjmYiWK1savxQmFk4JfBMLa7ynTYOs1Rolp/T1betJxHiGD3g1Mn8lUQ==",
+      "archiveSha256": "928a1fc52f0ab766ab8406bf9798afebb5c4d24eb1bc8652c36a6850831e6dee"
+    },
+    {
+      "name": "fflate",
+      "version": "0.8.3",
+      "lockIntegrity": "sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==",
+      "archiveSha256": "38c2cd824402407b43153c782274aec2ea83ea688e4aa0b743c5f2c305857d92"
+    },
+    {
+      "name": "@noble/hashes",
+      "version": "1.8.0",
+      "lockIntegrity": "sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==",
+      "archiveSha256": "e8a765d92c04faaccba8776411c5038cb195f812ee629fce07e1d2e6aec80ea0"
+    },
+    {
+      "name": "fake-indexeddb",
+      "version": "6.2.4",
+      "lockIntegrity": "sha512-INKeIKEtSViN4yVtEWEUqbsqmaIy7Ls+MfU0yxQVXg67pOJ/sH1ZxcVrP8XrKULUFohcPD9gnmym+qBfEybACw==",
+      "archiveSha256": "23f193d72c4ab9fa4bba64b0acb02cad29982149ac6c28f2609c073963df6ba3"
+    }
+  ],
+  "policy": "Lock SHA512 verified before extraction into this owned worktree only; reused canonical test tooling reports Vitest 4.1.5, not a fresh lockfile installation."
+}

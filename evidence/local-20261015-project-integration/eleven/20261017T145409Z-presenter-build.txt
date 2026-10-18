@@ -1,0 +1,50 @@
+
+> @zablab/solar@3.0.0 build
+> npm run build:lib && npm run build:host && node scripts/build-host-html.mjs && npm run build:server && npm run check:layout
+
+
+> @zablab/solar@3.0.0 build:lib
+> vite build
+
+vite v6.4.3 building for production...
+transforming...
+✓ 85 modules transformed.
+rendering chunks...
+
+[vite:dts] Start generate declaration files...
+computing gzip size...
+dist/workers/native-worker-ubPqxztq.js   37.45 kB
+dist/solar.js                           317.40 kB │ gzip: 88.79 kB │ map: 1,046.34 kB
+[vite:dts] Start rollup declaration files...
+Analysis will use the bundled TypeScript version 5.9.3
+[vite:dts] Declaration files built in 6045ms.
+
+✓ built in 7.62s
+
+> @zablab/solar@3.0.0 prebuild:host
+> node scripts/check-vision-assets.mjs
+
+Vision presenter, fonts, generated glue and WASM engine match all four artifact pins.
+
+> @zablab/solar@3.0.0 build:host
+> vite build --config vite.config.host.ts
+
+vite v6.4.3 building for production...
+transforming...
+✓ 89 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/host/host.html                           1.00 kB │ gzip:  0.54 kB
+dist/host/assets/native-worker-ubPqxztq.js   37.45 kB
+dist/host/assets/host-CWGtjcW9.js           229.66 kB │ gzip: 76.34 kB │ map: 1,024.77 kB
+✓ built in 2.00s
+solar host html  : 1000 B raw at D:\Documents\Zab\Solar\.worktrees\eleven-local-20261015-project-integration\dist\host\index.html (entry ./assets/host-CWGtjcW9.js, generator @zablab/solar 3.0.0)
+
+> @zablab/solar@3.0.0 build:server
+> node scripts/build-server.mjs
+
+
+> @zablab/solar@3.0.0 check:layout
+> node scripts/check-runtime-layout.mjs
+
+Solar runtime layout verified: 5 Vision assets, one copy each under host/vision, no host/root collision.

@@ -1,0 +1,122 @@
+{
+  "observedAt": "2026-10-11T11:56:28.466Z",
+  "server": {
+    "running": true,
+    "port": 49360,
+    "bundleAvailable": true,
+    "solarPreviewFrameReady": true
+  },
+  "broadcast": {
+    "pulsarRunning": true,
+    "pulsarPort": 56805,
+    "state": "idle"
+  },
+  "voice": {
+    "phase": "listening",
+    "error": null
+  },
+  "framingControls": false,
+  "solarTag": "v3.0.0-local-81780532e6e43116",
+  "visionSourceRevision": "ea8a2088bc7dc521e7bd72ab319082b0b3648d2c",
+  "voiceConfigSha256": "cc91c79ca346ffa1c2112e140be53527080e0772cf136bbbe5ef65564be1d8c5",
+  "synchronization": {
+    "snapshot": "D:/Documents/Zab/Prism/.worktrees/eleven-local-20261010-voice-controls/.cache/common-update",
+    "rows": [
+      {
+        "path": "src/main/capture/resolver/appearance.ts",
+        "before": "0bf2e6a80440b6119d8fc6a7353a23394b2d80e3b45cf85d4e3fdbcec6815ac0",
+        "after": "8579ad794e566976a1387ca3fe0d8f02522aab6cd376b7c4f45671e05dce01f7"
+      },
+      {
+        "path": "src/main/capture/capture-layout.ts",
+        "before": "73b2e72cce3375fa697251ac34f11bb19d23ab75d64c4af5f7d757a2aa86ab82",
+        "after": "73b2e72cce3375fa697251ac34f11bb19d23ab75d64c4af5f7d757a2aa86ab82"
+      },
+      {
+        "path": "src/renderer/src/lib/lsml/export/primitives.ts",
+        "before": "a6e62bf19be91f0f51411ad439d258275d51642a112fbaf937292dd9fda45574",
+        "after": "a6e62bf19be91f0f51411ad439d258275d51642a112fbaf937292dd9fda45574"
+      },
+      {
+        "path": "src/renderer/src/lib/lsml/import/primitives.ts",
+        "before": "ec009d086d73d7b328c0e60ecaa7c2a2b935f706b318558ea58e8bdba373b8c0",
+        "after": "ec009d086d73d7b328c0e60ecaa7c2a2b935f706b318558ea58e8bdba373b8c0"
+      },
+      {
+        "path": "src/renderer/src/lib/lsml/export/sources.ts",
+        "before": "6e3194b620a3e095dc25487733e0f69dded4691fef4f3a82e800f686655e63ed",
+        "after": "6e3194b620a3e095dc25487733e0f69dded4691fef4f3a82e800f686655e63ed"
+      },
+      {
+        "path": "src/renderer/src/lib/lsml/import/sources.ts",
+        "before": "897ddd401aa730af9c6227efcc71094e6e88173601d24d63264be0490fd54018",
+        "after": "26f91acb4e9b68a6c49585a15982851b84a9c68c315949fe36b828e38620fbfb"
+      },
+      {
+        "path": "src/renderer/src/lib/lsml/editable-lsml.ts",
+        "before": "2b7a388fad767173bc23c3386ca1db0b210d7ef6111f390d9eddce2efa353d62",
+        "after": "175301a88075e961e0072600a7fa6b1fbe051fbbca525b50035ca02163c1a4b0"
+      },
+      {
+        "path": "src/shared/scene-render/absolute-child.tsx",
+        "before": "058c7c3c371c3501a73f84585e9a2710da9127375ff4edfd77bf19c7d62ad465",
+        "after": "058c7c3c371c3501a73f84585e9a2710da9127375ff4edfd77bf19c7d62ad465"
+      },
+      {
+        "path": "src/shared/scene-render/renderers/image.tsx",
+        "before": "9e24553bf39daed6aea8192039db5814a438975867b710441082000aa8588b2f",
+        "after": "4ec8480fe4f5b6257f75854c317e6054091d7edd8e0c6ea23771534589738c19"
+      },
+      {
+        "path": "src/shared/scene-render/media-framing.ts",
+        "before": "c5829a5f29f54631c051d0c1b2703da20d27e2534f36aecb0db2d7bad449d7d6",
+        "after": "c5829a5f29f54631c051d0c1b2703da20d27e2534f36aecb0db2d7bad449d7d6"
+      },
+      {
+        "path": "src/shared/scene-render/canvas/component-types.ts",
+        "before": "7d98cae0c8c8c0866ae61774e0fcc98f59ad8599ae83b2ac9091e36d5367bbc4",
+        "after": "7d98cae0c8c8c0866ae61774e0fcc98f59ad8599ae83b2ac9091e36d5367bbc4"
+      },
+      {
+        "path": "src/renderer/src/components/canvas/stage/components/SceneComponent.tsx",
+        "before": "e83d0d1b73ab09b9ad325cff098b60cb129a9e2d716cca8d5bff1a53f74a3017",
+        "after": "e83d0d1b73ab09b9ad325cff098b60cb129a9e2d716cca8d5bff1a53f74a3017"
+      },
+      {
+        "path": "src/renderer/src/components/canvas/renderers/components/source.tsx",
+        "before": "6d91bd5db9b70f0a5787ea9de389df904857711b2404dc2c893c6c6629507b73",
+        "after": "345c5d94b377bed0103e49964fd0fa7a0849855535e5f1b8f43879ebe06e6521"
+      },
+      {
+        "path": "src/renderer/src/components/canvas/properties/sections/MediaFramingFields.tsx",
+        "before": "1d70000066b6e8c363fed3a5bd0feb252833e11304368c98b58f02917c8e9b6a",
+        "after": "1d70000066b6e8c363fed3a5bd0feb252833e11304368c98b58f02917c8e9b6a"
+      },
+      {
+        "path": "src/renderer/src/components/canvas/properties/sections/SourceSections.tsx",
+        "before": "80cc49d2b0c22ce64cf0706692f4423164c0ec3f4f98ff5eb38fe86d7bc47185",
+        "after": "d3ae490d95a365b4f6106ce92705a4b9dd15f463d9db48a28cc378fcc4991db0"
+      },
+      {
+        "path": "src/renderer/src/components/canvas/properties/sections/ImageSections.tsx",
+        "before": "7304725ed7e4b81b7bc07ba36af39469c5b95600185de9473b5ec011e24864d7",
+        "after": "33ae9b4c3d216f93c2646f2b3e4151eee275b8c4600b4ebb735d6c094d0dcd6d"
+      },
+      {
+        "path": "src/renderer/src/components/canvas/properties/components/PropertyFields.tsx",
+        "before": "057ad355c4c67a596004cf254661c0d56140ce29e4145b55f71dfd95ac86ba48",
+        "after": "eab2a0212fe53013eca6a9ab49e896453ea2a0bd54b485843bec2e6fd3cf593f"
+      },
+      {
+        "path": "tsconfig.node.json",
+        "before": "8f1720a4317c38f61d62cac869f3cdc07315f91d0739ad120d916327cc9814c3",
+        "after": "8f1720a4317c38f61d62cac869f3cdc07315f91d0739ad120d916327cc9814c3"
+      },
+      {
+        "path": "C:/Users/Mathias/AppData/Roaming/prism-dev/components/pulsar/active/obs-plugins/64bit/pulsar-capture-effects.dll",
+        "before": "dabb8ccc3e56f9d9a0cd3700a6d404db255f9a890ecdcc3693c01651d9540d43",
+        "after": "dabb8ccc3e56f9d9a0cd3700a6d404db255f9a890ecdcc3693c01651d9540d43"
+      }
+    ]
+  }
+}

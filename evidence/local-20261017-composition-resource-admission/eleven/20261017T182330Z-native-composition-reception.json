@@ -1,0 +1,68 @@
+{
+  "schema": "solar.local-native-composition-reception/1",
+  "passed": true,
+  "binarySha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448",
+  "serverSha256": "59b10068e9a1ba775fbb5e120562d79adc6e1a3eb5579cbd80a1b3d78decf6eb",
+  "resource": "solar/composition",
+  "type": "solar.native-composition/1",
+  "wire": "LSDP-TCP/2.0-draft2",
+  "firstPid": 29080,
+  "recoveredPid": 27956,
+  "initialStateHash": "tree-sha256:4edaed96efe49024a7761a4b5787706c46f3897ffbe7578eb2a9118f62635dc4",
+  "recoveryEvents": [
+    {
+      "attempt": 1,
+      "state": "recovering"
+    },
+    {
+      "attempt": 1,
+      "state": "ready"
+    }
+  ],
+  "watchedStates": [
+    {
+      "graphs": {},
+      "producers": {},
+      "schema": "solar.native-composition.state/1"
+    },
+    {
+      "graphs": {},
+      "producers": {
+        "A": "host-a"
+      },
+      "schema": "solar.native-composition.state/1"
+    },
+    {
+      "graphs": {},
+      "producers": {
+        "A": "host-a",
+        "B": "host-b"
+      },
+      "schema": "solar.native-composition.state/1"
+    },
+    {
+      "graphs": {},
+      "producers": {},
+      "schema": "solar.native-composition.state/1"
+    },
+    {
+      "graphs": {},
+      "producers": {
+        "B": "host-b-recovered"
+      },
+      "schema": "solar.native-composition.state/1"
+    }
+  ],
+  "checks": [
+    "declared resource capability",
+    "seed read and normative hash",
+    "apply claim and watch",
+    "full replace and watch",
+    "invalid replacement rejected before exchange",
+    "stale apply rejected without mutation",
+    "automatic recovery resets declared composition seed",
+    "same TCP/WebSocket endpoint and watch reconnect",
+    "post-recovery apply and watch",
+    "owned native child reaped"
+  ]
+}

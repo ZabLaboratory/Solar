@@ -1,0 +1,25 @@
+{
+  "captured_utc": "2026-10-17T11:06:28.7972908Z",
+  "head": "05709f23bc9c24a086a1c3ba7831454eeee6112a",
+  "merged_commit": "a1816dfac87ba3183699997b0f6807b78a8cf9cc",
+  "source_scope": "Vision GPU receipt projection, canonical private package, exact frame/hash publication, explicit authored/texture framing provenance",
+  "tests": {
+    "failed": 0,
+    "passed": 106,
+    "report": "20261017T110444Z-receipt-tests.json"
+  },
+  "typecheck": "PASS",
+  "worker_full_suite": {
+    "files": 48,
+    "passed": 443,
+    "receipt_fixture": true
+  },
+  "common_runtime_updated": false,
+  "limits": [
+    "Real Vision WASM receipt and native full-pipeline pixels pending",
+    "Main physical-source/occurrence and framing source integration pending",
+    "Unsupported authored/non-root clips, masks and nonnormal blends remain open"
+  ],
+  "transition_changed": false,
+  "switch_duration_changed": false
+}

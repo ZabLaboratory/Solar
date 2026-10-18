@@ -10,6 +10,19 @@ resource subscriptions or JavaScript recovery mirror. `replace()` sends the full
 state route, which computes the diff. `apply()` sends explicit operations with a
 baseline precondition. `stop()` cancels requests and reaps the owned process.
 
+The receiver also accepts the exact `solar/composition` resource with type
+`solar.native-composition/1`. Its declared seed and full replacements must satisfy
+the same `solar.native-composition.state/1` envelope used by the browser publisher:
+only A/B producer claims and their owned A/B graphs are valid. Arbitrary resource
+types, this type on another target, and malformed seeds are rejected before the
+native process starts. `apply()` retains native atomic patch and hash-precondition
+semantics for producer claims and graph updates; consumers read/watch the one Rust
+resource. Recovery restores the declared empty composition seed, so the active
+publisher must republish its current graph. The built host contract advertises
+`solar.native-composition.resource.v1` for package admission; this does not change
+the `solar.host.v2` protocol or the LSML renderer. The real-process regression is
+`scripts/test-composition-reception.mjs` with an exact `lsdpd` binary path.
+
 The application main host is the lifecycle authority: supply its local HTTP origin, distribute the
 TCP/WebSocket addresses and invalidate readiness on terminal `onFailure`.
 Rust alone owns accepted resource state. A failed child is replaced on the same
@@ -44,8 +57,23 @@ This store does not replace Orion's signed Blue/source admission or daemon lifec
 `Solar/fonts` directory. It enumerates packaged editor fonts, Windows system and
 per-user font directories, and registered external Windows font paths from
 `windows-fonts.ts`. Only new/modified sources are copied and content-addressed;
-unchanged files reuse the installation index. TTF/OTF/TTC/WOFF/WOFF2 are admitted;
-legacy Windows FON/FNT bitmap files are reported as unsupported. The authenticated
+unchanged files reuse the installation index. TTF/OTF/TTC/WOFF/WOFF2 are admitted.
+Malformed or incompatible cache indexes are reconstructed from installed sources;
+genuine filesystem failures remain errors. A requested corrupt or missing cached
+copy is atomically repaired from a still-matching installed source, including
+equal-length corruption. Changed source bytes are never returned under an old
+digest. Valid warm preparation still reuses metadata without hashing all fonts.
+`report.indexRecovered` and `report.repaired` expose these recovery events.
+Legacy Windows FON/FNT bitmap files are reported as unsupported. The authenticated
+`<fontCatalog.url>/report` endpoint and `SolarReceptionServer.status().fonts`
+expose preparation state, deduplicated prepared file/byte counts, source reads and
+reuse, extension-based exclusion counts, repaired files and capacity limits.
+Diagnostics contain no source paths or catalogue token. A failed startup retains
+its bounded preparation failure code after cleanup. Prepared files are not a
+claim that a browser engine has registered every font; engine registration remains
+measured separately. The file catalogue is bounded to 2,048 distinct files,
+1 GiB of encoded bytes and 64 MiB per source file; the report states these actual
+limits rather than promising unrestricted coverage. The authenticated
 loopback catalogue belongs to the receiver lifecycle and has explicit origin,
 file-count, byte and digest checks. No scene data is written to this catalogue.
 The browser receives its endpoint through `ReceptionConnection.fontCatalog`.

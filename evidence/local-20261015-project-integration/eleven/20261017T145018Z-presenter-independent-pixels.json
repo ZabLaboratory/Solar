@@ -1,0 +1,95 @@
+{
+  "passed": true,
+  "proofSha256": "c6f64c8619d57e0d5772baa9f5345cb28921ef1e617e1629889aa50b2bc1f589",
+  "rawCanvasSha256": "d53c711d79416e971c714cde8e39d92e8e46e6ee5cb7ad16c9d2873756d74977",
+  "presenterCanvasSha256": "d53c711d79416e971c714cde8e39d92e8e46e6ee5cb7ad16c9d2873756d74977",
+  "exactRgbPixelsCompared": 518400,
+  "checks": [
+    {
+      "name": "halfOpacityNonOverlap",
+      "point": [
+        52,
+        401
+      ],
+      "actual": [
+        133,
+        136,
+        140
+      ],
+      "expected": [
+        133,
+        136,
+        140
+      ]
+    },
+    {
+      "name": "halfOpacityOverlap",
+      "point": [
+        111,
+        401
+      ],
+      "actual": [
+        133,
+        136,
+        140
+      ],
+      "expected": [
+        133,
+        136,
+        140
+      ]
+    },
+    {
+      "name": "nestedFrameClip",
+      "point": [
+        189,
+        401
+      ],
+      "actual": [
+        12,
+        17,
+        25
+      ],
+      "expected": [
+        12,
+        17,
+        25
+      ]
+    },
+    {
+      "name": "unclippedNestedOverflow",
+      "point": [
+        332,
+        401
+      ],
+      "actual": [
+        133,
+        136,
+        140
+      ],
+      "expected": [
+        133,
+        136,
+        140
+      ]
+    },
+    {
+      "name": "rootFrameClip",
+      "point": [
+        374,
+        401
+      ],
+      "actual": [
+        12,
+        17,
+        25
+      ],
+      "expected": [
+        12,
+        17,
+        25
+      ]
+    }
+  ],
+  "limits": "Decoded persisted real browser PNGs. No new GPU host, physical output, CEF or installed runtime qualification."
+}

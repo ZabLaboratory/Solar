@@ -2,11 +2,7 @@ import { BrowserLSDP } from "../../vendor/lsdp-native-browser/src/browser.js";
 import { NativeState } from "../internal/native-state";
 import { NativeTreeHasher } from "../internal/native-tree";
 import { workerDigest } from "../internal/native-digest";
-import {
-  nativeChange,
-  scalarOperations,
-  type NativeChange,
-} from "../internal/native-stream";
+import { nativeChange, type NativeChange } from "../internal/native-stream";
 
 const scope = globalThis as unknown as {
   onmessage: (event: MessageEvent) => void;
@@ -60,7 +56,6 @@ scope.onmessage = ({ data }) => {
         const verificationStarted = performance.now();
         const id = ++serial;
         const event = value as NativeChange;
-        let scalar = false;
         if (context.metadata.target !== data.resource)
           throw new Error("Unexpected native resource.");
         if (context.metadata.profile === "lsdp.state.read/1") {
@@ -72,12 +67,6 @@ scope.onmessage = ({ data }) => {
         ) {
           if (!state) throw new Error("Native snapshot required.");
           const next = nativeChange(state, event, data.resource, sequence);
-          scalar =
-            !data.selector &&
-            scalarOperations(event.mutation.operations) &&
-            next.value !== null &&
-            typeof next.value === "object" &&
-            !(next.value as Record<string, unknown>)["x-solar-transition"];
           state = next;
           sequence = event.sequence;
         }
@@ -108,20 +97,10 @@ scope.onmessage = ({ data }) => {
           verificationMs: performance.now() - verificationStarted,
           sentAt: performance.timeOrigin + performance.now(),
         });
-        if (scalar) {
-          // Application is verified in this isolated LSML thread; no pixel claim.
-          void delivered.catch((error) =>
-            scope.postMessage({
-              type: "closed",
-              error: serializedError(error),
-            }),
-          );
-          return {
-            level: "received",
-            transactionId: event.mutation.id,
-            stateHash: state!.stateHash,
-          };
-        }
+        // Wait for the ordered main-thread consumer to admit scalar state to
+        // FramePatches. Its "received" receipt does not wait for Vision/GPU;
+        // keeping the native callback open lets BrowserLSDP's channel window
+        // bound worker-to-main deliveries while that admission is pending.
         return await delivered;
       },
     };

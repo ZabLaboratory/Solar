@@ -1,0 +1,8 @@
+{
+  "message": "Error: page.evaluate: Error: Vision preload-fonts: font data is invalid or contains no registerable faces\n    at presentError (http://127.0.0.1:54699/src/engine/vision-presenter.ts:324:19)\n    at Object.onMessage (http://127.0.0.1:54699/src/engine/vision-presenter.ts:339:21)\n    at http://127.0.0.1:54699/src/engine/vision-presenter.ts:135:24\n    at emit (http://127.0.0.1:54699/vision/ui/mainpresenter.mjs:101:60)\n    at postError (http://127.0.0.1:54699/vision/ui/mainpresenter.mjs:106:5)\n    at http://127.0.0.1:54699/vision/ui/mainpresenter.mjs:152:7",
+  "pageErrors": [],
+  "diagnostics": {
+    "phase": "build exact local sources",
+    "context": null
+  }
+}

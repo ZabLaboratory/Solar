@@ -1,32 +1,45 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "bb6d57f4bb941f79e0d11d31dc3b582dcf762662",
-  "source_state": "Retained image/text surface materials, live mutations, and image corner clipping built from the signed Vision consolidation commit, now merged in verified Vision revision e5b2720589e30820bd6b70b89cc78fec0ab6153a.",
+  "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
+  "source_revision": "cf7b190d9fdf21b0028d97eb91022e1a29da9161",
+  "source_state": "Vision measures intrinsic image dimensions from admitted bytes and preserves ordered capture-adjacent paint islands. Previously published x-zab.capture nodes without id derive a qualified legacy source alias from the logical source kind and device ref; authored ids remain authoritative. Solar pins the generated JS and WASM from the signed Vision commit; physical cockpit opening is qualified separately in Prism.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "bytes": 26045,
-      "sha256": "37fe912a89103c0985d407f5bc993a037cd4b2a8f86d6e95e45d12b7b9977ea0"
+      "sha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
+      "bytes": 43272
     },
     "ui/fonts.mjs": {
-      "bytes": 1977,
-      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
+      "bytes": 1977
     },
     "pkg/lumencast_vision_web.js": {
-      "sha256": "85092f02f89e8bfc4bb172c7dd693c5f4b2c5bcded4f1778ff2048edeb4e0430",
-      "bytes": 148483
+      "sha256": "fc32462687ba61eb92f3366ac4a017ab3757c63ee2373610c06b6c936afd5cf1",
+      "bytes": 157228
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "e535ae4e1c596c7ade8d5110498f94154634a20765f2ecf2e39c275572e64f3c",
-      "bytes": 10310965
+      "sha256": "b04f0eb2153c715065eb8b8b70867b75ecb73d90928eb8cf568c7f5db69232e8",
+      "bytes": 10632333
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_base": "bb6d57f4bb941f79e0d11d31dc3b582dcf762662",
-    "engine_branch": "eleven/local-20261011-vision-merge",
-    "engine_evidence": "evidence/local-20261011-vision-merge/eleven/"
-  },
-  "source_revision": "64d0cfc7d7a539d1e4c7fcfcddafbf771bacd49e",
-  "merged_revision": "e5b2720589e30820bd6b70b89cc78fec0ab6153a"
+    "engine_branch": "eleven/local-20261018-empty-capture-contribution",
+    "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
+    "engine_commit": "cf7b190d9fdf21b0028d97eb91022e1a29da9161",
+    "engine_tree": "d5746b9f4e8bf2a1adab55e012f72fb934df01d5",
+    "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
+    "source_files": {
+      "crates/vision-web/src/lib.rs": "fe06cd9a28cc891071e70bb8f9bd3fd241e242d7632db41bf35c5207af675a69",
+      "crates/vision-gpu/src/renderer/contribution.rs": "dde639dd694eba69f8ccf5d492942c2fc11a6a63",
+      "crates/vision-gpu/src/renderer/contribution/encode.rs": "072ee195afe3e14cd3d38a54799b036333bac29e",
+      "crates/vision-gpu/src/renderer/contribution/draw.rs": "7dde0b137c06d6e271d51df446b0063cd59133ab",
+      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "eaa052279e881b9301b804093de13e51c7c04001"
+    },
+    "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T111626Z-agent-report.md",
+    "capture_free_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T103049Z-render-report.json",
+    "intrinsic_measure_evidence": "evidence/local-20261018-image-intrinsic-measure/eleven/20261018T100318Z-agent-report.md",
+    "validation": "Focused image measurement, live-lane and rollback tests; 12/12 contribution pixel tests including ordered capture-adjacent paint islands, nested clips and root effects; 2/2 focused legacy capture ID tests; Vision web build; Solar build and pin check",
+    "full_vision_lib_test": "not completed: interrupted during 512-PNG dynamic image lifetime test"
+  }
 }

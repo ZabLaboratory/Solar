@@ -1,0 +1,33 @@
+{
+  "captured_utc": "20261015T111619Z",
+  "solar": {
+    "schema_version": "solar.runtime.manifest.v1",
+    "component": "solar",
+    "version": "3.0.0",
+    "release_tag": "v3.0.0-local-c08c977a4c0a9cdc",
+    "protocol_version": "solar.host.v2",
+    "artifact_url": "file:///D:/Documents/Zab/Prism/.worktrees/eleven-local-20261015-project-integration/.cache/solar-consolidated-native/solar-local.tgz",
+    "artifact_sha256": "c08c977a4c0a9cdc1f840e812105434fb0e299b58addb5c6dcd7c0edac253982",
+    "source_revision": "cec7b7315d64df0a6805a4462a916542ae81e073"
+  },
+  "native": {
+    "schema": "solar.native-server.v1",
+    "wire": "LSDP-TCP/2.0-draft2",
+    "source_revision": "4d197aefbde76cacc8ffd70cb84edec031575f5b",
+    "binaries": {
+      "win32-x64": {
+        "file": "win32-x64/lsdpd.exe",
+        "sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448"
+      }
+    }
+  },
+  "package_bytes": 7795015,
+  "scope": "Private Windows package only; no common profile edit, runtime replacement, remote push or merge. Vision remains the previously qualified e28dc8ee engine; combined Vision3D qualification is separate.",
+  "validation": [
+    "Solar full lib/host/server build and runtime layout PASS",
+    "Native package win32-x64 hash/source validation PASS",
+    "Five package guard CLI tests PASS",
+    "Integrated Solar architecture PASS"
+  ],
+  "native_protocol_proof": "evidence/local-20261015-solar-consolidation/eleven/20261015T105500Z-native-release-protocol.gz"
+}

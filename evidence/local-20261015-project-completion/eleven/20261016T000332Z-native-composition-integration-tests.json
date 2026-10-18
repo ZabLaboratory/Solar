@@ -1,0 +1,23 @@
+{
+  "capturedUtc": "2026-10-16T00:03:32.8945555Z",
+  "sourceCommit": "2e29b498295d1a318b275ed87784b8cb9959486a",
+  "integratedHead": "f7ef5aed51157a937fbebea61d256062d666f17e",
+  "tests": {
+    "command": "npm exec -- vitest run tests/unit/native-composition.test.ts tests/unit/native-composition-publisher.test.ts tests/unit/native-composition-session.test.ts tests/unit/native-lsdp-runtime-composition.test.ts tests/unit/native-lsdp-runtime.test.ts tests/unit/native-document.test.ts tests/unit/vision-session.test.ts --reporter dot",
+    "exitCode": 0,
+    "filesPassed": 7,
+    "testsPassed": 109,
+    "testsFailed": 0,
+    "durationSeconds": 12.74
+  },
+  "typecheck": {
+    "command": "npm run typecheck",
+    "exitCode": 0
+  },
+  "qualification": "Integrated source unit tests with mocked transport boundaries; not installed native/GPU/CEF qualification",
+  "remaining": [
+    "Consume canonical active Vision layout instead of independent layout approximation",
+    "Publish current capture appearance from active document",
+    "Complete native masks/blends/shear contract and installed tests"
+  ]
+}

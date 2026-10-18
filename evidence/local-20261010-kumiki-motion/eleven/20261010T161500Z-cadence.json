@@ -1,0 +1,4844 @@
+{
+  "origin": "http://127.0.0.1:4600",
+  "boundary": "Vision frame-submitted; no per-frame readback, screenshot or video encoder; not physical scanout",
+  "frames": 604,
+  "duration_ms": 14974,
+  "rate": 40.269800988379856,
+  "p95_ms": 42.5,
+  "max_ms": 67.90000000596046,
+  "errors": [],
+  "submissions": [
+    {
+      "t": 2393.7000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.5,
+        "gpuSubmitCallMs": 23.200000002980232
+      }
+    },
+    {
+      "t": 2438.7000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 17.600000008940697
+      }
+    },
+    {
+      "t": 2468.7000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.100000008940697,
+        "gpuSubmitCallMs": 15
+      }
+    },
+    {
+      "t": 2507.7999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 19,
+        "gpuSubmitCallMs": 17.5
+      }
+    },
+    {
+      "t": 2545.2000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 12.400000005960464
+      }
+    },
+    {
+      "t": 2573,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 13
+      }
+    },
+    {
+      "t": 2612.7000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 12.599999994039536
+      }
+    },
+    {
+      "t": 2640.2000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 13.5
+      }
+    },
+    {
+      "t": 2681.6000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.699999988079071,
+        "gpuSubmitCallMs": 13.700000002980232
+      }
+    },
+    {
+      "t": 2708.6000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 12.600000008940697
+      }
+    },
+    {
+      "t": 2748.2999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 14.299999997019768
+      }
+    },
+    {
+      "t": 2778.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 15.5
+      }
+    },
+    {
+      "t": 2813.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 13.200000002980232
+      }
+    },
+    {
+      "t": 2841.7999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.899999991059303,
+        "gpuSubmitCallMs": 14.199999988079071
+      }
+    },
+    {
+      "t": 2880.2999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 12.599999994039536
+      }
+    },
+    {
+      "t": 2906.6000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 12.800000011920929
+      }
+    },
+    {
+      "t": 2944.7999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 12
+      }
+    },
+    {
+      "t": 2979.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.400000005960464,
+        "gpuSubmitCallMs": 17.299999997019768
+      }
+    },
+    {
+      "t": 3014,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 13.200000002980232
+      }
+    },
+    {
+      "t": 3044,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 15.200000002980232
+      }
+    },
+    {
+      "t": 3079.1000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 12.700000002980232
+      }
+    },
+    {
+      "t": 3105.1000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 12.700000002980232
+      }
+    },
+    {
+      "t": 3148.2000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 14.100000008940697
+      }
+    },
+    {
+      "t": 3183,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 18.399999991059303,
+        "gpuSubmitCallMs": 14.099999994039536
+      }
+    },
+    {
+      "t": 3245.7999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 20.399999991059303
+      }
+    },
+    {
+      "t": 3286.2000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.5,
+        "gpuSubmitCallMs": 17.700000002980232
+      }
+    },
+    {
+      "t": 3315.2000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.399999991059303,
+        "gpuSubmitCallMs": 13.599999994039536
+      }
+    },
+    {
+      "t": 3348.1000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 14.5
+      }
+    },
+    {
+      "t": 3379,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 15.599999994039536
+      }
+    },
+    {
+      "t": 3422.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14,
+        "gpuSubmitCallMs": 14.700000002980232
+      }
+    },
+    {
+      "t": 3472.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.299999997019768,
+        "gpuSubmitCallMs": 19.099999994039536
+      }
+    },
+    {
+      "t": 3514,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 13.700000002980232
+      }
+    },
+    {
+      "t": 3538.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.100000008940697,
+        "gpuSubmitCallMs": 10.899999991059303
+      }
+    },
+    {
+      "t": 3579.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.899999991059303,
+        "gpuSubmitCallMs": 13
+      }
+    },
+    {
+      "t": 3615.1000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 18.5,
+        "gpuSubmitCallMs": 14.300000011920929
+      }
+    },
+    {
+      "t": 3645.1000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 11.400000005960464
+      }
+    },
+    {
+      "t": 3668.6000000089407,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 10
+      }
+    },
+    {
+      "t": 3691.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 10.600000008940697
+      }
+    },
+    {
+      "t": 3716.7000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 10.900000005960464
+      }
+    },
+    {
+      "t": 3742.2999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 12.299999997019768
+      }
+    },
+    {
+      "t": 3783.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.899999991059303,
+        "gpuSubmitCallMs": 13.100000008940697
+      }
+    },
+    {
+      "t": 3819,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.099999994039536,
+        "gpuSubmitCallMs": 15.399999991059303
+      }
+    },
+    {
+      "t": 3855,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15,
+        "gpuSubmitCallMs": 16.899999991059303
+      }
+    },
+    {
+      "t": 3894.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.300000011920929,
+        "gpuSubmitCallMs": 10.799999997019768
+      }
+    },
+    {
+      "t": 3918.7999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 10.199999988079071
+      }
+    },
+    {
+      "t": 3947.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.199999988079071,
+        "gpuSubmitCallMs": 13.400000005960464
+      }
+    },
+    {
+      "t": 3984.2999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 16.299999997019768,
+        "gpuSubmitCallMs": 16.19999998807907
+      }
+    },
+    {
+      "t": 4015.7999999970198,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.200000002980232,
+        "gpuSubmitCallMs": 12.699999988079071
+      }
+    },
+    {
+      "t": 4046.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 16.099999994039536,
+        "gpuSubmitCallMs": 11.700000002980232
+      }
+    },
+    {
+      "t": 4078.7000000029802,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 12
+      }
+    },
+    {
+      "t": 4104.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 11
+      }
+    },
+    {
+      "t": 4145.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 11.699999988079071
+      }
+    },
+    {
+      "t": 4176.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.099999994039536,
+        "gpuSubmitCallMs": 13.799999997019768
+      }
+    },
+    {
+      "t": 4211.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 11.100000008940697
+      }
+    },
+    {
+      "t": 4236.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.700000002980232,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 4256.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 6.4000000059604645
+      }
+    },
+    {
+      "t": 4276.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.099999994039536,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 4294.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 6.4000000059604645
+      }
+    },
+    {
+      "t": 4313.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 6.200000002980232
+      }
+    },
+    {
+      "t": 4338.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.099999994039536,
+        "gpuSubmitCallMs": 9.799999997019768
+      }
+    },
+    {
+      "t": 4374.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 7.899999991059303
+      }
+    },
+    {
+      "t": 4397.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.300000011920929,
+        "gpuSubmitCallMs": 10.799999997019768
+      }
+    },
+    {
+      "t": 4418.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 4440.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 7.100000008940697
+      }
+    },
+    {
+      "t": 4472.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 17.900000005960464,
+        "gpuSubmitCallMs": 8.400000005960464
+      }
+    },
+    {
+      "t": 4505.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 7.100000008940697
+      }
+    },
+    {
+      "t": 4524.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 6.0999999940395355
+      }
+    },
+    {
+      "t": 4544.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 4563.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 4582.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.699999988079071,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 4600.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 6.199999988079071
+      }
+    },
+    {
+      "t": 4619.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.799999997019768,
+        "gpuSubmitCallMs": 6.200000002980232
+      }
+    },
+    {
+      "t": 4655.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 6.5999999940395355
+      }
+    },
+    {
+      "t": 4674.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.300000011920929,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 4693.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 6.299999997019768
+      }
+    },
+    {
+      "t": 4711.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 5.799999997019768
+      }
+    },
+    {
+      "t": 4729.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 6.200000002980232
+      }
+    },
+    {
+      "t": 4749.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 4767.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.799999997019768,
+        "gpuSubmitCallMs": 6.799999997019768
+      }
+    },
+    {
+      "t": 4786.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 6.399999991059303
+      }
+    },
+    {
+      "t": 4822,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 6.399999991059303
+      }
+    },
+    {
+      "t": 4841.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 6.899999991059303
+      }
+    },
+    {
+      "t": 4860.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 6.700000002980232
+      }
+    },
+    {
+      "t": 4881.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 7.800000011920929
+      }
+    },
+    {
+      "t": 4902.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.700000002980232,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 4922,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 4942.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.800000011920929,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 4963.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 4984.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 6.399999991059303
+      }
+    },
+    {
+      "t": 5006.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 6.5999999940395355
+      }
+    },
+    {
+      "t": 5027.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 5048.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 6.700000002980232
+      }
+    },
+    {
+      "t": 5068.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 6.5999999940395355
+      }
+    },
+    {
+      "t": 5091.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 7.9000000059604645
+      }
+    },
+    {
+      "t": 5110.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 5129,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 6.299999997019768
+      }
+    },
+    {
+      "t": 5149.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 7.399999991059303
+      }
+    },
+    {
+      "t": 5168.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.300000011920929,
+        "gpuSubmitCallMs": 6.799999997019768
+      }
+    },
+    {
+      "t": 5189.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.899999991059303,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 5216.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.299999997019768,
+        "gpuSubmitCallMs": 10.700000002980232
+      }
+    },
+    {
+      "t": 5242.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.5,
+        "gpuSubmitCallMs": 8
+      }
+    },
+    {
+      "t": 5279.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 9.400000005960464
+      }
+    },
+    {
+      "t": 5304.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 10.100000008940697
+      }
+    },
+    {
+      "t": 5341.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 9.400000005960464
+      }
+    },
+    {
+      "t": 5367.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.400000005960464,
+        "gpuSubmitCallMs": 8.599999994039536
+      }
+    },
+    {
+      "t": 5391.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.600000008940697,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 5411.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 6.700000002980232
+      }
+    },
+    {
+      "t": 5430.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 6.4000000059604645
+      }
+    },
+    {
+      "t": 5456.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 8.799999997019768
+      }
+    },
+    {
+      "t": 5491,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 7.5999999940395355
+      }
+    },
+    {
+      "t": 5513.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 9
+      }
+    },
+    {
+      "t": 5538.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.400000005960464,
+        "gpuSubmitCallMs": 8.100000008940697
+      }
+    },
+    {
+      "t": 5574.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.899999991059303,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 5596.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.699999988079071,
+        "gpuSubmitCallMs": 6.899999991059303
+      }
+    },
+    {
+      "t": 5617.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 6.699999988079071
+      }
+    },
+    {
+      "t": 5638.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 8
+      }
+    },
+    {
+      "t": 5673.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 7.100000008940697
+      }
+    },
+    {
+      "t": 5694.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.799999997019768,
+        "gpuSubmitCallMs": 6.700000002980232
+      }
+    },
+    {
+      "t": 5716.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.199999988079071,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 5736.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.800000011920929,
+        "gpuSubmitCallMs": 6.5999999940395355
+      }
+    },
+    {
+      "t": 5776.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.100000008940697,
+        "gpuSubmitCallMs": 9
+      }
+    },
+    {
+      "t": 5801.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.400000005960464,
+        "gpuSubmitCallMs": 8.800000011920929
+      }
+    },
+    {
+      "t": 5822.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 6.899999991059303
+      }
+    },
+    {
+      "t": 5845.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 6.899999991059303
+      }
+    },
+    {
+      "t": 5869.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 5906.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.799999997019768,
+        "gpuSubmitCallMs": 6.799999997019768
+      }
+    },
+    {
+      "t": 5926.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 5950.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.5,
+        "gpuSubmitCallMs": 7.9000000059604645
+      }
+    },
+    {
+      "t": 5976.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.5,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 6001.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 8.600000008940697
+      }
+    },
+    {
+      "t": 6028.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 16.80000001192093,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 6053,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 8.900000005960464
+      }
+    },
+    {
+      "t": 6094.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 11.099999994039536
+      }
+    },
+    {
+      "t": 6123.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 17.599999994039536,
+        "gpuSubmitCallMs": 7.199999988079071
+      }
+    },
+    {
+      "t": 6160.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 9
+      }
+    },
+    {
+      "t": 6183.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 7.799999997019768
+      }
+    },
+    {
+      "t": 6205,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 7.299999997019768
+      }
+    },
+    {
+      "t": 6226.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 6250.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 9.600000008940697
+      }
+    },
+    {
+      "t": 6272.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 8.700000002980232
+      }
+    },
+    {
+      "t": 6294.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 6316,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 6335.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 6355.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 6.799999997019768
+      }
+    },
+    {
+      "t": 6379.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 9.5
+      }
+    },
+    {
+      "t": 6400.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 7.9000000059604645
+      }
+    },
+    {
+      "t": 6421.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 7.899999991059303
+      }
+    },
+    {
+      "t": 6462.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14,
+        "gpuSubmitCallMs": 8.900000005960464
+      }
+    },
+    {
+      "t": 6485.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.800000011920929,
+        "gpuSubmitCallMs": 9.599999994039536
+      }
+    },
+    {
+      "t": 6507.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 8.200000002980232
+      }
+    },
+    {
+      "t": 6547.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.400000005960464,
+        "gpuSubmitCallMs": 7.899999991059303
+      }
+    },
+    {
+      "t": 6570.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 9.200000002980232
+      }
+    },
+    {
+      "t": 6608.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 8.700000002980232
+      }
+    },
+    {
+      "t": 6634.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.5,
+        "gpuSubmitCallMs": 8.299999997019768
+      }
+    },
+    {
+      "t": 6658,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.899999991059303,
+        "gpuSubmitCallMs": 7.5
+      }
+    },
+    {
+      "t": 6683.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 6709.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 16.299999997019768,
+        "gpuSubmitCallMs": 7.5999999940395355
+      }
+    },
+    {
+      "t": 6740.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 7.799999997019768
+      }
+    },
+    {
+      "t": 6760.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 6781.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 7.5
+      }
+    },
+    {
+      "t": 6801.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.399999991059303,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 6821.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.099999994039536,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 6843.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 8.600000008940697
+      }
+    },
+    {
+      "t": 6868.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 10.5
+      }
+    },
+    {
+      "t": 6889.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 6909.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 6.899999991059303
+      }
+    },
+    {
+      "t": 6929.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 6963.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.599999994039536,
+        "gpuSubmitCallMs": 8.200000002980232
+      }
+    },
+    {
+      "t": 6988.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 7.9000000059604645
+      }
+    },
+    {
+      "t": 7023.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 22.200000002980232,
+        "gpuSubmitCallMs": 8.599999994039536
+      }
+    },
+    {
+      "t": 7067,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 8.599999994039536
+      }
+    },
+    {
+      "t": 7097.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.099999994039536,
+        "gpuSubmitCallMs": 11.700000002980232
+      }
+    },
+    {
+      "t": 7120.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 7.9000000059604645
+      }
+    },
+    {
+      "t": 7159.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.300000011920929,
+        "gpuSubmitCallMs": 8.900000005960464
+      }
+    },
+    {
+      "t": 7180.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 7200.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 7221.600000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 7256.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 7278.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.399999991059303,
+        "gpuSubmitCallMs": 8
+      }
+    },
+    {
+      "t": 7298.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 7321.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.300000011920929,
+        "gpuSubmitCallMs": 9.099999994039536
+      }
+    },
+    {
+      "t": 7360.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.899999991059303,
+        "gpuSubmitCallMs": 7.5999999940395355
+      }
+    },
+    {
+      "t": 7383.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.100000008940697,
+        "gpuSubmitCallMs": 8
+      }
+    },
+    {
+      "t": 7406,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 8.900000005960464
+      }
+    },
+    {
+      "t": 7440,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 8.099999994039536
+      }
+    },
+    {
+      "t": 7460.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 7.5999999940395355
+      }
+    },
+    {
+      "t": 7480.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 7500.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 7.600000008940697
+      }
+    },
+    {
+      "t": 7523.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 8.600000008940697
+      }
+    },
+    {
+      "t": 7556.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 7.199999988079071
+      }
+    },
+    {
+      "t": 7584.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 13.299999997019768
+      }
+    },
+    {
+      "t": 7611,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 12.700000002980232
+      }
+    },
+    {
+      "t": 7645.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 11.199999988079071
+      }
+    },
+    {
+      "t": 7670.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 11.199999988079071
+      }
+    },
+    {
+      "t": 7711.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 12.899999991059303
+      }
+    },
+    {
+      "t": 7736.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 10.900000005960464
+      }
+    },
+    {
+      "t": 7779.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 13.100000008940697
+      }
+    },
+    {
+      "t": 7809,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.900000005960464,
+        "gpuSubmitCallMs": 14
+      }
+    },
+    {
+      "t": 7844.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 10.899999991059303
+      }
+    },
+    {
+      "t": 7870.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 12.099999994039536
+      }
+    },
+    {
+      "t": 7913.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.899999991059303,
+        "gpuSubmitCallMs": 13.600000008940697
+      }
+    },
+    {
+      "t": 7939.9000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 12.600000008940697
+      }
+    },
+    {
+      "t": 7980.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.299999997019768,
+        "gpuSubmitCallMs": 13.299999997019768
+      }
+    },
+    {
+      "t": 8006.4000000059605,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.300000011920929,
+        "gpuSubmitCallMs": 12.199999988079071
+      }
+    },
+    {
+      "t": 8046.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 11.900000005960464
+      }
+    },
+    {
+      "t": 8072.100000008941,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.800000011920929,
+        "gpuSubmitCallMs": 12
+      }
+    },
+    {
+      "t": 8115.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 14.799999997019768
+      }
+    },
+    {
+      "t": 8143.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 13.799999997019768
+      }
+    },
+    {
+      "t": 8180.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 12.400000005960464
+      }
+    },
+    {
+      "t": 8207,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.700000002980232,
+        "gpuSubmitCallMs": 12.5
+      }
+    },
+    {
+      "t": 8251.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 16.69999998807907,
+        "gpuSubmitCallMs": 12.599999994039536
+      }
+    },
+    {
+      "t": 8278.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 12.899999991059303
+      }
+    },
+    {
+      "t": 8303.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 12.200000002980232
+      }
+    },
+    {
+      "t": 8345.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.800000011920929,
+        "gpuSubmitCallMs": 11.5
+      }
+    },
+    {
+      "t": 8372.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 13
+      }
+    },
+    {
+      "t": 8413.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 11.800000011920929
+      }
+    },
+    {
+      "t": 8442.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 14
+      }
+    },
+    {
+      "t": 8480.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 12
+      }
+    },
+    {
+      "t": 8508,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 13.400000005960464
+      }
+    },
+    {
+      "t": 8550,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.5,
+        "gpuSubmitCallMs": 14.599999994039536
+      }
+    },
+    {
+      "t": 8578.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.399999991059303,
+        "gpuSubmitCallMs": 15
+      }
+    },
+    {
+      "t": 8611.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 12.200000002980232
+      }
+    },
+    {
+      "t": 8640.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 15.200000002980232
+      }
+    },
+    {
+      "t": 8680.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.300000011920929,
+        "gpuSubmitCallMs": 13.200000002980232
+      }
+    },
+    {
+      "t": 8706.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.199999988079071,
+        "gpuSubmitCallMs": 12.5
+      }
+    },
+    {
+      "t": 8746.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 12.899999991059303
+      }
+    },
+    {
+      "t": 8775.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 13.700000002980232
+      }
+    },
+    {
+      "t": 8817.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 15.299999997019768
+      }
+    },
+    {
+      "t": 8850,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 18.700000002980232
+      }
+    },
+    {
+      "t": 8888.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.799999997019768,
+        "gpuSubmitCallMs": 14.5
+      }
+    },
+    {
+      "t": 8932.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 15.099999994039536
+      }
+    },
+    {
+      "t": 8961.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.400000005960464,
+        "gpuSubmitCallMs": 13.400000005960464
+      }
+    },
+    {
+      "t": 9019.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.300000011920929,
+        "gpuSubmitCallMs": 13.800000011920929
+      }
+    },
+    {
+      "t": 9045.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 11.700000002980232
+      }
+    },
+    {
+      "t": 9074.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 14.599999994039536
+      }
+    },
+    {
+      "t": 9119.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.400000005960464,
+        "gpuSubmitCallMs": 17.100000008940697
+      }
+    },
+    {
+      "t": 9151.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.5,
+        "gpuSubmitCallMs": 15.400000005960464
+      }
+    },
+    {
+      "t": 9184,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.799999997019768,
+        "gpuSubmitCallMs": 14
+      }
+    },
+    {
+      "t": 9215.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 14.200000002980232
+      }
+    },
+    {
+      "t": 9253.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 18.69999998807907
+      }
+    },
+    {
+      "t": 9297.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15,
+        "gpuSubmitCallMs": 21.700000002980232
+      }
+    },
+    {
+      "t": 9365.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 50.5
+      }
+    },
+    {
+      "t": 9412.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.800000011920929,
+        "gpuSubmitCallMs": 23.19999998807907
+      }
+    },
+    {
+      "t": 9452.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 16.400000005960464
+      }
+    },
+    {
+      "t": 9501.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.900000005960464,
+        "gpuSubmitCallMs": 27.099999994039536
+      }
+    },
+    {
+      "t": 9546.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.299999997019768,
+        "gpuSubmitCallMs": 22.600000008940697
+      }
+    },
+    {
+      "t": 9594.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 23.299999997019768
+      }
+    },
+    {
+      "t": 9647,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.799999997019768,
+        "gpuSubmitCallMs": 27.900000005960464
+      }
+    },
+    {
+      "t": 9693.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 25.799999997019768
+      }
+    },
+    {
+      "t": 9736,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.900000005960464,
+        "gpuSubmitCallMs": 18.299999997019768
+      }
+    },
+    {
+      "t": 9778,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 20.799999997019768
+      }
+    },
+    {
+      "t": 9821.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.899999991059303,
+        "gpuSubmitCallMs": 15.900000005960464
+      }
+    },
+    {
+      "t": 9883,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.399999991059303,
+        "gpuSubmitCallMs": 38.70000000298023
+      }
+    },
+    {
+      "t": 9927.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.199999988079071,
+        "gpuSubmitCallMs": 23.5
+      }
+    },
+    {
+      "t": 9969.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 20.900000005960464
+      }
+    },
+    {
+      "t": 10014.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.200000002980232,
+        "gpuSubmitCallMs": 23.299999997019768
+      }
+    },
+    {
+      "t": 10050.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 15.099999994039536
+      }
+    },
+    {
+      "t": 10083.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 14.600000008940697
+      }
+    },
+    {
+      "t": 10125,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.299999997019768,
+        "gpuSubmitCallMs": 17.099999994039536
+      }
+    },
+    {
+      "t": 10167.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 15.799999997019768
+      }
+    },
+    {
+      "t": 10196.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.700000002980232,
+        "gpuSubmitCallMs": 13.099999994039536
+      }
+    },
+    {
+      "t": 10239.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 20.200000002980232
+      }
+    },
+    {
+      "t": 10274.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 15.800000011920929
+      }
+    },
+    {
+      "t": 10305.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.399999991059303,
+        "gpuSubmitCallMs": 12.799999997019768
+      }
+    },
+    {
+      "t": 10339.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 15.200000002980232
+      }
+    },
+    {
+      "t": 10368.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 13.200000002980232
+      }
+    },
+    {
+      "t": 10400.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.700000002980232,
+        "gpuSubmitCallMs": 14.299999997019768
+      }
+    },
+    {
+      "t": 10442.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 16
+      }
+    },
+    {
+      "t": 10482.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.399999991059303,
+        "gpuSubmitCallMs": 15.799999997019768
+      }
+    },
+    {
+      "t": 10522,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.200000002980232,
+        "gpuSubmitCallMs": 13.399999991059303
+      }
+    },
+    {
+      "t": 10562.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 12.200000002980232
+      }
+    },
+    {
+      "t": 10589.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 12.099999994039536
+      }
+    },
+    {
+      "t": 10651.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.700000002980232,
+        "gpuSubmitCallMs": 16
+      }
+    },
+    {
+      "t": 10681.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 15.200000002980232
+      }
+    },
+    {
+      "t": 10709.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.699999988079071,
+        "gpuSubmitCallMs": 13.399999991059303
+      }
+    },
+    {
+      "t": 10745.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 11.900000005960464
+      }
+    },
+    {
+      "t": 10769.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 11.099999994039536
+      }
+    },
+    {
+      "t": 10811.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 12.399999991059303
+      }
+    },
+    {
+      "t": 10840.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.400000005960464,
+        "gpuSubmitCallMs": 13.700000002980232
+      }
+    },
+    {
+      "t": 10879.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 12.100000008940697
+      }
+    },
+    {
+      "t": 10903.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.399999991059303,
+        "gpuSubmitCallMs": 10.799999997019768
+      }
+    },
+    {
+      "t": 10949.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.899999991059303,
+        "gpuSubmitCallMs": 13.599999994039536
+      }
+    },
+    {
+      "t": 10977.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 14.700000002980232
+      }
+    },
+    {
+      "t": 11013.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 12.900000005960464
+      }
+    },
+    {
+      "t": 11041.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 12.899999991059303
+      }
+    },
+    {
+      "t": 11077.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 11.200000002980232
+      }
+    },
+    {
+      "t": 11103.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 11.900000005960464
+      }
+    },
+    {
+      "t": 11144.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.100000008940697,
+        "gpuSubmitCallMs": 11.5
+      }
+    },
+    {
+      "t": 11172.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.100000008940697,
+        "gpuSubmitCallMs": 12.900000005960464
+      }
+    },
+    {
+      "t": 11211.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 11.099999994039536
+      }
+    },
+    {
+      "t": 11239.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.5,
+        "gpuSubmitCallMs": 12.699999988079071
+      }
+    },
+    {
+      "t": 11278.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 12.100000008940697
+      }
+    },
+    {
+      "t": 11304.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.899999991059303,
+        "gpuSubmitCallMs": 11.299999997019768
+      }
+    },
+    {
+      "t": 11344.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.399999991059303,
+        "gpuSubmitCallMs": 11
+      }
+    },
+    {
+      "t": 11370.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 11.5
+      }
+    },
+    {
+      "t": 11411.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.300000011920929,
+        "gpuSubmitCallMs": 11.599999994039536
+      }
+    },
+    {
+      "t": 11440.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.799999997019768,
+        "gpuSubmitCallMs": 12.799999997019768
+      }
+    },
+    {
+      "t": 11478.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 11.100000008940697
+      }
+    },
+    {
+      "t": 11508,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.700000002980232,
+        "gpuSubmitCallMs": 13.700000002980232
+      }
+    },
+    {
+      "t": 11547.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 14.599999994039536
+      }
+    },
+    {
+      "t": 11579.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 18.100000008940697
+      }
+    },
+    {
+      "t": 11611.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 11.299999997019768
+      }
+    },
+    {
+      "t": 11636.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 10.900000005960464
+      }
+    },
+    {
+      "t": 11683.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.599999994039536,
+        "gpuSubmitCallMs": 16.200000002980232
+      }
+    },
+    {
+      "t": 11708.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 11.900000005960464
+      }
+    },
+    {
+      "t": 11744,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 11.400000005960464
+      }
+    },
+    {
+      "t": 11768.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.399999991059303,
+        "gpuSubmitCallMs": 11.299999997019768
+      }
+    },
+    {
+      "t": 11799.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.799999997019768,
+        "gpuSubmitCallMs": 14.100000008940697
+      }
+    },
+    {
+      "t": 11824.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.100000008940697,
+        "gpuSubmitCallMs": 8.700000002980232
+      }
+    },
+    {
+      "t": 11873.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.799999997019768,
+        "gpuSubmitCallMs": 8
+      }
+    },
+    {
+      "t": 11896.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.700000002980232,
+        "gpuSubmitCallMs": 7.100000008940697
+      }
+    },
+    {
+      "t": 11917.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 7.600000008940697
+      }
+    },
+    {
+      "t": 11940.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 8.300000011920929
+      }
+    },
+    {
+      "t": 11974.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 8.599999994039536
+      }
+    },
+    {
+      "t": 11995.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.699999988079071,
+        "gpuSubmitCallMs": 7.100000008940697
+      }
+    },
+    {
+      "t": 12015.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 7.100000008940697
+      }
+    },
+    {
+      "t": 12035.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 6.9000000059604645
+      }
+    },
+    {
+      "t": 12055.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 7.799999997019768
+      }
+    },
+    {
+      "t": 12078.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 9.400000005960464
+      }
+    },
+    {
+      "t": 12101.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 8.199999988079071
+      }
+    },
+    {
+      "t": 12125.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13,
+        "gpuSubmitCallMs": 8.799999997019768
+      }
+    },
+    {
+      "t": 12158,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.099999994039536,
+        "gpuSubmitCallMs": 16.099999994039536
+      }
+    },
+    {
+      "t": 12194.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.5,
+        "gpuSubmitCallMs": 9.200000002980232
+      }
+    },
+    {
+      "t": 12221.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.300000011920929,
+        "gpuSubmitCallMs": 8.400000005960464
+      }
+    },
+    {
+      "t": 12258.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.199999988079071,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 12280.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12,
+        "gpuSubmitCallMs": 7.5
+      }
+    },
+    {
+      "t": 12301.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.199999988079071,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 12323.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.200000002980232,
+        "gpuSubmitCallMs": 6.800000011920929
+      }
+    },
+    {
+      "t": 12343.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.399999991059303,
+        "gpuSubmitCallMs": 6.799999997019768
+      }
+    },
+    {
+      "t": 12364.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 7.300000011920929
+      }
+    },
+    {
+      "t": 12385.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.300000011920929,
+        "gpuSubmitCallMs": 7.5999999940395355
+      }
+    },
+    {
+      "t": 12407.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.100000008940697,
+        "gpuSubmitCallMs": 7.5999999940395355
+      }
+    },
+    {
+      "t": 12430,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 8.799999997019768
+      }
+    },
+    {
+      "t": 12454.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.299999997019768,
+        "gpuSubmitCallMs": 7.299999997019768
+      }
+    },
+    {
+      "t": 12490.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 8.200000002980232
+      }
+    },
+    {
+      "t": 12512,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 12535.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.599999994039536,
+        "gpuSubmitCallMs": 8
+      }
+    },
+    {
+      "t": 12556,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 12577,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 8.399999991059303
+      }
+    },
+    {
+      "t": 12603.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.5,
+        "gpuSubmitCallMs": 7.800000011920929
+      }
+    },
+    {
+      "t": 12642.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.599999994039536,
+        "gpuSubmitCallMs": 9.600000008940697
+      }
+    },
+    {
+      "t": 12663.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.200000002980232,
+        "gpuSubmitCallMs": 7.4000000059604645
+      }
+    },
+    {
+      "t": 12682.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 6.399999991059303
+      }
+    },
+    {
+      "t": 12705.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.899999991059303,
+        "gpuSubmitCallMs": 8.199999988079071
+      }
+    },
+    {
+      "t": 12740.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.600000008940697,
+        "gpuSubmitCallMs": 8.200000002980232
+      }
+    },
+    {
+      "t": 12765.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.099999994039536,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 12787.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 7.600000008940697
+      }
+    },
+    {
+      "t": 12821.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.800000011920929,
+        "gpuSubmitCallMs": 6.199999988079071
+      }
+    },
+    {
+      "t": 12841.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 6.799999997019768
+      }
+    },
+    {
+      "t": 12862.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 6.600000008940697
+      }
+    },
+    {
+      "t": 12882.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 6.600000008940697
+      }
+    },
+    {
+      "t": 12905.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 8.399999991059303
+      }
+    },
+    {
+      "t": 12941.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 8.699999988079071
+      }
+    },
+    {
+      "t": 12963.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.200000002980232,
+        "gpuSubmitCallMs": 5.899999991059303
+      }
+    },
+    {
+      "t": 12987.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 7.899999991059303
+      }
+    },
+    {
+      "t": 13022.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 13046.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 14.099999994039536,
+        "gpuSubmitCallMs": 7.200000002980232
+      }
+    },
+    {
+      "t": 13066.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.399999991059303,
+        "gpuSubmitCallMs": 7.5
+      }
+    },
+    {
+      "t": 13088.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.299999997019768,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 13124.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.100000008940697,
+        "gpuSubmitCallMs": 8.900000005960464
+      }
+    },
+    {
+      "t": 13146.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.899999991059303,
+        "gpuSubmitCallMs": 7
+      }
+    },
+    {
+      "t": 13170.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 8.5
+      }
+    },
+    {
+      "t": 13210.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 10.5
+      }
+    },
+    {
+      "t": 13228.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 6.0999999940395355
+      }
+    },
+    {
+      "t": 13246.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 5.700000002980232
+      }
+    },
+    {
+      "t": 13264.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 6
+      }
+    },
+    {
+      "t": 13283.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 5.5999999940395355
+      }
+    },
+    {
+      "t": 13302.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 6.399999991059303
+      }
+    },
+    {
+      "t": 13322.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 7.199999988079071
+      }
+    },
+    {
+      "t": 13343.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.100000008940697,
+        "gpuSubmitCallMs": 7.700000002980232
+      }
+    },
+    {
+      "t": 13366.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.300000011920929,
+        "gpuSubmitCallMs": 7.0999999940395355
+      }
+    },
+    {
+      "t": 13385.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.100000008940697,
+        "gpuSubmitCallMs": 6.299999997019768
+      }
+    },
+    {
+      "t": 13406.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.5,
+        "gpuSubmitCallMs": 6.200000002980232
+      }
+    },
+    {
+      "t": 13426.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 4.799999997019768
+      }
+    },
+    {
+      "t": 13444.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 4.700000002980232
+      }
+    },
+    {
+      "t": 13462.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.699999988079071,
+        "gpuSubmitCallMs": 4.399999991059303
+      }
+    },
+    {
+      "t": 13482.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 5.4000000059604645
+      }
+    },
+    {
+      "t": 13501.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 5.700000002980232
+      }
+    },
+    {
+      "t": 13518.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 4.600000008940697
+      }
+    },
+    {
+      "t": 13535.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.799999997019768,
+        "gpuSubmitCallMs": 5.100000008940697
+      }
+    },
+    {
+      "t": 13553.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 4.799999997019768
+      }
+    },
+    {
+      "t": 13570.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 13587.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 13605.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 5.200000002980232
+      }
+    },
+    {
+      "t": 13624.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 6.700000002980232
+      }
+    },
+    {
+      "t": 13643.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 5.800000011920929
+      }
+    },
+    {
+      "t": 13661.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.899999991059303,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 13677.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 4.300000011920929
+      }
+    },
+    {
+      "t": 13696.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 5
+      }
+    },
+    {
+      "t": 13717.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.200000002980232,
+        "gpuSubmitCallMs": 6.200000002980232
+      }
+    },
+    {
+      "t": 13734.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.600000008940697,
+        "gpuSubmitCallMs": 5
+      }
+    },
+    {
+      "t": 13750.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 4.4000000059604645
+      }
+    },
+    {
+      "t": 13767.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 5.0999999940395355
+      }
+    },
+    {
+      "t": 13783.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.700000002980232,
+        "gpuSubmitCallMs": 4.700000002980232
+      }
+    },
+    {
+      "t": 13800.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 5.0999999940395355
+      }
+    },
+    {
+      "t": 13817.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 13834.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.799999997019768,
+        "gpuSubmitCallMs": 5.200000002980232
+      }
+    },
+    {
+      "t": 13851.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 13869.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.700000002980232,
+        "gpuSubmitCallMs": 5.600000008940697
+      }
+    },
+    {
+      "t": 13885.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 4.700000002980232
+      }
+    },
+    {
+      "t": 13906.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 6
+      }
+    },
+    {
+      "t": 13924.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 6.100000008940697
+      }
+    },
+    {
+      "t": 13942.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.399999991059303,
+        "gpuSubmitCallMs": 4.9000000059604645
+      }
+    },
+    {
+      "t": 13961.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 4.399999991059303
+      }
+    },
+    {
+      "t": 13978.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 4.4000000059604645
+      }
+    },
+    {
+      "t": 13997.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.099999994039536,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 14015.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 5.200000002980232
+      }
+    },
+    {
+      "t": 14033.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.800000011920929,
+        "gpuSubmitCallMs": 5.4000000059604645
+      }
+    },
+    {
+      "t": 14051.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.299999997019768,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 14070.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.600000008940697,
+        "gpuSubmitCallMs": 6.0999999940395355
+      }
+    },
+    {
+      "t": 14104.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 5.4000000059604645
+      }
+    },
+    {
+      "t": 14121.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.099999994039536,
+        "gpuSubmitCallMs": 5.5
+      }
+    },
+    {
+      "t": 14140.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 6.399999991059303
+      }
+    },
+    {
+      "t": 14160.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 5.4000000059604645
+      }
+    },
+    {
+      "t": 14176,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 14191.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.800000011920929,
+        "gpuSubmitCallMs": 4.299999997019768
+      }
+    },
+    {
+      "t": 14209.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 5.100000008940697
+      }
+    },
+    {
+      "t": 14228.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.700000002980232,
+        "gpuSubmitCallMs": 5.5999999940395355
+      }
+    },
+    {
+      "t": 14245.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 14260.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 4.4000000059604645
+      }
+    },
+    {
+      "t": 14276.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.399999991059303,
+        "gpuSubmitCallMs": 4.5
+      }
+    },
+    {
+      "t": 14292.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 14310.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.700000002980232,
+        "gpuSubmitCallMs": 4.799999997019768
+      }
+    },
+    {
+      "t": 14326.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 4.799999997019768
+      }
+    },
+    {
+      "t": 14345.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.800000011920929,
+        "gpuSubmitCallMs": 5
+      }
+    },
+    {
+      "t": 14362.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 4.600000008940697
+      }
+    },
+    {
+      "t": 14379.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 4.399999991059303
+      }
+    },
+    {
+      "t": 14400.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.600000008940697,
+        "gpuSubmitCallMs": 6.5
+      }
+    },
+    {
+      "t": 14416.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.099999994039536,
+        "gpuSubmitCallMs": 4.600000008940697
+      }
+    },
+    {
+      "t": 14432,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.399999991059303,
+        "gpuSubmitCallMs": 4.700000002980232
+      }
+    },
+    {
+      "t": 14447.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.899999991059303,
+        "gpuSubmitCallMs": 4.299999997019768
+      }
+    },
+    {
+      "t": 14463.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 4.4000000059604645
+      }
+    },
+    {
+      "t": 14480.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 4.100000008940697
+      }
+    },
+    {
+      "t": 14496.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.899999991059303,
+        "gpuSubmitCallMs": 4.600000008940697
+      }
+    },
+    {
+      "t": 14512.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 4.4000000059604645
+      }
+    },
+    {
+      "t": 14528,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 4.799999997019768
+      }
+    },
+    {
+      "t": 14545.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 14567.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 15.099999994039536,
+        "gpuSubmitCallMs": 5
+      }
+    },
+    {
+      "t": 14583.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 14608.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 18.200000002980232,
+        "gpuSubmitCallMs": 5.0999999940395355
+      }
+    },
+    {
+      "t": 14640.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.799999997019768,
+        "gpuSubmitCallMs": 5.4000000059604645
+      }
+    },
+    {
+      "t": 14668.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 18.200000002980232,
+        "gpuSubmitCallMs": 8.5
+      }
+    },
+    {
+      "t": 14685.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 5.4000000059604645
+      }
+    },
+    {
+      "t": 14703.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.799999997019768,
+        "gpuSubmitCallMs": 5.9000000059604645
+      }
+    },
+    {
+      "t": 14723.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 5.799999997019768
+      }
+    },
+    {
+      "t": 14740.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.799999997019768,
+        "gpuSubmitCallMs": 5.299999997019768
+      }
+    },
+    {
+      "t": 14757.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 5
+      }
+    },
+    {
+      "t": 14774.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 5.9000000059604645
+      }
+    },
+    {
+      "t": 14792.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.799999997019768,
+        "gpuSubmitCallMs": 2.3999999910593033
+      }
+    },
+    {
+      "t": 14808.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 12.400000005960464,
+        "gpuSubmitCallMs": 2.1000000089406967
+      }
+    },
+    {
+      "t": 14822.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.799999997019768,
+        "gpuSubmitCallMs": 2.6000000089406967
+      }
+    },
+    {
+      "t": 14838.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 2.9000000059604645
+      }
+    },
+    {
+      "t": 14851.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 1.7000000029802322
+      }
+    },
+    {
+      "t": 14868.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.900000005960464,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 14882.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 2.0999999940395355
+      }
+    },
+    {
+      "t": 14900.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 3
+      }
+    },
+    {
+      "t": 14916.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 2.5
+      }
+    },
+    {
+      "t": 14935.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 2.2999999970197678
+      }
+    },
+    {
+      "t": 14949.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.100000008940697,
+        "gpuSubmitCallMs": 2.0999999940395355
+      }
+    },
+    {
+      "t": 14972.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.899999991059303,
+        "gpuSubmitCallMs": 4.5999999940395355
+      }
+    },
+    {
+      "t": 14991.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 13.399999991059303,
+        "gpuSubmitCallMs": 1.800000011920929
+      }
+    },
+    {
+      "t": 15006.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.5,
+        "gpuSubmitCallMs": 2.1000000089406967
+      }
+    },
+    {
+      "t": 15020.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15033.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.600000008940697,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15049.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.899999991059303,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15066.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 2.5
+      }
+    },
+    {
+      "t": 15082.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.799999997019768,
+        "gpuSubmitCallMs": 2.2999999970197678
+      }
+    },
+    {
+      "t": 15098.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.399999991059303,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15116.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 2.5
+      }
+    },
+    {
+      "t": 15132.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 2.5
+      }
+    },
+    {
+      "t": 15150.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 2.1000000089406967
+      }
+    },
+    {
+      "t": 15166.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.400000005960464,
+        "gpuSubmitCallMs": 2.7000000029802322
+      }
+    },
+    {
+      "t": 15183,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15200.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.900000005960464,
+        "gpuSubmitCallMs": 3.0999999940395355
+      }
+    },
+    {
+      "t": 15216.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15233.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.600000008940697,
+        "gpuSubmitCallMs": 2.4000000059604645
+      }
+    },
+    {
+      "t": 15248.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.299999997019768,
+        "gpuSubmitCallMs": 1.8999999910593033
+      }
+    },
+    {
+      "t": 15265.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.300000011920929,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15283.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.300000011920929,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15300.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.199999988079071,
+        "gpuSubmitCallMs": 2.2000000029802322
+      }
+    },
+    {
+      "t": 15316.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 2.2000000029802322
+      }
+    },
+    {
+      "t": 15332.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 2.1000000089406967
+      }
+    },
+    {
+      "t": 15349.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.600000008940697,
+        "gpuSubmitCallMs": 2.199999988079071
+      }
+    },
+    {
+      "t": 15368.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 3
+      }
+    },
+    {
+      "t": 15382.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.100000008940697,
+        "gpuSubmitCallMs": 1.8999999910593033
+      }
+    },
+    {
+      "t": 15400.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.299999997019768,
+        "gpuSubmitCallMs": 2.6000000089406967
+      }
+    },
+    {
+      "t": 15416.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.699999988079071,
+        "gpuSubmitCallMs": 2.4000000059604645
+      }
+    },
+    {
+      "t": 15434.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.799999997019768,
+        "gpuSubmitCallMs": 2.7999999970197678
+      }
+    },
+    {
+      "t": 15449.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.700000002980232,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15466.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 2.7999999970197678
+      }
+    },
+    {
+      "t": 15482.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15501.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.799999997019768,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15517.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.400000005960464,
+        "gpuSubmitCallMs": 2
+      }
+    },
+    {
+      "t": 15533.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.400000005960464,
+        "gpuSubmitCallMs": 2.5
+      }
+    },
+    {
+      "t": 15550.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 1.7000000029802322
+      }
+    },
+    {
+      "t": 15567.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 2.2000000029802322
+      }
+    },
+    {
+      "t": 15582,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.400000005960464,
+        "gpuSubmitCallMs": 1.8999999910593033
+      }
+    },
+    {
+      "t": 15598.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.400000005960464,
+        "gpuSubmitCallMs": 2.0999999940395355
+      }
+    },
+    {
+      "t": 15619.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11,
+        "gpuSubmitCallMs": 1.7000000029802322
+      }
+    },
+    {
+      "t": 15634.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.700000002980232,
+        "gpuSubmitCallMs": 2.4000000059604645
+      }
+    },
+    {
+      "t": 15648.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.5,
+        "gpuSubmitCallMs": 1.8999999910593033
+      }
+    },
+    {
+      "t": 15665.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.200000002980232,
+        "gpuSubmitCallMs": 2.2000000029802322
+      }
+    },
+    {
+      "t": 15683.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.5,
+        "gpuSubmitCallMs": 2.2000000029802322
+      }
+    },
+    {
+      "t": 15699.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.600000008940697,
+        "gpuSubmitCallMs": 2.199999988079071
+      }
+    },
+    {
+      "t": 15716.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 2.3999999910593033
+      }
+    },
+    {
+      "t": 15733.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.200000002980232,
+        "gpuSubmitCallMs": 2.699999988079071
+      }
+    },
+    {
+      "t": 15750.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.900000005960464,
+        "gpuSubmitCallMs": 1.800000011920929
+      }
+    },
+    {
+      "t": 15767.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10.599999994039536,
+        "gpuSubmitCallMs": 3.199999988079071
+      }
+    },
+    {
+      "t": 15782.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.800000011920929,
+        "gpuSubmitCallMs": 2.199999988079071
+      }
+    },
+    {
+      "t": 15798.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.400000005960464,
+        "gpuSubmitCallMs": 1.7999999970197678
+      }
+    },
+    {
+      "t": 15816.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.599999994039536,
+        "gpuSubmitCallMs": 2.2999999970197678
+      }
+    },
+    {
+      "t": 15832.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 2.2000000029802322
+      }
+    },
+    {
+      "t": 15848.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 9.200000002980232,
+        "gpuSubmitCallMs": 1.7999999970197678
+      }
+    },
+    {
+      "t": 15868.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 11.099999994039536,
+        "gpuSubmitCallMs": 3.5999999940395355
+      }
+    },
+    {
+      "t": 15877.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.899999991059303,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 15892.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 15908.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.9000000059604645,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 15925.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.6000000089406967,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 15943,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 15958.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 15976.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 15992.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 16009.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 16026,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.299999997019768,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16043.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.600000008940697,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16058.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16076.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.700000002980232,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16091.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16109.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.600000008940697,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16125.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16144.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.5,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16159.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5999999940395355,
+        "gpuSubmitCallMs": 0.9000000059604645
+      }
+    },
+    {
+      "t": 16176.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.600000008940697,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16192.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.200000002980232,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16210.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.4000000059604645,
+        "gpuSubmitCallMs": 0.8999999910593033
+      }
+    },
+    {
+      "t": 16229.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 6.5,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 16246.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 6.5999999940395355,
+        "gpuSubmitCallMs": 1.1000000089406967
+      }
+    },
+    {
+      "t": 16261.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.4000000059604645,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 16276.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.399999991059303,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 16293.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.799999997019768,
+        "gpuSubmitCallMs": 0.9000000059604645
+      }
+    },
+    {
+      "t": 16313.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 7.399999991059303,
+        "gpuSubmitCallMs": 1.0999999940395355
+      }
+    },
+    {
+      "t": 16327.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.399999991059303,
+        "gpuSubmitCallMs": 1.1000000089406967
+      }
+    },
+    {
+      "t": 16348,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 7.799999997019768,
+        "gpuSubmitCallMs": 1.2000000029802322
+      }
+    },
+    {
+      "t": 16359.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.100000008940697,
+        "gpuSubmitCallMs": 0.9000000059604645
+      }
+    },
+    {
+      "t": 16376,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.200000002980232,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16392.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16409.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.4000000059604645,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16425.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.9000000059604645,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16442.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.200000002980232,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 16459.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.4000000059604645,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16476.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16492,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16509.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.0999999940395355,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16525.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16543.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 0.9000000059604645
+      }
+    },
+    {
+      "t": 16559.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16576.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.600000008940697,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16592,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.9000000059604645,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16609.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.100000008940697,
+        "gpuSubmitCallMs": 0.6000000089406967
+      }
+    },
+    {
+      "t": 16625.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.5999999940395355,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16642.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16658.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7000000029802322,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16676.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.600000008940697,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16691.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7000000029802322,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16710.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5,
+        "gpuSubmitCallMs": 0.9000000059604645
+      }
+    },
+    {
+      "t": 16725.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16742.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.5999999940395355
+      }
+    },
+    {
+      "t": 16758.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16776.60000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.9000000059604645,
+        "gpuSubmitCallMs": 0.800000011920929
+      }
+    },
+    {
+      "t": 16791.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.5999999940395355,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 16809.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.200000002980232,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 16825.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7000000029802322,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 16842.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 0.5999999940395355
+      }
+    },
+    {
+      "t": 16858.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.6000000089406967
+      }
+    },
+    {
+      "t": 16875.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16891.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.800000011920929,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16909.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.299999997019768,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 16925.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.6000000089406967,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16942.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.200000002980232,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16958.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7000000029802322,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 16975.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.200000002980232,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 16991.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.5999999940395355,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 17009.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.399999991059303,
+        "gpuSubmitCallMs": 0.6000000089406967
+      }
+    },
+    {
+      "t": 17025.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17042.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 17058.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.6000000089406967,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 17075.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.8999999910593033,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 17092.29999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.100000008940697,
+        "gpuSubmitCallMs": 0.699999988079071
+      }
+    },
+    {
+      "t": 17109.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.399999991059303,
+        "gpuSubmitCallMs": 0.5999999940395355
+      }
+    },
+    {
+      "t": 17125.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17142.79999999702,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.4000000059604645,
+        "gpuSubmitCallMs": 0.8999999910593033
+      }
+    },
+    {
+      "t": 17159.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17178.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 6.4000000059604645,
+        "gpuSubmitCallMs": 0.9000000059604645
+      }
+    },
+    {
+      "t": 17193.5,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.899999991059303,
+        "gpuSubmitCallMs": 0.8999999910593033
+      }
+    },
+    {
+      "t": 17209.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.5,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17226.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.299999997019768,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17244.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 5.199999988079071,
+        "gpuSubmitCallMs": 1
+      }
+    },
+    {
+      "t": 17259.20000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.100000008940697,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 17276.40000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.4000000059604645,
+        "gpuSubmitCallMs": 1.1000000089406967
+      }
+    },
+    {
+      "t": 17292.10000000894,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 3.7999999970197678,
+        "gpuSubmitCallMs": 0.800000011920929
+      }
+    },
+    {
+      "t": 17310,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.800000011920929,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17325.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.0999999940395355,
+        "gpuSubmitCallMs": 0.7000000029802322
+      }
+    },
+    {
+      "t": 17342.90000000596,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 4.399999991059303,
+        "gpuSubmitCallMs": 0.7999999970197678
+      }
+    },
+    {
+      "t": 17367.70000000298,
+      "timing": {
+        "mainThreadReceiptMs": null,
+        "engineApplyCallMs": 10,
+        "gpuSubmitCallMs": 3.5999999940395355
+      }
+    }
+  ]
+}

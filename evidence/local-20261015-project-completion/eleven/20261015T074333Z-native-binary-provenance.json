@@ -1,0 +1,15 @@
+{
+  "binary": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261013-solar-qualification\\dist\\native\\win32-x64\\lsdpd.exe",
+  "manifest": {
+    "schema": "solar.native-server.v1",
+    "wire": "LSDP-TCP/2.0-draft2",
+    "source_revision": "e695e14f9f664f430ffc2e0e75d083fab88abc7f",
+    "binaries": {
+      "win32-x64": {
+        "file": "win32-x64/lsdpd.exe",
+        "sha256": "7bd059c56b0daa56b3da24f0ccdb3b6a888709feff9618cd3b8cd2a045bdce60"
+      }
+    }
+  },
+  "policy": "Existing hash-verified binary reused read-only; no build or shared runtime replacement"
+}

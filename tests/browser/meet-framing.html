@@ -1,0 +1,277 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Private Solar and Vision Meet framing qualification</title>
+<style>
+  body {
+    background: #222;
+    color: white;
+    font: 16px sans-serif;
+  }
+  canvas {
+    width: 384px;
+    height: 288px;
+    image-rendering: pixelated;
+    margin: 8px;
+    border: 1px solid #888;
+  }
+  section {
+    display: inline-block;
+  }
+</style>
+<h1>Solar → Vision: synthetic peer bitmap framing</h1>
+<script type="module">
+  import { LiveMediaController } from "/src/engine/live-media.ts";
+  const { default: init, VisionGpuEngine } = await import(
+    /* @vite-ignore */ new URL(
+      "/vision/pkg/lumencast_vision_web.js",
+      location.href,
+    ).href
+  );
+
+  window.runQualification = async () => {
+    const errors = [],
+      samples = [];
+    let controller, engine, stream, painting;
+    window.qualificationPhase = "initializing";
+    const output = document.createElement("canvas");
+    output.width = 128;
+    output.height = 96;
+    document.body.append(output);
+    const pattern = document.createElement("canvas");
+    pattern.width = 128;
+    pattern.height = 64;
+    const paint = pattern.getContext("2d");
+    const redraw = () => {
+      for (const [color, x, y] of [
+        ["#ff0000", 0, 0],
+        ["#00ff00", 64, 0],
+        ["#0000ff", 0, 32],
+        ["#ffff00", 64, 32],
+      ]) {
+        paint.fillStyle = color;
+        paint.fillRect(x, y, 64, 32);
+      }
+    };
+    redraw();
+    let uploads = 0,
+      waiter;
+    const expectFrame = () =>
+      new Promise((resolve, reject) => {
+        const timeout = setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Solar frame upload timed out at " + window.qualificationPhase,
+              ),
+            ),
+          15000,
+        );
+        waiter = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+      });
+    const pixel = (context, x, y) => [...context.getImageData(x, y, 1, 1).data];
+    const snapshot = (name, expected) => {
+      const section = document.createElement("section");
+      const label = document.createElement("div");
+      label.textContent = name;
+      const canvas = document.createElement("canvas");
+      canvas.width = 128;
+      canvas.height = 96;
+      const context = canvas.getContext("2d");
+      context.drawImage(output, 0, 0);
+      section.append(label, canvas);
+      document.body.append(section);
+      const actual = {
+        top: pixel(context, 44, 28),
+        inside: pixel(context, 44, 40),
+        outside: pixel(context, 20, 20),
+      };
+      for (const [point, value] of Object.entries(expected)) {
+        if (
+          !actual[point].every(
+            (channel, index) => Math.abs(channel - value[index]) <= 2,
+          )
+        ) {
+          throw new Error(
+            `${name} ${point}: ${JSON.stringify(actual[point])} expected ${JSON.stringify(value)}`,
+          );
+        }
+      }
+      samples.push({
+        name,
+        actual,
+        expected,
+        descriptors: JSON.parse(engine.live_media_sources_json()),
+        uploads,
+      });
+    };
+    try {
+      await init({
+        module_or_path: fetch("/vision/pkg/lumencast_vision_web_bg.wasm"),
+      });
+      engine = await VisionGpuEngine.create_empty_html_canvas(output, 128, 96);
+      const documentValue = {
+        lsml: "1.1",
+        scene_id: "private-meet-framing",
+        scene_version: "sha256:" + "0".repeat(64),
+        profiles: ["x-zab.meet-peer/1", "x-zab.meet-framing/1"],
+        defaults: {
+          "__editable.fit": "contain",
+          "__editable.cropLeft": 0,
+          "__editable.cropTop": 0,
+        },
+        layout: {
+          kind: "frame",
+          id: "root",
+          size: { w: 128, h: 96 },
+          background: "#112233",
+          children: [
+            {
+              kind: "x-zab.meet-peer",
+              id: "peer",
+              "x-zab.slotRef": "@0",
+              position: { x: 32, y: 16 },
+              size: { w: 64, h: 64 },
+              object_fit: "contain",
+              contentBox: { x: 8, y: 8, width: 48, height: 48 },
+              sourceCrop: { left: 0, top: 0, right: 0, bottom: 0 },
+              sourceZoom: 1,
+              objectPosition: { x: 0.5, y: 0.5 },
+              clipEffects: true,
+              bind: {
+                object_fit: "__editable.fit",
+                sourceCropLeft: "__editable.cropLeft",
+                sourceCropTop: "__editable.cropTop",
+              },
+            },
+          ],
+        },
+      };
+      const canonical = (value) =>
+        Array.isArray(value)
+          ? value.map(canonical)
+          : value && typeof value === "object"
+            ? Object.fromEntries(
+                Object.keys(value)
+                  .sort()
+                  .map((key) => [key, canonical(value[key])]),
+              )
+            : value;
+      const digest = await crypto.subtle.digest(
+        "SHA-256",
+        new TextEncoder().encode(JSON.stringify(canonical(documentValue))),
+      );
+      documentValue.scene_version =
+        "sha256:" +
+        Array.from(new Uint8Array(digest), (v) =>
+          v.toString(16).padStart(2, "0"),
+        ).join("");
+      engine.load_scene_parts(
+        new TextEncoder().encode(JSON.stringify(documentValue)),
+        [],
+        [],
+      );
+      stream = pattern.captureStream(30);
+      painting = setInterval(redraw, 33);
+      const scene = {
+        async updateMedia(frames) {
+          try {
+            for (const frame of frames)
+              engine.update_live_image(frame.path, frame.bitmap);
+            engine.render(128, 96);
+            uploads++;
+            const ready = waiter;
+            waiter = undefined;
+            ready?.();
+          } finally {
+            for (const frame of frames) frame.bitmap.close();
+          }
+        },
+        async clearMedia(paths) {
+          for (const path of paths) engine.clear_live_image(path);
+        },
+      };
+      controller = new LiveMediaController({
+        liveAudio: false,
+        resolveCaptureDevice: () => null,
+        peers: {
+          resolvePeerStream: () => stream,
+          subscribePeerStream: () => () => {},
+          dispose() {},
+        },
+        onError: (error) => errors.push(error),
+        getScene: () => scene,
+      });
+      window.qualificationPhase = "initial peer upload";
+      let ready = expectFrame();
+      controller.update(JSON.parse(engine.live_media_sources_json()));
+      await ready;
+      await controller.pause();
+      snapshot("contain", {
+        top: [17, 34, 51, 255],
+        inside: [255, 0, 0, 255],
+        outside: [17, 34, 51, 255],
+      });
+      for (const [name, patch, expected] of [
+        [
+          "fill",
+          { "__editable.fit": "fill" },
+          { top: [255, 0, 0, 255], outside: [17, 34, 51, 255] },
+        ],
+        [
+          "crop left 50%",
+          { "__editable.cropLeft": 50 },
+          { top: [0, 255, 0, 255], outside: [17, 34, 51, 255] },
+        ],
+        [
+          "crop top 50%",
+          { "__editable.cropTop": 50 },
+          { top: [255, 255, 0, 255], outside: [17, 34, 51, 255] },
+        ],
+      ]) {
+        window.qualificationPhase = name;
+        engine.apply_patch(JSON.stringify(patch));
+        ready = expectFrame();
+        controller.update(JSON.parse(engine.live_media_sources_json()));
+        controller.resume();
+        await ready;
+        await controller.pause();
+        snapshot(name, expected);
+      }
+      if (errors.length) throw new Error(JSON.stringify(errors));
+      return {
+        passed: true,
+        boundary:
+          "real Solar LiveMediaController + synthetic canvas MediaStream + committed Vision WASM/WebGL; no LSDP, real Meet signaling or physical camera",
+        engine: JSON.parse(engine.info_json()),
+        samples,
+        uploads,
+        errors,
+      };
+    } catch (error) {
+      window.qualificationFailure = {
+        phase: window.qualificationPhase,
+        uploads,
+        errors,
+        descriptors: engine
+          ? JSON.parse(engine.live_media_sources_json())
+          : null,
+        videos: [...document.querySelectorAll("video")].map((v) => ({
+          readyState: v.readyState,
+          width: v.videoWidth,
+          height: v.videoHeight,
+          paused: v.paused,
+        })),
+      };
+      throw error;
+    } finally {
+      clearInterval(painting);
+      controller?.dispose();
+      stream?.getTracks().forEach((track) => track.stop());
+      engine?.free();
+      output.remove();
+    }
+  };
+</script>

@@ -114,7 +114,11 @@
       <span class="tag">LSML → SOLAR → VISION</span>
     </header>
 
-    <iframe title="Rendu Solar" src="__SOLAR_ORIGIN__/"></iframe>
+    <iframe
+      title="Rendu Solar"
+      allow="autoplay"
+      src="__SOLAR_ORIGIN__/"
+    ></iframe>
 
     <footer>
       <button id="play" disabled>Jouer la transition</button
@@ -165,7 +169,9 @@
     </div>
 
     <p>
-      __MOTION_DESCRIPTION__<br /><a href="/scene.lsmlz" download="sponsor-motion.lsmlz"
+      __MOTION_DESCRIPTION__<br /><a
+        href="/scene.lsmlz"
+        download="sponsor-motion.lsmlz"
         >Télécharger le LSMLZ</a
       >
       · <a href="/scene.lsml" download="sponsor-motion.lsml">Voir le LSML</a>
@@ -184,6 +190,12 @@
       ) {
         button.disabled = false;
         status.textContent = "Prêt · scène native chargée";
+        const preview = new URLSearchParams(location.search);
+        if (preview.get("autoplay") === "1" && !window.previewStarted) {
+          window.previewStarted = true;
+          if (preview.get("loop") === "1") document.querySelector("#iterations").value = "infinite";
+          window.playMotion().catch(e => (status.textContent = e.message));
+        }
       }
     });
 
@@ -195,6 +207,12 @@
       .then((c) => (duration = c.duration_ms));
 
     window.controlMotion = async (command) => {
+      document
+        .querySelector("iframe")
+        .contentWindow.postMessage(
+          { type: "solar-unlock-audio" },
+          "__SOLAR_ORIGIN__",
+        );
       const response = await fetch("/play", {
         method: "POST",
         headers: { "content-type": "application/json" },

@@ -3,8 +3,20 @@
     "max_lines": 7726,
     "reason": "Generated dependency lockfile; preserve resolver output and integrity hashes verbatim."
   },
+  "src/engine/native-lsdp-runtime.ts": {
+    "max_lines": 1024,
+    "reason": "This existing LSDP event owner retains the accepted snapshot, patch and committed-frame boundaries. Composition planning, queued publication, source selection, metrics and errors are extracted; the remaining composition calls are the exact points that bind those actions to the current document. Moving them would introduce a second apply/publish coordinator. Revisit if the runtime lifecycle is split."
+  },
+  "src/engine/vision-presenter.ts": {
+    "max_lines": 1020,
+    "reason": "The persistent Vision session owns engine acknowledgement, installation-font admission and serialized scene loads on one presenter and canvas per host lifetime. Tracking engine readiness separately from font readiness lets failed initialization retire an incomplete presenter while failed font admission reuses the acknowledged engine. Keep this recovery state with its lifecycle owner; revisit after a lifecycle extraction preserves the single presenter and queue owner."
+  },
+  "scripts/proof/qualify-repeat-runtime.mjs": {
+    "max_lines": 1500,
+    "reason": "This retained qualification intentionally drives one Prism-exported scene through a single RAM-only native server, Solar host, Vision engine and browser session. Keeping the initial Repeat mutations, malformed replacement, reconnecting snapshot and later presented mutations in one run is necessary to prove recovery without resetting the active runtime between phases. Revisit the ceiling if this driver expands beyond the one-session Repeat contract."
+  },
   "public/vision/pkg/lumencast_vision_web.js": {
-    "max_lines": 3118,
-    "reason": "Generated wasm-bindgen 0.2.129 glue including persistent engine/font preload and boolean live-texture clear; pinned by exact bytes and SHA-256, never manually split. The 29-line increase is generated wasm-bindgen glue for the tested direct scene-parts method; SHA-pinned with the rebuilt WASM, not handwritten application growth."
+    "max_lines": 3323,
+    "reason": "Generated wasm-bindgen 0.2.129 glue pinned by exact bytes and SHA-256 to signed Vision native-contribution-atlas source 4f466e8f424ab8afb968d88d9e64310de87122a4. New generated typed atlas/capture metadata API is qualified in the producer artifact manifest; never handwritten or manually split. Revisit only on a reviewed upstream regeneration."
   }
 }

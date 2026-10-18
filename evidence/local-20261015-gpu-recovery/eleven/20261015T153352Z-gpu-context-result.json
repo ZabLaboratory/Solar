@@ -1,0 +1,115 @@
+{
+  "passed": true,
+  "boundary": "same active Solar/Vision scene only; private WebGL loss and restoration; no scene switch or live source",
+  "dimensions": {
+    "gpu": [
+      200,
+      80
+    ],
+    "front": [
+      200,
+      80
+    ]
+  },
+  "contextDiagnostics": {
+    "beforeLoss": false,
+    "afterLoss": true,
+    "afterRestore": false
+  },
+  "samples": [
+    {
+      "phase": "first accepted GPU frame with nested assets",
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "swatch": [
+        255,
+        0,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "embeddedFontPixels": 194
+    },
+    {
+      "phase": "live bindParams mutation",
+      "swatch": [
+        0,
+        255,
+        0,
+        255
+      ]
+    },
+    {
+      "phase": "WebGL context restoration",
+      "swatch": [
+        0,
+        170,
+        0,
+        255
+      ],
+      "image": {
+        "x": 40,
+        "y": 13
+      },
+      "embeddedFontPixels": 194,
+      "rows": [
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "green",
+          "green",
+          "blue",
+          "blue"
+        ],
+        [
+          "red",
+          "green",
+          "blue",
+          "white"
+        ],
+        [
+          "red",
+          "red",
+          "green",
+          "green"
+        ]
+      ],
+      "contextLost": false
+    }
+  ],
+  "errors": [],
+  "browser": "154.0.8037.98",
+  "node": "v24.16.0",
+  "pageErrors": []
+}

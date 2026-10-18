@@ -1,0 +1,288 @@
+{
+  "lsml": "1.1",
+  "scene_id": "repeat-runtime-proof",
+  "scene_version": "sha256:cfbbe9b7dbe143ea90b0900b0241cde2e51909dbe9e45b9a9844c235f416d8b6",
+  "layout": {
+    "kind": "frame",
+    "size": {
+      "w": 800,
+      "h": 500
+    },
+    "children": [
+      {
+        "kind": "frame",
+        "size": {
+          "w": 744,
+          "h": 460
+        },
+        "children": [
+          {
+            "kind": "text",
+            "bind": {
+              "value": "__lit.heading"
+            },
+            "style": {
+              "fontSize": 24,
+              "fontWeight": 700,
+              "color": "#ffffff",
+              "fontFamily": "Figtree"
+            },
+            "position": {
+              "x": 0,
+              "y": 0
+            },
+            "metadata": {
+              "figma": {
+                "size": {
+                  "w": 740,
+                  "h": 30
+                }
+              }
+            }
+          },
+          {
+            "kind": "repeat",
+            "scope": "team",
+            "template": {
+              "kind": "frame",
+              "size": {
+                "w": 740,
+                "h": 118
+              },
+              "children": [
+                {
+                  "kind": "frame",
+                  "size": {
+                    "w": 720,
+                    "h": 102
+                  },
+                  "children": [
+                    {
+                      "kind": "text",
+                      "bind": {
+                        "value": "{team}.name"
+                      },
+                      "style": {
+                        "fontSize": 20,
+                        "fontWeight": 700,
+                        "color": "#ffffff",
+                        "fontFamily": "Figtree"
+                      },
+                      "position": {
+                        "x": 0,
+                        "y": 0
+                      },
+                      "metadata": {
+                        "figma": {
+                          "size": {
+                            "w": 700,
+                            "h": 24
+                          }
+                        }
+                      }
+                    },
+                    {
+                      "kind": "repeat",
+                      "scope": "player",
+                      "template": {
+                        "kind": "frame",
+                        "size": {
+                          "w": 700,
+                          "h": 28
+                        },
+                        "children": [
+                          {
+                            "kind": "frame",
+                            "size": {
+                              "w": 680,
+                              "h": 24
+                            },
+                            "children": [
+                              {
+                                "kind": "text",
+                                "bind": {
+                                  "value": "{player}.name"
+                                },
+                                "style": {
+                                  "fontSize": 18,
+                                  "fontWeight": 600,
+                                  "color": "#ffffff",
+                                  "fontFamily": "Figtree"
+                                },
+                                "position": {
+                                  "x": 0,
+                                  "y": 0
+                                },
+                                "metadata": {
+                                  "figma": {
+                                    "size": {
+                                      "w": 390,
+                                      "h": 24
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "bind": {
+                                  "value": "{player}.score"
+                                },
+                                "style": {
+                                  "fontSize": 18,
+                                  "fontWeight": 600,
+                                  "color": "#ffffff",
+                                  "fontFamily": "Figtree"
+                                },
+                                "position": {
+                                  "x": 0,
+                                  "y": 0
+                                },
+                                "metadata": {
+                                  "figma": {
+                                    "size": {
+                                      "w": 90,
+                                      "h": 24
+                                    }
+                                  }
+                                }
+                              },
+                              {
+                                "kind": "text",
+                                "bind": {
+                                  "value": "{team}.code"
+                                },
+                                "style": {
+                                  "fontSize": 18,
+                                  "fontWeight": 600,
+                                  "color": "#ffffff",
+                                  "fontFamily": "Figtree"
+                                },
+                                "position": {
+                                  "x": 0,
+                                  "y": 0
+                                },
+                                "metadata": {
+                                  "figma": {
+                                    "size": {
+                                      "w": 40,
+                                      "h": 24
+                                    }
+                                  }
+                                }
+                              }
+                            ],
+                            "position": {
+                              "x": 8,
+                              "y": 2
+                            },
+                            "x": 8,
+                            "y": 2,
+                            "clipsContent": false
+                          }
+                        ],
+                        "background": "#203850"
+                      },
+                      "bind": {
+                        "items": "{team}.players"
+                      },
+                      "key": "{player}.id",
+                      "limit": 2,
+                      "metadata": {
+                        "figma": {
+                          "size": {
+                            "w": 1920,
+                            "h": 1080
+                          }
+                        }
+                      }
+                    }
+                  ],
+                  "position": {
+                    "x": 10,
+                    "y": 8
+                  },
+                  "x": 10,
+                  "y": 8,
+                  "clipsContent": false
+                }
+              ],
+              "background": "#142438"
+            },
+            "bind": {
+              "items": "teams"
+            },
+            "key": "{team}.id",
+            "metadata": {
+              "figma": {
+                "size": {
+                  "w": 1920,
+                  "h": 1080
+                }
+              }
+            }
+          }
+        ],
+        "position": {
+          "x": 28,
+          "y": 20
+        },
+        "x": 28,
+        "y": 20,
+        "clipsContent": false
+      }
+    ],
+    "background": "#0a0f16"
+  },
+  "defaults": {
+    "__lit.heading": "LIVE ROSTER",
+    "teams": [
+      {
+        "id": "red",
+        "name": "RED TEAM",
+        "code": "R",
+        "players": [
+          {
+            "id": "r-a",
+            "name": "ALICE",
+            "score": "11"
+          },
+          {
+            "id": "r-b",
+            "name": "BOB",
+            "score": "22"
+          },
+          {
+            "id": "r-c",
+            "name": "CARA",
+            "score": "33"
+          }
+        ]
+      },
+      {
+        "id": "blue",
+        "name": "BLUE TEAM",
+        "code": "B",
+        "players": [
+          {
+            "id": "b-d",
+            "name": "DANA",
+            "score": "44"
+          },
+          {
+            "id": "b-e",
+            "name": "ELI",
+            "score": "55"
+          },
+          {
+            "id": "b-f",
+            "name": "FOX",
+            "score": "66"
+          }
+        ]
+      }
+    ]
+  },
+  "profiles": [
+    "x-figma.authoring/1"
+  ]
+}

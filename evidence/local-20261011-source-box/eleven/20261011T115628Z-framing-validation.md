@@ -1,0 +1,5 @@
+# Pinned framing engine
+
+Continuation: D:/Documents/Zab/Solar/.worktrees/eleven-local-20261011-source-box, branch eleven/local-20261011-source-box, base dd67911da3ecc33b8f7096f8d689fba5ac99434c. Generated Vision JS/WASM and byte pins are updated to engine ea8a2088bc7dc521e7bd72ab319082b0b3648d2c. WASM SHA256 d46d3b1ff1457a05152fe7161db938135953158b8fbfaa3f4339b6b466e773df (10312579 bytes).
+
+35 test files / 261 tests passed. Asset pins, bundle layout and code discovery checks passed. The common Prism dev runs v3.0.0-local-81780532e6e43116; the runtime proof 20261011T115628Z-framing-runtime.json records ready Solar Preview, live Pulsar and restored voice listening with unchanged configuration. Native LSDP receiver and persistent engine lifecycle were retained. The historical source_state wording describes the initial strict-box correction; source_revision and byte pins identify the subsequent flexible-framing implementation. Vision pixel/mutation proofs live in D:/Documents/Lumencast/lumencast-vision/.worktrees/eleven-local-20261011-source-box/evidence/local-20261011-source-box/eleven/.

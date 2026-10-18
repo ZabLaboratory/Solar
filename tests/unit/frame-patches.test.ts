@@ -3,6 +3,7 @@ import { FramePatches } from "../../src/engine/frame-patches";
 
 describe("frame-paced scalar presentation", () => {
   it("merges 512 ordered states into one frame while retaining every receipt", async () => {
+    performance.clearMeasures("solar:native-stage");
     const submit = vi.fn(async () => {}),
       failed = vi.fn();
     const queue = new FramePatches<number>(submit, failed);
@@ -14,6 +15,18 @@ describe("frame-paced scalar presentation", () => {
       { counter: 512 },
       Array.from({ length: 512 }, (_, i) => i + 1),
     ]);
+    const measurement = performance
+      .getEntriesByName("solar:native-stage")
+      .map(
+        (entry) =>
+          (entry as PerformanceMeasure).detail as Record<string, unknown>,
+      )
+      .find((detail) => detail.stage === "frame-patches-queue");
+    expect(measurement).toMatchObject({
+      pendingAtFlush: 512,
+      queueHighWater: 512,
+    });
+    expect(measurement?.oldestAgeMs).toEqual(expect.any(Number));
     expect(failed).not.toHaveBeenCalled();
     queue.close();
   });

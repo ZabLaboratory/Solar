@@ -1,0 +1,30 @@
+{
+  "base": "4926afc5793f36c5c71689b0ed0f9a8c0155015e",
+  "branch": "eleven/local-20261015-font-report",
+  "files": [
+    {
+      "path": "src/server/installation-fonts.ts",
+      "sha256": "e56c07eb32e6a434c40832554a5745d3d5f9c1a925b9da9b8421427b838ed5c9"
+    },
+    {
+      "path": "src/server/native-server.ts",
+      "sha256": "9bf15c2bf1fc11d37674fd190ffbae92dd45a04cf65dff3be957a8ebf9a7e8c4"
+    },
+    {
+      "path": "src/server/README.md",
+      "sha256": "c18917712c177ae9bb553e1f35a871c0fbf63247c2da53cc056fc20611b8e438"
+    },
+    {
+      "path": "docs/development/code-map.md",
+      "sha256": "82cc105ab219dbd9dc23ea9081ec6636c8ade7f1c0ec6918db0a85ae136ac2d3"
+    },
+    {
+      "path": "tests/unit/installation-fonts.test.ts",
+      "sha256": "2fdff64fd77028174008ba35b118d2ea5956bb55e6675d734c2572a058b11191"
+    },
+    {
+      "path": "tests/unit/font-status.test.ts",
+      "sha256": "e445fa8569934963710029e2a30919b97a55e9beb56af08bb8485adbc3f48b2d"
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "timestampUtc": "2026-10-17T11:52:20.340763+00:00",
+  "owner": "Eleven",
+  "worktree": "D:\\Documents\\Zab\\Solar\\.worktrees\\eleven-local-20261015-project-integration",
+  "branch": "eleven/local-20261015-project-integration",
+  "baseHead": "608d0a6c13ae79cc4d5376562a69ee15894da1fc",
+  "problem": "Native delegated capture descriptors reached LiveMediaController before the matching composition frame and could open a duplicate physical capture in Solar.",
+  "correction": "Stage descriptors in native mode, publish only after accepted composition frame, remove only explicitly delegated local capture paths; retain peer raster subscriptions and immediate canonical behavior.",
+  "tests": {
+    "20261017T113435Z-native-media-ownership-tests.json": {
+      "success": true,
+      "passed": 446,
+      "failed": 0,
+      "sha256": "ff4ba15e94fde157d52025d0018fee1040be90a6d90419d1d4ff2780ba6cfa47"
+    },
+    "20261017T113650Z-native-media-final-tests.json": {
+      "success": true,
+      "passed": 446,
+      "failed": 0,
+      "sha256": "172b131b595c2a86383176d62cee15098fc9a28db4e6c66231f043ac30b6da4c"
+    },
+    "20261017T113751Z-native-media-integrated-tests.json": {
+      "success": true,
+      "passed": 446,
+      "failed": 0,
+      "sha256": "3b243c5640c4c25ccc91db7c7bcfd974ca072ca6c02a203d79ba50029eebd412"
+    }
+  },
+  "currentChecks": {
+    "typecheck": "PASS",
+    "scopedEslint": "PASS zero warnings",
+    "architecture": "PASS 70 reachable source files, current code map, docs 195 links, file-size guard",
+    "bundle": "PASS layout, self-contained chunks, peers and four exact Vision artifact pins",
+    "diffCheck": "PASS"
+  },
+  "behavioralEvidence": [
+    "Actual LiveMediaController receives accepted native descriptors: capture device resolver called zero times, peer subscription and unsubscription each once.",
+    "Rejected composition frame retains prior accepted list.",
+    "Changed capture path remains staged until accepted frame.",
+    "Canonical rendering retains immediate capture and peer updates."
+  ],
+  "sourceSha256": {
+    ".file-size-exceptions.json": "13b896a15094db6f8a3163181955a162a434093a0dc20cfa9b6a99d60e615fa2",
+    "docs/development/code-map.md": "a76d49a5cee148ea57ea6307d77d2ccc994353b0b9d81057b1f2c0fe4f1e88a8",
+    "src/engine/README.md": "9b4c570bed7cae81c8ba8777387c7e69f0d3a17a5729847da486f391934b97a9",
+    "src/engine/vision-contracts.ts": "d8bcb257005b93c5fd0ecde3ba007a1fa5ed1fb321bca495ebdd6a086fc4bfbf",
+    "src/engine/vision-media-bridge.ts": "f109d0fb814ececc6610a265852b3e1c6cf27ffbad77c2c9994b104080ab2ae8",
+    "src/engine/vision-presenter.ts": "99d2fd69aac6c31841c3fafcd704beb9368b08dfe26b04160bdf9be7d7b6c786",
+    "tests/unit/vision-session.test.ts": "28e5face28535d330283d3765a04c338d43a145ab6b9a28a5b73eec2c3cadff3"
+  },
+  "generatedGlueException": "Reviewed wasm-bindgen artifact from signed Vision 4f466e8f424ab8afb968d88d9e64310de87122a4 has 3323 generated lines. Handwritten presenter ceiling remains 1000.",
+  "limits": [
+    "No real physical capture/CEF/Main bridge qualification in this unit.",
+    "Only paths explicitly delegated by an accepted receipt are excluded.",
+    "No shared runtime installation or restart; no transition/readiness/switch-duration change.",
+    "Broad project requirements remain open."
+  ]
+}

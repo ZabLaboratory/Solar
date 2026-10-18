@@ -170,6 +170,12 @@ it("cancels incomplete passes without publishing an authorization index", async 
 });
 it("local transport returns verified original LSML/assets/HTTP URL; corruption/auth failure never falls back", async () => {
   const s = await source("one");
+  const packageFiles = unzipSync(s.data);
+  const legacyFont = strToU8("cached legacy font");
+  const legacyFontPath = `assets/${createHash("sha1").update(legacyFont).digest("hex")}.woff2`;
+  packageFiles[legacyFontPath] = legacyFont;
+  packageFiles["assets/legacy/child-image.png"] = strToU8("cached named image");
+  s.data = zipSync(packageFiles, { level: 0 });
   const upstream = { get: vi.fn(async () => s) };
   const response = vi.fn(
     async () => new Response(new Uint8Array(encodeSceneSource(s))),
@@ -186,6 +192,21 @@ it("local transport returns verified original LSML/assets/HTTP URL; corruption/a
   expect(result.data).toEqual(s.data);
   const document = JSON.parse(strFromU8(unzipSync(result.data)["scene.lsml"]!));
   expect(document.defaults.image).toBe("https://images.example/live.png");
+  const plain = await provider.get(s.sceneId, {
+    sceneVersion: s.sceneVersion,
+    format: "lsml",
+  });
+  expect(plain).toMatchObject({
+    sceneId: s.sceneId,
+    sceneVersion: s.sceneVersion,
+    sourceDigest: s.sourceDigest,
+    format: "lsml",
+    data: packageFiles["scene.lsml"],
+  });
+  expect(plain.assets.get(legacyFontPath)).toEqual(legacyFont);
+  expect(plain.assets.get("assets/legacy/child-image.png")).toEqual(
+    packageFiles["assets/legacy/child-image.png"],
+  );
   expect(upstream.get).not.toHaveBeenCalled();
   response.mockImplementation(async () => new Response("corrupt"));
   await expect(

@@ -1,0 +1,38 @@
+{
+  "schema": "solar.vision-assets.v1",
+  "upstream": "Lumencast/lumencast-vision",
+  "base_revision": "e5b2720589e30820bd6b70b89cc78fec0ab6153a",
+  "source_state": "Qualified full-resolution live media textures, carrying forward qualified source-box contentBox scalar support.",
+  "files": {
+    "ui/mainpresenter.mjs": {
+      "bytes": 26045,
+      "sha256": "37fe912a89103c0985d407f5bc993a037cd4b2a8f86d6e95e45d12b7b9977ea0"
+    },
+    "ui/fonts.mjs": {
+      "bytes": 1977,
+      "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+    },
+    "pkg/lumencast_vision_web.js": {
+      "bytes": 148483,
+      "sha256": "b9175e0eae61977925f6600398bfe4001f47875c3bec469439c36f928b6aea5a"
+    },
+    "pkg/lumencast_vision_web_bg.wasm": {
+      "bytes": 10316335,
+      "sha256": "b990a76e55c0fa6c60f252ecb9cfb18f453759022be4308c15be82b40246626e"
+    }
+  },
+  "source_provenance": {
+    "repository": "Lumencast/lumencast-vision",
+    "engine_base": "ea8a2088bc7dc521e7bd72ab319082b0b3648d2c",
+    "engine_branch": "eleven/local-20261014-media-texture-quality",
+    "engine_evidence": "evidence/local-20261014-media-texture-quality/eleven/20261014T170339Z-qualification.json",
+    "source_files": {
+      "README.md": "7d55645a432b831059d22de750fbc42a831e0455c632b94c3f1ab3b121d817bb",
+      "crates/vision-web/src/lib.rs": "df179450805f36a3c33d068579b50c3947cd399003ecdca91639b6d5c816a2dc",
+      "crates/vision-gpu-scene/src/lib.rs": "ed312ffc1ffee5a243585caf06602469e13f4c10715466b4221ff3a6a09836ee",
+      "crates/vision-render/src/image.rs": "2a1ccebc068993eef0211a1760716ccdca71882a012c31c46a57270210c60340"
+    },
+    "uncommitted_qualified_source": true
+  },
+  "source_revision": "ea8a2088bc7dc521e7bd72ab319082b0b3648d2c"
+}

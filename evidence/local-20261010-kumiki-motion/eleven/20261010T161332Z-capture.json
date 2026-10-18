@@ -1,0 +1,5033 @@
+{
+  "command": {
+    "command_id": "sponsor-demo-5",
+    "animations": 1,
+    "duration_ms": 15000,
+    "receipt": {
+      "receipt": {
+        "level": "applied",
+        "target": "scene",
+        "transactionId": "980b99ababefcfe49f2195671d3c2029"
+      },
+      "persistence": "memory-only"
+    }
+  },
+  "baseline": [
+    {
+      "type": "init-empty",
+      "t": 777.1999999880791
+    },
+    {
+      "type": "preload-fonts",
+      "t": 3097.5999999940395
+    },
+    {
+      "type": "load",
+      "t": 3125.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 3272.7999999970198
+    }
+  ],
+  "after": {
+    "requests": [
+      {
+        "type": "init-empty",
+        "t": 777.1999999880791
+      },
+      {
+        "type": "preload-fonts",
+        "t": 3097.5999999940395
+      },
+      {
+        "type": "load",
+        "t": 3125.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 3272.7999999970198
+      },
+      {
+        "type": "patch",
+        "t": 4468.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 4583.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 4650.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 4691.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 4761.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 4806.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 4853
+      },
+      {
+        "type": "patch",
+        "t": 4925.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 4968.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 5035.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 5066.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 5128.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 5177.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 5247.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 5293.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 5393.899999991059
+      },
+      {
+        "type": "patch",
+        "t": 5447.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 5564.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 5652.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 5735.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 5826.5
+      },
+      {
+        "type": "patch",
+        "t": 5884.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 5983.5
+      },
+      {
+        "type": "patch",
+        "t": 6089.899999991059
+      },
+      {
+        "type": "patch",
+        "t": 6134.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 6215.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 6288.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 6372.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 6429.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 6533.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 6572.5
+      },
+      {
+        "type": "patch",
+        "t": 6680.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 6772.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 6834
+      },
+      {
+        "type": "patch",
+        "t": 6917.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 7018.399999991059
+      },
+      {
+        "type": "patch",
+        "t": 7102.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 7138
+      },
+      {
+        "type": "patch",
+        "t": 7221.5999999940395
+      },
+      {
+        "type": "patch",
+        "t": 7276.5
+      },
+      {
+        "type": "patch",
+        "t": 7367.0999999940395
+      },
+      {
+        "type": "patch",
+        "t": 7479.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 7586.5
+      },
+      {
+        "type": "patch",
+        "t": 7630.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 7730.899999991059
+      },
+      {
+        "type": "patch",
+        "t": 7835.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 7966.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 8067.5
+      },
+      {
+        "type": "patch",
+        "t": 8230.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 8348.5
+      },
+      {
+        "type": "patch",
+        "t": 8457.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 8551.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 8848
+      },
+      {
+        "type": "patch",
+        "t": 9051.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 9160.5
+      },
+      {
+        "type": "patch",
+        "t": 9299.5
+      },
+      {
+        "type": "patch",
+        "t": 9484.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 9581.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 9693.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 9790.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 9850.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 9967
+      },
+      {
+        "type": "patch",
+        "t": 10067.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 10200.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 10382.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 10475.5
+      },
+      {
+        "type": "patch",
+        "t": 10667.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 10787.5
+      },
+      {
+        "type": "patch",
+        "t": 10944.5
+      },
+      {
+        "type": "patch",
+        "t": 11088.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 11387
+      },
+      {
+        "type": "patch",
+        "t": 11503.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 11590.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 11628
+      },
+      {
+        "type": "patch",
+        "t": 11731.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 11815.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 11866.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 11967.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 12095.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 12195.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 12295.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 12341.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 12443.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 12524.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 12585
+      },
+      {
+        "type": "patch",
+        "t": 12734.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 12850.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 12957.5
+      },
+      {
+        "type": "patch",
+        "t": 13100.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 13206.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 13321.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 13502.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 13650.199999988079
+      },
+      {
+        "type": "patch",
+        "t": 13800.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 13898
+      },
+      {
+        "type": "patch",
+        "t": 14100.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 14307.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 14445.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 14687.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 14785.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 15017.5
+      },
+      {
+        "type": "patch",
+        "t": 15184.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 15308.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 15412.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 15445.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 15508.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 15569
+      },
+      {
+        "type": "patch",
+        "t": 15665.699999988079
+      },
+      {
+        "type": "patch",
+        "t": 15728.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 15760.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 15822.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 15872.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 15914.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 16003.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 16033.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 16088.5
+      },
+      {
+        "type": "patch",
+        "t": 16130.5
+      },
+      {
+        "type": "patch",
+        "t": 16186.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 16228.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 16295.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 16331.5
+      },
+      {
+        "type": "patch",
+        "t": 16380.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 16414.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 16467.5
+      },
+      {
+        "type": "patch",
+        "t": 16516.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 16548.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 16585.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 16641.5
+      },
+      {
+        "type": "patch",
+        "t": 16719.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 16767.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 16798.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 16835.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 16888.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 16920.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 16965.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 17012.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 17035.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 17065.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 17131.5
+      },
+      {
+        "type": "patch",
+        "t": 17168.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 17241.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 17268
+      },
+      {
+        "type": "patch",
+        "t": 17322.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 17353.5
+      },
+      {
+        "type": "patch",
+        "t": 17387.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 17437.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 17464.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 17490.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 17517.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 17558.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 17586.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 17617.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 17660.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 17685.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 17720.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 17781.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 17822.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 17846.5
+      },
+      {
+        "type": "patch",
+        "t": 17906.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 17950.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 17992.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 18017.5
+      },
+      {
+        "type": "patch",
+        "t": 18048
+      },
+      {
+        "type": "patch",
+        "t": 18057.5
+      },
+      {
+        "type": "patch",
+        "t": 18081.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 18105.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 18139.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 18165.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 18195
+      },
+      {
+        "type": "patch",
+        "t": 18235.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 18267.5
+      },
+      {
+        "type": "patch",
+        "t": 18291.5
+      },
+      {
+        "type": "patch",
+        "t": 18315.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 18387.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 18427.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 18490.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 18526.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 18567.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 18625.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 18666.79999999702
+      },
+      {
+        "type": "patch",
+        "t": 18710.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 18742
+      },
+      {
+        "type": "patch",
+        "t": 18814.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 18889.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 18920.69999998808
+      },
+      {
+        "type": "patch",
+        "t": 18963.59999999404
+      },
+      {
+        "type": "patch",
+        "t": 19004.09999999404
+      },
+      {
+        "type": "patch",
+        "t": 19032.39999999106
+      },
+      {
+        "type": "patch",
+        "t": 19084.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 19156
+      },
+      {
+        "type": "patch",
+        "t": 19215
+      },
+      {
+        "type": "patch",
+        "t": 19294.29999999702
+      },
+      {
+        "type": "patch",
+        "t": 19351.89999999106
+      },
+      {
+        "type": "patch",
+        "t": 19402.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 19449.19999998808
+      },
+      {
+        "type": "patch",
+        "t": 19485.5
+      },
+      {
+        "type": "patch",
+        "t": 19540.19999998808
+      }
+    ],
+    "submissions": [
+      {
+        "t": 3254.2999999970198,
+        "seq": 3,
+        "timing": {
+          "mainThreadReceiptMs": 0,
+          "sceneLoadMs": 67.59999999403954,
+          "assetDecodeUploadMs": 1.7999999970197678,
+          "gpuSubmitCallMs": 58.29999999701977
+        }
+      },
+      {
+        "t": 3292.199999988079,
+        "seq": 4,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.700000002980232,
+          "gpuSubmitCallMs": 1.199999988079071
+        }
+      },
+      {
+        "t": 4552.699999988079,
+        "seq": 5,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 45.8999999910593,
+          "gpuSubmitCallMs": 38
+        }
+      },
+      {
+        "t": 4629.29999999702,
+        "seq": 6,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 35.5,
+          "gpuSubmitCallMs": 10.200000002980232
+        }
+      },
+      {
+        "t": 4676.5999999940395,
+        "seq": 7,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.600000008940697,
+          "gpuSubmitCallMs": 9.600000008940697
+        }
+      },
+      {
+        "t": 4729.79999999702,
+        "seq": 8,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.599999994039536,
+          "gpuSubmitCallMs": 19.399999991059303
+        }
+      },
+      {
+        "t": 4788.199999988079,
+        "seq": 9,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.799999997019768,
+          "gpuSubmitCallMs": 6.700000002980232
+        }
+      },
+      {
+        "t": 4838.399999991059,
+        "seq": 10,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.799999997019768,
+          "gpuSubmitCallMs": 13.400000005960464
+        }
+      },
+      {
+        "t": 4883.5999999940395,
+        "seq": 11,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.599999994039536,
+          "gpuSubmitCallMs": 12.799999997019768
+        }
+      },
+      {
+        "t": 4962,
+        "seq": 12,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.700000002980232,
+          "gpuSubmitCallMs": 19
+        }
+      },
+      {
+        "t": 5002.199999988079,
+        "seq": 13,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.700000002980232,
+          "gpuSubmitCallMs": 16.099999994039536
+        }
+      },
+      {
+        "t": 5061.199999988079,
+        "seq": 14,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15,
+          "gpuSubmitCallMs": 10.5
+        }
+      },
+      {
+        "t": 5096,
+        "seq": 15,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.799999997019768,
+          "gpuSubmitCallMs": 12.299999997019768
+        }
+      },
+      {
+        "t": 5169.0999999940395,
+        "seq": 16,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 24.200000002980232,
+          "gpuSubmitCallMs": 16
+        }
+      },
+      {
+        "t": 5214.899999991059,
+        "seq": 17,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21.600000008940697,
+          "gpuSubmitCallMs": 16
+        }
+      },
+      {
+        "t": 5287.5,
+        "seq": 18,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 30.700000002980232,
+          "gpuSubmitCallMs": 9.5
+        }
+      },
+      {
+        "t": 5365.399999991059,
+        "seq": 19,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 31.399999991059303,
+          "gpuSubmitCallMs": 40.29999999701977
+        }
+      },
+      {
+        "t": 5437.699999988079,
+        "seq": 20,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29.399999991059303,
+          "gpuSubmitCallMs": 12.700000002980232
+        }
+      },
+      {
+        "t": 5519.699999988079,
+        "seq": 21,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 58,
+          "gpuSubmitCallMs": 14.299999997019768
+        }
+      },
+      {
+        "t": 5600.0999999940395,
+        "seq": 22,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 24.80000001192093,
+          "gpuSubmitCallMs": 10.400000005960464
+        }
+      },
+      {
+        "t": 5729,
+        "seq": 23,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 47.5,
+          "gpuSubmitCallMs": 28.799999997019768
+        }
+      },
+      {
+        "t": 5782.79999999702,
+        "seq": 24,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.399999991059303,
+          "gpuSubmitCallMs": 23.799999997019768
+        }
+      },
+      {
+        "t": 5867.29999999702,
+        "seq": 25,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.400000005960464,
+          "gpuSubmitCallMs": 22
+        }
+      },
+      {
+        "t": 5941.5999999940395,
+        "seq": 26,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.599999994039536,
+          "gpuSubmitCallMs": 39.1000000089407
+        }
+      },
+      {
+        "t": 6048.29999999702,
+        "seq": 27,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 20.799999997019768,
+          "gpuSubmitCallMs": 43.79999999701977
+        }
+      },
+      {
+        "t": 6129.399999991059,
+        "seq": 28,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 27.100000008940697,
+          "gpuSubmitCallMs": 12.299999997019768
+        }
+      },
+      {
+        "t": 6160.699999988079,
+        "seq": 29,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18,
+          "gpuSubmitCallMs": 7.799999997019768
+        }
+      },
+      {
+        "t": 6274.29999999702,
+        "seq": 30,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.100000008940697,
+          "gpuSubmitCallMs": 39.400000005960464
+        }
+      },
+      {
+        "t": 6337.399999991059,
+        "seq": 31,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 25.599999994039536,
+          "gpuSubmitCallMs": 23.299999997019768
+        }
+      },
+      {
+        "t": 6419.5999999940395,
+        "seq": 32,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 25.900000005960464,
+          "gpuSubmitCallMs": 20.900000005960464
+        }
+      },
+      {
+        "t": 6470.29999999702,
+        "seq": 33,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.799999997019768,
+          "gpuSubmitCallMs": 16.600000008940697
+        }
+      },
+      {
+        "t": 6567.199999988079,
+        "seq": 34,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.099999994039536,
+          "gpuSubmitCallMs": 10
+        }
+      },
+      {
+        "t": 6615,
+        "seq": 35,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 24.299999997019768,
+          "gpuSubmitCallMs": 18.100000008940697
+        }
+      },
+      {
+        "t": 6725.0999999940395,
+        "seq": 36,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 36.5,
+          "gpuSubmitCallMs": 7.9000000059604645
+        }
+      },
+      {
+        "t": 6799.699999988079,
+        "seq": 37,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17,
+          "gpuSubmitCallMs": 10.099999994039536
+        }
+      },
+      {
+        "t": 6871.29999999702,
+        "seq": 38,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 30.5,
+          "gpuSubmitCallMs": 6.299999997019768
+        }
+      },
+      {
+        "t": 7013.5,
+        "seq": 39,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 30,
+          "gpuSubmitCallMs": 58.29999999701977
+        }
+      },
+      {
+        "t": 7054,
+        "seq": 40,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.799999997019768,
+          "gpuSubmitCallMs": 19.599999994039536
+        }
+      },
+      {
+        "t": 7132.79999999702,
+        "seq": 41,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.600000008940697,
+          "gpuSubmitCallMs": 7.199999988079071
+        }
+      },
+      {
+        "t": 7176.899999991059,
+        "seq": 42,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 27.899999991059303,
+          "gpuSubmitCallMs": 10.799999997019768
+        }
+      },
+      {
+        "t": 7264.899999991059,
+        "seq": 43,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 30,
+          "gpuSubmitCallMs": 13.200000002980232
+        }
+      },
+      {
+        "t": 7328.0999999940395,
+        "seq": 44,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 40.099999994039536,
+          "gpuSubmitCallMs": 11.400000005960464
+        }
+      },
+      {
+        "t": 7467.699999988079,
+        "seq": 45,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 68.79999999701977,
+          "gpuSubmitCallMs": 31.200000002980232
+        }
+      },
+      {
+        "t": 7531.699999988079,
+        "seq": 46,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 33.70000000298023,
+          "gpuSubmitCallMs": 18.599999994039536
+        }
+      },
+      {
+        "t": 7620.199999988079,
+        "seq": 47,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.19999998807907,
+          "gpuSubmitCallMs": 16.399999991059303
+        }
+      },
+      {
+        "t": 7666.399999991059,
+        "seq": 48,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.200000002980232,
+          "gpuSubmitCallMs": 17.399999991059303
+        }
+      },
+      {
+        "t": 7822.399999991059,
+        "seq": 49,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.799999997019768,
+          "gpuSubmitCallMs": 68.40000000596046
+        }
+      },
+      {
+        "t": 7918.79999999702,
+        "seq": 50,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 62.70000000298023,
+          "gpuSubmitCallMs": 20.5
+        }
+      },
+      {
+        "t": 8013,
+        "seq": 51,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.100000008940697,
+          "gpuSubmitCallMs": 29.5
+        }
+      },
+      {
+        "t": 8192.39999999106,
+        "seq": 52,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 100.5,
+          "gpuSubmitCallMs": 21.700000002980232
+        }
+      },
+      {
+        "t": 8306.5,
+        "seq": 53,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 58,
+          "gpuSubmitCallMs": 17.399999991059303
+        }
+      },
+      {
+        "t": 8421.199999988079,
+        "seq": 54,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.799999997019768,
+          "gpuSubmitCallMs": 53.599999994039536
+        }
+      },
+      {
+        "t": 8540.79999999702,
+        "seq": 55,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21,
+          "gpuSubmitCallMs": 62.5
+        }
+      },
+      {
+        "t": 8818.59999999404,
+        "seq": 56,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.099999994039536,
+          "gpuSubmitCallMs": 249.30000001192093
+        }
+      },
+      {
+        "t": 8987.29999999702,
+        "seq": 57,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 130.29999999701977,
+          "gpuSubmitCallMs": 8.900000005960464
+        }
+      },
+      {
+        "t": 9097.29999999702,
+        "seq": 58,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.400000005960464,
+          "gpuSubmitCallMs": 28.400000005960464
+        }
+      },
+      {
+        "t": 9245.199999988079,
+        "seq": 59,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21.69999998807907,
+          "gpuSubmitCallMs": 62.900000005960464
+        }
+      },
+      {
+        "t": 9426.199999988079,
+        "seq": 60,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 117.09999999403954,
+          "gpuSubmitCallMs": 9.400000005960464
+        }
+      },
+      {
+        "t": 9511.699999988079,
+        "seq": 61,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.5,
+          "gpuSubmitCallMs": 11.5
+        }
+      },
+      {
+        "t": 9683.89999999106,
+        "seq": 62,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 20.100000008940697,
+          "gpuSubmitCallMs": 82.29999999701977
+        }
+      },
+      {
+        "t": 9736.699999988079,
+        "seq": 63,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.599999994039536,
+          "gpuSubmitCallMs": 26.400000005960464
+        }
+      },
+      {
+        "t": 9821.29999999702,
+        "seq": 64,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 20,
+          "gpuSubmitCallMs": 10.900000005960464
+        }
+      },
+      {
+        "t": 9925.29999999702,
+        "seq": 65,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 61.900000005960464,
+          "gpuSubmitCallMs": 12.799999997019768
+        }
+      },
+      {
+        "t": 10002.59999999404,
+        "seq": 66,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 24.5,
+          "gpuSubmitCallMs": 10.900000005960464
+        }
+      },
+      {
+        "t": 10147.79999999702,
+        "seq": 67,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 52.1000000089407,
+          "gpuSubmitCallMs": 28.299999997019768
+        }
+      },
+      {
+        "t": 10320.59999999404,
+        "seq": 68,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.200000002980232,
+          "gpuSubmitCallMs": 97.90000000596046
+        }
+      },
+      {
+        "t": 10416.89999999106,
+        "seq": 69,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.799999997019768,
+          "gpuSubmitCallMs": 16.399999991059303
+        }
+      },
+      {
+        "t": 10603.5,
+        "seq": 70,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29,
+          "gpuSubmitCallMs": 98.79999999701977
+        }
+      },
+      {
+        "t": 10731.29999999702,
+        "seq": 71,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 51.70000000298023,
+          "gpuSubmitCallMs": 12
+        }
+      },
+      {
+        "t": 10848.199999988079,
+        "seq": 72,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.899999991059303,
+          "gpuSubmitCallMs": 41.30000001192093
+        }
+      },
+      {
+        "t": 11031.39999999106,
+        "seq": 73,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 38.599999994039536,
+          "gpuSubmitCallMs": 48
+        }
+      },
+      {
+        "t": 11291.39999999106,
+        "seq": 74,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 157.90000000596046,
+          "gpuSubmitCallMs": 44.79999999701977
+        }
+      },
+      {
+        "t": 11459.79999999702,
+        "seq": 75,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 43.5,
+          "gpuSubmitCallMs": 29.099999994039536
+        }
+      },
+      {
+        "t": 11534.699999988079,
+        "seq": 76,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21.5,
+          "gpuSubmitCallMs": 9.5
+        }
+      },
+      {
+        "t": 11621.29999999702,
+        "seq": 77,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.30000001192093,
+          "gpuSubmitCallMs": 14
+        }
+      },
+      {
+        "t": 11655.09999999404,
+        "seq": 78,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.099999994039536,
+          "gpuSubmitCallMs": 10.700000002980232
+        }
+      },
+      {
+        "t": 11767.59999999404,
+        "seq": 79,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16,
+          "gpuSubmitCallMs": 20.200000002980232
+        }
+      },
+      {
+        "t": 11860.59999999404,
+        "seq": 80,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 32.5,
+          "gpuSubmitCallMs": 12.100000008940697
+        }
+      },
+      {
+        "t": 11900.89999999106,
+        "seq": 81,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 24.5,
+          "gpuSubmitCallMs": 9.599999994039536
+        }
+      },
+      {
+        "t": 12066.5,
+        "seq": 82,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.700000002980232,
+          "gpuSubmitCallMs": 83.20000000298023
+        }
+      },
+      {
+        "t": 12126.09999999404,
+        "seq": 83,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21.5,
+          "gpuSubmitCallMs": 9.300000011920929
+        }
+      },
+      {
+        "t": 12229.199999988079,
+        "seq": 84,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.19999998807907,
+          "gpuSubmitCallMs": 10.700000002980232
+        }
+      },
+      {
+        "t": 12331.5,
+        "seq": 85,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.599999994039536,
+          "gpuSubmitCallMs": 16.100000008940697
+        }
+      },
+      {
+        "t": 12394.29999999702,
+        "seq": 86,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.5,
+          "gpuSubmitCallMs": 33
+        }
+      },
+      {
+        "t": 12468.79999999702,
+        "seq": 87,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.19999998807907,
+          "gpuSubmitCallMs": 8.299999997019768
+        }
+      },
+      {
+        "t": 12577.39999999106,
+        "seq": 88,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 27.200000002980232,
+          "gpuSubmitCallMs": 25.5
+        }
+      },
+      {
+        "t": 12644.09999999404,
+        "seq": 89,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.200000002980232,
+          "gpuSubmitCallMs": 43.599999994039536
+        }
+      },
+      {
+        "t": 12805,
+        "seq": 90,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 28.30000001192093,
+          "gpuSubmitCallMs": 41.70000000298023
+        }
+      },
+      {
+        "t": 12895.699999988079,
+        "seq": 91,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 27,
+          "gpuSubmitCallMs": 17.599999994039536
+        }
+      },
+      {
+        "t": 13047.699999988079,
+        "seq": 92,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 46.29999999701977,
+          "gpuSubmitCallMs": 43.69999998807907
+        }
+      },
+      {
+        "t": 13149.09999999404,
+        "seq": 93,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21.200000002980232,
+          "gpuSubmitCallMs": 27.5
+        }
+      },
+      {
+        "t": 13254.5,
+        "seq": 94,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 39.900000005960464,
+          "gpuSubmitCallMs": 7.700000002980232
+        }
+      },
+      {
+        "t": 13405.79999999702,
+        "seq": 95,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 35.30000001192093,
+          "gpuSubmitCallMs": 33.599999994039536
+        }
+      },
+      {
+        "t": 13570.79999999702,
+        "seq": 96,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 53.099999994039536,
+          "gpuSubmitCallMs": 15.199999988079071
+        }
+      },
+      {
+        "t": 13742.699999988079,
+        "seq": 97,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 83.40000000596046,
+          "gpuSubmitCallMs": 9
+        }
+      },
+      {
+        "t": 13848.699999988079,
+        "seq": 98,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 26.100000008940697,
+          "gpuSubmitCallMs": 22.099999994039536
+        }
+      },
+      {
+        "t": 14014.09999999404,
+        "seq": 99,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 69.5,
+          "gpuSubmitCallMs": 46.5
+        }
+      },
+      {
+        "t": 14260.199999988079,
+        "seq": 100,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 96.5,
+          "gpuSubmitCallMs": 62.69999998807907
+        }
+      },
+      {
+        "t": 14395.79999999702,
+        "seq": 101,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 46,
+          "gpuSubmitCallMs": 42.70000000298023
+        }
+      },
+      {
+        "t": 14600.39999999106,
+        "seq": 102,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 74.20000000298023,
+          "gpuSubmitCallMs": 80.29999999701977
+        }
+      },
+      {
+        "t": 14720.79999999702,
+        "seq": 103,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 26,
+          "gpuSubmitCallMs": 6.699999988079071
+        }
+      },
+      {
+        "t": 14942.89999999106,
+        "seq": 104,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 111,
+          "gpuSubmitCallMs": 45.900000005960464
+        }
+      },
+      {
+        "t": 15130.5,
+        "seq": 105,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 102.59999999403954,
+          "gpuSubmitCallMs": 10.300000011920929
+        }
+      },
+      {
+        "t": 15250.699999988079,
+        "seq": 106,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 35.3999999910593,
+          "gpuSubmitCallMs": 30.100000008940697
+        }
+      },
+      {
+        "t": 15352.5,
+        "seq": 107,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 33.20000000298023,
+          "gpuSubmitCallMs": 10.799999997019768
+        }
+      },
+      {
+        "t": 15437.89999999106,
+        "seq": 108,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.400000005960464,
+          "gpuSubmitCallMs": 6.600000008940697
+        }
+      },
+      {
+        "t": 15478.5,
+        "seq": 109,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.600000008940697,
+          "gpuSubmitCallMs": 14.100000008940697
+        }
+      },
+      {
+        "t": 15554.59999999404,
+        "seq": 110,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 36.3999999910593,
+          "gpuSubmitCallMs": 9.5
+        }
+      },
+      {
+        "t": 15638.5,
+        "seq": 111,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 57.79999999701977,
+          "gpuSubmitCallMs": 11.399999991059303
+        }
+      },
+      {
+        "t": 15698.5,
+        "seq": 112,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29.600000008940697,
+          "gpuSubmitCallMs": 3.2000000029802322
+        }
+      },
+      {
+        "t": 15754.39999999106,
+        "seq": 113,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.700000002980232,
+          "gpuSubmitCallMs": 2.5
+        }
+      },
+      {
+        "t": 15801.59999999404,
+        "seq": 114,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 38.20000000298023,
+          "gpuSubmitCallMs": 2.7000000029802322
+        }
+      },
+      {
+        "t": 15846.89999999106,
+        "seq": 115,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.200000002980232,
+          "gpuSubmitCallMs": 2.5
+        }
+      },
+      {
+        "t": 15904.5,
+        "seq": 116,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29.099999994039536,
+          "gpuSubmitCallMs": 2.3999999910593033
+        }
+      },
+      {
+        "t": 15949.39999999106,
+        "seq": 117,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 32.20000000298023,
+          "gpuSubmitCallMs": 2.2999999970197678
+        }
+      },
+      {
+        "t": 16028.09999999404,
+        "seq": 118,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 20,
+          "gpuSubmitCallMs": 3.9000000059604645
+        }
+      },
+      {
+        "t": 16061.29999999702,
+        "seq": 119,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.600000008940697,
+          "gpuSubmitCallMs": 4.9000000059604645
+        }
+      },
+      {
+        "t": 16124.29999999702,
+        "seq": 120,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 31,
+          "gpuSubmitCallMs": 4.4000000059604645
+        }
+      },
+      {
+        "t": 16161.39999999106,
+        "seq": 121,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21.5,
+          "gpuSubmitCallMs": 9.399999991059303
+        }
+      },
+      {
+        "t": 16216.5,
+        "seq": 122,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 27.700000002980232,
+          "gpuSubmitCallMs": 2.5
+        }
+      },
+      {
+        "t": 16268.89999999106,
+        "seq": 123,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 38.29999999701977,
+          "gpuSubmitCallMs": 2.2999999970197678
+        }
+      },
+      {
+        "t": 16322.09999999404,
+        "seq": 124,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.5,
+          "gpuSubmitCallMs": 2.8999999910593033
+        }
+      },
+      {
+        "t": 16354.09999999404,
+        "seq": 125,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.200000002980232,
+          "gpuSubmitCallMs": 4.299999997019768
+        }
+      },
+      {
+        "t": 16406.5,
+        "seq": 126,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.400000005960464,
+          "gpuSubmitCallMs": 8.200000002980232
+        }
+      },
+      {
+        "t": 16450,
+        "seq": 127,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29.799999997019768,
+          "gpuSubmitCallMs": 5.300000011920929
+        }
+      },
+      {
+        "t": 16496.19999998808,
+        "seq": 128,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 24.599999994039536,
+          "gpuSubmitCallMs": 3.9000000059604645
+        }
+      },
+      {
+        "t": 16544.39999999106,
+        "seq": 129,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.799999997019768,
+          "gpuSubmitCallMs": 3.8999999910593033
+        }
+      },
+      {
+        "t": 16579.39999999106,
+        "seq": 130,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.900000005960464,
+          "gpuSubmitCallMs": 10.600000008940697
+        }
+      },
+      {
+        "t": 16615.09999999404,
+        "seq": 131,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 26.69999998807907,
+          "gpuSubmitCallMs": 2.4000000059604645
+        }
+      },
+      {
+        "t": 16714.89999999106,
+        "seq": 132,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 69.5,
+          "gpuSubmitCallMs": 3.7000000029802322
+        }
+      },
+      {
+        "t": 16738.19999998808,
+        "seq": 133,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.600000008940697,
+          "gpuSubmitCallMs": 2.3999999910593033
+        }
+      },
+      {
+        "t": 16792,
+        "seq": 134,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 20.200000002980232,
+          "gpuSubmitCallMs": 3.9000000059604645
+        }
+      },
+      {
+        "t": 16832.5,
+        "seq": 135,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29.799999997019768,
+          "gpuSubmitCallMs": 3.5999999940395355
+        }
+      },
+      {
+        "t": 16864,
+        "seq": 136,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 26,
+          "gpuSubmitCallMs": 2.0999999940395355
+        }
+      },
+      {
+        "t": 16908.39999999106,
+        "seq": 137,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.600000008940697,
+          "gpuSubmitCallMs": 3.7000000029802322
+        }
+      },
+      {
+        "t": 16961.5,
+        "seq": 138,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 31.900000005960464,
+          "gpuSubmitCallMs": 9.200000002980232
+        }
+      },
+      {
+        "t": 16984.89999999106,
+        "seq": 139,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.700000002980232,
+          "gpuSubmitCallMs": 2.7000000029802322
+        }
+      },
+      {
+        "t": 17032,
+        "seq": 140,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.700000002980232,
+          "gpuSubmitCallMs": 3.4000000059604645
+        }
+      },
+      {
+        "t": 17062.29999999702,
+        "seq": 141,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 21,
+          "gpuSubmitCallMs": 5.4000000059604645
+        }
+      },
+      {
+        "t": 17098.59999999404,
+        "seq": 142,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.5,
+          "gpuSubmitCallMs": 9.900000005960464
+        }
+      },
+      {
+        "t": 17157.79999999702,
+        "seq": 143,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.799999997019768,
+          "gpuSubmitCallMs": 3.0999999940395355
+        }
+      },
+      {
+        "t": 17199.59999999404,
+        "seq": 144,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 26.099999994039536,
+          "gpuSubmitCallMs": 5.100000008940697
+        }
+      },
+      {
+        "t": 17262.5,
+        "seq": 145,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.700000002980232,
+          "gpuSubmitCallMs": 3.2000000029802322
+        }
+      },
+      {
+        "t": 17300.09999999404,
+        "seq": 146,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 29.5,
+          "gpuSubmitCallMs": 2.5999999940395355
+        }
+      },
+      {
+        "t": 17346.79999999702,
+        "seq": 147,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.600000008940697,
+          "gpuSubmitCallMs": 4.5999999940395355
+        }
+      },
+      {
+        "t": 17380.29999999702,
+        "seq": 148,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.799999997019768,
+          "gpuSubmitCallMs": 3.7999999970197678
+        }
+      },
+      {
+        "t": 17414.5,
+        "seq": 149,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.299999997019768,
+          "gpuSubmitCallMs": 3.6000000089406967
+        }
+      },
+      {
+        "t": 17460.19999998808,
+        "seq": 150,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.599999994039536,
+          "gpuSubmitCallMs": 3.699999988079071
+        }
+      },
+      {
+        "t": 17485.39999999106,
+        "seq": 151,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.5,
+          "gpuSubmitCallMs": 2.0999999940395355
+        }
+      },
+      {
+        "t": 17512.39999999106,
+        "seq": 152,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.200000002980232,
+          "gpuSubmitCallMs": 5.299999997019768
+        }
+      },
+      {
+        "t": 17535.5,
+        "seq": 153,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 15.900000005960464,
+          "gpuSubmitCallMs": 2.2000000029802322
+        }
+      },
+      {
+        "t": 17583.59999999404,
+        "seq": 154,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.100000008940697,
+          "gpuSubmitCallMs": 2.2000000029802322
+        }
+      },
+      {
+        "t": 17614.09999999404,
+        "seq": 155,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.200000002980232,
+          "gpuSubmitCallMs": 3.9000000059604645
+        }
+      },
+      {
+        "t": 17636.79999999702,
+        "seq": 156,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.5,
+          "gpuSubmitCallMs": 2.5
+        }
+      },
+      {
+        "t": 17680.29999999702,
+        "seq": 157,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.899999991059303,
+          "gpuSubmitCallMs": 2.699999988079071
+        }
+      },
+      {
+        "t": 17712.5,
+        "seq": 158,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 22.900000005960464,
+          "gpuSubmitCallMs": 3.7000000029802322
+        }
+      },
+      {
+        "t": 17739.79999999702,
+        "seq": 159,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.400000005960464,
+          "gpuSubmitCallMs": 2.5999999940395355
+        }
+      },
+      {
+        "t": 17817.69999998808,
+        "seq": 160,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 33.20000000298023,
+          "gpuSubmitCallMs": 3.2000000029802322
+        }
+      },
+      {
+        "t": 17842.19999998808,
+        "seq": 161,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.80000001192093,
+          "gpuSubmitCallMs": 2.9000000059604645
+        }
+      },
+      {
+        "t": 17872.59999999404,
+        "seq": 162,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.5,
+          "gpuSubmitCallMs": 2.5
+        }
+      },
+      {
+        "t": 17925.69999998808,
+        "seq": 163,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 16.399999991059303,
+          "gpuSubmitCallMs": 2.7999999970197678
+        }
+      },
+      {
+        "t": 17970.59999999404,
+        "seq": 164,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 17.400000005960464,
+          "gpuSubmitCallMs": 2.4000000059604645
+        }
+      },
+      {
+        "t": 18013.59999999404,
+        "seq": 165,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.100000008940697,
+          "gpuSubmitCallMs": 3.1000000089406967
+        }
+      },
+      {
+        "t": 18038.59999999404,
+        "seq": 166,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 18.099999994039536,
+          "gpuSubmitCallMs": 2.800000011920929
+        }
+      },
+      {
+        "t": 18053.39999999106,
+        "seq": 167,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 4.5999999940395355,
+          "gpuSubmitCallMs": 0.7000000029802322
+        }
+      },
+      {
+        "t": 18063.19999998808,
+        "seq": 168,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5,
+          "gpuSubmitCallMs": 0.699999988079071
+        }
+      },
+      {
+        "t": 18089.19999998808,
+        "seq": 169,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5.699999988079071,
+          "gpuSubmitCallMs": 1.2000000029802322
+        }
+      },
+      {
+        "t": 18113,
+        "seq": 170,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.700000002980232,
+          "gpuSubmitCallMs": 0.8999999910593033
+        }
+      },
+      {
+        "t": 18147,
+        "seq": 171,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.200000002980232,
+          "gpuSubmitCallMs": 0.7999999970197678
+        }
+      },
+      {
+        "t": 18173.69999998808,
+        "seq": 172,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 7,
+          "gpuSubmitCallMs": 0.9000000059604645
+        }
+      },
+      {
+        "t": 18210.09999999404,
+        "seq": 173,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 11.799999997019768,
+          "gpuSubmitCallMs": 3.0999999940395355
+        }
+      },
+      {
+        "t": 18243.89999999106,
+        "seq": 174,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.700000002980232,
+          "gpuSubmitCallMs": 1.0999999940395355
+        }
+      },
+      {
+        "t": 18276.29999999702,
+        "seq": 175,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 7.5999999940395355,
+          "gpuSubmitCallMs": 1.1000000089406967
+        }
+      },
+      {
+        "t": 18297.39999999106,
+        "seq": 176,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5.200000002980232,
+          "gpuSubmitCallMs": 0.5
+        }
+      },
+      {
+        "t": 18360.59999999404,
+        "seq": 177,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 43.900000005960464,
+          "gpuSubmitCallMs": 1
+        }
+      },
+      {
+        "t": 18395,
+        "seq": 178,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.200000002980232,
+          "gpuSubmitCallMs": 1.1000000089406967
+        }
+      },
+      {
+        "t": 18453.09999999404,
+        "seq": 179,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 23.200000002980232,
+          "gpuSubmitCallMs": 2.300000011920929
+        }
+      },
+      {
+        "t": 18500,
+        "seq": 180,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 8.299999997019768,
+          "gpuSubmitCallMs": 0.8999999910593033
+        }
+      },
+      {
+        "t": 18533.29999999702,
+        "seq": 181,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.200000002980232,
+          "gpuSubmitCallMs": 0.7999999970197678
+        }
+      },
+      {
+        "t": 18596.5,
+        "seq": 182,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5.5,
+          "gpuSubmitCallMs": 23.599999994039536
+        }
+      },
+      {
+        "t": 18639.39999999106,
+        "seq": 183,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 10.900000005960464,
+          "gpuSubmitCallMs": 2.6000000089406967
+        }
+      },
+      {
+        "t": 18673.89999999106,
+        "seq": 184,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5.700000002980232,
+          "gpuSubmitCallMs": 1.1000000089406967
+        }
+      },
+      {
+        "t": 18719.79999999702,
+        "seq": 185,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 7.5,
+          "gpuSubmitCallMs": 1.9000000059604645
+        }
+      },
+      {
+        "t": 18751.89999999106,
+        "seq": 186,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 9.099999994039536,
+          "gpuSubmitCallMs": 0.7000000029802322
+        }
+      },
+      {
+        "t": 18826.69999998808,
+        "seq": 187,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 10.799999997019768,
+          "gpuSubmitCallMs": 0.7999999970197678
+        }
+      },
+      {
+        "t": 18895,
+        "seq": 188,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 4.9000000059604645,
+          "gpuSubmitCallMs": 0.6000000089406967
+        }
+      },
+      {
+        "t": 18927.59999999404,
+        "seq": 189,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5.9000000059604645,
+          "gpuSubmitCallMs": 0.9000000059604645
+        }
+      },
+      {
+        "t": 18969.5,
+        "seq": 190,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5.0999999940395355,
+          "gpuSubmitCallMs": 0.5999999940395355
+        }
+      },
+      {
+        "t": 19015.29999999702,
+        "seq": 191,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 10,
+          "gpuSubmitCallMs": 1
+        }
+      },
+      {
+        "t": 19066.19999998808,
+        "seq": 192,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.100000008940697,
+          "gpuSubmitCallMs": 27.5
+        }
+      },
+      {
+        "t": 19105.89999999106,
+        "seq": 193,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 19.900000005960464,
+          "gpuSubmitCallMs": 1
+        }
+      },
+      {
+        "t": 19166.59999999404,
+        "seq": 194,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 8.700000002980232,
+          "gpuSubmitCallMs": 1.300000011920929
+        }
+      },
+      {
+        "t": 19221,
+        "seq": 195,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 5,
+          "gpuSubmitCallMs": 0.7999999970197678
+        }
+      },
+      {
+        "t": 19301.09999999404,
+        "seq": 196,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 6.0999999940395355,
+          "gpuSubmitCallMs": 0.5999999940395355
+        }
+      },
+      {
+        "t": 19366,
+        "seq": 197,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 13.5,
+          "gpuSubmitCallMs": 0.6000000089406967
+        }
+      },
+      {
+        "t": 19427.19999998808,
+        "seq": 198,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 12.5,
+          "gpuSubmitCallMs": 12.199999988079071
+        }
+      },
+      {
+        "t": 19454.39999999106,
+        "seq": 199,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 4.5,
+          "gpuSubmitCallMs": 0.5
+        }
+      },
+      {
+        "t": 19515,
+        "seq": 200,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 28.299999997019768,
+          "gpuSubmitCallMs": 1
+        }
+      },
+      {
+        "t": 19578.79999999702,
+        "seq": 201,
+        "timing": {
+          "mainThreadReceiptMs": null,
+          "engineApplyCallMs": 31.5,
+          "gpuSubmitCallMs": 6.899999991059303
+        }
+      }
+    ],
+    "frames": [
+      {
+        "t": 3594.699999988079,
+        "hash": 1176312832
+      },
+      {
+        "t": 3675.699999988079,
+        "hash": 1176312832
+      },
+      {
+        "t": 3760.5,
+        "hash": 1176312832
+      },
+      {
+        "t": 3861.2999999970198,
+        "hash": 1176312832
+      },
+      {
+        "t": 3964.199999988079,
+        "hash": 1176312832
+      },
+      {
+        "t": 4060.8999999910593,
+        "hash": 1176312832
+      },
+      {
+        "t": 4184,
+        "hash": 1176312832
+      },
+      {
+        "t": 4277.899999991059,
+        "hash": 1176312832
+      },
+      {
+        "t": 4377.399999991059,
+        "hash": 1176312832
+      },
+      {
+        "t": 4575.29999999702,
+        "hash": 1176312832
+      },
+      {
+        "t": 4645.79999999702,
+        "hash": 1176312832
+      },
+      {
+        "t": 4752.699999988079,
+        "hash": 1176312832
+      },
+      {
+        "t": 4914.5999999940395,
+        "hash": 1425477771
+      },
+      {
+        "t": 5026.79999999702,
+        "hash": 1425477771
+      },
+      {
+        "t": 5120.5999999940395,
+        "hash": 1101164317
+      },
+      {
+        "t": 5233.5999999940395,
+        "hash": 1176312832
+      },
+      {
+        "t": 5385.79999999702,
+        "hash": 351787984
+      },
+      {
+        "t": 5556,
+        "hash": 358766668
+      },
+      {
+        "t": 5636.5,
+        "hash": 3324753539
+      },
+      {
+        "t": 5816.5,
+        "hash": 1171960052
+      },
+      {
+        "t": 5968.399999991059,
+        "hash": 2981181264
+      },
+      {
+        "t": 6080.5,
+        "hash": 1032057345
+      },
+      {
+        "t": 6206.699999988079,
+        "hash": 29711344
+      },
+      {
+        "t": 6363.899999991059,
+        "hash": 3446011300
+      },
+      {
+        "t": 6516.199999988079,
+        "hash": 14795751
+      },
+      {
+        "t": 6647,
+        "hash": 3494826089
+      },
+      {
+        "t": 6765.5,
+        "hash": 3494826089
+      },
+      {
+        "t": 6905.0999999940395,
+        "hash": 1752277717
+      },
+      {
+        "t": 7088.79999999702,
+        "hash": 2225796660
+      },
+      {
+        "t": 7214.699999988079,
+        "hash": 732008998
+      },
+      {
+        "t": 7357,
+        "hash": 434339430
+      },
+      {
+        "t": 7575.699999988079,
+        "hash": 3539146179
+      },
+      {
+        "t": 7713.5,
+        "hash": 3854265461
+      },
+      {
+        "t": 7956,
+        "hash": 2175475654
+      },
+      {
+        "t": 8058.699999988079,
+        "hash": 3053743853
+      },
+      {
+        "t": 8220.199999988079,
+        "hash": 4281150843
+      },
+      {
+        "t": 8341.39999999106,
+        "hash": 662098426
+      },
+      {
+        "t": 8449.5,
+        "hash": 2274678835
+      },
+      {
+        "t": 8836,
+        "hash": 519351082
+      },
+      {
+        "t": 9038.59999999404,
+        "hash": 2125468295
+      },
+      {
+        "t": 9150.89999999106,
+        "hash": 2274147026
+      },
+      {
+        "t": 9275.89999999106,
+        "hash": 1826919078
+      },
+      {
+        "t": 9475.09999999404,
+        "hash": 1701010884
+      },
+      {
+        "t": 9561.29999999702,
+        "hash": 3236054692
+      },
+      {
+        "t": 9777.89999999106,
+        "hash": 1724573834
+      },
+      {
+        "t": 9960.199999988079,
+        "hash": 970624477
+      },
+      {
+        "t": 10054.09999999404,
+        "hash": 3408731544
+      },
+      {
+        "t": 10185.5,
+        "hash": 3074408292
+      },
+      {
+        "t": 10370.699999988079,
+        "hash": 4006490547
+      },
+      {
+        "t": 10466.29999999702,
+        "hash": 793678777
+      },
+      {
+        "t": 10649.09999999404,
+        "hash": 1619184047
+      },
+      {
+        "t": 10781.199999988079,
+        "hash": 3611070694
+      },
+      {
+        "t": 10933.199999988079,
+        "hash": 3222978201
+      },
+      {
+        "t": 11076.89999999106,
+        "hash": 1271808326
+      },
+      {
+        "t": 11365.5,
+        "hash": 2291741259
+      },
+      {
+        "t": 11495.09999999404,
+        "hash": 1821282640
+      },
+      {
+        "t": 11585,
+        "hash": 2070924352
+      },
+      {
+        "t": 11720.29999999702,
+        "hash": 1682225021
+      },
+      {
+        "t": 11806.199999988079,
+        "hash": 344436339
+      },
+      {
+        "t": 11959.89999999106,
+        "hash": 3223061445
+      },
+      {
+        "t": 12087.5,
+        "hash": 1221195528
+      },
+      {
+        "t": 12178.199999988079,
+        "hash": 965466813
+      },
+      {
+        "t": 12289,
+        "hash": 2942822848
+      },
+      {
+        "t": 12436.699999988079,
+        "hash": 433501725
+      },
+      {
+        "t": 12516.199999988079,
+        "hash": 3351117579
+      },
+      {
+        "t": 12718.5,
+        "hash": 2474512820
+      },
+      {
+        "t": 12841.89999999106,
+        "hash": 3635256040
+      },
+      {
+        "t": 12949.699999988079,
+        "hash": 321561995
+      },
+      {
+        "t": 13093.39999999106,
+        "hash": 2284428477
+      },
+      {
+        "t": 13200,
+        "hash": 3658180268
+      },
+      {
+        "t": 13314.39999999106,
+        "hash": 3511724884
+      },
+      {
+        "t": 13457.59999999404,
+        "hash": 157973457
+      },
+      {
+        "t": 13630.79999999702,
+        "hash": 3964381711
+      },
+      {
+        "t": 13792.699999988079,
+        "hash": 849968874
+      },
+      {
+        "t": 13876.39999999106,
+        "hash": 2333558909
+      },
+      {
+        "t": 14071.29999999702,
+        "hash": 3295606978
+      },
+      {
+        "t": 14300.59999999404,
+        "hash": 2801042604
+      },
+      {
+        "t": 14437.699999988079,
+        "hash": 1332921512
+      },
+      {
+        "t": 14681,
+        "hash": 2695577751
+      },
+      {
+        "t": 14778,
+        "hash": 1191642660
+      },
+      {
+        "t": 15007.5,
+        "hash": 545805010
+      },
+      {
+        "t": 15178.39999999106,
+        "hash": 1107845395
+      },
+      {
+        "t": 15298,
+        "hash": 2332853513
+      },
+      {
+        "t": 15390.29999999702,
+        "hash": 3163612261
+      },
+      {
+        "t": 15498,
+        "hash": 911863013
+      },
+      {
+        "t": 15658.39999999106,
+        "hash": 3377437907
+      },
+      {
+        "t": 15719.89999999106,
+        "hash": 1251647171
+      },
+      {
+        "t": 15861,
+        "hash": 3765702933
+      },
+      {
+        "t": 15983.59999999404,
+        "hash": 2621026582
+      },
+      {
+        "t": 16078.79999999702,
+        "hash": 3054926435
+      },
+      {
+        "t": 16175.699999988079,
+        "hash": 1834113196
+      },
+      {
+        "t": 16288.09999999404,
+        "hash": 3069233203
+      },
+      {
+        "t": 16370.39999999106,
+        "hash": 3102839887
+      },
+      {
+        "t": 16511.29999999702,
+        "hash": 1088644528
+      },
+      {
+        "t": 16634,
+        "hash": 2580648255
+      },
+      {
+        "t": 16755.79999999702,
+        "hash": 975069084
+      },
+      {
+        "t": 16883.5,
+        "hash": 2613346494
+      },
+      {
+        "t": 17001.89999999106,
+        "hash": 2271338261
+      },
+      {
+        "t": 17115.5,
+        "hash": 371627027
+      },
+      {
+        "t": 17234.09999999404,
+        "hash": 2974797006
+      },
+      {
+        "t": 17316.89999999106,
+        "hash": 3807636565
+      },
+      {
+        "t": 17430.69999998808,
+        "hash": 2254783339
+      },
+      {
+        "t": 17551.79999999702,
+        "hash": 1268658206
+      },
+      {
+        "t": 17653.09999999404,
+        "hash": 78458558
+      },
+      {
+        "t": 17769.59999999404,
+        "hash": 2980531536
+      },
+      {
+        "t": 17899.5,
+        "hash": 3885674832
+      },
+      {
+        "t": 17985.59999999404,
+        "hash": 3885674832
+      },
+      {
+        "t": 18077.89999999106,
+        "hash": 3885674832
+      },
+      {
+        "t": 18227.69999998808,
+        "hash": 3885674832
+      },
+      {
+        "t": 18374.69999998808,
+        "hash": 3885674832
+      },
+      {
+        "t": 18485.29999999702,
+        "hash": 3885674832
+      },
+      {
+        "t": 18561,
+        "hash": 3885674832
+      },
+      {
+        "t": 18693,
+        "hash": 3885674832
+      },
+      {
+        "t": 18882.69999998808,
+        "hash": 3885674832
+      },
+      {
+        "t": 18995.69999998808,
+        "hash": 3885674832
+      },
+      {
+        "t": 19128.79999999702,
+        "hash": 3885674832
+      },
+      {
+        "t": 19286.79999999702,
+        "hash": 3885674832
+      },
+      {
+        "t": 19342.29999999702,
+        "hash": 3885674832
+      },
+      {
+        "t": 19479.5,
+        "hash": 3885674832
+      },
+      {
+        "t": 19617.09999999404,
+        "hash": 3885674832
+      },
+      {
+        "t": 19693.89999999106,
+        "hash": 3885674832
+      },
+      {
+        "t": 19812.59999999404,
+        "hash": 3885674832
+      },
+      {
+        "t": 19912.69999998808,
+        "hash": 3885674832
+      },
+      {
+        "t": 20015.59999999404,
+        "hash": 3885674832
+      },
+      {
+        "t": 20127.69999998808,
+        "hash": 3885674832
+      },
+      {
+        "t": 20227.79999999702,
+        "hash": 3885674832
+      },
+      {
+        "t": 20345.39999999106,
+        "hash": 3885674832
+      },
+      {
+        "t": 20444.89999999106,
+        "hash": 3885674832
+      },
+      {
+        "t": 20554.39999999106,
+        "hash": 3885674832
+      },
+      {
+        "t": 20660.5,
+        "hash": 3885674832
+      },
+      {
+        "t": 20762.29999999702,
+        "hash": 3885674832
+      }
+    ],
+    "width": 1280,
+    "height": 720
+  },
+  "cadence": {
+    "frames": 198,
+    "duration_ms": 16286.60000000894,
+    "rate": 12.0958333844935,
+    "interval_median_ms": 61.19999998807907,
+    "interval_p95_ms": 181,
+    "interval_max_ms": 1260.5,
+    "boundary": "Vision frame-submitted, excluding load and idle; not physical scanout"
+  },
+  "capture": {
+    "fingerprint_interval_ms": 100,
+    "minimum_distinct_frames": 60,
+    "codec": "vp8"
+  },
+  "replay": [
+    {
+      "type": "init-empty",
+      "t": 777.1999999880791
+    },
+    {
+      "type": "preload-fonts",
+      "t": 3097.5999999940395
+    },
+    {
+      "type": "load",
+      "t": 3125.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 3272.7999999970198
+    },
+    {
+      "type": "patch",
+      "t": 4468.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 4583.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 4650.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 4691.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 4761.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 4806.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 4853
+    },
+    {
+      "type": "patch",
+      "t": 4925.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 4968.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 5035.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 5066.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 5128.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 5177.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 5247.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 5293.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 5393.899999991059
+    },
+    {
+      "type": "patch",
+      "t": 5447.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 5564.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 5652.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 5735.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 5826.5
+    },
+    {
+      "type": "patch",
+      "t": 5884.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 5983.5
+    },
+    {
+      "type": "patch",
+      "t": 6089.899999991059
+    },
+    {
+      "type": "patch",
+      "t": 6134.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 6215.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 6288.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 6372.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 6429.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 6533.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 6572.5
+    },
+    {
+      "type": "patch",
+      "t": 6680.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 6772.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 6834
+    },
+    {
+      "type": "patch",
+      "t": 6917.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 7018.399999991059
+    },
+    {
+      "type": "patch",
+      "t": 7102.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 7138
+    },
+    {
+      "type": "patch",
+      "t": 7221.5999999940395
+    },
+    {
+      "type": "patch",
+      "t": 7276.5
+    },
+    {
+      "type": "patch",
+      "t": 7367.0999999940395
+    },
+    {
+      "type": "patch",
+      "t": 7479.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 7586.5
+    },
+    {
+      "type": "patch",
+      "t": 7630.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 7730.899999991059
+    },
+    {
+      "type": "patch",
+      "t": 7835.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 7966.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 8067.5
+    },
+    {
+      "type": "patch",
+      "t": 8230.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 8348.5
+    },
+    {
+      "type": "patch",
+      "t": 8457.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 8551.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 8848
+    },
+    {
+      "type": "patch",
+      "t": 9051.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 9160.5
+    },
+    {
+      "type": "patch",
+      "t": 9299.5
+    },
+    {
+      "type": "patch",
+      "t": 9484.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 9581.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 9693.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 9790.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 9850.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 9967
+    },
+    {
+      "type": "patch",
+      "t": 10067.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 10200.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 10382.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 10475.5
+    },
+    {
+      "type": "patch",
+      "t": 10667.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 10787.5
+    },
+    {
+      "type": "patch",
+      "t": 10944.5
+    },
+    {
+      "type": "patch",
+      "t": 11088.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 11387
+    },
+    {
+      "type": "patch",
+      "t": 11503.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 11590.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 11628
+    },
+    {
+      "type": "patch",
+      "t": 11731.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 11815.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 11866.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 11967.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 12095.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 12195.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 12295.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 12341.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 12443.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 12524.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 12585
+    },
+    {
+      "type": "patch",
+      "t": 12734.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 12850.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 12957.5
+    },
+    {
+      "type": "patch",
+      "t": 13100.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 13206.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 13321.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 13502.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 13650.199999988079
+    },
+    {
+      "type": "patch",
+      "t": 13800.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 13898
+    },
+    {
+      "type": "patch",
+      "t": 14100.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 14307.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 14445.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 14687.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 14785.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 15017.5
+    },
+    {
+      "type": "patch",
+      "t": 15184.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 15308.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 15412.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 15445.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 15508.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 15569
+    },
+    {
+      "type": "patch",
+      "t": 15665.699999988079
+    },
+    {
+      "type": "patch",
+      "t": 15728.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 15760.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 15822.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 15872.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 15914.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 16003.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 16033.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 16088.5
+    },
+    {
+      "type": "patch",
+      "t": 16130.5
+    },
+    {
+      "type": "patch",
+      "t": 16186.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 16228.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 16295.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 16331.5
+    },
+    {
+      "type": "patch",
+      "t": 16380.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 16414.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 16467.5
+    },
+    {
+      "type": "patch",
+      "t": 16516.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 16548.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 16585.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 16641.5
+    },
+    {
+      "type": "patch",
+      "t": 16719.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 16767.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 16798.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 16835.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 16888.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 16920.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 16965.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 17012.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 17035.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 17065.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 17131.5
+    },
+    {
+      "type": "patch",
+      "t": 17168.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 17241.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 17268
+    },
+    {
+      "type": "patch",
+      "t": 17322.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 17353.5
+    },
+    {
+      "type": "patch",
+      "t": 17387.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 17437.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 17464.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 17490.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 17517.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 17558.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 17586.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 17617.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 17660.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 17685.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 17720.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 17781.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 17822.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 17846.5
+    },
+    {
+      "type": "patch",
+      "t": 17906.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 17950.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 17992.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 18017.5
+    },
+    {
+      "type": "patch",
+      "t": 18048
+    },
+    {
+      "type": "patch",
+      "t": 18057.5
+    },
+    {
+      "type": "patch",
+      "t": 18081.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 18105.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 18139.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 18165.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 18195
+    },
+    {
+      "type": "patch",
+      "t": 18235.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 18267.5
+    },
+    {
+      "type": "patch",
+      "t": 18291.5
+    },
+    {
+      "type": "patch",
+      "t": 18315.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 18387.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 18427.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 18490.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 18526.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 18567.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 18625.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 18666.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 18710.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 18742
+    },
+    {
+      "type": "patch",
+      "t": 18814.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 18889.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 18920.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 18963.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 19004.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 19032.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 19084.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 19156
+    },
+    {
+      "type": "patch",
+      "t": 19215
+    },
+    {
+      "type": "patch",
+      "t": 19294.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 19351.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 19402.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 19449.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 19485.5
+    },
+    {
+      "type": "patch",
+      "t": 19540.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 21273.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 21415.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 21486.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 21537.5
+    },
+    {
+      "type": "patch",
+      "t": 21609.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 21676.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 21734.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 21815.5
+    },
+    {
+      "type": "patch",
+      "t": 21886.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 21954.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 22015.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 22089.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 22166.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 22240
+    },
+    {
+      "type": "patch",
+      "t": 22311.5
+    },
+    {
+      "type": "patch",
+      "t": 22390.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 22459.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 22527.5
+    },
+    {
+      "type": "patch",
+      "t": 22598.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 22669.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 22752.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 22853
+    },
+    {
+      "type": "patch",
+      "t": 22920.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 22989.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 23065
+    },
+    {
+      "type": "patch",
+      "t": 23132.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 23215.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 23291.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 23376.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 23457.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 23546
+    },
+    {
+      "type": "patch",
+      "t": 23694.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 23774
+    },
+    {
+      "type": "patch",
+      "t": 23917.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 24002.5
+    },
+    {
+      "type": "patch",
+      "t": 24084.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 24160.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 24226.5
+    },
+    {
+      "type": "patch",
+      "t": 24287.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 24356.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 24449.5
+    },
+    {
+      "type": "patch",
+      "t": 24531
+    },
+    {
+      "type": "patch",
+      "t": 24610
+    },
+    {
+      "type": "patch",
+      "t": 24683.5
+    },
+    {
+      "type": "patch",
+      "t": 24746.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 24815.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 24878.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 24937.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 25007.5
+    },
+    {
+      "type": "patch",
+      "t": 25083.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 25169.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 25253.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 25350.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 25425.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 25498.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 25569
+    },
+    {
+      "type": "patch",
+      "t": 25642.5
+    },
+    {
+      "type": "patch",
+      "t": 25720.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 25804.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 25880.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 25953
+    },
+    {
+      "type": "patch",
+      "t": 26036
+    },
+    {
+      "type": "patch",
+      "t": 26124.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 26233
+    },
+    {
+      "type": "patch",
+      "t": 26325.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 26413.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 26499.5
+    },
+    {
+      "type": "patch",
+      "t": 26574.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 26654.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 26723.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 26798
+    },
+    {
+      "type": "patch",
+      "t": 26875.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 26957.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 27032
+    },
+    {
+      "type": "patch",
+      "t": 27101.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 27168.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 27240.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 27316.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 27390.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 27472.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 27545.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 27619.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 27685.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 27757.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 27831.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 27899.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 27967.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 28039.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 28105.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 28184.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 28257.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 28323.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 28390.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 28453.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 28522.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 28593.5
+    },
+    {
+      "type": "patch",
+      "t": 28662.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 28737.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 28813.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 28884.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 28954.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 29032.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 29104.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 29176.5
+    },
+    {
+      "type": "patch",
+      "t": 29245.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 29336
+    },
+    {
+      "type": "patch",
+      "t": 29453.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 29529.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 29603.5
+    },
+    {
+      "type": "patch",
+      "t": 29675.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 29753
+    },
+    {
+      "type": "patch",
+      "t": 29828.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 29904.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 29968.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 30031.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 30101.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 30164.5
+    },
+    {
+      "type": "patch",
+      "t": 30243.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 30319.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 30389.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 30460.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 30527.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 30592.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 30660.5
+    },
+    {
+      "type": "patch",
+      "t": 30728.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 30800.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 30874.5
+    },
+    {
+      "type": "patch",
+      "t": 30972.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 31048.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 31119.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 31193.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 31261.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 31326.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 31417.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 31493.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 31568.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 31640.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 31713.5
+    },
+    {
+      "type": "patch",
+      "t": 31779.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 31838
+    },
+    {
+      "type": "patch",
+      "t": 31919.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 31987.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 32047.5
+    },
+    {
+      "type": "patch",
+      "t": 32103.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 32169.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 32222.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 32266.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 32310.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 32352
+    },
+    {
+      "type": "patch",
+      "t": 32391.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 32427.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 32465.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 32502.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 32550.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 32590.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 32623.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 32666.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 32714.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 32760
+    },
+    {
+      "type": "patch",
+      "t": 32800.5
+    },
+    {
+      "type": "patch",
+      "t": 32848.5
+    },
+    {
+      "type": "patch",
+      "t": 32893.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 32931.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 32972
+    },
+    {
+      "type": "patch",
+      "t": 33015.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 33057.5
+    },
+    {
+      "type": "patch",
+      "t": 33113
+    },
+    {
+      "type": "patch",
+      "t": 33152.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 33193.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 33236.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 33286.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 33328.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 33365.5
+    },
+    {
+      "type": "patch",
+      "t": 33402.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 33453.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 33496.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 33535.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 33574
+    },
+    {
+      "type": "patch",
+      "t": 33617.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 33658.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 33715.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 33763.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 33813.5
+    },
+    {
+      "type": "patch",
+      "t": 33854
+    },
+    {
+      "type": "patch",
+      "t": 33898.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 33954.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 33999.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 34045.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 34086.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 34148.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 34210.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 34281
+    },
+    {
+      "type": "patch",
+      "t": 34337.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 34380.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 34421.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 34459.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 34500.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 34538.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 34579.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 34613.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 34650.5
+    },
+    {
+      "type": "patch",
+      "t": 34686.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 34738
+    },
+    {
+      "type": "patch",
+      "t": 34784.5
+    },
+    {
+      "type": "patch",
+      "t": 34831.5
+    },
+    {
+      "type": "patch",
+      "t": 34883.5
+    },
+    {
+      "type": "patch",
+      "t": 34940.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 34969.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 35014.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 35034.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 35063.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 35089.5
+    },
+    {
+      "type": "patch",
+      "t": 35118.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 35139.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 35171.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 35193.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 35212.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 35235.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 35257.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 35278.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 35296.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 35335
+    },
+    {
+      "type": "patch",
+      "t": 35357.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 35391.09999999404
+    },
+    {
+      "type": "patch",
+      "t": 35415.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 35447.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 35471.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 35498.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 35532.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 35553.39999999106
+    },
+    {
+      "type": "patch",
+      "t": 35598.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 35621.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 35647.69999998808
+    },
+    {
+      "type": "patch",
+      "t": 35669.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 35719.5
+    },
+    {
+      "type": "patch",
+      "t": 35744
+    },
+    {
+      "type": "patch",
+      "t": 35788.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 35815.5
+    },
+    {
+      "type": "patch",
+      "t": 35870.5
+    },
+    {
+      "type": "patch",
+      "t": 35894.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 35955.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 35996.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 36073.89999999106
+    },
+    {
+      "type": "patch",
+      "t": 36099.59999999404
+    },
+    {
+      "type": "patch",
+      "t": 36146
+    },
+    {
+      "type": "patch",
+      "t": 36167.19999998808
+    },
+    {
+      "type": "patch",
+      "t": 36195.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 36218.79999999702
+    },
+    {
+      "type": "patch",
+      "t": 36249.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 36273.29999999702
+    },
+    {
+      "type": "patch",
+      "t": 36294.79999999702
+    }
+  ],
+  "errors": [],
+  "consoleMessages": [],
+  "native": {
+    "native": "ws://127.0.0.1:63289/lsdp",
+    "nativeAddress": "127.0.0.1:63288",
+    "nativePid": 5148,
+    "sceneId": "kumiki-unweave",
+    "sceneVersion": "sha256:55b6cb8c7d573e7cd2ce91f6d49a6e5e0f5b3ea6d902020f8d73426bd79f9572",
+    "sourceDigest": "sha256:4b45600eb5a009d40c2c439a1d8a7cca3e621e8ae006fdeeba8462747c81f1fe",
+    "archiveDigest": "sha256:8a2cce67ac8717d564ea643330f8aac8e8633ecf143d6460515c9a0175cc67a9",
+    "persistence": "memory-only",
+    "events": [
+      {
+        "type": "applied",
+        "transactionId": "db25f80dd997fb57ecd30a94ffd4d3b2",
+        "target": "scene",
+        "sequence": 2,
+        "stateHash": "tree-sha256:7b3e29c6e27c4b968fb1c971014388943b0c0b2543172689e9a0ea9ff2346a11",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "1d7390ce70b9140b26dae8a9ffb43586",
+        "target": "scene",
+        "sequence": 3,
+        "stateHash": "tree-sha256:5edfda41ea4ece708a478e677d7eff2c0eba83e062e942e698868a2a6e3fdaaa",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "980b99ababefcfe49f2195671d3c2029",
+        "target": "scene",
+        "sequence": 5,
+        "stateHash": "tree-sha256:615e7b85e1d5f68e9d4041351733f7ad31c1f4ba2e3f54646c514ec53c7ba4b6",
+        "render": "patch"
+      },
+      {
+        "type": "applied",
+        "transactionId": "5ddbfe56e81cb8f4f68939fffbe71920",
+        "target": "scene",
+        "sequence": 6,
+        "stateHash": "tree-sha256:3c1729db3b984a8d9770155b5f2fbe215c025563cbdc311f8d8fa2006b24e60f",
+        "render": "patch"
+      }
+    ]
+  }
+}

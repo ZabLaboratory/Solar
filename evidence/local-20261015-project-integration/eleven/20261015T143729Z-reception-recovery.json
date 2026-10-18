@@ -1,0 +1,40 @@
+{
+  "captured_utc": "20261015T143729Z",
+  "owner": "Eleven/Main1",
+  "source_revision": "623a9450d01be5df3b8e7765c6ef59ae8a2eff4d",
+  "command": "node scripts/test-reception-recovery.mjs fixtures/sponsor-motion/sponsor-motion.lsmlz",
+  "exit_code": 0,
+  "fixture_sha256": "b1cdb5a68b4ae78e2a2910c61a7ee66199b180797bf4c3e92b4faeca6d1ea2f1",
+  "native_source_revision": "4d197aefbde76cacc8ffd70cb84edec031575f5b",
+  "native_binary_sha256": "083f06c25248f2ca3f2523f41c966012499bce77cc68117c6b12de160bf93448",
+  "result": "PASS",
+  "checks": [
+    "no automatic resource mirror",
+    "lost scene restarts empty",
+    "producer republishes active selection",
+    "control state resets to declared seed",
+    "forced process death",
+    "same TCP/WS endpoints",
+    "automatic watch reconnect",
+    "continued mutations",
+    "explicit restart original",
+    "owned children reaped",
+    "archive unchanged"
+  ],
+  "events": [
+    {
+      "attempt": 1,
+      "state": "recovering"
+    },
+    {
+      "attempt": 1,
+      "state": "ready"
+    }
+  ],
+  "failures": [],
+  "limits": [
+    "Existing private-process test executed before this evidence serialization; result transcribed from successful tool output.",
+    "Volatile reception state resets and requires producer republication. No inactive-scene cache or durable Solar mirror.",
+    "No Vision pixels, physical captures, CEF, common-runtime admission or public output qualification."
+  ]
+}

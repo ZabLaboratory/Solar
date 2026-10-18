@@ -59,6 +59,15 @@ Merkle hash, and applies atomic `lsdp.apply/1` notifications. See
 [native local development](docs/development/native-lsdp.md) for the Rust server
 launcher and mutation endpoint.
 
+A trusted physical lane host may also set `nativeComposition: { width, height }`
+and `nativeCompositionLSDP: { url, resource: "solar/composition", graph: "A" | "B",
+producer_id }`. The separate LSDP resource carries an active-scene composition
+plan derived by Solar from the same LSML snapshot; Main owns the producer claim
+for that physical host. This opt-in metadata path does not alter LSML snapshots
+or mutation receipts. It is a planning/publication contract, not a claim of
+completed native Solar-band rendering: the current Pulsar consumer still
+rejects unsupported surface, mask and blend content.
+
 The `@zablab/solar/server` entry runs in a Node 22+/Electron-main host. It owns
 the packaged Rust receiver, injects declared Solar/Orion resources and waits for
 real protocol readiness. The browser entry never creates a process. Full LSML
@@ -83,9 +92,12 @@ assets, missing or changed copies, and every collision when the host is promoted
 to the installed runtime root. It runs at build completion, in `check:bundle`,
 before npm packing and immediately before release archive creation.
 The four engine/host files are SHA-256 pinned in public/vision/vision-assets.json.
-Regenerate those checked-in
-assets from the configured `lumencast-vision` source after changing its Rust or
-presenter code, then run `npm run check:bundle`.
+The generated JS and WASM are pinned from the signed Vision source revision in
+`vision-assets.json`. Vision now measures intrinsic image dimensions from
+admitted assets during layout, including linked image sources and live-media
+descriptors. Its separate Vision3D API is not exposed by this 2D host.
+Regenerate the checked-in assets from the configured `lumencast-vision` source
+after changing its Rust or presenter code, then run `npm run check:bundle`.
 
 ## Development and checks
 

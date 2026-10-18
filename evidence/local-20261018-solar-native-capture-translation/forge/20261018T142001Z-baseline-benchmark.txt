@@ -1,0 +1,15 @@
+Benchmarking is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v4.1.11 D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation
+
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > accepted capture x/y mutation to Solar composition plan 910ms
+     name                                                                      hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash  19.6489  45.2748  55.2637  50.8935  53.6938  55.2637  55.2637  55.2637  ±4.73%       10
+
+ BENCH  Summary
+
+  presenter accept + strict projector accept + projection + plan hash - tests/bench/native-composition-capture-translation.bench.ts > accepted capture x/y mutation to Solar composition plan
+
+Benchmark report written to D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation/evidence/local-20261018-solar-native-capture-translation/forge/20261018T142001Z-baseline-benchmark.json

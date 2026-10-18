@@ -1,0 +1,170 @@
+{
+  "source": "D:\\Documents\\Zab\\Artifacts\\2026-10-12\\z-rouge-landing\\z-rouge-transparent.png",
+  "source_sha256": "bd60a9e912f680e6e278e6987b75cdcbcf860ce74e5e3c4c5e661441e59a3141",
+  "scene_version": "sha256:a910579a374bf4656c36383394f1acda1897b2168cd57c29df7bbe6b073ef20d",
+  "render": "Solar native LSDP / Vision canvas",
+  "viewport": [
+    1920,
+    1080
+  ],
+  "fps": 60,
+  "duration_s": 2.0,
+  "draw_s": 0.56,
+  "fusion_s": 0.9,
+  "vector_shapes": 5,
+  "source_derived_arrow_ribbons": 2,
+  "progressive_arrow_draw_paths": 2,
+  "source_derived_final_mark": 1,
+  "artificial_partition_cuts": 0,
+  "raster_image_nodes": 0,
+  "source_mask_iou_at_final_size": 0.957688,
+  "animated_frame_edge_touch_count": 0,
+  "sample_alpha_bounds": {
+    "0": null,
+    "80": [
+      105,
+      766,
+      261,
+      1007
+    ],
+    "160": [
+      68,
+      763,
+      319,
+      1011
+    ],
+    "240": [
+      44,
+      765,
+      319,
+      1012
+    ],
+    "320": [
+      45,
+      767,
+      318,
+      1042
+    ],
+    "400": [
+      47,
+      769,
+      355,
+      1041
+    ],
+    "480": [
+      47,
+      769,
+      354,
+      1039
+    ],
+    "560": [
+      47,
+      769,
+      353,
+      1039
+    ],
+    "640": [
+      63,
+      786,
+      339,
+      1036
+    ],
+    "760": [
+      114,
+      841,
+      289,
+      1010
+    ],
+    "800": [
+      134,
+      863,
+      270,
+      997
+    ],
+    "840": [
+      143,
+      871,
+      261,
+      996
+    ],
+    "900": [
+      114,
+      841,
+      289,
+      1025
+    ]
+  },
+  "render_errors": [],
+  "alpha_video": {
+    "codec_name": "vp9",
+    "width": 1920,
+    "height": 1080,
+    "pix_fmt": "yuv420p",
+    "tags": {
+      "alpha_mode": "1"
+    }
+  },
+  "preview_video": {
+    "codec_name": "h264",
+    "width": 1920,
+    "height": 1080,
+    "pix_fmt": "yuv420p",
+    "nb_frames": "120",
+    "tags": {}
+  },
+  "svg_xml_parse": "pass",
+  "files": {
+    "z-bug.lsml": {
+      "bytes": 21315,
+      "sha256": "b2d231038d51874d537e4956880a3b189fe197aa95614fe74318e9f24d4bd4a0"
+    },
+    "z-bug.lsmlz": {
+      "bytes": 6611,
+      "sha256": "bfcd7000ab97c2da001ad4402a354aa903d23584b3679b0a9c781c9f07a0d6c1"
+    },
+    "sponsor-motion.lsml": {
+      "bytes": 21315,
+      "sha256": "b2d231038d51874d537e4956880a3b189fe197aa95614fe74318e9f24d4bd4a0"
+    },
+    "sponsor-motion.lsmlz": {
+      "bytes": 6611,
+      "sha256": "bfcd7000ab97c2da001ad4402a354aa903d23584b3679b0a9c781c9f07a0d6c1"
+    },
+    "z-bug-alpha.webm": {
+      "bytes": 159308,
+      "sha256": "10467f5a708284e7f538c1952c2f6a34a914d677c5941b19574afb91ec939e5a"
+    },
+    "z-bug-preview.mp4": {
+      "bytes": 48143,
+      "sha256": "436fb5434e3c3546ec000c81e42cd0762b581acf63eb6f510575652ad3687462"
+    },
+    "z-bug-storyboard.png": {
+      "bytes": 58358,
+      "sha256": "6fa89cc8e0ca5d2a2dbea78a5c019b27d04c9d8c688c18a6cb9521422a977cef"
+    },
+    "z-final-transparent.png": {
+      "bytes": 51202,
+      "sha256": "72dccc89eafef923811264a36c00e15334a3f37e4bd211e5e7a65e8a07d73f50"
+    },
+    "assets/arrow-left.svg": {
+      "bytes": 598,
+      "sha256": "6be2d7bf03f7d18fba1cb269827b737504decd1947b13a11a8e248af03a036fd"
+    },
+    "assets/arrow-right.svg": {
+      "bytes": 654,
+      "sha256": "3b714930c3ae58ebca5b4b49977ff5c7dc52c5c5d0dcea2cbf8f506570dc86bd"
+    },
+    "assets/arrow-left-draw.svg": {
+      "bytes": 445,
+      "sha256": "6d6700528c43dab0331cb5c4f8bb047c3505c7f73775309e60f951582a11ff1b"
+    },
+    "assets/arrow-right-draw.svg": {
+      "bytes": 467,
+      "sha256": "47a1db92f9c1e4a0ea79f5722222fc68d15201dccf94e8324b08b20164ad83a7"
+    },
+    "assets/z-assembled.svg": {
+      "bytes": 15913,
+      "sha256": "cad8c377a66e968f0efd70e87d00946cfb4771a2a08eecb40ae387dd5ae77c61"
+    }
+  }
+}

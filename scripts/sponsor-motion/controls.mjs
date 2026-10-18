@@ -5,7 +5,7 @@ import { resolve } from "node:path";
 const require = createRequire(resolve(process.env.SPONSOR_PLAYWRIGHT_ROOT ?? process.cwd(),"package.json"));
 const { chromium } = require("playwright");
 const root = resolve(import.meta.dirname,"../.."), port = Number(process.env.SPONSOR_MOTION_PORT ?? 4570);
-const out = resolve(root,"evidence/local-20261010-sponsor-motion/eleven");
+const out = resolve(root,process.argv[2] ?? "evidence/local-20261010-sponsor-motion/eleven");
 const stamp = new Date().toISOString().replace(/[-:]/g,"").replace(/\.\d+Z$/,"Z");
 await mkdir(out,{recursive:true});
 const browser = await chromium.launch({channel:"chrome",headless:true,args:["--disable-background-timer-throttling","--disable-renderer-backgrounding"]});
@@ -44,7 +44,7 @@ try {
   await command({action:"reverse"});await page.waitForTimeout(220);await command({action:"pause"});await page.waitForTimeout(150);checks.push("reverse accepted during playback");
   await command({action:"stop"});await page.waitForTimeout(150);if(await fingerprint()!==initial){await frame.locator('#scene canvas[aria-hidden=true]').last().screenshot({path:resolve(out,`${stamp}-controls-stop-failure.png`)});console.log(JSON.stringify({stamp,initial,current:await fingerprint(),errors}));throw Error("Stop did not rewind to first source image");}checks.push("stop rewinds exactly");
   await command({action:"play",iterations:2,direction:"alternate",speed:2});
-  await command({action:"pause"});await command({action:"seek",time_ms:7500});await page.waitForTimeout(150);
+  await command({action:"pause"});await command({action:"seek",time_ms:catalogue.duration_ms*1.5});await page.waitForTimeout(150);
   const alternate=await fingerprint();if(alternate===initial)throw Error("Alternate seek did not render intermediate state");checks.push("seek addresses second ping-pong iteration");
   await command({action:"cancel"});await page.waitForTimeout(180);if(await fingerprint()!==initial)throw Error("Cancel did not restore source values");checks.push("cancel restores source bindings");
   await frame.locator('#scene canvas[aria-hidden=true]').last().screenshot({path:resolve(out,`${stamp}-controls-restored.png`)});

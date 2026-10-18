@@ -1,0 +1,96 @@
+{
+  "captured_utc": "20261015T154308Z",
+  "vision_source": "D:\\Documents\\Lumencast\\lumencast-vision\\.worktrees\\eleven-local-20261015-vision3d-integration",
+  "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2",
+  "previous_pin": {
+    "schema": "solar.vision-assets.v1",
+    "upstream": "Lumencast/lumencast-vision",
+    "base_revision": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+    "source_state": "Signed Vision instance-runtime source 728e1247 built as release WASM and pinned with its exact main presenter. Native GPU semantics and a private Solar browser path pass exact root/child acquisition, four fit pixel modes, embedded WOFF2/PNG, bindParams mutation, WebGL restoration and missing-child refusal with active-frame preservation. ZabCanvas HTTP, remote assets, shared runtime admission and public output are not qualified.",
+    "files": {
+      "ui/mainpresenter.mjs": {
+        "bytes": 27634,
+        "sha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
+      },
+      "ui/fonts.mjs": {
+        "bytes": 1977,
+        "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+      },
+      "pkg/lumencast_vision_web.js": {
+        "bytes": 152321,
+        "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d"
+      },
+      "pkg/lumencast_vision_web_bg.wasm": {
+        "bytes": 10491253,
+        "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd"
+      }
+    },
+    "source_provenance": {
+      "repository": "Lumencast/lumencast-vision",
+      "engine_base": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+      "engine_branch": "eleven/local-20261015-instance-runtime",
+      "engine_evidence": "evidence/local-20261015-instance-runtime/eleven/20261015T124330Z-agent-report.md",
+      "source_files": {
+        "README.md": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca",
+        "crates/vision-web/README.md": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54",
+        "crates/vision-web/src/instances.rs": "865106569a8c99bd60a20f376105b9421e13ff305459534831fe51ab5d1abce9",
+        "crates/vision-web/src/lib.rs": "24d89fd2c40ab866d9aa4b9853f3470c1a2f58015e9fb006b9edbd162e120b27",
+        "crates/vision-web/ui/mainpresenter.mjs": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7",
+        "crates/vision-web/ui/tests/mainpresenter.test.mjs": "bb8bb601880af507f68f1e0700818d3e7c2bb7b5ab2411a466668da898869904",
+        "crates/vision-gpu-scene/src/lib.rs": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15",
+        "crates/vision-render/src/image.rs": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f",
+        "crates/vision-gpu/src/renderer.rs": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
+        "crates/vision-gpu/src/renderer/composition_cache.rs": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b"
+      },
+      "uncommitted_qualified_source": false
+    },
+    "source_revision": "728e1247a830fec777b4a234af5d8cd9d20dc311"
+  },
+  "candidate_pin": {
+    "schema": "solar.vision-assets.v1",
+    "upstream": "Lumencast/lumencast-vision",
+    "base_revision": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+    "source_state": "Signed consolidated Vision source built as release WASM with existing build-web.ps1; includes the current Solar-facing instance, persistent-engine, fonts, source framing and retained GPU contracts. Private combined-browser qualification is pending in this unit. The repository also contains consolidated Vision3D; exposing its separate 3D API through Solar is not implied. No shared runtime, CEF scanout or public output admission.",
+    "files": {
+      "ui/mainpresenter.mjs": {
+        "bytes": 27634,
+        "sha256": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7"
+      },
+      "ui/fonts.mjs": {
+        "bytes": 1977,
+        "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f"
+      },
+      "pkg/lumencast_vision_web.js": {
+        "bytes": 152321,
+        "sha256": "10bc45be8ce17d51afdfbc328903f2916ae31957e262b75c89ff21dba4f5190d"
+      },
+      "pkg/lumencast_vision_web_bg.wasm": {
+        "bytes": 10491253,
+        "sha256": "604c9a330b2e6334b2cdf5dcde35d03e2275eed806d48189c69939f72dacc8cd"
+      }
+    },
+    "source_provenance": {
+      "repository": "Lumencast/lumencast-vision",
+      "engine_base": "405cda96e96d47f681e8e6d664195f7f98cfab58",
+      "engine_branch": "eleven/local-20261015-vision3d-integration",
+      "engine_evidence": "evidence/local-20261015-vision3d-integration/eleven/20261015T154119Z-consolidated-wasm-build.log",
+      "source_files": {
+        "README.md": "4988f045a0a91499702ed1d61f7c6d00e9045158c8cf6e8eed3786e9c2c18aca",
+        "crates/vision-web/README.md": "6b30def4080beb6e72bdbcee53996207e5ea671cef26fef8e288548f5c2bca54",
+        "crates/vision-web/src/instances.rs": "865106569a8c99bd60a20f376105b9421e13ff305459534831fe51ab5d1abce9",
+        "crates/vision-web/src/lib.rs": "24d89fd2c40ab866d9aa4b9853f3470c1a2f58015e9fb006b9edbd162e120b27",
+        "crates/vision-web/ui/mainpresenter.mjs": "05741960f55adc86d997e6f94598a1ac023544a82892df1face83291b3091af7",
+        "crates/vision-web/ui/tests/mainpresenter.test.mjs": "bb8bb601880af507f68f1e0700818d3e7c2bb7b5ab2411a466668da898869904",
+        "crates/vision-gpu-scene/src/lib.rs": "7fb3d10dfe9cd8e74fbf2814dcc2029d8d3c1b336e4dfb3b1e736e2fe4113b15",
+        "crates/vision-render/src/image.rs": "0158b1699af023966befa1dc9ab1f3e4659556059b74d4c0236b6102cf23022f",
+        "crates/vision-gpu/src/renderer.rs": "6c7da99ee90b2199106ad1ced6255dc9b983d8a9c696d90f4db6ea14c4ba3222",
+        "crates/vision-gpu/src/renderer/composition_cache.rs": "c69bdf6bd4dc53cb26f6b7c4daa3640728cb8e5995fa881a2dfd0c22fe09502b"
+      },
+      "uncommitted_qualified_source": false,
+      "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2",
+      "source_tree": "930329e30ed1379e48359945641c13272aa02fb9",
+      "build_command": "pwsh -NoProfile -File scripts/vision/build-web.ps1"
+    },
+    "source_revision": "5b4735fd38f64e4ea83ce36221c50a8c5ad2c0f2"
+  }
+}

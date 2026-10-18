@@ -1,0 +1,25 @@
+{
+  "sourceRevision": "2f666dc35df6d18bc6ff701e2661d2d624967f7c",
+  "results": [
+    {
+      "name": "truncated",
+      "prepared": false,
+      "error": "SyntaxError",
+      "message": "Unexpected end of JSON input"
+    },
+    {
+      "name": "wrong-shape",
+      "prepared": false,
+      "error": "TypeError",
+      "message": "previous.map is not a function"
+    }
+  ],
+  "sourceFileSha256": "a6e78f9819fd8e0e6cb786edfa874799929c5746a7370926c14ea161e6b54038",
+  "sameSizeCorruption": {
+    "reused": 1,
+    "filesRead": 0,
+    "cacheBytes": "bad",
+    "httpStatus": 500
+  },
+  "fixtureDirectory": "C:\\Users\\Mathias\\AppData\\Local\\Temp\\codex-zab\\01a11a8b-8f4f-7fc2-abc4-7983042e4f63\\font-index-recovery\\repro-vVvMaS"
+}

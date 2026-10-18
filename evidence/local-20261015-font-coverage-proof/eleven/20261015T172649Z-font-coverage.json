@@ -1,0 +1,84 @@
+{
+  "capturedUtc": "2026-10-15T17:26:53.726Z",
+  "readOnly": true,
+  "sourceRoots": [
+    {
+      "group": "packaged-host",
+      "exists": false,
+      "files": 0
+    },
+    {
+      "group": "packaged-fonts",
+      "exists": true,
+      "files": 16
+    },
+    {
+      "group": "windows-system",
+      "exists": true,
+      "files": 352
+    },
+    {
+      "group": "windows-user",
+      "exists": true,
+      "files": 1
+    },
+    {
+      "group": "windows-registry",
+      "entries": 164
+    }
+  ],
+  "sourceExtensions": {
+    ".woff2": 10,
+    ".ttf": 140,
+    ".fon": 192,
+    ".ttc": 15
+  },
+  "totals": {
+    "supportedSourceFiles": 165,
+    "supportedSourceBytes": 368309930,
+    "unsupportedBitmapFiles": 192,
+    "ignoredNonFontFiles": 12,
+    "missingRegisteredFiles": 0,
+    "oversizedOrEmptySources": 0,
+    "verifiedPreparedSources": 154,
+    "verifiedPreparedContentSources": 165,
+    "unindexedSources": 11,
+    "changedSources": 0,
+    "invalidOrMissingCachedFiles": 0
+  },
+  "currentDistinctSourceDigests": 165,
+  "preparedIndex": {
+    "sources": 165,
+    "uniqueDigests": 165,
+    "uniqueEncodedBytes": 368309930,
+    "sha256": "8d18412d6d223e31af87a6c6ee38ec4fe06e4ebd839434552ec49844ac0ea10f"
+  },
+  "productContract": {
+    "supportedFormats": [
+      ".ttf",
+      ".otf",
+      ".ttc",
+      ".woff",
+      ".woff2"
+    ],
+    "limits": {
+      "maxPreparedFiles": 2048,
+      "maxPreparedBytes": 1073741824,
+      "maxSourceFileBytes": 67108864
+    }
+  },
+  "currentSupportedSourcePathsIndexed": false,
+  "currentSupportedSourceContentVerifiedCached": true,
+  "engineRegistration": {
+    "verified": false,
+    "files": null,
+    "faces": null,
+    "reason": "Read-only source/cache inspection does not observe the active Vision font registry."
+  },
+  "limits": [
+    "No source path or catalogue credential is recorded.",
+    "Index source-path coverage and verified indexed cache content are reported separately; moved packaged paths can retain the same cached digest.",
+    "Cached content is not active catalogue admission, font parser compatibility, glyph coverage, browser registration or rendered typography proof.",
+    "Missing and bitmap-only registered sources remain explicit exclusions; no font, cache, index or process is changed."
+  ]
+}

@@ -1,0 +1,753 @@
+<!doctype html>
+<meta charset="utf-8" />
+<base href="/" />
+<title>Solar and Vision active scene instance qualification</title>
+<style>
+  body {
+    margin: 16px;
+    background: #222;
+    color: white;
+    font: 14px sans-serif;
+  }
+  #target {
+    position: relative;
+    width: 224px;
+    height: 96px;
+    background: #202020;
+  }
+</style>
+<h1>Solar exact-source acquisition → Vision instance rendering</h1>
+<div id="target"></div>
+<script type="module">
+  import { bundleAddress, canonicalize } from "@lumencast/canonical";
+  import { sha1 } from "@noble/hashes/sha1";
+  import { sha256 } from "@noble/hashes/sha256";
+  import { bytesToHex } from "@noble/hashes/utils";
+  import { strToU8, zipSync } from "fflate";
+  import { nativeManifest } from "/tests/helpers/native-source.ts";
+  import { NativeSceneFrames } from "/src/engine/native-scene-frames.ts";
+  import { requireLSML } from "/src/scenes/native-document.ts";
+  import { verifySceneSource } from "/src/scenes/cache.ts";
+
+  const encoder = new TextEncoder();
+  const hash = (bytes) => `sha256:${bytesToHex(sha256(bytes))}`;
+  const bytesEqual = (left, right) =>
+    left.length === right.length && left.every((byte, index) => byte === right[index]);
+  const legacyPath = (bytes, extension) =>
+    `assets/${bytesToHex(sha1(bytes))}.${extension}`;
+  const target = document.querySelector("#target");
+  const colorClass = ([red, green, blue]) => {
+    if (red > 220 && green < 40 && blue < 40) return "red";
+    if (green > 220 && red < 40 && blue < 40) return "green";
+    if (blue > 220 && red < 40 && green < 40) return "blue";
+    if (red > 220 && green > 220 && blue > 220) return "white";
+    return "background";
+  };
+  const closeColor = (actual, expected, tolerance = 12) =>
+    expected.every(
+      (channel, index) => Math.abs(actual[index] - channel) <= tolerance,
+    );
+
+  async function packagedSource(sceneId, layout, options = {}) {
+    const documentValue = {
+      lsml: "1.1",
+      scene_id: sceneId,
+      scene_version: "",
+      layout,
+      defaults: options.defaults ?? {},
+      ...(options.assets ? { assets: options.assets } : {}),
+    };
+    documentValue.scene_version = await bundleAddress(documentValue);
+    const documentBytes = encoder.encode(canonicalize(documentValue));
+    const blueManifest = nativeManifest(sceneId, documentValue.scene_version);
+    const { manifest_digest: _manifestDigest, ...unsigned } = blueManifest;
+    blueManifest.manifest_digest = hash(strToU8(canonicalize(unsigned)));
+    const files = { "scene.lsml": documentBytes, ...(options.files ?? {}) };
+    const format = options.format ?? "lsmlz";
+    return {
+      sceneId,
+      sceneVersion: documentValue.scene_version,
+      revision: 1,
+      sourceDigest: hash(documentBytes),
+      format,
+      data: format === "lsmlz" ? zipSync(files, { level: 0 }) : documentBytes,
+      assets:
+        format === "lsml"
+          ? new Map(Object.entries(options.files ?? {}))
+          : new Map(),
+      blueManifest,
+    };
+  }
+
+  async function imageFixture(fill = "#ff8800") {
+    const canvas = document.createElement("canvas");
+    canvas.width = 12;
+    canvas.height = 12;
+    const context = canvas.getContext("2d");
+    context.fillStyle = fill;
+    context.fillRect(0, 0, 12, 12);
+    const blob = await new Promise((resolve, reject) =>
+      canvas.toBlob(
+        (value) =>
+          value ? resolve(value) : reject(new Error("PNG encoding failed")),
+        "image/png",
+      ),
+    );
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+
+  async function putImageFixture(name, bytes) {
+    const response = await fetch(
+      `${window.__INSTANCE_IMAGE_ORIGIN__}/${name}`,
+      {
+        method: "PUT",
+        headers: { "content-type": "image/png" },
+        body: bytes,
+      },
+    );
+    if (!response.ok)
+      throw new Error(`Loopback image fixture upload failed: ${response.status}`);
+  }
+
+  function presentationCanvas() {
+    const canvases = target.querySelectorAll("canvas");
+    if (canvases.length < 2)
+      throw new Error(
+        `Expected Solar's GPU and retained canvases, found ${canvases.length}`,
+      );
+    return { gpu: canvases[0], front: canvases[1] };
+  }
+
+  function pixel(context, x, y) {
+    return [...context.getImageData(x, y, 1, 1).data];
+  }
+
+  function frontContext() {
+    const { front } = presentationCanvas();
+    const context = front.getContext("2d");
+    if (!context)
+      throw new Error("Solar's retained front canvas is unavailable");
+    return context;
+  }
+
+  async function waitFor(name, predicate, timeout = 12000) {
+    const started = performance.now();
+    let last;
+    while (performance.now() - started < timeout) {
+      await new Promise((resolve) => setTimeout(resolve, 40));
+      last = predicate();
+      if (last) return last;
+    }
+    throw new Error(
+      `${name} timed out; last observation: ${JSON.stringify(last)}`,
+    );
+  }
+
+  function verifyFitPixels(context) {
+    const rows = [0, 1, 2, 3].map((slot) =>
+      [5, 18, 31, 44].map((dx) =>
+        colorClass(pixel(context, slot * 50 + dx, 25).slice(0, 3)),
+      ),
+    );
+    const expected = [
+      ["red", "green", "blue", "white"],
+      ["green", "green", "blue", "blue"],
+      ["red", "green", "blue", "white"],
+      ["red", "red", "green", "green"],
+    ];
+    if (JSON.stringify(rows) !== JSON.stringify(expected))
+      throw new Error(
+        `Four fit modes did not preserve asymmetric source pixels: ${JSON.stringify(rows)}`,
+      );
+    if (rows[0].some((value) => value === "background"))
+      throw new Error(
+        "Contain's stripe row unexpectedly includes letterbox pixels",
+      );
+    return rows;
+  }
+
+  function findOrangeImage(context) {
+    for (let y = 12; y < 21; y++)
+      for (let x = 40; x < 49; x++)
+        if (closeColor(pixel(context, x, y), [255, 136, 0, 255]))
+          return { x, y };
+    return null;
+  }
+
+  function remoteImagePixels(context) {
+    return {
+      static: pixel(context, 193, 63),
+      mutable: pixel(context, 209, 63),
+    };
+  }
+
+  function findEmbeddedFontPixels(context) {
+    let count = 0;
+    for (let y = 1; y < 20; y++)
+      for (let x = 150; x < 200; x++) {
+        const [red, green, blue, alpha] = pixel(context, x, y);
+        if (red < 80 && green > 170 && blue > 170 && alpha > 180) count++;
+      }
+    return count;
+  }
+
+  window.runQualification = async () => {
+    window.qualificationPhase = "build exact local sources";
+    const imageBytes = await imageFixture();
+    const blueImageBytes = await imageFixture("#0055ff");
+    const imageOrigin = window.__INSTANCE_IMAGE_ORIGIN__;
+    const staticImageUrl = `${imageOrigin}/static.png`;
+    const initialImageUrl = `${imageOrigin}/initial.png`;
+    const retryImageUrl = `${imageOrigin}/retry.png`;
+    await putImageFixture("static.png", imageBytes);
+    await putImageFixture("initial.png", imageBytes);
+    const imagePath = "assets/instances/child-image.png";
+    const fontResponse = await fetch(
+      "/tests/fixtures/instance-runtime/RussoOne-Regular.woff2",
+    );
+    if (!fontResponse.ok)
+      throw new Error(
+        `Embedded font fixture returned HTTP ${fontResponse.status}`,
+      );
+    const fontBytes = new Uint8Array(await fontResponse.arrayBuffer());
+    const fontPath = legacyPath(fontBytes, "woff2");
+    const stripes = ["#ff0000", "#00ff00", "#0000ff", "#ffffff"].map(
+      (fill, index) => ({
+        kind: "shape",
+        id: `stripe-${index}`,
+        geometry: "rect",
+        position: { x: index * 25, y: 0 },
+        size: { w: 25, h: 50 },
+        fill,
+      }),
+    );
+    const fitChild = await packagedSource(
+      "fit-child",
+      {
+        kind: "frame",
+        id: "fit-child-root",
+        size: { w: 100, h: 50 },
+        children: [
+          ...stripes,
+          {
+            kind: "text",
+            id: "embedded-font-title",
+            value: "Font",
+            position: { x: 0, y: 0 },
+            size: { w: 64, h: 20 },
+            style: { fontFamily: "Russo One", fontSize: 16, color: "#00ffff" },
+          },
+          {
+            kind: "image",
+            id: "embedded-image",
+            src: imagePath,
+            position: { x: 80, y: 0 },
+            size: { w: 12, h: 12 },
+          },
+        ],
+      },
+      {
+        assets: { fonts: [{ url: fontPath }] },
+        files: { [imagePath]: imageBytes, [fontPath]: fontBytes },
+        format: "lsml",
+      },
+    );
+    const stateChild = await packagedSource(
+      "state-child",
+      {
+        kind: "frame",
+        id: "state-child-root",
+        size: { w: 32, h: 24 },
+        children: [
+          {
+            kind: "shape",
+            id: "bound-swatch",
+            geometry: "rect",
+            size: { w: 32, h: 24 },
+            fill: "#000000",
+            bind: { fill: "__params.tint" },
+          },
+        ],
+      },
+      { format: "lsml" },
+    );
+    const remoteImageChild = await packagedSource(
+      "remote-image-child",
+      {
+        kind: "frame",
+        id: "remote-image-child-root",
+        size: { w: 32, h: 16 },
+        children: [
+          {
+            kind: "image",
+            id: "static-http-image",
+            src: staticImageUrl,
+            position: { x: 0, y: 0 },
+            size: { w: 16, h: 16 },
+          },
+          {
+            kind: "image",
+            id: "mutable-http-image",
+            bind: { src: "__params.logo" },
+            position: { x: 16, y: 0 },
+            size: { w: 16, h: 16 },
+          },
+        ],
+      },
+      {
+        assets: { allowedHosts: ["127.0.0.1"] },
+        format: "lsml",
+      },
+    );
+    const fitModes = ["contain", "cover", "fill", "none"];
+    const instances = fitModes.map((fit, index) => ({
+      kind: "instance",
+      id: `fit-${fit}`,
+      scene_id: fitChild.sceneId,
+      scene_version: fitChild.sceneVersion,
+      position: { x: index * 50, y: 0 },
+      size: { w: 50, h: 50 },
+      fit,
+    }));
+    instances.push({
+      kind: "instance",
+      id: "bound-state-child",
+      scene_id: stateChild.sceneId,
+      scene_version: stateChild.sceneVersion,
+      position: { x: 150, y: 55 },
+      size: { w: 32, h: 24 },
+      fit: "fill",
+      bindParams: { tint: "game.tint" },
+    });
+    instances.push({
+      kind: "instance",
+      id: "bound-remote-image-child",
+      scene_id: remoteImageChild.sceneId,
+      scene_version: remoteImageChild.sceneVersion,
+      position: { x: 185, y: 55 },
+      size: { w: 32, h: 16 },
+      fit: "fill",
+      bindParams: { logo: "game.logo" },
+    });
+    const rootSource = await packagedSource(
+      "instance-root",
+      {
+        kind: "frame",
+        id: "root",
+        size: { w: 224, h: 96 },
+        background: "#202020",
+        children: instances,
+      },
+      {
+        defaults: { "game.tint": "#ff0000", "game.logo": initialImageUrl },
+        assets: { allowedHosts: ["127.0.0.1"] },
+      },
+    );
+    const missingSource = await packagedSource("missing-root", {
+      kind: "frame",
+      id: "missing-root",
+      size: { w: 224, h: 96 },
+      children: [
+        {
+          kind: "instance",
+          id: "unavailable",
+          scene_id: "missing-child",
+          scene_version: `sha256:${"1".repeat(64)}`,
+          size: { w: 32, h: 24 },
+        },
+      ],
+    });
+    const expectedLegacyBytes = encoder.encode("valid legacy asset");
+    const wrongLegacyBytes = encoder.encode("wrong legacy asset");
+    const wrongLegacyPath = legacyPath(expectedLegacyBytes, "png");
+    const wrongHashChild = await packagedSource(
+      "wrong-hash-child",
+      {
+        kind: "frame",
+        children: [{ kind: "image", src: wrongLegacyPath }],
+      },
+      {
+        format: "lsml",
+        files: { [wrongLegacyPath]: wrongLegacyBytes },
+      },
+    );
+    const wrongHashRoot = await packagedSource("wrong-hash-root", {
+      kind: "frame",
+      size: { w: 224, h: 96 },
+      children: [
+        {
+          kind: "instance",
+          id: "invalid-child",
+          scene_id: wrongHashChild.sceneId,
+          scene_version: wrongHashChild.sceneVersion,
+          size: { w: 32, h: 24 },
+        },
+      ],
+    });
+    const sources = [
+      rootSource,
+      fitChild,
+      stateChild,
+      remoteImageChild,
+      missingSource,
+      wrongHashChild,
+      wrongHashRoot,
+    ];
+    const provider = {
+      async get(sceneId, request = {}) {
+        const source = sources.find(
+          (value) =>
+            value.sceneId === sceneId &&
+            value.sceneVersion === request.sceneVersion,
+        );
+        if (!source || request.format !== source.format)
+          throw new Error("Exact local test source is unavailable");
+        return source;
+      },
+    };
+    const errors = [];
+    const controller = new AbortController();
+    const frames = new NativeSceneFrames(
+      {
+        target,
+        nativeLSDP: { url: "ws://127.0.0.1:1", resource: "qualification-only" },
+        sceneSourceProvider: provider,
+        token: "",
+        mode: "test",
+      },
+      () => {},
+      (error) => errors.push(String(error)),
+      () => controller.signal,
+      () => {},
+    );
+    const rootDocument = requireLSML(
+      verifySceneSource(rootSource, { requireOfflineReady: false }).document,
+    );
+    const immutableRemoteChildBytes = remoteImageChild.data.slice();
+    const immutableRootBytes = rootSource.data.slice();
+    const prepared = await frames.prepare(
+      rootDocument,
+      () => {},
+      controller.signal,
+      null,
+    );
+    const { scene, assets: activeAssets } = prepared;
+    if (
+      activeAssets.origin.sceneId !== rootSource.sceneId ||
+      activeAssets.origin.sceneVersion !== rootSource.sceneVersion
+    )
+      throw new Error(
+        `Solar source identity changed: ${activeAssets.origin.sceneId}@${activeAssets.origin.sceneVersion}`,
+      );
+    scene.activate();
+    await scene.flush?.();
+    const samples = [];
+
+    window.qualificationPhase = "first accepted GPU frame with nested assets";
+    let observed = await waitFor("first render", () => {
+      const context = frontContext();
+      const rows = verifyFitPixels(context);
+      const swatch = pixel(context, 166, 67);
+      const image = findOrangeImage(context);
+      const cyan = findEmbeddedFontPixels(context);
+      const remote = remoteImagePixels(context);
+      if (
+        !closeColor(swatch, [255, 0, 0, 255]) ||
+        !image ||
+        !closeColor(remote.static, [255, 136, 0, 255]) ||
+        !closeColor(remote.mutable, [255, 136, 0, 255]) ||
+        cyan < 4
+      )
+        return null;
+      return { rows, swatch, image, remote, embeddedFontPixels: cyan };
+    });
+    samples.push({ phase: window.qualificationPhase, ...observed });
+
+    window.qualificationPhase = "live bindParams mutation";
+    await scene.applyPatch({ "game.tint": "#00ff00" });
+    observed = await waitFor("green bound parameter", () => {
+      const swatch = pixel(frontContext(), 166, 67);
+      return closeColor(swatch, [0, 255, 0, 255]) ? { swatch } : null;
+    });
+    samples.push({ phase: window.qualificationPhase, ...observed });
+
+    window.qualificationPhase = "WebGL context restoration";
+    const { gpu } = presentationCanvas();
+    const gl = gpu.getContext("webgl2");
+    const extension = gl?.getExtension("WEBGL_lose_context");
+    if (!gl || !extension)
+      throw new Error(
+        "Chrome did not expose WEBGL_lose_context for restoration qualification",
+      );
+    window.contextDiagnostics = { beforeLoss: gl.isContextLost() };
+    const lost = new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("WebGL loss event timed out")),
+        5000,
+      );
+      gpu.addEventListener(
+        "webglcontextlost",
+        () => {
+          clearTimeout(timeout);
+          resolve();
+        },
+        { once: true },
+      );
+    });
+    extension.loseContext();
+    await lost;
+    window.contextDiagnostics.afterLoss = gl.isContextLost();
+    const restored = new Promise((resolve, reject) => {
+      const timeout = setTimeout(
+        () => reject(new Error("WebGL restoration event timed out")),
+        20000,
+      );
+      gpu.addEventListener(
+        "webglcontextrestored",
+        () => {
+          clearTimeout(timeout);
+          resolve();
+        },
+        { once: true },
+      );
+    });
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    extension.restoreContext();
+    await restored;
+    window.contextDiagnostics.afterRestore = gl.isContextLost();
+    // The presenter's serialized queue puts this real mutation after retained-engine
+    // restoration and child image re-registration, so pixels prove both operations.
+    await scene.applyPatch({ "game.tint": "#00aa00" });
+    observed = await waitFor("restored child image and bound state", () => {
+      const context = frontContext();
+      const swatch = pixel(context, 166, 67);
+      const image = findOrangeImage(context);
+      const embeddedFontPixels = findEmbeddedFontPixels(context);
+      const rows = verifyFitPixels(context);
+      const remote = remoteImagePixels(context);
+      if (
+        !closeColor(swatch, [0, 170, 0, 255]) ||
+        !image ||
+        !closeColor(remote.static, [255, 136, 0, 255]) ||
+        !closeColor(remote.mutable, [255, 136, 0, 255]) ||
+        embeddedFontPixels < 4
+      )
+        return null;
+      return {
+        swatch,
+        image,
+        remote,
+        embeddedFontPixels,
+        rows,
+        contextLost: gl.isContextLost(),
+      };
+    });
+    samples.push({ phase: window.qualificationPhase, ...observed });
+
+    window.qualificationPhase =
+      "rejected child image URL keeps the accepted pixels and retries";
+    let missingImageMutation;
+    try {
+      await scene.applyPatch({ "game.logo": retryImageUrl });
+    } catch (error) {
+      missingImageMutation = String(error);
+    }
+    if (!missingImageMutation?.includes("fetch failed (404)"))
+      throw new Error(
+        `Expected the missing child image to fail with HTTP 404, got ${missingImageMutation}`,
+      );
+    const retainedAfterImageFailure = await waitFor(
+      "child image after rejected URL",
+      () => {
+        const remote = remoteImagePixels(frontContext());
+        return closeColor(remote.static, [255, 136, 0, 255]) &&
+          closeColor(remote.mutable, [255, 136, 0, 255])
+          ? remote
+          : null;
+      },
+    );
+    await putImageFixture("retry.png", blueImageBytes);
+    await scene.applyPatch({ "game.logo": retryImageUrl });
+    const retriedRemote = await waitFor("retried child image", () => {
+      const remote = remoteImagePixels(frontContext());
+      return closeColor(remote.static, [255, 136, 0, 255]) &&
+        closeColor(remote.mutable, [0, 85, 255, 255])
+        ? remote
+        : null;
+    });
+    samples.push({
+      phase: window.qualificationPhase,
+      rejected: missingImageMutation,
+      retainedAfterImageFailure,
+      retriedRemote,
+    });
+    const originalRemoteDocument = verifySceneSource(remoteImageChild, {
+      requireOfflineReady: false,
+    }).document;
+    if (
+      !bytesEqual(remoteImageChild.data, immutableRemoteChildBytes) ||
+      !bytesEqual(rootSource.data, immutableRootBytes) ||
+      originalRemoteDocument.layout.children[0].src !== staticImageUrl ||
+      originalRemoteDocument.layout.children[1].bind.src !== "__params.logo" ||
+      verifySceneSource(rootSource, { requireOfflineReady: false }).document
+        .defaults["game.logo"] !== initialImageUrl
+    )
+      throw new Error("Solar rewrote the exact child or root source bytes");
+
+    if (new URLSearchParams(window.location.search).has("context-only")) {
+      if (
+        window.contextDiagnostics.beforeLoss !== false ||
+        window.contextDiagnostics.afterLoss !== true ||
+        window.contextDiagnostics.afterRestore !== false
+      )
+        throw new Error(
+          `Unexpected WebGL context states: ${JSON.stringify(window.contextDiagnostics)}`,
+        );
+      if (errors.length)
+        throw new Error(
+          `Solar reported renderer errors during successful recovery: ${JSON.stringify(errors)}`,
+        );
+      const { gpu, front } = presentationCanvas();
+      return {
+        passed: true,
+        boundary:
+          "same active Solar/Vision scene only; private WebGL loss and restoration; no scene switch or live source",
+        dimensions: {
+          gpu: [gpu.width, gpu.height],
+          front: [front.width, front.height],
+        },
+        contextDiagnostics: window.contextDiagnostics,
+        samples,
+        errors,
+      };
+    }
+
+    window.qualificationPhase =
+      "missing dependency refusal preserves active output";
+    const missingDocument = requireLSML(
+      verifySceneSource(missingSource, { requireOfflineReady: false }).document,
+    );
+    let rejection;
+    try {
+      await frames.prepare(missingDocument, () => {}, controller.signal, null);
+    } catch (error) {
+      rejection = { code: error?.code, message: String(error) };
+    }
+    if (rejection?.code !== "BUNDLE_FETCH_FAILED")
+      throw new Error(
+        `Expected BUNDLE_FETCH_FAILED for missing exact child, got ${JSON.stringify(rejection)}`,
+      );
+    const preserved = await waitFor("active frame after refusal", () => {
+      const context = frontContext();
+      const swatch = pixel(context, 166, 67);
+      const image = findOrangeImage(context);
+      const embeddedFontPixels = findEmbeddedFontPixels(context);
+      if (
+        !closeColor(swatch, [0, 170, 0, 255]) ||
+        !image ||
+        embeddedFontPixels < 4
+      )
+        return null;
+      return { swatch, image, embeddedFontPixels };
+    });
+    samples.push({ phase: window.qualificationPhase, rejection, preserved });
+
+    window.qualificationPhase =
+      "wrong SHA-1 child asset refusal preserves active output";
+    const wrongHashDocument = requireLSML(
+      verifySceneSource(wrongHashRoot, { requireOfflineReady: false }).document,
+    );
+    let wrongHashRejection;
+    try {
+      await frames.prepare(
+        wrongHashDocument,
+        () => {},
+        controller.signal,
+        null,
+      );
+    } catch (error) {
+      wrongHashRejection = { code: error?.code, message: String(error) };
+    }
+    if (wrongHashRejection?.code !== "INSTANCE_SOURCE_INVALID")
+      throw new Error(
+        `Expected INSTANCE_SOURCE_INVALID for a wrong SHA-1 child asset, got ${JSON.stringify(wrongHashRejection)}`,
+      );
+    const preservedAfterWrongHash = await waitFor(
+      "active frame after wrong hash refusal",
+      () => {
+        const context = frontContext();
+        const swatch = pixel(context, 166, 67);
+        const image = findOrangeImage(context);
+        const embeddedFontPixels = findEmbeddedFontPixels(context);
+        if (
+          !closeColor(swatch, [0, 170, 0, 255]) ||
+          !image ||
+          embeddedFontPixels < 4
+        )
+          return null;
+        return { swatch, image, embeddedFontPixels };
+      },
+    );
+    samples.push({
+      phase: window.qualificationPhase,
+      rejection: wrongHashRejection,
+      preserved: preservedAfterWrongHash,
+    });
+    if (errors.length)
+      throw new Error(
+        `Solar reported renderer errors: ${JSON.stringify(errors)}`,
+      );
+    const { front } = presentationCanvas();
+    return {
+      passed: true,
+      boundary:
+        "Solar exact-source acquisition + active bounded image resolver + Solar persistent presenter + pinned Vision WASM/WebGL; source fixtures and HTTP image bytes served only by private loopback servers",
+      exclusions: [
+        "ZabCanvas HTTP acquisition (covered by provider tests)",
+        "capture composition",
+        "editor asset resolver",
+        "runtime/shared-dev admission",
+      ],
+      dimensions: {
+        gpu: [gpu.width, gpu.height],
+        front: [front.width, front.height],
+      },
+      sourceIdentity: {
+        sceneId: activeAssets.origin.sceneId,
+        sceneVersion: activeAssets.origin.sceneVersion,
+        sourceDigest: activeAssets.origin.sourceDigest,
+      },
+      privateRenderPackage: {
+        sceneId: scene.sceneId,
+        sceneVersion: scene.sceneVersion,
+      },
+      sourcePins: sources.map(({ sceneId, sceneVersion, sourceDigest }) => ({
+        sceneId,
+        sceneVersion,
+        sourceDigest,
+      })),
+      font: {
+        path: fontPath,
+        sha1: bytesToHex(sha1(fontBytes)),
+        sha256: hash(fontBytes),
+        bytes: fontBytes.byteLength,
+      },
+      image: {
+        path: imagePath,
+        sha256: hash(imageBytes),
+        bytes: imageBytes.byteLength,
+      },
+      childHttpImages: {
+        staticUrl: staticImageUrl,
+        initialBoundUrl: initialImageUrl,
+        rejectedThenRetriedUrl: retryImageUrl,
+        sourceChildVersion: remoteImageChild.sceneVersion,
+        sourceChildSha256: hash(remoteImageChild.data),
+        rootSourceSha256: hash(rootSource.data),
+        immutableSourceBytes: true,
+      },
+      samples,
+      errors,
+    };
+  };
+</script>

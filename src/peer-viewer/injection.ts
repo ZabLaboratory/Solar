@@ -18,7 +18,10 @@
 // snapshot/mutation into the receive-only controller. Page globals remain a
 // compatibility source for actual embedded Prism consumers, not the scene engine.
 
-import type { MultiRoomPeerViewerOptions, PeerViewerInjection } from "@lumencast/runtime";
+import type {
+  MultiRoomPeerViewerOptions,
+  PeerViewerInjection,
+} from "@lumencast/runtime";
 
 function tracePublisherOfferPolicy(message: string): void {
   if (typeof location === "undefined") return;
@@ -276,7 +279,10 @@ export function publisherOfferViewerInjection(
         if (message.type === "joined") {
           tracePublisherOfferPolicy(
             `recv-joined room=${roomFromUrl} peers=${(message.peers ?? [])
-              .map((peer) => `${String(peer.name ?? "?")}:${String(peer.role ?? "?")}`)
+              .map(
+                (peer) =>
+                  `${String(peer.name ?? "?")}:${String(peer.role ?? "?")}`,
+              )
               .join(",")}`,
           );
         } else if (message.type === "peer-joined") {
@@ -308,7 +314,13 @@ export function publisherOfferViewerInjection(
     const nativeSend = ws.send.bind(ws);
     Object.defineProperty(ws, "send", {
       configurable: true,
-      value: (data: string | ArrayBufferLike | Blob | ArrayBufferView<ArrayBufferLike>): void => {
+      value: (
+        data:
+          | string
+          | ArrayBufferLike
+          | Blob
+          | ArrayBufferView<ArrayBufferLike>,
+      ): void => {
         if (typeof data === "string") {
           try {
             const message = JSON.parse(data) as {
@@ -337,8 +349,10 @@ export function publisherOfferViewerInjection(
               );
               return;
             }
-            if (message.type === "join") tracePublisherOfferPolicy(`send-join room=${roomFromUrl}`);
-            if (message.type === "leave") tracePublisherOfferPolicy("send-leave");
+            if (message.type === "join")
+              tracePublisherOfferPolicy(`send-join room=${roomFromUrl}`);
+            if (message.type === "leave")
+              tracePublisherOfferPolicy("send-leave");
             if (message.type === "signal") {
               tracePublisherOfferPolicy(
                 `send-signal kind=${String(message.payload?.kind ?? "?")} to=${String(message.to ?? "?")}`,
@@ -377,7 +391,9 @@ const isUsableRoom = (r: unknown): r is PeerViewerRoom =>
 
 /** Pull the usable rooms out of one source global (multi-room `{ rooms }` or the
  *  legacy single-room shape). */
-function roomsOf(cfg: ViewerInjectionShape | PeerViewerRoom | undefined): PeerViewerRoom[] {
+function roomsOf(
+  cfg: ViewerInjectionShape | PeerViewerRoom | undefined,
+): PeerViewerRoom[] {
   if (cfg === undefined) return [];
   if ("rooms" in cfg && Array.isArray(cfg.rooms)) {
     return cfg.rooms.filter(isUsableRoom);
@@ -399,8 +415,11 @@ function slotsOf(
       : undefined;
   if (typeof raw !== "object" || raw === null) return {};
   const out: Record<string, string> = {};
-  for (const [slotRef, peerLabel] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof peerLabel === "string" && peerLabel !== "") out[slotRef] = peerLabel;
+  for (const [slotRef, peerLabel] of Object.entries(
+    raw as Record<string, unknown>,
+  )) {
+    if (typeof peerLabel === "string" && peerLabel !== "")
+      out[slotRef] = peerLabel;
   }
   return out;
 }
@@ -411,7 +430,9 @@ function slotsOf(
  *  the runtime forwards it verbatim (receive-only, never reads the token). Returns
  *  `null` when the leaf is absent or carries no usable room — the antenne viewer
  *  then stays unarmed. */
-export function viewerInjectionFromLeaf(raw: unknown): MultiRoomPeerViewerOptions | null {
+export function viewerInjectionFromLeaf(
+  raw: unknown,
+): MultiRoomPeerViewerOptions | null {
   if (typeof raw !== "object" || raw === null) return null;
   const rooms = roomsOf(raw as ViewerInjectionShape);
   return rooms.length > 0 ? { rooms } : null;
@@ -424,8 +445,13 @@ export function viewerInjectionFromLeaf(raw: unknown): MultiRoomPeerViewerOption
  *  room. */
 export function readPeerViewerInjection(): ResolvedInjection {
   const g = globalThis as Record<string, unknown>;
-  const preview = g[ZAB_PEER_VIEWER_GLOBAL] as ViewerInjectionShape | PeerViewerRoom | undefined;
-  const lsdp = g[ZAB_LSDP_PEER_VIEWER_GLOBAL] as ViewerInjectionShape | undefined;
+  const preview = g[ZAB_PEER_VIEWER_GLOBAL] as
+    | ViewerInjectionShape
+    | PeerViewerRoom
+    | undefined;
+  const lsdp = g[ZAB_LSDP_PEER_VIEWER_GLOBAL] as
+    | ViewerInjectionShape
+    | undefined;
 
   const merged: PeerViewerRoom[] = [];
   const seen = new Set<string>();
@@ -448,4 +474,26 @@ export function readPeerViewerInjection(): ResolvedInjection {
     fromLsdp: lsdpRooms.length > 0,
     fromPrism: previewRooms.length > 0,
   };
+}
+
+/** Project the active native document camera leaves without changing its defaults. */
+export function readReservedPeerLeaves(defaults: Record<string, unknown>): {
+  viewer?: unknown;
+  slots: Record<string, string>;
+} {
+  const slots: Record<string, string> = {};
+  for (const [key, value] of Object.entries(defaults)) {
+    if (key.startsWith("__cam.slots.") && typeof value === "string" && value)
+      slots[key.slice(12)] = value;
+  }
+  const raw = defaults["__cam.viewer"];
+  let viewer: unknown = raw;
+  if (typeof raw === "string") {
+    try {
+      viewer = JSON.parse(raw);
+    } catch {
+      viewer = undefined;
+    }
+  }
+  return { ...(viewer !== undefined ? { viewer } : {}), slots };
 }

@@ -2,6 +2,7 @@ import { CAPTURE_VISUAL_KINDS } from "@lumencast/protocol";
 import type { PeerSources } from "../sources/peers";
 import type { ResolveCaptureDevice, SolarError } from "../types";
 import type { VisionLiveMediaSource, VisionSceneHandle } from "./vision-presenter";
+import { LiveMediaStageMetrics } from "./live-media-metrics";
 
 const CAPTURE_KINDS = new Set<string>(CAPTURE_VISUAL_KINDS);
 
@@ -61,6 +62,7 @@ interface MediaSession {
   unsubscribePeer?: () => void;
   videoFrameRequest?: number;
   fallbackFrameRequest?: number;
+  revision: number;
   ready: boolean;
   dirty: boolean;
   disposed: boolean;
@@ -71,6 +73,7 @@ export interface LiveMediaOptions {
   resolveCaptureDevice: ResolveCaptureDevice;
   peers: PeerSources;
   capturePool?: CaptureStreamPool;
+  metricsNow?: () => number;
   onError: (error: SolarError) => void;
   getScene: () => VisionSceneHandle | null;
 }
@@ -80,13 +83,15 @@ export class LiveMediaController {
   private readonly sessions = new Map<string, MediaSession>();
   private readonly capturePool: CaptureStreamPool;
   private disposed = false;
-  private framePump: number | null = null;
+  private framePump: symbol | null = null;
   private uploadPending = false;
   private paused = false;
   private uploadCompletion: Promise<void> | null = null;
+  private readonly metrics: LiveMediaStageMetrics;
 
   constructor(private readonly options: LiveMediaOptions) {
     this.capturePool = options.capturePool ?? new CaptureStreamPool();
+    this.metrics = new LiveMediaStageMetrics(options.metricsNow);
   }
 
   /** A new Vision layer needs the current frames even when its sources are unchanged. */
@@ -101,7 +106,6 @@ export class LiveMediaController {
   /** Keep tracks alive while another Vision canvas acquires the GPU context. */
   async pause(): Promise<void> {
     this.paused = true;
-    if (this.framePump !== null) cancelAnimationFrame(this.framePump);
     this.framePump = null;
     await this.uploadCompletion;
   }
@@ -126,6 +130,20 @@ export class LiveMediaController {
     for (const source of sources) {
       const current = this.sessions.get(source.path);
       if (current) {
+        const textureChanged =
+          current.source.width !== source.width ||
+          current.source.height !== source.height;
+        const framingChanged =
+          renderSignature(current.source) !== renderSignature(source);
+        if (textureChanged || framingChanged) {
+          const width = boundedDimension(source.width);
+          const height = boundedDimension(source.height);
+          current.revision += 1;
+          if (current.frameCanvas.width !== width) current.frameCanvas.width = width;
+          if (current.frameCanvas.height !== height) current.frameCanvas.height = height;
+          current.dirty = current.ready;
+          if (current.ready) this.schedulePump();
+        }
         current.source = source;
         continue;
       }
@@ -139,10 +157,11 @@ export class LiveMediaController {
   dispose(): void {
     if (this.disposed) return;
     this.disposed = true;
-    if (this.framePump !== null) cancelAnimationFrame(this.framePump);
     this.framePump = null;
     for (const session of this.sessions.values()) this.disposeSession(session);
     this.sessions.clear();
+    this.metrics.flush();
+    void this.uploadCompletion?.finally(() => this.metrics.flush());
   }
 
   private createSession(source: VisionLiveMediaSource): MediaSession {
@@ -175,9 +194,16 @@ export class LiveMediaController {
       ready: false,
       dirty: false,
       disposed: false,
+      revision: 0,
     };
-    video.addEventListener("loadeddata", () => this.markReady(session), { once: true });
-    video.addEventListener("error", () => this.clear(session), { once: true });
+    video.addEventListener("loadeddata", () => this.markReady(session));
+    video.addEventListener("error", () => {
+      session.revision += 1;
+      session.ready = false;
+      session.dirty = false;
+      this.metrics.resetSource(session);
+      this.clear(session);
+    });
     return session;
   }
 
@@ -250,6 +276,10 @@ export class LiveMediaController {
   }
 
   private attachStream(session: MediaSession, stream: MediaStream | null, local: boolean): void {
+    const revision = ++session.revision;
+    this.metrics.resetSource(session);
+    session.ready = false;
+    session.dirty = false;
     if (!stream) {
       session.ready = false;
       session.video.srcObject = null;
@@ -259,9 +289,11 @@ export class LiveMediaController {
     session.video.muted = local || !this.options.liveAudio;
     session.video.srcObject = stream;
     void session.video.play().then(
-      () => this.markReady(session),
+      () => {
+        if (session.revision === revision) this.markReady(session);
+      },
       (error: unknown) => {
-        if (!session.disposed) {
+        if (!session.disposed && session.revision === revision) {
           this.options.onError({
             code: "CAMERA_CAPTURE_FAILED",
             message: error instanceof Error ? error.message : "Live video could not start.",
@@ -281,15 +313,24 @@ export class LiveMediaController {
   }
 
   private watchVideo(session: MediaSession): void {
-    if (session.disposed || !session.ready) return;
+    if (session.disposed || !session.ready || session.videoFrameRequest !== undefined ||
+        session.fallbackFrameRequest !== undefined) return;
     const video = session.video;
     const candidate = video as HTMLVideoElement & {
-      requestVideoFrameCallback?: (callback: () => void) => number;
+      requestVideoFrameCallback?: (callback: VideoFrameRequestCallback) => number;
     };
     if (candidate.requestVideoFrameCallback) {
       const requestNext = (): void => {
-        session.videoFrameRequest = candidate.requestVideoFrameCallback!(() => {
-          if (session.disposed) return;
+        session.videoFrameRequest = candidate.requestVideoFrameCallback!((_now, metadata) => {
+          session.videoFrameRequest = undefined;
+          if (session.disposed || !session.ready) return;
+          const coalesced = session.dirty || this.uploadPending || this.framePump !== null;
+          this.metrics.recordSourceFrame(
+            session,
+            "rvfc",
+            metadata?.presentedFrames,
+            coalesced,
+          );
           session.dirty = true;
           this.schedulePump();
           requestNext();
@@ -300,7 +341,9 @@ export class LiveMediaController {
       const requestNext = (): void => {
         session.fallbackFrameRequest = requestAnimationFrame(() => {
           session.fallbackFrameRequest = undefined;
-          if (session.disposed) return;
+          if (session.disposed || !session.ready) return;
+          const coalesced = session.dirty || this.uploadPending || this.framePump !== null;
+          this.metrics.recordSourceFrame(session, "animation-frame", undefined, coalesced);
           session.dirty = true;
           this.schedulePump();
           requestNext();
@@ -312,7 +355,10 @@ export class LiveMediaController {
 
   private schedulePump(): void {
     if (this.disposed || this.paused || this.framePump !== null || this.uploadPending) return;
-    this.framePump = requestAnimationFrame(() => {
+    const token = Symbol();
+    this.framePump = token;
+    queueMicrotask(() => {
+      if (this.framePump !== token) return;
       this.framePump = null;
       const upload = this.uploadFrames();
       this.uploadCompletion = upload;
@@ -329,14 +375,51 @@ export class LiveMediaController {
     );
     if (dirty.length === 0) return;
     this.uploadPending = true;
-    const frames: Array<{ path: string; bitmap: ImageBitmap }> = [];
+    const frames: Array<{ path: string; bitmap: ImageBitmap; session: MediaSession; revision: number }> = [];
     try {
       for (const session of dirty) {
+        if (session.disposed || !session.ready) continue;
+        const revision = session.revision;
         session.dirty = false;
-        drawVideo(session);
-        frames.push({ path: session.source.path, bitmap: await createImageBitmap(session.frameCanvas) });
+        const preparationStartedAt = this.metrics.beginBitmapPreparation();
+        let bitmap: ImageBitmap;
+        try {
+          drawVideo(session);
+          bitmap = await createImageBitmap(session.frameCanvas);
+          this.metrics.finishBitmapPreparation(preparationStartedAt, true);
+        } catch (error) {
+          this.metrics.finishBitmapPreparation(preparationStartedAt, false);
+          throw error;
+        }
+        if (session.disposed || !session.ready || session.revision !== revision) {
+          this.metrics.discardStaleBitmap();
+          bitmap.close();
+          continue;
+        }
+        frames.push({ path: session.source.path, bitmap, session, revision });
       }
-      await scene.updateMedia(frames);
+      // Another stream may change while a later bitmap in this batch is prepared.
+      for (let index = frames.length - 1; index >= 0; index -= 1) {
+        const frame = frames[index]!;
+        if (frame.session.disposed || !frame.session.ready || frame.session.revision !== frame.revision) {
+          this.metrics.discardStaleBitmap();
+          frame.bitmap.close();
+          frames.splice(index, 1);
+        }
+      }
+      if (frames.length > 0) {
+        const token = this.metrics.beginMediaUpdate(frames.length);
+        try {
+          await scene.updateMedia(
+            frames.map(({ path, bitmap }) => ({ path, bitmap })),
+            (receipt) => this.metrics.recordSubmissionReceipt(token, receipt),
+          );
+          this.metrics.finishMediaUpdate(token, true);
+        } catch (error) {
+          this.metrics.finishMediaUpdate(token, false);
+          throw error;
+        }
+      }
     } catch (error) {
       for (const frame of frames) frame.bitmap.close();
       if (!this.disposed) {
@@ -372,6 +455,7 @@ export class LiveMediaController {
   private disposeSession(session: MediaSession): void {
     if (session.disposed) return;
     session.disposed = true;
+    this.metrics.resetSource(session);
     if (session.videoFrameRequest !== undefined) {
       const candidate = session.video as HTMLVideoElement & {
         cancelVideoFrameCallback?: (handle: number) => void;
@@ -390,7 +474,20 @@ export class LiveMediaController {
 }
 
 function signature(source: VisionLiveMediaSource): string {
-  return [source.type, source.source_kind, source.device_ref, source.slot_ref, source.width, source.height, source.fit].join("\u0000");
+  return [source.type, source.source_kind, source.device_ref, source.slot_ref].join("\u0000");
+}
+
+function renderSignature(source: VisionLiveMediaSource): string {
+  return JSON.stringify([
+    source.width,
+    source.height,
+    source.fit,
+    source.size,
+    source.contentBox,
+    source.sourceCrop,
+    source.sourceZoom,
+    source.objectPosition,
+  ]);
 }
 
 function boundedDimension(value: number): number {
@@ -408,16 +505,68 @@ function drawVideo(session: MediaSession): void {
   const sh = video.videoHeight;
   context.clearRect(0, 0, width, height);
   if (!sw || !sh) return;
-  if (source.fit === "fill") {
-    context.drawImage(video, 0, 0, width, height);
-    return;
+  const authoredWidth = finitePositive(source.size?.w, width);
+  const authoredHeight = finitePositive(source.size?.h, height);
+  const scaleX = width / authoredWidth;
+  const scaleY = height / authoredHeight;
+  const boxX = finite(source.contentBox?.x, 0) * scaleX;
+  const boxY = finite(source.contentBox?.y, 0) * scaleY;
+  const boxWidth = Math.max(1, finitePositive(source.contentBox?.width, authoredWidth) * scaleX);
+  const boxHeight = Math.max(1, finitePositive(source.contentBox?.height, authoredHeight) * scaleY);
+  const crop = normalizeCrop(source.sourceCrop);
+  const sx = sw * crop.left / 100;
+  const sy = sh * crop.top / 100;
+  const croppedWidth = sw * (1 - (crop.left + crop.right) / 100);
+  const croppedHeight = sh * (1 - (crop.top + crop.bottom) / 100);
+  const fit = source.fit === "fill" ? "fill" : source.fit === "contain" ? "contain" : "cover";
+  const uniformScale = fit === "contain"
+    ? Math.min(boxWidth / croppedWidth, boxHeight / croppedHeight)
+    : Math.max(boxWidth / croppedWidth, boxHeight / croppedHeight);
+  const zoom = Math.max(0.1, Math.min(10, finite(source.sourceZoom, 1)));
+  const positionX = Math.max(0, Math.min(1, finite(source.objectPosition?.x, 0.5)));
+  const positionY = Math.max(0, Math.min(1, finite(source.objectPosition?.y, 0.5)));
+  const drawScaleX = (fit === "fill" ? boxWidth / croppedWidth : uniformScale) * zoom;
+  const drawScaleY = (fit === "fill" ? boxHeight / croppedHeight : uniformScale) * zoom;
+  const dx = boxX + (boxWidth - croppedWidth * drawScaleX) * positionX;
+  const dy = boxY + (boxHeight - croppedHeight * drawScaleY) * positionY;
+  context.drawImage(
+    video,
+    sx,
+    sy,
+    croppedWidth,
+    croppedHeight,
+    dx,
+    dy,
+    croppedWidth * drawScaleX,
+    croppedHeight * drawScaleY,
+  );
+}
+
+function finite(value: number | undefined, fallback: number): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
+function finitePositive(value: number | undefined, fallback: number): number {
+  const number = finite(value, fallback);
+  return number > 0 ? number : fallback;
+}
+
+function normalizeCrop(crop: VisionLiveMediaSource["sourceCrop"] | null = {}) {
+  const value =
+    crop && typeof crop === "object" && !Array.isArray(crop) ? crop : {};
+  const normalized = {
+    left: Math.max(0, Math.min(99, finite(value.left, 0))),
+    top: Math.max(0, Math.min(99, finite(value.top, 0))),
+    right: Math.max(0, Math.min(99, finite(value.right, 0))),
+    bottom: Math.max(0, Math.min(99, finite(value.bottom, 0))),
+  };
+  for (const [first, second] of [["left", "right"], ["top", "bottom"]] as const) {
+    const total = normalized[first] + normalized[second];
+    if (total > 99) {
+      const factor = 99 / total;
+      normalized[first] *= factor;
+      normalized[second] *= factor;
+    }
   }
-  const scale = source.fit === "contain"
-    ? Math.min(width / sw, height / sh)
-    : Math.max(width / sw, height / sh);
-  const drawWidth = sw * scale;
-  const drawHeight = sh * scale;
-  const dx = (width - drawWidth) / 2;
-  const dy = (height - drawHeight) / 2;
-  context.drawImage(video, dx, dy, drawWidth, drawHeight);
+  return normalized;
 }

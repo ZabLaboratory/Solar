@@ -20,6 +20,75 @@ one native subscription path. Collections use a selector for an exact scene
 generation or API test-session ID; unrelated entries cannot retarget Vision.
 Scene-intent, editable and camera responses await native application ACK.
 
+## Derived native composition plan
+
+A trusted physical lane host can opt into `nativeComposition` and
+`nativeCompositionLSDP` in the Solar mount options. Solar loads the canonical
+private LSML package on a fixed viewport surface, then projects only the
+`vision.native-composition-frame/1` receipt accepted for that scene's submitted
+GPU frame. It does not derive graph geometry from LSML, fetch a second scene,
+rewrite the snapshot or publish through the transition-feedback resource.
+`source` identifies the active native resource, optional selector, scene
+ID/version and exact LSDP state hash. `planHash` is `sha256:` plus SHA-256 of
+canonical UTF-8 JSON for `{schema,coordinateSpace,atlasSize,source,viewport,
+groups,surfaces}`; it excludes the Main-assigned `producer_id`.
+
+The separate `solar/composition` state is
+`{schema:'solar.native-composition.state/1', producers:{A?,B?}, graphs:{A?,B?}}`.
+Main claims or retires each physical slot by CAS on this same resource. Solar
+only reads the claim, and writes/removes the graph when the configured nonce
+still owns the slot. A stale-base retry rereads and refuses if Main rotated the
+owner. Only groups and surfaces are the canonical plan graph; there is no
+parallel owner partition.
+
+The publisher treats the plan as derived latest state. It allows one peer
+operation in flight and retains only one latest pending operation; each newly
+received plan supersedes the previous pending plan. `completed`, `superseded`
+and `retired` Promise results describe this side channel only; they do not
+replace or defer the original mutation receipts. Clear follows the latest-state
+queue and can itself be superseded by a newer plan. Retirement is terminal: it
+blocks later work and clears the owned graph after any active operation before
+closing the peer. This bound is verified with a blocked fake peer and a 130-plan
+burst; it is not a native 130-mutations-per-second measurement.
+
+The composition socket has its own terminal-close recovery. If only that peer
+closes, Solar abandons it without attempting a clear over the dead connection,
+uses the runtime's existing reconnect timer/backoff to fetch a fresh token and
+replace that peer, then republishes only the latest accepted composition (or
+repeats its current clear). Composition accepted from later LSML mutations is
+retained as one current publication while that peer is absent, so recovery does
+not depend on another mutation arriving. The primary LSML/Vision session remains connected;
+a primary reconnect takes priority on the shared timer, and runtime disconnect
+cancels a pending composition retry. This recovers the derived side channel; it
+does not create an LSML receipt or retain prior scene plans.
+
+Solar preserves each owner's own opacity and effective visibility while giving
+all owner groups identity affine and canonical viewport bounds. Capture nodes
+use unique occurrence IDs, base component IDs, the receipt's full global affine,
+own opacity, crop and nullable source framing. Framing includes nullable-axis
+`authoredSize` and the required positive upload `sourceSize`; Main uses those facts
+to scale source-box coordinates to the occurrence's computed local dimensions,
+without rereading LSML. Global raster bands retain their
+exact scene and atlas rectangles and are not transformed by owners a second
+time. The projector checks `MAX_TEXTURE_SIZE` against the exact submitted canvas.
+The receipt's single top-level owner maps to `prism.native-composition.root.v1`;
+descendant owners use `vision.owner.<nodeId>`, and captures use
+`vision.capture.<nodeId>` with `sourceComponentId` preserving the base author ID.
+Nullable framing is passed through without defaults: `contentBox` is in authored
+source-box units and `objectPosition` is normalized. Missing or invalid authored
+or upload dimensions invalidate the Vision receipt instead of triggering an LSML
+fallback.
+Rust classifies the only currently representable clips: the root owner's exact
+viewport bounds and a capture's own image bounds. Masks, authored clips, non-root
+clips and non-normal blends fail visibly; Solar does not flatten or strip them.
+Solar's local plan tests do not qualify atlas routing through the external Main
+consumer and Pulsar together, so they are not proof of end-to-end mixed
+composition pixels. See `tests/unit/native-composition.test.ts`,
+`tests/unit/native-composition-publisher.test.ts`,
+`tests/unit/native-composition-session.test.ts` and
+`tests/unit/native-lsdp-runtime-composition.test.ts` plus
+`tests/unit/native-lsdp-runtime.test.ts` for Solar-local coverage.
+
 ## Mutation application contract
 
 After sending, the producer is outside the mutation application/rendering contract.
@@ -46,6 +115,13 @@ npm.cmd run check:native-package
 npm.cmd run native:start -- --scene <original.lsmlz> --port 8099
 ```
 
+The packager validates the source binary and any existing manifest, revision and
+packaged binary hashes before it writes to `dist/native/`. A rejected argument,
+missing source, invalid manifest or revision mismatch leaves the existing package
+bytes unchanged. Additional platform binaries must use the same native source
+revision. The isolated CLI regressions run with
+`node --test tests/tooling/native-package.test.mjs`.
+
 Open `http://127.0.0.1:8099/` as a Pulsar CEF browser source or browser page.
 The launcher serves Solar and the immutable original archive, and starts Rust
 with `--settings -`. Its configuration and original LSML are injected by stdin;
@@ -54,6 +130,41 @@ The development `--lsdp-bin` override is optional; installed startup resolves th
 shipped binary, verifies SHA-256 and needs no source checkout/build tools.
 `--camera "<physical-camera-label>"` optionally maps the existing
 `obs-virtual-camera` authored reference in this test scene to a host camera.
+
+## Private sustained and burst browser qualification
+
+`scripts/proof/qualify-native-burst.mjs` drives 512 distinct default mutations
+through the copied Rust binary, Solar's real native receiver and a private
+headless Chrome page using the exact Solar/Vision host assets in the same
+worktree. It runs the sustained case with a 3,900 ms deadline schedule (the
+achieved rate is calculated from captured send/ACK timestamps) and the burst
+case without intentional pacing:
+
+```powershell
+node scripts/proof/qualify-native-burst.mjs --mode paced --duration 3900 --playwright-root D:\Documents\Zab\Prism
+node scripts/proof/qualify-native-burst.mjs --mode burst --playwright-root D:\Documents\Zab\Prism
+```
+
+Each run records every producer transaction ID and expected state hash, Solar
+receive/applied identities and hashes, frame coverage/coalescing, resync reasons,
+bounded worker/frame-patch queue telemetry, native final-state readback, errors,
+and the text recognized from the retained front canvas copied after Vision's
+`frame-submitted` response. A native ACK does not count as a browser application;
+the retained canvas does not prove GPU completion or physical scanout. Missing
+per-transaction hashes, dropped event records, or an incomplete resync drain stay
+unknown or failed in the report rather than being filled with zeroes. The fixture
+has one bound text field and does not exercise a scene switch, camera, audio,
+Meet, CEF, or shared development process.
+
+The report includes nearest-rank p50/p95/max for the interval from Solar's
+`solar:lsdp-received` event to its `solar:lsdp-applied` event. The latter follows
+Vision's `frame-submitted` response and the retained-canvas copy, so this is a
+combined receive-to-submission observation; Solar does not expose separate
+application-to-submission timestamps. Covering submissions are logical mutation
+coverage, not display-frame counts. Retained-canvas poll count, distinct sampled
+pixel hashes and OCR attempts are reported separately; physical display-frame
+sampling is unavailable. Error observations carry capture phases and timestamps,
+and private Chrome closes before its daemon to keep teardown failures separate.
 
 Apply ordinary add/remove/replace/test JSON Pointer operations:
 
@@ -89,8 +200,10 @@ The endpoint reads the native resource, prepares `lsdp.apply/1` with its Merkle
 `beforeHash` and a fresh transaction ID, then sends it to Rust. It returns the
 native authoritative receipt, which proves server application. Solar separately
 emits `solar:lsdp-applied` on its mount target after Vision submits the changed
-frame. Scalar defaults use a distinct native `received` receipt after integrity
-and atomic LSML application, plus `solar:lsdp-received`. The frame queue combines
+frame. Scalar defaults use a distinct native `received` receipt after worker
+integrity checks, ordered main-thread LSML application and admission to
+`FramePatches`; this receipt does not wait for Vision. Solar also emits
+`solar:lsdp-received` at that admission boundary. The frame queue combines
 the latest scalar values through the actual Vision submission barrier, using a
 MessageChannel task rather than a 60 Hz animation-frame cap; every original
 transaction gets a presentation event after its covering submission, carrying
@@ -98,8 +211,8 @@ transaction gets a presentation event after its covering submission, carrying
 This permits intermediate values to be overwritten without discarding mutations
 or claiming every intermediate state was visible. Structural edits, commands
 and lane transitions drain that queue and retain synchronous applied receipts.
-Camera images and state can share a submission. Camera-only work allows at most
-8.33 ms for a patch to arrive; state and explicit barriers bypass that grace.
+Camera images and state can share a submission. Camera-only work schedules the
+same immediate MessageChannel task, without a fixed delay waiting for a patch.
 `scripts/proof/analyse-render-cadence.py` counts native ACKs, sequential LSML
 reception and completed distinct mutation frames in fixed 100/1000 ms windows.
 The latter requires the Vision submission and completed front-canvas copy,
@@ -161,12 +274,21 @@ the old presenter's GPU queue. It resumes uploads after old-engine teardown,
 while keeping the capture tracks acquired. This prevents overlapping WebGL
 work from erasing static scene layers during an otherwise accepted mutation.
 
-Scalar state is received and verified in a dedicated Solar worker. The main
-consumer emits `solar:lsdp-received` after ordered LSML application; a frame queue
-merges replaceable values while preserving every transaction ID. Following a
+Scalar state is received and verified in a dedicated Solar worker. Its native
+callback remains open until the main consumer applies the LSML change in order
+and admits replaceable values to `FramePatches`. This uses the pinned browser
+adapter's existing 32-channel bound to limit worker deliveries while the main
+consumer queue is busy; it adds no transport queue and does not wait for Vision.
+The main consumer emits `solar:lsdp-received` at admission; a frame queue merges
+replaceable values while preserving every transaction ID. Bounded
+`solar:native-stage` measures record main-consumer queue depth/high-water and
+FramePatches pending count/high-water/oldest age. Following a
 successful Vision submission, `solar:lsdp-applied` includes the original state
 hash and `presentation` with the covering sequence/hash/count. A covering frame
 does not claim that each overwritten intermediate value appeared on screen.
+These Solar-side measures do not prove Rust subscriber lag or encoded/GPU output;
+the immediate native burst and mounted-engine capture remain separate host-level
+qualification steps.
 Commands, camera/animation effects and structure drain this queue before execution.
 
 The pinned Rust subscription has a bounded event buffer and no historical replay.
