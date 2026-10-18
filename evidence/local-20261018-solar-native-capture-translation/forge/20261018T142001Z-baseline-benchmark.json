@@ -1,0 +1,39 @@
+{
+  "files": [
+    {
+      "filepath": "D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation/tests/bench/native-composition-capture-translation.bench.ts",
+      "groups": [
+        {
+          "fullName": "tests/bench/native-composition-capture-translation.bench.ts > accepted capture x/y mutation to Solar composition plan",
+          "benchmarks": [
+            {
+              "id": "2139548845_0_0",
+              "name": "presenter accept + strict projector accept + projection + plan hash",
+              "rank": 1,
+              "rme": 4.731269906232423,
+              "samples": [],
+              "totalTime": 508.93470000000093,
+              "min": 45.27480000000014,
+              "max": 55.263700000000426,
+              "hz": 19.648886193061667,
+              "period": 50.89347000000009,
+              "mean": 50.89347000000009,
+              "variance": 11.331681846777627,
+              "sd": 3.366256354881135,
+              "sem": 1.0645037269440454,
+              "df": 9,
+              "critical": 2.262,
+              "moe": 2.407907430347431,
+              "p75": 53.69380000000001,
+              "p99": 55.263700000000426,
+              "p995": 55.263700000000426,
+              "p999": 55.263700000000426,
+              "sampleCount": 10,
+              "median": 51.32490000000007
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

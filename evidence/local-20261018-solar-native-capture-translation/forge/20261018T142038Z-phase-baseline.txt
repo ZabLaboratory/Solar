@@ -1,0 +1,21 @@
+Benchmarking is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v4.1.11 D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation
+
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > accepted capture x/y mutation to Solar composition plan 3138ms
+     name                                                                      hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash  19.3568  45.3818  60.6729  51.6613  52.9250  60.6729  60.6729  60.6729  ±5.58%       10
+   · presenter receipt validation only                                     679.90   0.4946   6.3711   1.4708   1.9281   5.3249   5.9006   6.3711  ±7.20%      340
+   · strict projector validation plus complete projection                  303.56   1.2868  10.0018   3.2942   3.8678   8.9511  10.0018  10.0018  ±7.62%      152
+   · complete plan clone plus canonical SHA-256                           18.9347  43.2121  62.1404  52.8130  56.5869  62.1404  62.1404  62.1404  ±7.62%       10
+
+ BENCH  Summary
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > accepted capture x/y mutation to Solar composition plan
+    2.24x faster than strict projector validation plus complete projection
+    35.12x faster than presenter accept + strict projector accept + projection + plan hash
+    35.91x faster than complete plan clone plus canonical SHA-256
+
+Benchmark report written to D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation/evidence/local-20261018-solar-native-capture-translation/forge/20261018T142038Z-phase-baseline.json

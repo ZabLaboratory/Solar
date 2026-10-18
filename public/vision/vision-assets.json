@@ -1,9 +1,9 @@
 {
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
-  "base_revision": "e079bd252d85c4f82db28bc92691f904e26158ac",
-  "source_revision": "044ddb62df050eee9869150a69a1b88fd26f2962",
-  "source_state": "Signed Vision presenter accepts /2 coverage receipts and coverage-only atlases with strict references, geometry and disjoint gutters. Actual WASM presenter positive and old-presenter negative qualified; Solar independently accepts exact submitted receipt and verifies PNG pixels. Existing WASM unchanged, no rebuild. CEF/Solar/Prism/native whole chain, native reset stability and installed/endurance/physical qualification remain open.",
+  "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
+  "source_revision": "cf7b190d9fdf21b0028d97eb91022e1a29da9161",
+  "source_state": "Vision measures intrinsic image dimensions from admitted bytes and preserves ordered capture-adjacent paint islands. Previously published x-zab.capture nodes without id derive a qualified legacy source alias from the logical source kind and device ref; authored ids remain authoritative. Solar pins the generated JS and WASM from the signed Vision commit; physical cockpit opening is qualified separately in Prism.",
   "files": {
     "ui/mainpresenter.mjs": {
       "sha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
@@ -14,37 +14,32 @@
       "bytes": 1977
     },
     "pkg/lumencast_vision_web.js": {
-      "sha256": "2661fc24146f703adcfa1b94769d9c789b707abf0027792b6f4287fb40bc04e6",
+      "sha256": "fc32462687ba61eb92f3366ac4a017ab3757c63ee2373610c06b6c936afd5cf1",
       "bytes": 157228
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "39c64876a92c0d8d5a104fa8366dc437520140be92e8376db59ed127420ab4a9",
-      "bytes": 10618773
+      "sha256": "b04f0eb2153c715065eb8b8b70867b75ecb73d90928eb8cf568c7f5db69232e8",
+      "bytes": 10632333
     }
   },
   "source_provenance": {
-    "browser_receipt_sha256": "88fedc049b62fd8c0aecc20cfaa3f60230abc4dfb66d377a57ce1c735d1d1b63",
-    "uncommitted_qualified_source": false,
-    "browser_receipt": "evidence/local-20261017-native-mask-coverage/eleven/20261017T145039Z-browser-proof.json",
-    "source_hash_basis": "Exact qualified working-file bytes; Git may normalize text. Artifact hashes refer to copied delivery bytes.",
-    "engine_base": "e079bd252d85c4f82db28bc92691f904e26158ac",
-    "source_files": {
-      "crates/vision-web/ui/mainpresenter.mjs": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
-      "crates/vision-gpu/src/renderer/contribution.rs": "08f67e84a8a9ef591d649b41d903896b50c25d72260441f98d3206148588de1a",
-      "crates/vision-gpu/src/renderer.rs": "24d14bc7f5bc85e14deb83306339a2cad71d3bc2e520f6268cd82b1d25511693",
-      "crates/vision-web/src/lib.rs": "587928532cd9a94b999c9f4fedbef93b408e68b390ff85a1e781dfe1e802a432",
-      "crates/vision-gpu-scene/src/lib.rs": "ace3b5bc70b63fbab88481557b0d1e2e0bc12ec3b8c718e89322330781932df6",
-      "crates/vision-web/tests/contribution-webgl2-proof/run-browser-proof.mjs": "01cf224eaec7def61d8b08904890c861ddfc5ba77f3fc086021716ec3fb42af5",
-      "crates/vision-web/tests/contribution-webgl2-proof/probe.mjs": "fd4676d56877573a7a750abd756a819523cfc722223c737af18718b8b8923669"
-    },
-    "engine_commit": "4dbc6cdf38a33ae944fddd8d70853093b1593f5c",
-    "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
-    "qualification_commit": "044ddb62df050eee9869150a69a1b88fd26f2962",
-    "engine_tree": "62829837f5601a13860fec638b52d18e8b58ff7c",
-    "engine_branch": "eleven/local-20261017-native-mask-coverage",
-    "engine_evidence": "evidence/local-20261017-native-mask-coverage/eleven/20261017T145200Z-agent-checkpoint.md",
     "repository": "Lumencast/lumencast-vision",
-    "presenter_commit": "044ddb62df050eee9869150a69a1b88fd26f2962",
-    "engine_qualification_commit": "85c49664a029744369b063ddffaa92415a59c8a8"
+    "engine_branch": "eleven/local-20261018-empty-capture-contribution",
+    "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
+    "engine_commit": "cf7b190d9fdf21b0028d97eb91022e1a29da9161",
+    "engine_tree": "d5746b9f4e8bf2a1adab55e012f72fb934df01d5",
+    "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
+    "source_files": {
+      "crates/vision-web/src/lib.rs": "fe06cd9a28cc891071e70bb8f9bd3fd241e242d7632db41bf35c5207af675a69",
+      "crates/vision-gpu/src/renderer/contribution.rs": "dde639dd694eba69f8ccf5d492942c2fc11a6a63",
+      "crates/vision-gpu/src/renderer/contribution/encode.rs": "072ee195afe3e14cd3d38a54799b036333bac29e",
+      "crates/vision-gpu/src/renderer/contribution/draw.rs": "7dde0b137c06d6e271d51df446b0063cd59133ab",
+      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "eaa052279e881b9301b804093de13e51c7c04001"
+    },
+    "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T111626Z-agent-report.md",
+    "capture_free_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T103049Z-render-report.json",
+    "intrinsic_measure_evidence": "evidence/local-20261018-image-intrinsic-measure/eleven/20261018T100318Z-agent-report.md",
+    "validation": "Focused image measurement, live-lane and rollback tests; 12/12 contribution pixel tests including ordered capture-adjacent paint islands, nested clips and root effects; 2/2 focused legacy capture ID tests; Vision web build; Solar build and pin check",
+    "full_vision_lib_test": "not completed: interrupted during 512-PNG dynamic image lifetime test"
   }
 }
