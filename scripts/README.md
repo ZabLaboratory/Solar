@@ -34,7 +34,7 @@ No tool implicitly publishes, deploys or edits Prism. Host/camera probes launch 
 | `check-documentation.mjs`     | `npm run check:docs`; local current links/paths/commands and tool ownership                                                                    |
 | `check_file_sizes.py`         | `python scripts/check_file_sizes.py`; per-file size policy and self-tests                                                                      |
 | `package-native-server.mjs`   | `npm run package:native -- --binary <path> --platform <platform> --revision <sha>`; validates arguments and the existing package before writes |
-| `create-runtime-manifest.mjs` | Release only; archive/version/repository/tag/output arguments, both native platforms required                                                  |
+| `create-runtime-manifest.mjs` | Release only; archive/version/repository/tag/output arguments, both native platforms required; protocol read from the packaged host contract |
 | `patch-peer-viewer.mjs`       | Package postinstall; [receive-only compatibility](peer-viewer/README.md)                                                                       |
 | `test-peer-install.mjs`       | `npm run test:peer-install -- <runtime.tgz> <protocol.tgz>`; fresh lock-pinned hoisted deps, exact three targets and idempotence               |
 | `code/`                       | [Derived discovery and docs guard](code/README.md); `npm run code:read -- <query>`                                                             |

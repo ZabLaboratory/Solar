@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
+import { hostContract, requireHostContract } from "./host-contract.mjs";
 
 const [archivePath, version, repository, tag, outputPath] =
   process.argv.slice(2);
@@ -20,6 +21,14 @@ const archive = readFileSync(archivePath);
 // A browser-only archive cannot satisfy the installed reception contract.
 // The release assembly must package platform binaries after the browser build.
 const native = JSON.parse(readFileSync("dist/native/manifest.json", "utf8"));
+const packagedHost = requireHostContract(
+  JSON.parse(readFileSync("dist/host/solar-host-contract.json", "utf8")),
+);
+if (packagedHost.protocol_version !== hostContract.protocol_version) {
+  throw new Error(
+    "Solar release host protocol differs from the source contract.",
+  );
+}
 if (
   native.schema !== "solar.native-server.v1" ||
   !native.binaries?.["win32-x64"] ||
@@ -34,7 +43,7 @@ const manifest = {
   component: "solar",
   version,
   release_tag: tag,
-  protocol_version: "solar.host.v1",
+  protocol_version: packagedHost.protocol_version,
   artifact_url: `https://github.com/${repository}/releases/download/${tag}/solar-${tag}.tgz`,
   artifact_sha256: artifactSha256,
   native_server: {
