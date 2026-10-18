@@ -169,10 +169,11 @@ identity, media subscription or visible presentation; the first real load shares
 its lifetime and queue. Host disconnection aborts prewarm and queued admission.
 The `engine-ready` receipt is the reuse boundary: if `init-empty` fails before
 that receipt, Solar retires the incomplete presenter and hidden layer; a later
-prewarm creates a fresh presenter in the current host lifetime. If only
-installation-font admission fails, the acknowledged engine stays available for
-a retry of the incomplete font bank. Neither path retains a scene or starts a
-parallel engine.
+prewarm creates a fresh presenter in the current host lifetime. A missing
+`engine-ready` receipt has a 30-second deadline; prewarm then rejects and
+reports the failure through the host error callback. If only installation-font
+admission fails, the acknowledged engine stays available for a retry of the
+incomplete font bank. Neither path retains a scene or starts a parallel engine.
 The engine-owned font registry survives scene replacement: installation fonts
 are preloaded once at engine startup, and additional scene fonts are admitted
 by content digest only when new. Scene-local layout and glyph caches remain fresh.

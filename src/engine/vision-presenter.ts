@@ -266,8 +266,7 @@ export async function mountVisionScene(
   return scene;
 }
 
-/** Start the persistent empty engine and its installation font bank without
- * acquiring, retaining or displaying a scene. Loads share the same queue. */
+/** Start an empty persistent engine without retaining or displaying a scene. */
 export async function prewarmVisionSession(
   target: HTMLElement,
   onError: (error: unknown) => void,
@@ -547,7 +546,8 @@ async function mountVisionSceneNow(
     )
       return Promise.reject(new Error("Vision scene is disconnected."));
     const seq = session ? ++session.sequence : ++sequence;
-    return new Promise<VisionPresenterMessage>((resolve, reject) => {
+    let timeout!: ReturnType<typeof setTimeout>;
+    const response = new Promise<VisionPresenterMessage>((resolve, reject) => {
       const measured = ["init-empty", "preload-fonts", "load"].includes(
         String(request.type),
       );
@@ -559,7 +559,16 @@ async function mountVisionSceneNow(
           : {}),
       });
       presenter!.postMessage({ ...request, seq });
+      if (request.type === "init-empty")
+        timeout = setTimeout(() => {
+          const error = new Error("VISION_EMPTY_ENGINE_INIT_TIMEOUT");
+          reject(error);
+          onError(error);
+        }, 30_000);
     });
+    if (request.type === "init-empty")
+      return response.finally(() => clearTimeout(timeout));
+    return response;
   };
 
   try {
@@ -965,8 +974,6 @@ async function mountVisionSceneNow(
     ) {
       session.retire(disconnectedError());
     } else if (!session.engineReady) {
-      // A failed init-empty may have left the presenter partially initialized.
-      // Retire it before retrying; only an acknowledged engine can be reused.
       if (visionSessions.get(target) === session) visionSessions.delete(target);
       session.retire(error instanceof Error ? error : new Error(String(error)));
     } else {

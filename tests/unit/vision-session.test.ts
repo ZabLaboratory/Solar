@@ -24,6 +24,7 @@ const fake = vi.hoisted(() => ({
   terminated: 0,
   failTerminate: false,
   failInitEmpty: 0,
+  silentInitEmpty: 0,
   failPreloadFonts: 0,
   failLoads: 0,
   requests: [] as string[],
@@ -63,6 +64,9 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
         fake.requests.push(type);
         const rejectInitEmpty = type === "init-empty" && fake.failInitEmpty > 0;
         if (rejectInitEmpty) fake.failInitEmpty--;
+        const silenceInitEmpty =
+          type === "init-empty" && fake.silentInitEmpty > 0;
+        if (silenceInitEmpty) fake.silentInitEmpty--;
         const rejectPreload =
           type === "preload-fonts" && fake.failPreloadFonts > 0;
         if (rejectPreload) fake.failPreloadFonts--;
@@ -111,7 +115,7 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
           });
         };
         if (fake.heldTypes.has(type)) fake.held.push({ type, deliver });
-        else queueMicrotask(deliver);
+        else if (!silenceInitEmpty) queueMicrotask(deliver);
       },
       flush: async () => {},
       terminate: () => {
@@ -165,6 +169,7 @@ function deferred<T>() {
 afterEach(() => {
   for (const target of targets) disconnectVisionSession(target);
   targets.length = 0;
+  vi.useRealTimers();
   vi.restoreAllMocks();
   document.body.replaceChildren();
   fake.heldTypes.clear();
@@ -174,6 +179,7 @@ afterEach(() => {
   fake.terminated = 0;
   fake.failTerminate = false;
   fake.failInitEmpty = 0;
+  fake.silentInitEmpty = 0;
   fake.failPreloadFonts = 0;
   fake.failLoads = 0;
   fake.requests.length = 0;
@@ -235,6 +241,40 @@ it("retries an empty engine initialization failure with a fresh presenter", asyn
   );
   expect(target.dataset.solarEngineReady).toBe("true");
   expect(target.childElementCount).toBe(1);
+});
+
+it("retires a silent engine and permits a fresh prewarm after the timeout", async () => {
+  const { target } = setup();
+  const onError = vi.fn();
+  fake.silentInitEmpty = 1;
+  vi.useFakeTimers();
+
+  const warming = prewarmVisionSession(target, onError, async function* () {});
+  await vi.advanceTimersByTimeAsync(0);
+  expect(fake.requests).toEqual(["init-empty"]);
+
+  const failed = expect(warming).rejects.toMatchObject({
+    message: "VISION_EMPTY_ENGINE_INIT_TIMEOUT",
+  });
+  await vi.advanceTimersByTimeAsync(30_000);
+  await failed;
+
+  expect(fake.requests.filter((type) => type === "init-empty")).toHaveLength(1);
+  expect(fake.created).toBe(1);
+  expect(fake.terminated).toBe(1);
+  expect(onError).toHaveBeenCalledTimes(1);
+  expect(target.dataset.solarEngineReady).toBeUndefined();
+  expect(target.childElementCount).toBe(0);
+
+  await prewarmVisionSession(target, onError, async function* () {});
+
+  expect(fake.requests.filter((type) => type === "init-empty")).toHaveLength(2);
+  expect(fake.created).toBe(2);
+  expect(fake.terminated).toBe(1);
+  expect(target.dataset.solarEngineReady).toBe("true");
+  await prewarmVisionSession(target, onError, async function* () {});
+  expect(fake.requests.filter((type) => type === "init-empty")).toHaveLength(2);
+  expect(onError).toHaveBeenCalledTimes(1);
 });
 
 it("retries font admission on the same initialized engine", async () => {
