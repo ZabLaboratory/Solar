@@ -25,8 +25,8 @@ permissions:
 jobs:
   build-and-release:
     name: Build and publish bundle tarball
-    # The release uses the configured vps-ovh self-hosted runner pool.
-    runs-on: [self-hosted, vps-ovh]
+    # Solar has no repository self-hosted runner; a queued tag never publishes.
+    runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
