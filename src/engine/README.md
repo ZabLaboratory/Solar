@@ -159,14 +159,20 @@ Native runtime tests cover the null seed, cleanup without remount or refetch,
 and an actual clear after finalization.
 
 `vision-presenter.ts` owns one Vision engine, GPU canvas and presentation surface
-per native host target. An empty engine starts once; fresh scene packages use
-Vision's serialized `load` request on that same device/surface. The outgoing
-scene's images, graph, geometry and composition caches are released.
+per native host target. Fresh scene packages use Vision's serialized `load`
+request on that same device and surface. The outgoing scene's images, graph,
+geometry and composition caches are released.
 The native connection starts that empty engine and admits installation fonts
 before reading its first resource snapshot. Both physical hosts therefore warm
 independently of scene selection. Empty prewarm creates no LSML package, scene
 identity, media subscription or visible presentation; the first real load shares
 its lifetime and queue. Host disconnection aborts prewarm and queued admission.
+The `engine-ready` receipt is the reuse boundary: if `init-empty` fails before
+that receipt, Solar retires the incomplete presenter and hidden layer; a later
+prewarm creates a fresh presenter in the current host lifetime. If only
+installation-font admission fails, the acknowledged engine stays available for
+a retry of the incomplete font bank. Neither path retains a scene or starts a
+parallel engine.
 The engine-owned font registry survives scene replacement: installation fonts
 are preloaded once at engine startup, and additional scene fonts are admitted
 by content digest only when new. Scene-local layout and glyph caches remain fresh.

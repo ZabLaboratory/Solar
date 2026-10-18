@@ -56,6 +56,7 @@ interface PersistentVisionSession {
   sequence: number;
   owner: object;
   closed: boolean;
+  engineReady: boolean;
   fontsReady: boolean;
   nativeComposition?: boolean;
   admittedFonts: Set<string>;
@@ -410,6 +411,7 @@ async function mountVisionSceneNow(
         sequence: 0,
         owner,
         closed: false,
+        engineReady: false,
         fontsReady: false,
         admittedFonts: new Set<string>(),
         onMessage: () => {},
@@ -616,14 +618,20 @@ async function mountVisionSceneNow(
       }
     } else presenter.addEventListener("message", onMessage);
 
-    if (!existing)
-      await requestFrame({
+    if (!existing) {
+      const initialized = await requestFrame({
         type: persistent ? "init-empty" : "init",
         canvas,
         width,
         height,
         sentAt: performance.timeOrigin + performance.now(),
       });
+      if (session) {
+        if (initialized.type !== "engine-ready")
+          throw new Error("VISION_EMPTY_ENGINE_NOT_READY");
+        session.engineReady = true;
+      }
+    }
     const admitFonts = async (
       fonts: Array<Uint8Array | VerifiedFont>,
     ): Promise<void> => {
@@ -956,6 +964,11 @@ async function mountVisionSceneNow(
       (lifetime && !isCurrentLifetime(target, lifetime))
     ) {
       session.retire(disconnectedError());
+    } else if (!session.engineReady) {
+      // A failed init-empty may have left the presenter partially initialized.
+      // Retire it before retrying; only an acknowledged engine can be reused.
+      if (visionSessions.get(target) === session) visionSessions.delete(target);
+      session.retire(error instanceof Error ? error : new Error(String(error)));
     } else {
       session.onMessage = () => {};
       presenter?.postMessage({ type: "clear-scene", seq: ++session.sequence });

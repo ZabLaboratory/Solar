@@ -23,6 +23,8 @@ const fake = vi.hoisted(() => ({
   created: 0,
   terminated: 0,
   failTerminate: false,
+  failInitEmpty: 0,
+  failPreloadFonts: 0,
   failLoads: 0,
   requests: [] as string[],
   composition: null as unknown,
@@ -33,6 +35,7 @@ const fake = vi.hoisted(() => ({
 vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
   createMainThreadPresenter: (canvas: HTMLCanvasElement) => {
     fake.created++;
+    let engineReady = false;
     let nativeComposition = false;
     let listener: ((event: { data: VisionPresenterMessage }) => void) | null =
       null;
@@ -58,38 +61,55 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
           [canvas.width, canvas.height] = fake.canvasSizeOverride;
         }
         fake.requests.push(type);
+        const rejectInitEmpty = type === "init-empty" && fake.failInitEmpty > 0;
+        if (rejectInitEmpty) fake.failInitEmpty--;
+        const rejectPreload =
+          type === "preload-fonts" && fake.failPreloadFonts > 0;
+        if (rejectPreload) fake.failPreloadFonts--;
         const rejectLoad = type === "load" && fake.failLoads > 0;
         if (rejectLoad) fake.failLoads--;
-        const deliver = (): void =>
+        const deliver = (): void => {
+          if (type === "init-empty" && !rejectInitEmpty) engineReady = true;
           listener?.({
-            data: rejectLoad
-              ? {
-                  type: "error",
-                  seq: request.seq as number,
-                  phase: "load",
-                  message: "Malformed Repeat key.",
-                }
-              : {
-                  type:
-                    type === "init-empty"
-                      ? "engine-ready"
-                      : type === "native-composition-mode"
-                        ? "native-composition-mode-set"
-                        : "frame-submitted",
-                  seq: request.seq as number,
-                  ...(type === "native-composition-mode"
-                    ? {
-                        enabled: fake.refuseNativeMode
-                          ? false
-                          : nativeComposition,
-                      }
-                    : {}),
-                  ...(nativeComposition && type !== "native-composition-mode"
-                    ? { composition: fake.composition }
-                    : {}),
-                  timing: { gpuSubmitCallMs: 2.5 },
-                },
+            data:
+              rejectInitEmpty ||
+              rejectPreload ||
+              rejectLoad ||
+              (type === "preload-fonts" && !engineReady)
+                ? {
+                    type: "error",
+                    seq: request.seq as number,
+                    phase: type,
+                    message: rejectInitEmpty
+                      ? "empty engine initialization failed"
+                      : rejectPreload
+                        ? "font admission failed"
+                        : type === "preload-fonts"
+                          ? "The Rust GPU engine is not ready."
+                          : "Malformed Repeat key.",
+                  }
+                : {
+                    type:
+                      type === "init-empty"
+                        ? "engine-ready"
+                        : type === "native-composition-mode"
+                          ? "native-composition-mode-set"
+                          : "frame-submitted",
+                    seq: request.seq as number,
+                    ...(type === "native-composition-mode"
+                      ? {
+                          enabled: fake.refuseNativeMode
+                            ? false
+                            : nativeComposition,
+                        }
+                      : {}),
+                    ...(nativeComposition && type !== "native-composition-mode"
+                      ? { composition: fake.composition }
+                      : {}),
+                    timing: { gpuSubmitCallMs: 2.5 },
+                  },
           });
+        };
         if (fake.heldTypes.has(type)) fake.held.push({ type, deliver });
         else queueMicrotask(deliver);
       },
@@ -153,6 +173,8 @@ afterEach(() => {
   fake.created = 0;
   fake.terminated = 0;
   fake.failTerminate = false;
+  fake.failInitEmpty = 0;
+  fake.failPreloadFonts = 0;
   fake.failLoads = 0;
   fake.requests.length = 0;
   fake.composition = null;
@@ -187,6 +209,54 @@ it("prepares the empty engine and installation fonts before any scene, then reus
   expect(fake.requests.filter((x) => x === "init-empty")).toHaveLength(1);
   expect(fake.requests.filter((x) => x === "load")).toHaveLength(1);
   scene.dispose();
+});
+
+it("retries an empty engine initialization failure with a fresh presenter", async () => {
+  const { target } = setup();
+  const fonts = async function* () {
+    yield [new Uint8Array([1, 2, 3])];
+  };
+  fake.failInitEmpty = 1;
+
+  await expect(prewarmVisionSession(target, vi.fn(), fonts)).rejects.toThrow(
+    "empty engine initialization failed",
+  );
+  expect(target.dataset.solarEngineReady).toBeUndefined();
+  expect(target.childElementCount).toBe(0);
+  expect(fake.terminated).toBe(1);
+  expect(fake.requests.filter((type) => type === "init-empty")).toHaveLength(1);
+
+  await prewarmVisionSession(target, vi.fn(), fonts);
+  expect(fake.created).toBe(2);
+  expect(fake.terminated).toBe(1);
+  expect(fake.requests.filter((type) => type === "init-empty")).toHaveLength(2);
+  expect(fake.requests.filter((type) => type === "preload-fonts")).toHaveLength(
+    1,
+  );
+  expect(target.dataset.solarEngineReady).toBe("true");
+  expect(target.childElementCount).toBe(1);
+});
+
+it("retries font admission on the same initialized engine", async () => {
+  const { target } = setup();
+  const fonts = async function* () {
+    yield [new Uint8Array([1, 2, 3])];
+  };
+  fake.failPreloadFonts = 1;
+
+  await expect(prewarmVisionSession(target, vi.fn(), fonts)).rejects.toThrow(
+    "font admission failed",
+  );
+  expect(target.dataset.solarEngineReady).toBeUndefined();
+  await prewarmVisionSession(target, vi.fn(), fonts);
+
+  expect(fake.created).toBe(1);
+  expect(fake.terminated).toBe(0);
+  expect(fake.requests.filter((type) => type === "init-empty")).toHaveLength(1);
+  expect(fake.requests.filter((type) => type === "preload-fonts")).toHaveLength(
+    2,
+  );
+  expect(target.dataset.solarEngineReady).toBe("true");
 });
 
 it("enables native atlas mode before loading and returns only the matching submitted frame", async () => {
