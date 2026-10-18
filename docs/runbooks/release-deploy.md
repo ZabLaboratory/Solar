@@ -35,9 +35,13 @@ npm.cmd run package:native -- --binary <lsdpd> --platform linux-x64 --revision <
 npm.cmd run check:native-package -- win32-x64 linux-x64
 ```
 
-The release workflow takes `SOLAR_LSDP_WINDOWS_BINARY` and `SOLAR_LSDP_LINUX_BINARY` runner
-variables. Missing files fail assembly. The manifest pins platform binary digests and source
-revision; the installed application requires no Cargo, source checkout or esbuild.
+The release workflow downloads both native receiver binaries from the public
+[`native-lsdp-24c0517` staging release](https://github.com/ZabLaboratory/Solar/releases/tag/native-lsdp-24c0517).
+They were produced by the Windows and Ubuntu CI jobs for the same LSDP-native
+source revision `24c051785a178f5b514b9d2e21a6c44ba6c978d1`. The workflow checks
+their pinned SHA-256 digests before packaging; missing or changed bytes fail assembly.
+The manifest pins platform binary digests and source revision. The installed
+application requires no Cargo, source checkout or esbuild.
 
 ## Artifacts and layout
 
