@@ -1,0 +1,16 @@
+{
+  "capturedUtc": "2026-10-18T09:21:18.6605995Z",
+  "repo": "Solar",
+  "integrationHead": "3f3ab2dab686cea5a6232cbda876cfb4bf5492d5",
+  "command": "npm run build",
+  "exitCode": 0,
+  "libBundle": "dist/solar.js",
+  "hostBundle": "dist/host/assets/host-5KCBKcmo.js",
+  "hostBytes": 229956,
+  "hostSha256": "c0aeec0b55f6f60e7ec7dda9886269177f587c621ea31716b88300f607f8c931",
+  "visionAssetPins": "5/5 matched by prebuild:host",
+  "runtimeLayout": "verified, no host/root collision",
+  "nativeCEFProof": false,
+  "liveOrRec": false,
+  "commonDevStarted": false
+}
