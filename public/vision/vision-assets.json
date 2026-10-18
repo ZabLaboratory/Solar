@@ -2,8 +2,8 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-  "source_revision": "f28cda9665babd49408873fc7659947441f293dd",
-  "source_state": "Vision measures intrinsic image dimensions from admitted bytes and exports a capture-free scene from its complete hierarchical root render. Nested frame clips, masks, effects and root opacity are baked once into a single neutral contribution band. Solar pins the generated JS and WASM from the signed Vision commit; physical cockpit opening is qualified separately in Prism.",
+  "source_revision": "71942995e7a47139ae9c6c44442378aabb7bba9a",
+  "source_state": "Vision measures intrinsic image dimensions from admitted bytes. Capture-free scenes export one final hierarchical band; scenes with native capture boundaries preserve independent capture-free paint subtrees as ordered composited islands, including nested frame clips and local effects. Solar pins the generated JS and WASM from the signed Vision commit; physical cockpit opening is qualified separately in Prism.",
   "files": {
     "ui/mainpresenter.mjs": {
       "sha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
@@ -14,30 +14,32 @@
       "bytes": 1977
     },
     "pkg/lumencast_vision_web.js": {
-      "sha256": "4bf4f676c667dc484e77bbe941945d76d24401393fcb1e4a9e73d346ecdc7e64",
+      "sha256": "fc32462687ba61eb92f3366ac4a017ab3757c63ee2373610c06b6c936afd5cf1",
       "bytes": 157228
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "7690e6ba4e56220a375d76a9b19750af987e352ac6c35508e8d2ff65957e32b8",
-      "bytes": 10627091
+      "sha256": "851f68b5fddf8bb8b1fad36e9922335da49c03a1a80f53419f56064bbc0a050d",
+      "bytes": 10631671
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
     "engine_branch": "eleven/local-20261018-empty-capture-contribution",
     "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-    "engine_commit": "f28cda9665babd49408873fc7659947441f293dd",
-    "engine_tree": "7f90855124302fa574ee1e8dacf244cde1f41c65",
+    "engine_commit": "71942995e7a47139ae9c6c44442378aabb7bba9a",
+    "engine_tree": "09f95e91908304dfdb516da472555c1aa607876d",
     "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
     "source_files": {
       "crates/vision-web/src/lib.rs": "b923b29f6a6c96c6dfe09105ffc21faedfdf5397536499f22143ecbad173a8ba",
-      "crates/vision-gpu/src/renderer/contribution.rs": "63f9e6b5c1555b8c458907fe7400491694791bf8",
+      "crates/vision-gpu/src/renderer/contribution.rs": "dde639dd694eba69f8ccf5d492942c2fc11a6a63",
       "crates/vision-gpu/src/renderer/contribution/encode.rs": "072ee195afe3e14cd3d38a54799b036333bac29e",
-      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "3a50c505fe05059d2c5f59a338b7f3f853b37905"
+      "crates/vision-gpu/src/renderer/contribution/draw.rs": "7dde0b137c06d6e271d51df446b0063cd59133ab",
+      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "eaa052279e881b9301b804093de13e51c7c04001"
     },
-    "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T103049Z-render-report.json",
+    "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T105024Z-AGENT_REPORT.json",
+    "capture_free_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T103049Z-render-report.json",
     "intrinsic_measure_evidence": "evidence/local-20261018-image-intrinsic-measure/eleven/20261018T100318Z-agent-report.md",
-    "validation": "Focused image measurement, live-lane and rollback tests; 10/10 contribution pixel tests including nested clips and root effects; Vision web build; Solar build and pin check",
+    "validation": "Focused image measurement, live-lane and rollback tests; 12/12 contribution pixel tests including ordered capture-adjacent paint islands, nested clips and root effects; Vision web build; Solar build and pin check",
     "full_vision_lib_test": "not completed: interrupted during 512-PNG dynamic image lifetime test"
   }
 }
