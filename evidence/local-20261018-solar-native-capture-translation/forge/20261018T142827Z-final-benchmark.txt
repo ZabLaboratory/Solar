@@ -1,0 +1,124 @@
+Benchmarking is an experimental feature.
+Breaking changes might not follow SemVer, please pin Vitest's version when using it.
+
+ RUN  v4.1.11 D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation
+
+
+ RUN  v4.1.11 D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation
+
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > 1-capture receipt, one x/y scalar mutation 2626ms
+     name                                                                         hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash    8,410.06  0.0789  1.2787  0.1189  0.1273  0.4304  0.6123  1.0657  ±2.84%     2104
+   · presenter receipt validation only                                    425,553.62  0.0016  1.3782  0.0023  0.0023  0.0061  0.0080  0.0368  ±2.97%   106389
+   · strict projector validation plus complete projection                 239,848.60  0.0023  8.2457  0.0042  0.0036  0.0153  0.0280  0.0990  ±7.61%    59971
+   · complete plan clone plus canonical SHA-256                            10,982.52  0.0645  0.8240  0.0911  0.1014  0.2491  0.3519  0.5418  ±1.71%     2749
+   · plan content clone only                                               31,783.22  0.0203  0.8654  0.0315  0.0350  0.0980  0.1417  0.3399  ±1.66%     7946
+   · canonicalize complete plan only                                       22,453.74  0.0285  1.7866  0.0445  0.0457  0.1484  0.1935  0.5020  ±2.28%     5614
+   · SHA-256 canonical plan bytes only                                     79,404.54  0.0086  0.4587  0.0126  0.0140  0.0355  0.0558  0.1261  ±1.11%    19852
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > 1-capture receipt, one x/y scalar mutation 2626ms
+     name                                                                         hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash    8,410.06  0.0789  1.2787  0.1189  0.1273  0.4304  0.6123  1.0657  ±2.84%     2104
+   · presenter receipt validation only                                    425,553.62  0.0016  1.3782  0.0023  0.0023  0.0061  0.0080  0.0368  ±2.97%   106389
+   · strict projector validation plus complete projection                 239,848.60  0.0023  8.2457  0.0042  0.0036  0.0153  0.0280  0.0990  ±7.61%    59971
+   · complete plan clone plus canonical SHA-256                            10,982.52  0.0645  0.8240  0.0911  0.1014  0.2491  0.3519  0.5418  ±1.71%     2749
+   · plan content clone only                                               31,783.22  0.0203  0.8654  0.0315  0.0350  0.0980  0.1417  0.3399  ±1.66%     7946
+   · canonicalize complete plan only                                       22,453.74  0.0285  1.7866  0.0445  0.0457  0.1484  0.1935  0.5020  ±2.28%     5614
+   · SHA-256 canonical plan bytes only                                     79,404.54  0.0086  0.4587  0.0126  0.0140  0.0355  0.0558  0.1261  ±1.11%    19852
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > 64-capture receipt, one x/y scalar mutation 2528ms
+     name                                                                        hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash     314.19  2.2656  4.6909  3.1828  3.4520  4.6909  4.6909  4.6909  ±3.27%       79
+   · presenter receipt validation only                                    22,490.53  0.0306  0.8964  0.0445  0.0479  0.1103  0.1531  0.6030  ±1.81%     5623
+   · strict projector validation plus complete projection                 11,279.77  0.0483  5.6509  0.0887  0.0877  0.3551  0.5238  1.0715  ±5.21%     2821
+   · complete plan clone plus canonical SHA-256                              320.47  2.2017  3.9827  3.1204  3.4497  3.9827  3.9827  3.9827  ±3.36%       81
+   · plan content clone only                                                 725.53  0.7454  4.5394  1.3783  1.5430  4.0999  4.5394  4.5394  ±5.98%      182
+   · canonicalize complete plan only                                         482.79  1.2472  3.4989  2.0713  2.3076  3.3307  3.4989  3.4989  ±4.13%      121
+   · SHA-256 canonical plan bytes only                                     2,741.33  0.2341  2.5633  0.3648  0.3921  0.9135  1.0242  2.5633  ±3.08%      686
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > 64-capture receipt, one x/y scalar mutation 2528ms
+     name                                                                        hz     min     max    mean     p75     p99    p995    p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash     314.19  2.2656  4.6909  3.1828  3.4520  4.6909  4.6909  4.6909  ±3.27%       79
+   · presenter receipt validation only                                    22,490.53  0.0306  0.8964  0.0445  0.0479  0.1103  0.1531  0.6030  ±1.81%     5623
+   · strict projector validation plus complete projection                 11,279.77  0.0483  5.6509  0.0887  0.0877  0.3551  0.5238  1.0715  ±5.21%     2821
+   · complete plan clone plus canonical SHA-256                              320.47  2.2017  3.9827  3.1204  3.4497  3.9827  3.9827  3.9827  ±3.36%       81
+   · plan content clone only                                                 725.53  0.7454  4.5394  1.3783  1.5430  4.0999  4.5394  4.5394  ±5.98%      182
+   · canonicalize complete plan only                                         482.79  1.2472  3.4989  2.0713  2.3076  3.3307  3.4989  3.4989  ±4.13%      121
+   · SHA-256 canonical plan bytes only                                     2,741.33  0.2341  2.5633  0.3648  0.3921  0.9135  1.0242  2.5633  ±3.08%      686
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > 1024-capture receipt, one x/y scalar mutation 6187ms
+     name                                                                       hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash   20.4359  43.3337  58.5761  48.9336  50.5194  58.5761  58.5761  58.5761  ±2.79%       30
+   · presenter receipt validation only                                    1,381.38   0.5086   1.6218   0.7239   0.7874   1.3091   1.4657   1.6218  ±2.07%      346
+   · strict projector validation plus complete projection                   699.32   0.8516   7.5028   1.4300   1.5267   3.7687   7.5028   7.5028  ±6.47%      176
+   · complete plan clone plus canonical SHA-256                            21.4965  40.3996  50.0902  46.5193  48.7450  50.0902  50.0902  50.0902  ±2.12%       30
+   · plan content clone only                                               72.0803  12.1405  16.6208  13.8734  14.4280  16.6208  16.6208  16.6208  ±3.05%       30
+   · canonicalize complete plan only                                       40.0595  21.7198  31.2733  24.9628  26.0098  31.2733  31.2733  31.2733  ±2.95%       30
+   · SHA-256 canonical plan bytes only                                      198.65   4.0015   6.6420   5.0340   5.4431   6.6420   6.6420   6.6420  ±3.24%       50
+
+ ✓ tests/bench/native-composition-capture-translation.bench.ts > 1024-capture receipt, one x/y scalar mutation 6187ms
+     name                                                                       hz      min      max     mean      p75      p99     p995     p999     rme  samples
+   · presenter accept + strict projector accept + projection + plan hash   20.4359  43.3337  58.5761  48.9336  50.5194  58.5761  58.5761  58.5761  ±2.79%       30
+   · presenter receipt validation only                                    1,381.38   0.5086   1.6218   0.7239   0.7874   1.3091   1.4657   1.6218  ±2.07%      346
+   · strict projector validation plus complete projection                   699.32   0.8516   7.5028   1.4300   1.5267   3.7687   7.5028   7.5028  ±6.47%      176
+   · complete plan clone plus canonical SHA-256                            21.4965  40.3996  50.0902  46.5193  48.7450  50.0902  50.0902  50.0902  ±2.12%       30
+   · plan content clone only                                               72.0803  12.1405  16.6208  13.8734  14.4280  16.6208  16.6208  16.6208  ±3.05%       30
+   · canonicalize complete plan only                                       40.0595  21.7198  31.2733  24.9628  26.0098  31.2733  31.2733  31.2733  ±2.95%       30
+   · SHA-256 canonical plan bytes only                                      198.65   4.0015   6.6420   5.0340   5.4431   6.6420   6.6420   6.6420  ±3.24%       50
+
+ BENCH  Summary
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > 1-capture receipt, one x/y scalar mutation
+    1.77x faster than strict projector validation plus complete projection
+    5.36x faster than SHA-256 canonical plan bytes only
+    13.39x faster than plan content clone only
+    18.95x faster than canonicalize complete plan only
+    38.75x faster than complete plan clone plus canonical SHA-256
+    50.60x faster than presenter accept + strict projector accept + projection + plan hash
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > 64-capture receipt, one x/y scalar mutation
+    1.99x faster than strict projector validation plus complete projection
+    8.20x faster than SHA-256 canonical plan bytes only
+    31.00x faster than plan content clone only
+    46.58x faster than canonicalize complete plan only
+    70.18x faster than complete plan clone plus canonical SHA-256
+    71.58x faster than presenter accept + strict projector accept + projection + plan hash
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > 1024-capture receipt, one x/y scalar mutation
+    1.98x faster than strict projector validation plus complete projection
+    6.95x faster than SHA-256 canonical plan bytes only
+    19.16x faster than plan content clone only
+    34.48x faster than canonicalize complete plan only
+    64.26x faster than complete plan clone plus canonical SHA-256
+    67.60x faster than presenter accept + strict projector accept + projection + plan hash
+
+
+ BENCH  Summary
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > 1-capture receipt, one x/y scalar mutation
+    1.77x faster than strict projector validation plus complete projection
+    5.36x faster than SHA-256 canonical plan bytes only
+    13.39x faster than plan content clone only
+    18.95x faster than canonicalize complete plan only
+    38.75x faster than complete plan clone plus canonical SHA-256
+    50.60x faster than presenter accept + strict projector accept + projection + plan hash
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > 64-capture receipt, one x/y scalar mutation
+    1.99x faster than strict projector validation plus complete projection
+    8.20x faster than SHA-256 canonical plan bytes only
+    31.00x faster than plan content clone only
+    46.58x faster than canonicalize complete plan only
+    70.18x faster than complete plan clone plus canonical SHA-256
+    71.58x faster than presenter accept + strict projector accept + projection + plan hash
+
+  presenter receipt validation only - tests/bench/native-composition-capture-translation.bench.ts > 1024-capture receipt, one x/y scalar mutation
+    1.98x faster than strict projector validation plus complete projection
+    6.95x faster than SHA-256 canonical plan bytes only
+    19.16x faster than plan content clone only
+    34.48x faster than canonicalize complete plan only
+    64.26x faster than complete plan clone plus canonical SHA-256
+    67.60x faster than presenter accept + strict projector accept + projection + plan hash
+
+Benchmark report written to D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation/evidence/local-20261018-solar-native-capture-translation/forge/20261018T142827Z-final-benchmark.json
+Benchmark report written to D:/Documents/Zab/Solar/.worktrees/forge-local-20261018-solar-native-capture-translation/evidence/local-20261018-solar-native-capture-translation/forge/20261018T142827Z-final-benchmark.json

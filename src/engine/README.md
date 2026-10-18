@@ -78,17 +78,31 @@ success only after the replacement peer completes its first current publication.
 When the trusted host config enables `nativeCompositionLSDP`, the runtime projects
 compositor metadata from the accepted Vision receipt of that active scene and
 publishes it with the exact LSDP state hash to the separate `solar/composition`
-resource. It does not mutate the source LSML, insert plan fields into native
-snapshots, or wait for this side-channel before returning the existing mutation
-or frame receipt. Main claims the
+resource. It does not mutate the source LSML or insert plan fields into native
+snapshots; mutation and frame receipts do not wait for network publication to
+complete. Main claims the
 physical A/B producer nonce in that resource; Solar verifies the nonce before
-each graph CAS and never changes the owner map. The publisher keeps one
+each graph CAS and never changes the owner map. Receipt projection and the
+canonical plan copy/hash run synchronously before Solar returns its applied
+mutation receipt; the network compare-and-set does not. The publisher keeps one
 read/write active and only the latest pending plan. Pending callers can receive
 `superseded`; this is not an LSML ACK. `clear` is an ordinary latest-state
 action and may be superseded by a newer plan. `retire` is terminal: it blocks
 later side-channel work and clears after the active operation before closing
 the peer. Publisher, session replay and reconnect paths have targeted Solar unit
 coverage; real cross-process/Main/Pulsar composition remains a separate qualification.
+`tests/bench/native-composition-capture-translation.bench.ts` isolates that CPU
+path with deterministic synthetic receipts that mutate one capture's x/y values.
+The 2026-10-18 Node 24.16.0 / Vitest 4.1.11 run measured mean totals of 0.119 ms
+for one capture, 3.183 ms for 64 captures and 48.934 ms for 1024 captures. Only
+the 1024-capture stress case exceeds a 16.67 ms 60 Hz budget. In that case plan
+cloning, canonical serialization and SHA-256 averaged 13.873 ms, 24.963 ms and
+5.034 ms respectively. This is an off-air benchmark, not CEF presentation,
+physical scanout or end-to-end Prism drag evidence; it does not establish the
+cause of a user-observed drag delay. Vision receipt validation remains enabled.
+The method, limits and result are recorded in
+[`20261018T142827Z-AGENT_REPORT.md`](../../evidence/local-20261018-solar-native-capture-translation/forge/20261018T142827Z-AGENT_REPORT.md),
+with raw output in the same evidence directory.
 `native-worker-client.ts` owns the dedicated `native-worker.ts` transport and
 LSML verification thread. It certifies each state through its private Worker
 channel; the render consumer reuses that exact structured-clone state instead of
