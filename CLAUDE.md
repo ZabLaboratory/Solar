@@ -65,8 +65,8 @@ The compiled scene renderer is excluded from both Solar builds.
 - `src/engine/frame-patches.ts` owns scalar coalescing and covering presentation
   receipts; commands and structure keep their ordered execution.
 - `src/engine/vision-frames.ts` owns one combined state/media submission in flight
-  through MessageChannel. `vision-media-bridge.ts` captures the supported WASM
-  engine dependency for upload before that same submission. Fixed-window cadence
+  through MessageChannel. The presenter stages camera pixels inside its serialized
+  Rust/WASM request queue before the same submission. Fixed-window cadence
   and encoded pixels are qualified in `docs/development/render-cadence.md`.
 - `src/internal/native-tree.ts` owns draft2 Merkle hashing, checked against the
   byte-pinned upstream vectors and the real native server.

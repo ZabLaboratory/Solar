@@ -492,6 +492,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
     const applyStartedAt = clock.now();
     let rawMetadata;
     try {
+      if (request.frames !== undefined) await stageLiveFrames(request.frames, ticket);
       await registerPatchImages(request.images, ticket);
       rawMetadata = await engine.apply_patch(request.patchJson);
       ensureActive(ticket);
@@ -500,6 +501,8 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       engine.prune_unreferenced_image_assets?.();
       syncUploadedAssets(engine);
       throw withContext(error, "patch", { ...receipt, engineApplyCallMs: elapsedSince(applyStartedAt) });
+    } finally {
+      for (const frame of request.frames ?? []) frame?.bitmap?.close?.();
     }
 
     const engineApplyCallMs = elapsedSince(applyStartedAt);
@@ -536,13 +539,7 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       throw withContext(new Error("A live media update must contain at least one frame."), "media-frames", receipt);
     }
     try {
-      for (const frame of request.frames) {
-        if (!frame || typeof frame.path !== "string" || !frame.bitmap || typeof frame.bitmap.close !== "function") {
-          throw new Error("A live media frame needs a path and an owned ImageBitmap.");
-        }
-        await engine.update_live_image(frame.path, frame.bitmap);
-        ensureActive(ticket);
-      }
+      await stageLiveFrames(request.frames, ticket);
       if (latestSize) await submit(request.seq, latestSize, receipt, ticket);
       lastAppliedSequence = request.seq;
       emit({ type: "media-applied", seq: request.seq, mediaSources: readMediaSources(engine), timing: receipt });
@@ -550,6 +547,17 @@ export function createMainThreadPresenter(canvas, dependencies = {}) {
       throw withContext(error, "media-frames", receipt);
     } finally {
       for (const frame of request.frames) frame?.bitmap?.close?.();
+    }
+  }
+
+  async function stageLiveFrames(frames, ticket) {
+    if (!Array.isArray(frames)) throw new Error("Live media frames must be an array.");
+    for (const frame of frames) {
+      if (!frame || typeof frame.path !== "string" || !frame.bitmap || typeof frame.bitmap.close !== "function") {
+        throw new Error("A live media frame needs a path and an owned ImageBitmap.");
+      }
+      await engine.update_live_image(frame.path, frame.bitmap);
+      ensureActive(ticket);
     }
   }
 
