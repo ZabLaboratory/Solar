@@ -2,8 +2,8 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-  "source_revision": "1e14d95af94052187a20c59c89871aa1a3dda43b",
-  "source_state": "Vision measures intrinsic image dimensions from admitted bytes and preserves ordered capture-adjacent paint islands. The main presenter serializes camera bitmap staging with scene loads and patches on its one Rust/WASM engine. Previously published x-zab.capture nodes without id derive a qualified legacy source alias from the logical source kind and device ref; authored ids remain authoritative. Solar pins the presenter, generated JS and WASM from the Vision source commit; physical cockpit opening is qualified separately in Prism.",
+  "source_revision": "9a5774f46c7ab72d25f542019b5c52e453cb52ee",
+  "source_state": "Vision measures intrinsic image dimensions, preserves ordered capture-adjacent paint islands, serializes camera staging with scene admission, and selects an RGBA8 UNORM browser surface for contribution presentation when available. Solar pins the presenter and generated WASM from the Vision source commit; physical cockpit opening is qualified separately in Prism.",
   "files": {
     "ui/mainpresenter.mjs": {
       "sha256": "8d22a413bd596c4ead6a7378e7c972264f5358b9fef467efdfaff90e4987cf41",
@@ -14,23 +14,23 @@
       "bytes": 1977
     },
     "pkg/lumencast_vision_web.js": {
-      "sha256": "fc32462687ba61eb92f3366ac4a017ab3757c63ee2373610c06b6c936afd5cf1",
+      "sha256": "fd4dddaac7760b6b7e58cbfb7a4097bd9e4d1e43f555c6f1e387ef19ddd4791e",
       "bytes": 157228
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "11a62c01433c899aed96e2a49f98321924e68f542beded3d0a16f22f8fce10cc",
-      "bytes": 10631999
+      "sha256": "8f3aefc6a4bc4b60ea8544dcfee7e0e354dc7a048cc0eb4e62e0c40f1cdc517f",
+      "bytes": 10632349
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
     "engine_branch": "main",
     "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-    "engine_commit": "1e14d95af94052187a20c59c89871aa1a3dda43b",
-    "engine_tree": "2b4d1d742ca220947eb88f6aff29aa5004d203f1",
+    "engine_commit": "9a5774f46c7ab72d25f542019b5c52e453cb52ee",
+    "engine_tree": "ff058af9d40e6cc4a530536f79307e6f92dfbee4",
     "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
     "source_files": {
-      "crates/vision-web/src/lib.rs": "b52284cfaa11345bf826591889dd10895daf5295",
+      "crates/vision-web/src/lib.rs": "30f531738da20acb0dad00884d148c47ff49820c",
       "crates/vision-web/ui/mainpresenter.mjs": "1a72d2fd949d1be41b1c06b91a0c197d29ad18b9",
       "crates/vision-gpu/src/renderer/contribution.rs": "9d97bc50ccf29cc7f587a5bd63e6996272468d64",
       "crates/vision-gpu/src/renderer/contribution/encode.rs": "33ec6b786e78416748d82993025f0ce0fc551c76",
@@ -40,7 +40,7 @@
     "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T111626Z-agent-report.md",
     "capture_free_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T103049Z-render-report.json",
     "intrinsic_measure_evidence": "evidence/local-20261018-image-intrinsic-measure/eleven/20261018T100318Z-agent-report.md",
-    "validation": "Focused image measurement, live-lane and rollback tests; 12/12 contribution pixel tests including ordered capture-adjacent paint islands, nested clips and root effects; 2/2 focused legacy capture ID tests; Vision web build; Solar build and pin check",
+    "validation": "40 alternating loads of exact cached scenes in WebGL2 without GPU error; browser contribution proof including capture-free scene and pixel assertions; Vision web build and cargo fmt; Solar build and pin check",
     "full_vision_lib_test": "not completed: interrupted during 512-PNG dynamic image lifetime test"
   }
 }
