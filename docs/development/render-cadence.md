@@ -12,8 +12,9 @@ a browser RAF heartbeat counts as a new rendered mutation state.
 scalar values through a microtask. `src/engine/vision-frames.ts` owns one actual
 submission in flight, scheduled by MessageChannel rather than a 60 Hz RAF.
 Camera-only work schedules the same immediate MessageChannel task as state.
-Arrivals before that task share a submission without a fixed timer delay. `vision-media-bridge.ts` uploads the latest owned
-camera image before the same state submission. Errors reject the covered callers;
+Arrivals before that task share a submission without a fixed timer delay. The
+presenter stages the latest owned camera image inside its serialized Vision
+queue before the same state submission. Errors reject the covered callers;
 scene transitions and ordered commands drain pending presentation first.
 
 Vision retains glyph tessellation (1024 entries, 8 MiB), byte-identical shader

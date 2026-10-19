@@ -7,7 +7,6 @@ import {
 } from "../../src/engine/vision-presenter";
 import { nativeManifest } from "../helpers/native-source";
 import { compositionFrame } from "../helpers/vision-composition-frame";
-import { VisionMediaBridge } from "../../src/engine/vision-media-bridge";
 import { LiveMediaController } from "../../src/engine/live-media";
 import type {
   VisionLiveMediaSource,
@@ -28,6 +27,7 @@ const fake = vi.hoisted(() => ({
   failPreloadFonts: 0,
   failLoads: 0,
   requests: [] as string[],
+  sent: [] as Record<string, unknown>[],
   composition: null as unknown,
   canvasSizeOverride: null as [number, number] | null,
   refuseNativeMode: false,
@@ -62,6 +62,7 @@ vi.mock("http://localhost:3000/vision/ui/mainpresenter.mjs", () => ({
           [canvas.width, canvas.height] = fake.canvasSizeOverride;
         }
         fake.requests.push(type);
+        fake.sent.push(request);
         const rejectInitEmpty = type === "init-empty" && fake.failInitEmpty > 0;
         if (rejectInitEmpty) fake.failInitEmpty--;
         const silenceInitEmpty =
@@ -183,6 +184,7 @@ afterEach(() => {
   fake.failPreloadFonts = 0;
   fake.failLoads = 0;
   fake.requests.length = 0;
+  fake.sent.length = 0;
   fake.composition = null;
   fake.canvasSizeOverride = null;
   fake.refuseNativeMode = false;
@@ -302,7 +304,6 @@ it("retries font admission on the same initialized engine", async () => {
 it("enables native atlas mode before loading and returns only the matching submitted frame", async () => {
   const { target, delivery, pack } = setup();
   // This suite mocks the presenter rather than constructing a WASM media engine.
-  vi.spyOn(VisionMediaBridge.prototype, "upload").mockImplementation(() => {});
   fake.composition = compositionFrame();
   const scene = await mountVisionScene(
     target,
@@ -443,6 +444,29 @@ it("reports only the presenter's render-call timing with its frame-submitted med
     frameSubmitted: true,
     renderSubmitCallMs: 2.5,
   });
+  scene.dispose();
+});
+
+it("sends coalesced camera pixels with the patch through the serialized presenter", async () => {
+  const { target, delivery, pack } = setup();
+  const scene = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    pack,
+    true,
+  );
+  const bitmap = { close: vi.fn() } as unknown as ImageBitmap;
+  const patch = scene.applyPatch({ opacity: 0.5 });
+  const media = scene.updateMedia([{ path: "camera.live", bitmap }]);
+
+  await Promise.all([patch, media]);
+
+  const sent = fake.sent.filter((request) => request.type === "patch");
+  expect(sent).toHaveLength(1);
+  expect(sent[0]?.frames).toEqual([{ path: "camera.live", bitmap }]);
   scene.dispose();
 });
 
@@ -791,7 +815,6 @@ function emitPresenter(message: VisionPresenterMessage): void {
 it("delegates native captures only after their matching frame and keeps peer raster inputs", async () => {
   const { target, delivery, pack } = setup();
   // The presenter is mocked; media ownership is checked without a WASM upload engine.
-  vi.spyOn(VisionMediaBridge.prototype, "upload").mockImplementation(() => {});
   fake.composition = compositionFrame();
   const resolveCaptureDevice = vi.fn(async () => ({
     deviceId: "must-not-open",
@@ -860,7 +883,6 @@ it("delegates native captures only after their matching frame and keeps peer ras
 it("retains accepted native media when the next receipt is rejected", async () => {
   const { target, delivery, pack } = setup();
   // The presenter is mocked; media ownership is checked without a WASM upload engine.
-  vi.spyOn(VisionMediaBridge.prototype, "upload").mockImplementation(() => {});
   fake.composition = compositionFrame();
   const onMedia = vi.fn();
   const scene = await mountVisionScene(

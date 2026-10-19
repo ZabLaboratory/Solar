@@ -19,7 +19,7 @@ import type { SceneRenderDelivery } from "../scenes/types";
 import { visionImageValue, visionTextPatch } from "../scenes/native-document";
 import { CanvasPresentation } from "./canvas-presentation";
 import { VisionFrames } from "./vision-frames";
-import { VisionMediaBridge, VisionMediaSources } from "./vision-media-bridge";
+import { VisionMediaSources } from "./vision-media-sources";
 import {
   acceptVisionCompositionFrame,
   type VisionCompositionFrame,
@@ -51,7 +51,6 @@ interface PersistentVisionSession {
   canvas: HTMLCanvasElement;
   presentation: CanvasPresentation;
   presenter: VisionPresenter | null;
-  bridge: VisionMediaBridge;
   lifetime: PersistentVisionLifetime;
   sequence: number;
   owner: object;
@@ -186,17 +185,14 @@ function awaitLifetime<T>(
 function createSessionPresenter(
   module: PresenterModule,
   canvas: HTMLCanvasElement,
-  bridge: VisionMediaBridge,
 ): VisionPresenter {
   return module.createMainThreadPresenter(canvas, {
     loadWasm: async () =>
-      bridge.module(
-        await import(
-          /* @vite-ignore */ new URL(
-            "vision/pkg/lumencast_vision_web.js",
-            document.baseURI,
-          ).href
-        ),
+      import(
+        /* @vite-ignore */ new URL(
+          "vision/pkg/lumencast_vision_web.js",
+          document.baseURI,
+        ).href
       ),
   });
 }
@@ -388,7 +384,6 @@ async function mountVisionSceneNow(
   let resizeObserver: ResizeObserver | null = null;
   let removeWindowResize: (() => void) | null = null;
   let termination: Promise<void> | null = null;
-  const mediaBridge = existing?.bridge ?? new VisionMediaBridge();
   let frameQueue: VisionFrames | null = null;
   const waiters = new Map<
     number,
@@ -405,7 +400,6 @@ async function mountVisionSceneNow(
         canvas,
         presentation,
         presenter: null,
-        bridge: mediaBridge,
         lifetime: lifetime!,
         sequence: 0,
         owner,
@@ -583,7 +577,7 @@ async function mountVisionSceneNow(
     )) as PresenterModule;
     if (!presenter)
       presenter = persistent
-        ? createSessionPresenter(presenterModule, canvas, mediaBridge)
+        ? createSessionPresenter(presenterModule, canvas)
         : presenterModule.createMainThreadPresenter(canvas, {
             fetch: async (
               input: RequestInfo | URL,
@@ -606,13 +600,11 @@ async function mountVisionSceneNow(
               return fetch(input, init);
             },
             loadWasm: async () =>
-              mediaBridge.module(
-                await import(
-                  /* @vite-ignore */ new URL(
-                    "vision/pkg/lumencast_vision_web.js",
-                    document.baseURI,
-                  ).href
-                ),
+              import(
+                /* @vite-ignore */ new URL(
+                  "vision/pkg/lumencast_vision_web.js",
+                  document.baseURI,
+                ).href
               ),
           });
     if (session?.closed) {
@@ -802,11 +794,11 @@ async function mountVisionSceneNow(
       await presenter!.flush();
       if (disposed) throw new Error("Vision scene is disconnected.");
       if (Object.keys(frame.patch).length > 0) {
-        // Upload camera pixels before the state patch's one real GPU render.
-        mediaBridge.upload(frame.frames);
+        // Stage camera pixels inside the serialized presenter, before one GPU submission.
         const acknowledgement = await requestFrame({
           type: "patch",
           patchJson: JSON.stringify(frame.patch),
+          ...(frame.frames.length > 0 ? { frames: frame.frames } : {}),
           ...(frame.images ? { images: frame.images } : {}),
         });
         return mediaSubmitReceipt(acknowledgement);

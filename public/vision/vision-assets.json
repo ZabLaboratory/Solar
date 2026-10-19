@@ -2,12 +2,12 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-  "source_revision": "2c03ae158f5d4d4ea93a02a278976e5b09a5d80d",
-  "source_state": "Vision measures intrinsic image dimensions from admitted bytes and preserves ordered capture-adjacent paint islands. Previously published x-zab.capture nodes without id derive a qualified legacy source alias from the logical source kind and device ref; authored ids remain authoritative. Solar pins the generated JS and WASM from the signed Vision commit; physical cockpit opening is qualified separately in Prism.",
+  "source_revision": "1e14d95af94052187a20c59c89871aa1a3dda43b",
+  "source_state": "Vision measures intrinsic image dimensions from admitted bytes and preserves ordered capture-adjacent paint islands. The main presenter serializes camera bitmap staging with scene loads and patches on its one Rust/WASM engine. Previously published x-zab.capture nodes without id derive a qualified legacy source alias from the logical source kind and device ref; authored ids remain authoritative. Solar pins the presenter, generated JS and WASM from the Vision source commit; physical cockpit opening is qualified separately in Prism.",
   "files": {
     "ui/mainpresenter.mjs": {
-      "sha256": "1046dafdf9d1544dd15e17d24b57dcf8e32fdf74a140285b5f200ca544ccf508",
-      "bytes": 43272
+      "sha256": "8d22a413bd596c4ead6a7378e7c972264f5358b9fef467efdfaff90e4987cf41",
+      "bytes": 43624
     },
     "ui/fonts.mjs": {
       "sha256": "d49ed45181a8aa714f675aaa24f5439e9547b274d6eba6cd2bb995c981765c5f",
@@ -26,11 +26,12 @@
     "repository": "Lumencast/lumencast-vision",
     "engine_branch": "main",
     "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-    "engine_commit": "2c03ae158f5d4d4ea93a02a278976e5b09a5d80d",
-    "engine_tree": "1b37ed890ce0c748f8157968e5153ec7349a62eb",
+    "engine_commit": "1e14d95af94052187a20c59c89871aa1a3dda43b",
+    "engine_tree": "2b4d1d742ca220947eb88f6aff29aa5004d203f1",
     "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
     "source_files": {
       "crates/vision-web/src/lib.rs": "b52284cfaa11345bf826591889dd10895daf5295",
+      "crates/vision-web/ui/mainpresenter.mjs": "1a72d2fd949d1be41b1c06b91a0c197d29ad18b9",
       "crates/vision-gpu/src/renderer/contribution.rs": "9d97bc50ccf29cc7f587a5bd63e6996272468d64",
       "crates/vision-gpu/src/renderer/contribution/encode.rs": "33ec6b786e78416748d82993025f0ce0fc551c76",
       "crates/vision-gpu/src/renderer/contribution/draw.rs": "0d5eb955022279e4db9d62a5c9d6dabda9aae1e6",

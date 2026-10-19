@@ -249,9 +249,11 @@ instead of the host's 60 Hz RAF. Pending scalar values and the latest owned
 bitmap per camera can share one actual frame; every caller waits for completion.
 Camera-only work schedules the same immediate task as state; arrivals before
 that task share a submission without a fixed timer delay. Superseded and consumed
-bitmaps are released, and failure rejects all covered callers. The supported
-`loadWasm` dependency captures the real engine in `vision-media-bridge.ts`,
-allowing camera upload before the same patch submission. This scheduling
+bitmaps are released, and failure rejects all covered callers.
+Camera pixels accompanying a patch enter the presenter's serialized queue before
+its state mutation and one GPU submission; no host-side engine call can overlap
+scene admission. `vision-media-sources.ts` publishes frame-coherent media
+descriptors. This scheduling
 policy is not evidence that the engine achieves 120 completed
 mutation frames/s; fixed-window CEF measurements establish that separately.
 The retained Vision candidate, independent encoded-counter checks and fixed
@@ -404,8 +406,8 @@ local capture paths explicitly delegated by that receipt to Main/Pulsar from
 Vision raster inputs. No physical capture resolver/upload is started for those
 delegated paths; rejected frames retain the previous accepted media list.
 Canonical rendering keeps its existing immediate media descriptor updates.
-The accepted/pending descriptor state lives in `VisionMediaSources` beside the
-existing WASM media bridge. The presenter calls `accept` only after identity,
+The accepted/pending descriptor state lives in `VisionMediaSources`. The
+presenter calls `accept` only after identity,
 revision and canvas validation; this is media ownership, without an extra render,
 wait, engine or transition/readiness step.
 
