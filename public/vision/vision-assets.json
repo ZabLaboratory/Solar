@@ -2,7 +2,7 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-  "source_revision": "cf7b190d9fdf21b0028d97eb91022e1a29da9161",
+  "source_revision": "2c03ae158f5d4d4ea93a02a278976e5b09a5d80d",
   "source_state": "Vision measures intrinsic image dimensions from admitted bytes and preserves ordered capture-adjacent paint islands. Previously published x-zab.capture nodes without id derive a qualified legacy source alias from the logical source kind and device ref; authored ids remain authoritative. Solar pins the generated JS and WASM from the signed Vision commit; physical cockpit opening is qualified separately in Prism.",
   "files": {
     "ui/mainpresenter.mjs": {
@@ -18,22 +18,22 @@
       "bytes": 157228
     },
     "pkg/lumencast_vision_web_bg.wasm": {
-      "sha256": "b04f0eb2153c715065eb8b8b70867b75ecb73d90928eb8cf568c7f5db69232e8",
-      "bytes": 10632333
+      "sha256": "11a62c01433c899aed96e2a49f98321924e68f542beded3d0a16f22f8fce10cc",
+      "bytes": 10631999
     }
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_branch": "eleven/local-20261018-empty-capture-contribution",
+    "engine_branch": "main",
     "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-    "engine_commit": "cf7b190d9fdf21b0028d97eb91022e1a29da9161",
-    "engine_tree": "d5746b9f4e8bf2a1adab55e012f72fb934df01d5",
+    "engine_commit": "2c03ae158f5d4d4ea93a02a278976e5b09a5d80d",
+    "engine_tree": "1b37ed890ce0c748f8157968e5153ec7349a62eb",
     "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
     "source_files": {
-      "crates/vision-web/src/lib.rs": "fe06cd9a28cc891071e70bb8f9bd3fd241e242d7632db41bf35c5207af675a69",
-      "crates/vision-gpu/src/renderer/contribution.rs": "dde639dd694eba69f8ccf5d492942c2fc11a6a63",
-      "crates/vision-gpu/src/renderer/contribution/encode.rs": "072ee195afe3e14cd3d38a54799b036333bac29e",
-      "crates/vision-gpu/src/renderer/contribution/draw.rs": "7dde0b137c06d6e271d51df446b0063cd59133ab",
+      "crates/vision-web/src/lib.rs": "b52284cfaa11345bf826591889dd10895daf5295",
+      "crates/vision-gpu/src/renderer/contribution.rs": "9d97bc50ccf29cc7f587a5bd63e6996272468d64",
+      "crates/vision-gpu/src/renderer/contribution/encode.rs": "33ec6b786e78416748d82993025f0ce0fc551c76",
+      "crates/vision-gpu/src/renderer/contribution/draw.rs": "0d5eb955022279e4db9d62a5c9d6dabda9aae1e6",
       "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "eaa052279e881b9301b804093de13e51c7c04001"
     },
     "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T111626Z-agent-report.md",
