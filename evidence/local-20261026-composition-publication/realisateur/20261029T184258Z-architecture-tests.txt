@@ -1,0 +1,25 @@
+
+> @zablab/solar@3.0.1 test:architecture
+> node --test tests/tooling/*.test.mjs
+
+✔ test imports cannot retain an orphan or an unused product export (4730.5636ms)
+✔ worker is reached through its actual URL edge and disappears when that edge is removed (7572.4426ms)
+✔ public type aliases/re-exports remain contracts and broken imports/dependencies fail (5504.8193ms)
+✔ documentation detects broken links/headings, commands, paths and unowned tools (32.907ms)
+✔ historical evidence and external repository commands stay outside Solar documentation checks (24.7382ms)
+✔ emitted Solar host contract advertises native composition without changing v2 (6.8372ms)
+✔ a complete old v2 host without only native composition is rejected (0.8267ms)
+✔ release manifest declares the protocol actually packaged with Solar (580.7691ms)
+✔ a different source revision refuses before changing the packaged binary or manifest (492.8701ms)
+✔ an invalid existing manifest schema refuses before package mutation (176.2948ms)
+✔ invalid arguments refuse without touching an existing package (269.4757ms)
+✔ a missing source binary refuses before changing the packaged files (269.3214ms)
+✔ matching source revision adds another platform and keeps the package verifiable (671.0015ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 19016.5801

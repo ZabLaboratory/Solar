@@ -1,0 +1,17 @@
+
+ RUN  v4.1.11 <SOLAR_WORKTREE>
+
+ ✓ tests/unit/native-lsdp-runtime.test.ts (33 tests) 1814ms
+     ✓ receives all 512 states in order and confirms every identity after their covering frame  437ms
+ ✓ tests/unit/native-lsdp-runtime-composition.test.ts (17 tests) 554ms
+ ✓ tests/unit/native-composition-publisher.test.ts (11 tests) 121ms
+ ✓ tests/unit/native-composition.test.ts (11 tests) 24ms
+ ✓ tests/unit/native-composition-session.test.ts (3 tests) 335ms
+ ✓ tests/unit/frame-patches.test.ts (4 tests) 26ms
+
+ Test Files  6 passed (6)
+      Tests  79 passed (79)
+   Start at  19:42:44
+   Duration  15.87s (transform 1.92s, setup 0ms, import 2.74s, tests 2.87s, environment 7.81s)
+
+JSON report written to <SOLAR_WORKTREE>/evidence/local-20261026-composition-publication/realisateur/20261029T184112Z-after-tests.json

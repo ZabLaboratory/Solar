@@ -114,6 +114,12 @@ export class NativeCompositionSession {
     this.publish(projection, document, stateHash);
   }
 
+  /** Bind a retained/committed projection to the newly accepted source state. */
+  acceptCurrent(document: LSMLDocument | null, stateHash: unknown): void {
+    if (document) this.accept(this.activeProjection, document, stateHash);
+    else this.clear();
+  }
+
   acceptDocument(
     document: LSMLDocument,
     scene: VisionSceneHandle,

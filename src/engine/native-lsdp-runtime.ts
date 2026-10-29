@@ -460,6 +460,8 @@ export class NativeLsdpRuntime {
         this.presentedDocument = document;
         if (document) await this.updatePlayback(document);
         else this.sound.clear();
+        check();
+        if (handled) this.composition.acceptCurrent(document, hash);
         this.nativeState = state;
         this.hasSnapshot = true;
         this.hash = hash;
@@ -657,6 +659,8 @@ export class NativeLsdpRuntime {
     this.presentedDocument = next;
     if (next && changed) await this.updatePlayback(next);
     else if (!next) this.sound.clear();
+    check();
+    if (coordinated || !changed) this.composition.acceptCurrent(next, hash);
     this.nativeState = state;
     this.hash = hash;
     this.sequence = event.sequence;
@@ -957,11 +961,7 @@ export class NativeLsdpRuntime {
       media.resume();
       if (previous && previous.media !== media) previous.media.dispose();
       if (compositionStateHash !== undefined)
-        this.composition.accept(
-          frame.composition,
-          document,
-          compositionStateHash,
-        );
+        this.composition.acceptCurrent(document, compositionStateHash);
     } catch (error) {
       if (!committed) {
         if (!reusedMedia) media?.dispose();

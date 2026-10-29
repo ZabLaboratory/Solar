@@ -1,0 +1,3 @@
+
+> @zablab/solar@3.0.1 lint
+> eslint --max-warnings 0 .

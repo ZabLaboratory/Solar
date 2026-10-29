@@ -1,0 +1,209 @@
+
+ RUN  v4.1.11 <SOLAR_WORKTREE>
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts (17 tests | 9 failed) 621ms
+     × renews the source hash on coordinated prepare with identical layout 98ms
+     × renews the source hash on coordinated commit with identical layout 56ms
+     × renews the source hash on coordinated finalize with identical layout 40ms
+     ✓ renews the source hash on coordinated cleanup with identical layout 48ms
+     × binds the restored projection to the abort hash and replays only that state to a replacement peer 52ms
+     × publishes a joining coordinated commit snapshot with its full resource hash 32ms
+     × publishes a joining coordinated finalize snapshot with its full resource hash 31ms
+     × publishes a joining coordinated abort snapshot with its full resource hash 31ms
+     × keeps the accepted projection on failed staging and rejects invalid phases without publication 39ms
+     ✓ cannot publish a coordinated state after stopping during feedback 45ms
+     × refreshes the full resource hash when only another selected entry changes 46ms
+     ✓ publishes the accepted Vision receipt and refreshes it after a scalar patch 49ms
+     ✓ reconnects only the composition peer with a fresh token and the latest accepted state 47ms
+   ✓ gives primary reconnection priority over a pending composition retry 1ms
+   ✓ does not reset composition backoff when peer construction returns 1ms
+   ✓ rejects a composition token fetch superseded by primary token refresh 1ms
+   ✓ does not admit a token fetch from a stopped composition lifetime 0ms
+
+ Test Files  1 failed (1)
+      Tests  9 failed | 8 passed (17)
+   Start at  19:42:39
+   Duration  3.88s (transform 1.20s, setup 0ms, import 1.53s, tests 621ms, environment 1.22s)
+
+JSON report written to <SOLAR_WORKTREE>/evidence/local-20261026-composition-publication/realisateur/20261029T184112Z-before-tests.json
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > renews the source hash on coordinated prepare with identical layout
+AssertionError: expected 'tree-sha256:ba0b24717acfae4191052ff6f…' to be 'tree-sha256:9755c8f7e869869a8aef75fdb…' // Object.is equality
+
+Expected: "tree-sha256:9755c8f7e869869a8aef75fdb82993b3b26f49bca099fdccac6437e8e86d3c91"
+Received: "tree-sha256:ba0b24717acfae4191052ff6fb02e6d683c4651b38be9490cd0722b11878c885"
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:331:31
+    329|             phase === "prepare" ? ready.initial : ready.candidate,
+    330|           );
+    331|           expect(accepted[2]).toBe(hash);
+       |                               ^
+    332|           expect(accepted[0]).toEqual(initialProjection);
+    333|           break;
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > renews the source hash on coordinated commit with identical layout
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > renews the source hash on coordinated finalize with identical layout
+AssertionError: expected { lsml: '1.1', …(4) } to deeply equal { lsml: '1.1', …(4) }
+
+- Expected
++ Received
+
+@@ -1,8 +1,8 @@
+  {
+    "defaults": {
+-     "__lit.text.title": "candidate",
++     "__lit.text.title": "before",
+    },
+    "layout": {
+      "children": [],
+      "type": "frame",
+    },
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:328:31
+    326|           if (phase !== acceptedPhase) continue;
+    327|           const accepted = mocks.composition.publish.mock.calls.at(-1)…
+    328|           expect(accepted[1]).toEqual(
+       |                               ^
+    329|             phase === "prepare" ? ready.initial : ready.candidate,
+    330|           );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > binds the restored projection to the abort hash and replays only that state to a replacement peer
+AssertionError: expected [ { …(7) }, …(2) ] to deeply equal [ { …(7) }, …(2) ]
+
+- Expected
++ Received
+
+@@ -130,7 +130,7 @@
+      },
+      "lsml": "1.1",
+      "scene_id": "real-source",
+      "scene_version": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    },
+-   "tree-sha256:066d7ca89dc240c93412fe8f5f86d7385bf146da168c0b48285e513d5eb89170",
++   "tree-sha256:ba0b24717acfae4191052ff6fb02e6d683c4651b38be9490cd0722b11878c885",
+  ]
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:357:59
+    355|       await vi.advanceTimersByTimeAsync(250);
+    356|       expect(mocks.compositionPublishers).toHaveLength(2);
+    357|       expect(mocks.composition.publish.mock.calls.at(-1)).toEqual([
+       |                                                           ^
+    358|         initialProjection,
+    359|         ready.initial,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > publishes a joining coordinated commit snapshot with its full resource hash
+AssertionError: expected undefined to be 'tree-sha256:0556db0865bb51304224774e2…' // Object.is equality
+
+- Expected:
+"tree-sha256:0556db0865bb51304224774e28ce93a1ada12c1d047ccd495f4ff6236ecfc5a6"
+
++ Received:
+undefined
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:383:66
+    381|       const ready = await setup(initial);
+    382|       try {
+    383|         expect(mocks.composition.publish.mock.calls.at(-1)?.[2]).toBe(
+       |                                                                  ^
+    384|           nativeTreeHash(initial),
+    385|         );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > publishes a joining coordinated finalize snapshot with its full resource hash
+AssertionError: expected undefined to be 'tree-sha256:ee88fd96bf0e9a61d6b2718f4…' // Object.is equality
+
+- Expected:
+"tree-sha256:ee88fd96bf0e9a61d6b2718f432ffc08ee37b8c0f216384e9906f7b10679eba7"
+
++ Received:
+undefined
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:383:66
+    381|       const ready = await setup(initial);
+    382|       try {
+    383|         expect(mocks.composition.publish.mock.calls.at(-1)?.[2]).toBe(
+       |                                                                  ^
+    384|           nativeTreeHash(initial),
+    385|         );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > publishes a joining coordinated abort snapshot with its full resource hash
+AssertionError: expected undefined to be 'tree-sha256:bdb3730bf78968d3d915f6c1f…' // Object.is equality
+
+- Expected:
+"tree-sha256:bdb3730bf78968d3d915f6c1fde395c99e74293ca9deaf1872b20fe3c095e355"
+
++ Received:
+undefined
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:383:66
+    381|       const ready = await setup(initial);
+    382|       try {
+    383|         expect(mocks.composition.publish.mock.calls.at(-1)?.[2]).toBe(
+       |                                                                  ^
+    384|           nativeTreeHash(initial),
+    385|         );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > keeps the accepted projection on failed staging and rejects invalid phases without publication
+AssertionError: expected [ { …(7) }, …(2) ] to deeply equal [ { …(7) }, …(2) ]
+
+- Expected
++ Received
+
+@@ -130,7 +130,7 @@
+      },
+      "lsml": "1.1",
+      "scene_id": "real-source",
+      "scene_version": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    },
+-   "tree-sha256:9755c8f7e869869a8aef75fdb82993b3b26f49bca099fdccac6437e8e86d3c91",
++   "tree-sha256:ba0b24717acfae4191052ff6fb02e6d683c4651b38be9490cd0722b11878c885",
+  ]
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:403:59
+    401|         phase: "failed",
+    402|       });
+    403|       expect(mocks.composition.publish.mock.calls.at(-1)).toEqual([
+       |                                                           ^
+    404|         initialProjection,
+    405|         ready.initial,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  tests/unit/native-lsdp-runtime-composition.test.ts > native Solar composition attachment > refreshes the full resource hash when only another selected entry changes
+AssertionError: expected [ { …(7) }, …(2) ] to deeply equal [ { …(7) }, …(2) ]
+
+- Expected
++ Received
+
+@@ -130,7 +130,7 @@
+      },
+      "lsml": "1.1",
+      "scene_id": "real-source",
+      "scene_version": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    },
+-   "tree-sha256:fe44cc74182a034a75937d4cf2fee69d7f03ab5bb0db2e60ec9b95f95aed5227",
++   "tree-sha256:e6f9c97ff1e0836f88d0c01040773bacc3a709a103898e4d90829934ecadcfb5",
+  ]
+
+ ❯ tests/unit/native-lsdp-runtime-composition.test.ts:455:59
+    453|         other: { ...document, defaults: { "__lit.text.title": "edited"…
+    454|       };
+    455|       expect(mocks.composition.publish.mock.calls.at(-1)).toEqual([
+       |                                                           ^
+    456|         projection,
+    457|         document,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯

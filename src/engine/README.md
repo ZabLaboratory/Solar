@@ -75,6 +75,14 @@ recovery takes priority and runtime disconnect cancels pending composition work.
 `NativeCompositionSession` stores accepted source state while the peer is absent
 and replays that latest state when a replacement peer starts; it reports retry
 success only after the replacement peer completes its first current publication.
+Coordinated prepare/commit/finalize/abort admissions also bind the retained or
+activated projection to the exact accepted resource hash, including joining
+snapshots and source changes outside a selected entry. Identical geometry does
+not imply an identical source hash. Runtime lifetime checks precede this binding;
+rejected or stopped deliveries cannot replace the accepted publication.
+`use` changes only the active projection during staging; `acceptCurrent` records
+and publishes that projection after source admission, or clears an empty scene.
+The existing publisher still owns plan hashing, latest-state coalescing and CAS.
 When the trusted host config enables `nativeCompositionLSDP`, the runtime projects
 compositor metadata from the accepted Vision receipt of that active scene and
 publishes it with the exact LSDP state hash to the separate `solar/composition`

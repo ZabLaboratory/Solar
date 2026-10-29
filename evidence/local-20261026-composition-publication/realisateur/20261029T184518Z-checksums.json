@@ -1,0 +1,66 @@
+{
+  "schema": "solar.composition-publication.checksums.v1",
+  "base": "caab7a2c3994b3954348ef6167de934e95a6677a",
+  "files": [
+    {
+      "path": "docs/development/code-map.md",
+      "sha256": "414ac331a2b85f4db0a4ca29db796f8c491b505405ac0551d6d47cc073e1ac0c"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184112Z-after-tests.json",
+      "sha256": "6677212e26012cac835bab49b45c35a312ee08a5f181ac056216ae72d920f76d"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184112Z-after-tests.txt",
+      "sha256": "3cdeaadc495dae6cd413eb2f567e7aefc7ec2d89f07c6572468b7b9260398cb6"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184112Z-before-tests.json",
+      "sha256": "ebcd950023de55e1bca5d55480108dbee05b210f75b44dc9522b8cc1b87f3a60"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184112Z-before-tests.txt",
+      "sha256": "01489208e7bc0949e0f11296e16b4e95f95c76f253c7e5227e6d00a5230328d6"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184258Z-architecture-tests.txt",
+      "sha256": "5c98910b77b598e48a741483ccabdacddf14e4c2038dd69bf8a45940f82e323a"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184258Z-architecture.txt",
+      "sha256": "6ee1dd4cea964c8a8178ce35d805992dcae9cd06a62422abbc4cedb5ca366122"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184258Z-lint.txt",
+      "sha256": "e51b07f2f784e48d3ca441f93c962423fae97033a4254400cd677229188e7891"
+    },
+    {
+      "path": "evidence/local-20261026-composition-publication/realisateur/20261029T184258Z-typecheck.txt",
+      "sha256": "a20f8cee9083300dda173863c9c9d7fb4d2c35f781bcb91e615f0f073f142078"
+    },
+    {
+      "path": "src/engine/native-composition-session.ts",
+      "sha256": "f1bb341d484f345940bea43cedd7b4aabcc21e267f45422b3aafc068875240c9"
+    },
+    {
+      "path": "src/engine/native-lsdp-runtime.ts",
+      "sha256": "48642597adcd5fab253b7d7e45fe4504e1593ef38c6ad3797f186946375a26f3"
+    },
+    {
+      "path": "src/engine/README.md",
+      "sha256": "0158cfbba49b5b7c7dc4dea52b791c35f3c9aee9001e650d4adb076708bab1f7"
+    },
+    {
+      "path": "tests/unit/native-composition-publisher.test.ts",
+      "sha256": "805a4ce4dd250a16dde9c0b7543ff493a104330f6b84b42c874adccb73ef7ab9"
+    },
+    {
+      "path": "tests/unit/native-composition-session.test.ts",
+      "sha256": "16b22ed1afdc8dbd69cad32f70d0c9cc9be6a6c5579ea0c402d1daa75a44ccb8"
+    },
+    {
+      "path": "tests/unit/native-lsdp-runtime-composition.test.ts",
+      "sha256": "ca6aace4e016936220f97523964ba3ac08390ccc60a6afccf1cfc4e241fa25ae"
+    }
+  ]
+}
