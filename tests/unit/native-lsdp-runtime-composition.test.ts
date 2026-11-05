@@ -25,7 +25,14 @@ const mocks = vi.hoisted(() => ({
   prewarm: vi.fn(async () => {}),
   disconnectSession: vi.fn(),
   activate: vi.fn(),
-  feedback: vi.fn(async () => {}),
+  feedback: vi.fn(
+    async (
+      _url: string,
+      _lane: string,
+      _value: unknown,
+      _signal: AbortSignal,
+    ) => {},
+  ),
   media: {
     update: vi.fn(),
     refresh: vi.fn(),
@@ -121,40 +128,39 @@ const origin: SceneSourceDelivery = {
   blueManifest: nativeManifest(document.scene_id, version),
 };
 
-async function setup(initial: unknown, token: MountOptions["token"] = "") {
-  let handleSceneId = "";
-  let handleSceneVersion = "";
-  let acceptedFrame: ReturnType<typeof compositionFrame> | null = null;
-  const scene = {
-    get sceneId() {
-      return handleSceneId;
-    },
-    get sceneVersion() {
-      return handleSceneVersion;
-    },
-    get compositionFrame() {
-      return acceptedFrame;
-    },
-    applyPatch: vi.fn(async () => {
-      if (acceptedFrame)
-        acceptedFrame = {
-          ...acceptedFrame,
-          pixelRevision: (BigInt(acceptedFrame.pixelRevision) + 1n).toString(),
+async function setup(
+  initial: unknown,
+  token: MountOptions["token"] = "",
+  selector?: string,
+  varyProjection = false,
+) {
+  const scenes: Array<ReturnType<typeof makeScene>> = [];
+  function makeScene(frame: ReturnType<typeof compositionFrame>) {
+    return {
+      sceneId: frame.sceneId,
+      sceneVersion: frame.sceneVersion,
+      get compositionFrame() {
+        return frame;
+      },
+      applyPatch: vi.fn(async () => {
+        frame = {
+          ...frame,
+          pixelRevision: (BigInt(frame.pixelRevision) + 1n).toString(),
         };
-    }),
-    clearMedia: vi.fn(async () => {}),
-    canApplyPatch: vi.fn(() => true),
-    dispose: vi.fn(),
-    mediaSources: [],
-    activate: vi.fn(),
-    feedback: vi.fn(async () => {}),
-    flush: vi.fn(async () => {}),
-  };
+      }),
+      clearMedia: vi.fn(async () => {}),
+      canApplyPatch: vi.fn(() => true),
+      dispose: vi.fn(),
+      mediaSources: [],
+      activate: vi.fn(),
+      deactivate: vi.fn(),
+      feedback: vi.fn(async () => {}),
+      flush: vi.fn(async () => {}),
+    };
+  }
   mocks.mount.mockImplementation(async (...args: unknown[]) => {
     const source = args[1] as SceneSourceDelivery;
     const renderPackage = args[5] as { sceneVersion: string };
-    handleSceneId = source.sceneId;
-    handleSceneVersion = renderPackage.sceneVersion;
     const frame = compositionFrame();
     frame.sceneId = source.sceneId;
     frame.sceneVersion = renderPackage.sceneVersion;
@@ -164,10 +170,12 @@ async function setup(initial: unknown, token: MountOptions["token"] = "") {
     frame.canvasSize = [640, 480];
     frame.owners[0]!.localSize = [640, 480];
     frame.owners[0]!.localToWorld = [1, 0, 0, 1, 0, 0];
+    if (varyProjection && scenes.length > 0) frame.owners[0]!.opacity = 0.5;
     frame.captures[0]!.localToWorld = [1, 0, 0, 1, 20, 30];
     frame.surfaces[0]!.sceneRect = [0, 0, 640, 480];
     frame.surfaces[0]!.atlasRect = [0, 0, 640, 480];
-    acceptedFrame = frame;
+    const scene = makeScene(frame);
+    scenes.push(scene);
     return scene;
   });
   const resource = "solar/lane-a";
@@ -176,6 +184,7 @@ async function setup(initial: unknown, token: MountOptions["token"] = "") {
     nativeLSDP: {
       url: "ws://127.0.0.1:4520/lsdp",
       resource,
+      selector,
     },
     nativeComposition: { width: 640, height: 480 },
     nativeCompositionLSDP: {
@@ -213,7 +222,7 @@ async function setup(initial: unknown, token: MountOptions["token"] = "") {
   });
   await receive(structuredClone(initial), context("lsdp.state.read/1"));
   await turn();
-  return { runtime, scene, receive, context };
+  return { runtime, scene: scenes[0]!, scenes, receive, context, options };
 }
 
 function documentElement(): HTMLElement {
@@ -256,6 +265,203 @@ describe("native Solar composition attachment", () => {
     mocks.peers.length = 0;
     mocks.compositionPublishers.length = 0;
     mocks.compositionPublisherOptions = null;
+  });
+
+  async function coordinated(varyProjection = false) {
+    const initial = structuredClone(document);
+    const candidate = {
+      ...initial,
+      defaults: { "__lit.text.title": "candidate" },
+    };
+    const ready = await setup(initial, "", undefined, varyProjection);
+    let state: unknown = initial;
+    let sequence = 0;
+    const deliver = async (phase: string) => {
+      const value =
+        phase === "cleanup"
+          ? candidate
+          : {
+              ...(phase === "commit" || phase === "finalize"
+                ? candidate
+                : initial),
+              "x-solar-transition": {
+                request_id: "composition-selection",
+                phase,
+                lane: "preview",
+                ...(phase === "prepare" ? { source: candidate } : {}),
+              },
+            };
+      const transactionId = String(++sequence).padStart(32, "0");
+      const receipt = await ready.receive(
+        {
+          kind: "applied_change",
+          sequence,
+          mutation: {
+            format: "lsdp.apply/1",
+            id: transactionId,
+            target: "solar/lane-a",
+            beforeHash: nativeTreeHash(state),
+            operations: [{ op: "replace", path: "", value }],
+          },
+          receipt: { target: "solar/lane-a", transactionId, level: "applied" },
+        },
+        ready.context("lsdp.state.subscription/1"),
+      );
+      state = value;
+      expect(receipt).toEqual({ level: "applied", transactionId });
+      return nativeTreeHash(value);
+    };
+    return { ...ready, initial, candidate, deliver };
+  }
+
+  it.each(["prepare", "commit", "finalize", "cleanup"])(
+    "renews the source hash on coordinated %s with identical layout",
+    async (acceptedPhase) => {
+      const ready = await coordinated();
+      const initialProjection =
+        mocks.composition.publish.mock.calls.at(-1)?.[0];
+      try {
+        for (const phase of ["prepare", "commit", "finalize", "cleanup"]) {
+          const hash = await ready.deliver(phase);
+          if (phase !== acceptedPhase) continue;
+          const accepted = mocks.composition.publish.mock.calls.at(-1)!;
+          expect(accepted[1]).toEqual(
+            phase === "prepare" ? ready.initial : ready.candidate,
+          );
+          expect(accepted[2]).toBe(hash);
+          expect(accepted[0]).toEqual(initialProjection);
+          break;
+        }
+        // A repeated identical state still admits the exact hash without remounting.
+        await ready.deliver(acceptedPhase);
+        expect(mocks.mount).toHaveBeenCalledTimes(2);
+        expect(ready.options.onError).not.toHaveBeenCalled();
+      } finally {
+        ready.runtime.disconnect();
+      }
+    },
+  );
+
+  it("binds the restored projection to the abort hash and replays only that state to a replacement peer", async () => {
+    const ready = await coordinated(true);
+    const initialProjection = mocks.composition.publish.mock.calls.at(-1)?.[0];
+    try {
+      await ready.deliver("prepare");
+      await ready.deliver("commit");
+      expect(ready.scenes[1]!.compositionFrame.owners[0]!.opacity).toBe(0.5);
+      vi.useFakeTimers();
+      mocks.compositionPublishers[0]!.onDisconnected(new Error("peer closed"));
+      const hash = await ready.deliver("abort");
+      await vi.advanceTimersByTimeAsync(250);
+      expect(mocks.compositionPublishers).toHaveLength(2);
+      expect(mocks.composition.publish.mock.calls.at(-1)).toEqual([
+        initialProjection,
+        ready.initial,
+        hash,
+      ]);
+      expect(ready.scenes[0]!.activate).toHaveBeenCalledOnce();
+      expect(ready.scenes[1]!.dispose).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+      ready.runtime.disconnect();
+    }
+  });
+
+  it.each(["commit", "finalize", "abort"])(
+    "publishes a joining coordinated %s snapshot with its full resource hash",
+    async (phase) => {
+      const initial = {
+        ...document,
+        "x-solar-transition": {
+          request_id: "snapshot-selection",
+          phase,
+          lane: "preview",
+        },
+      };
+      const ready = await setup(initial);
+      try {
+        expect(mocks.composition.publish.mock.calls.at(-1)?.[2]).toBe(
+          nativeTreeHash(initial),
+        );
+        expect(mocks.composition.publish.mock.calls.at(-1)?.[0]).toBeTruthy();
+        expect(ready.options.onError).not.toHaveBeenCalled();
+      } finally {
+        ready.runtime.disconnect();
+      }
+    },
+  );
+
+  it("keeps the accepted projection on failed staging and rejects invalid phases without publication", async () => {
+    const ready = await coordinated();
+    const initialProjection = mocks.composition.publish.mock.calls.at(-1)?.[0];
+    try {
+      mocks.mount.mockRejectedValueOnce(new Error("renderer refused"));
+      const hash = await ready.deliver("prepare");
+      expect(mocks.feedback.mock.calls.at(-1)?.[2]).toMatchObject({
+        phase: "failed",
+      });
+      expect(mocks.composition.publish.mock.calls.at(-1)).toEqual([
+        initialProjection,
+        ready.initial,
+        hash,
+      ]);
+      const publications = mocks.composition.publish.mock.calls.length;
+      await expect(ready.deliver("invalid")).rejects.toThrow(
+        "SOLAR_TRANSITION_INVALID",
+      );
+      expect(mocks.composition.publish).toHaveBeenCalledTimes(publications);
+    } finally {
+      ready.runtime.disconnect();
+    }
+  });
+
+  it("cannot publish a coordinated state after stopping during feedback", async () => {
+    const ready = await coordinated();
+    let release!: () => void;
+    let entered!: () => void;
+    const feedbackEntered = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    mocks.feedback.mockImplementationOnce(async () => {
+      entered();
+      await new Promise<void>((resolve) => {
+        release = resolve;
+      });
+    });
+    const publications = mocks.composition.publish.mock.calls.length;
+    const pending = ready.deliver("prepare");
+    const rejected = expect(pending).rejects.toThrow();
+    await feedbackEntered;
+    ready.runtime.disconnect();
+    release();
+    await rejected;
+    expect(mocks.composition.publish).toHaveBeenCalledTimes(publications);
+    expect(mocks.composition.retire).toHaveBeenCalledOnce();
+  });
+
+  it("refreshes the full resource hash when only another selected entry changes", async () => {
+    const initial = { selected: document, other: document };
+    const ready = await setup(initial, "", "selected");
+    const projection = mocks.composition.publish.mock.calls.at(-1)?.[0];
+    try {
+      const event = change();
+      event.mutation.beforeHash = nativeTreeHash(initial);
+      event.mutation.operations[0]!.path = "/other/defaults/__lit.text.title";
+      await ready.receive(event, ready.context("lsdp.state.subscription/1"));
+      const expected = {
+        selected: document,
+        other: { ...document, defaults: { "__lit.text.title": "edited" } },
+      };
+      expect(mocks.composition.publish.mock.calls.at(-1)).toEqual([
+        projection,
+        document,
+        nativeTreeHash(expected),
+      ]);
+      expect(ready.scene.applyPatch).not.toHaveBeenCalled();
+      expect(mocks.mount).toHaveBeenCalledOnce();
+    } finally {
+      ready.runtime.disconnect();
+    }
   });
 
   it("publishes the accepted Vision receipt and refreshes it after a scalar patch", async () => {

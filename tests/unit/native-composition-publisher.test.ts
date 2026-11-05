@@ -319,6 +319,44 @@ it("publishes the active physical graph with source hash and retries only a CAS 
   });
 });
 
+it("deduplicates the same state but republishes an unchanged layout with a new source hash", async () => {
+  const shared: FakeShared = {
+    state: claimedState("host-a-incarnation-1"),
+    staleOnce: false,
+    applied: [],
+  };
+  const publisher = new NativeCompositionPublisher(
+    options(),
+    vi.fn(),
+    fakePeerFactory(shared),
+  );
+  const document = { scene_id: "scene-a", scene_version: "sha256:revision-a" };
+  const layout = projection();
+  await publisher.publish(layout, document, "tree-sha256:initial");
+  const first = (shared.state.graphs as Record<string, NativeCompositionPlan>)
+    .A!;
+  await publisher.publish(
+    structuredClone(layout),
+    document,
+    "tree-sha256:initial",
+  );
+  expect(shared.applied).toHaveLength(1);
+  await publisher.publish(
+    structuredClone(layout),
+    document,
+    "tree-sha256:committed",
+  );
+  const committed = (
+    shared.state.graphs as Record<string, NativeCompositionPlan>
+  ).A!;
+  expect(shared.applied).toHaveLength(2);
+  expect(committed.source.stateHash).toBe("tree-sha256:committed");
+  expect(committed.planHash).not.toBe(first.planHash);
+  expect(committed.groups).toEqual(first.groups);
+  expect(committed.surfaces).toEqual(first.surfaces);
+  await publisher.retire();
+});
+
 it("does not overwrite or retire a replacement producer after losing slot ownership", async () => {
   const shared = {
     state: claimedState("host-a-incarnation-1") as Record<string, unknown>,

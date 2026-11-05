@@ -201,6 +201,34 @@ it("replays the latest accepted LSML composition after the peer was offline", as
   await vi.waitFor(() => expect(state.graphs.A).toBeUndefined());
 });
 
+it("accepts an empty current scene as a clear and does not replay the retired plan", async () => {
+  const state: SharedCompositionState = {
+    schema: "solar.native-composition.state/1",
+    producers: { A: "host-a-current" },
+    graphs: {},
+  };
+  const peers: Array<{ authToken: string; onClose?: (error: Error) => void }> =
+    [];
+  const session = new NativeCompositionSession(
+    options(),
+    undefined,
+    undefined,
+    peerFactory(state, peers),
+  );
+  const document = scene("scene-a", "a");
+  session.start("token-a");
+  session.accept(projection(640), document, nativeTreeHash(document));
+  await vi.waitFor(() => expect(state.graphs.A).toBeDefined());
+  session.acceptCurrent(null, nativeTreeHash(null));
+  await vi.waitFor(() => expect(state.graphs.A).toBeUndefined());
+  expect(session.currentProjection).toBeNull();
+  peers[0]?.onClose?.(new Error("composition peer disconnected"));
+  session.start("token-b");
+  await vi.waitFor(() => expect(peers).toHaveLength(2));
+  expect(state.graphs.A).toBeUndefined();
+  session.retire();
+});
+
 it("refuses to accept a receipt from a different scene identity", () => {
   const session = new NativeCompositionSession(options());
   const documentA = scene("scene-a", "a");

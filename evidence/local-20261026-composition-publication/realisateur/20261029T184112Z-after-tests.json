@@ -1,0 +1,975 @@
+{
+  "numTotalTestSuites": 10,
+  "numPassedTestSuites": 10,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 79,
+  "numPassedTests": 79,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1793299364653,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "frame-paced scalar presentation"
+          ],
+          "fullName": "frame-paced scalar presentation merges 512 ordered states into one frame while retaining every receipt",
+          "status": "passed",
+          "title": "merges 512 ordered states into one frame while retaining every receipt",
+          "duration": 12.643499999999676,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "frame-paced scalar presentation"
+          ],
+          "fullName": "frame-paced scalar presentation retains arrivals during a blocked GPU submission and drains before structure work",
+          "status": "passed",
+          "title": "retains arrivals during a blocked GPU submission and drains before structure work",
+          "duration": 3.9490999999998166,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "frame-paced scalar presentation"
+          ],
+          "fullName": "frame-paced scalar presentation propagates presentation failure and cancels unapplied work on disconnect",
+          "status": "passed",
+          "title": "propagates presentation failure and cancels unapplied work on disconnect",
+          "duration": 3.0979999999999563,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "frame-paced scalar presentation"
+          ],
+          "fullName": "frame-paced scalar presentation uses render completion to drain arrivals without an extra empty animation frame",
+          "status": "passed",
+          "title": "uses render completion to drain arrivals without an extra empty animation frame",
+          "duration": 1.5898999999999432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299380540,
+      "endTime": 1793299380561.5898,
+      "status": "passed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/frame-patches.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "updates and retires a coverage graph while preserving the other producer",
+          "status": "passed",
+          "title": "updates and retires a coverage graph while preserving the other producer",
+          "duration": 33.04160000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "publishes the active physical graph with source hash and retries only a CAS conflict",
+          "status": "passed",
+          "title": "publishes the active physical graph with source hash and retries only a CAS conflict",
+          "duration": 7.418700000000172,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "deduplicates the same state but republishes an unchanged layout with a new source hash",
+          "status": "passed",
+          "title": "deduplicates the same state but republishes an unchanged layout with a new source hash",
+          "duration": 13.45959999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not overwrite or retire a replacement producer after losing slot ownership",
+          "status": "passed",
+          "title": "does not overwrite or retire a replacement producer after losing slot ownership",
+          "duration": 3.5696000000000367,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "publishes a capture-only graph with no Solar surface bands",
+          "status": "passed",
+          "title": "publishes a capture-only graph with no Solar surface bands",
+          "duration": 5.976699999999937,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not let a delayed old first write replace the Main-claimed producer",
+          "status": "passed",
+          "title": "does not let a delayed old first write replace the Main-claimed producer",
+          "duration": 11.131900000000087,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "cannot claim an empty slot after Main revokes the previous host",
+          "status": "passed",
+          "title": "cannot claim an empty slot after Main revokes the previous host",
+          "duration": 8.29359999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "bounds a slow publisher to one active write and the latest pending plan",
+          "status": "passed",
+          "title": "bounds a slow publisher to one active write and the latest pending plan",
+          "duration": 20.615999999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "lets clear supersede a pending plan behind the active write",
+          "status": "passed",
+          "title": "lets clear supersede a pending plan behind the active write",
+          "duration": 5.509299999999939,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "makes retire a terminal clear barrier behind an active write",
+          "status": "passed",
+          "title": "makes retire a terminal clear barrier behind an active write",
+          "duration": 6.785200000000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "reports a terminal peer close and retires without attempting a remote clear",
+          "status": "passed",
+          "title": "reports a terminal peer close and retires without attempting a remote clear",
+          "duration": 2.3874000000000706,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299374334,
+      "endTime": 1793299374452.3875,
+      "status": "passed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/native-composition-publisher.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "replays the latest accepted LSML composition after the peer was offline",
+          "status": "passed",
+          "title": "replays the latest accepted LSML composition after the peer was offline",
+          "duration": 202.51620000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "accepts an empty current scene as a clear and does not replay the retired plan",
+          "status": "passed",
+          "title": "accepts an empty current scene as a clear and does not replay the retired plan",
+          "duration": 127.86190000000033,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "refuses to accept a receipt from a different scene identity",
+          "status": "passed",
+          "title": "refuses to accept a receipt from a different scene identity",
+          "duration": 2.3319000000001324,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299377940,
+      "endTime": 1793299378272.3318,
+      "status": "passed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/native-composition-session.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [],
+          "fullName": "projects nested owners and interleaved global bands without applying owner affine twice",
+          "status": "passed",
+          "title": "projects nested owners and interleaved global bands without applying owner affine twice",
+          "duration": 6.808800000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "preserves independent nested owner opacity and capture own opacity",
+          "status": "passed",
+          "title": "preserves independent nested owner opacity and capture own opacity",
+          "duration": 0.6696999999999207,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "uses a unique child id per capture occurrence and requires its base author id",
+          "status": "passed",
+          "title": "uses a unique child id per capture occurrence and requires its base author id",
+          "duration": 2.093399999999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "uses the required native root id for the receipt root occurrence",
+          "status": "passed",
+          "title": "uses the required native root id for the receipt root occurrence",
+          "duration": 3.583299999999781,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "preserves authored framing units separately from the bounded upload texture",
+          "status": "passed",
+          "title": "preserves authored framing units separately from the bounded upload texture",
+          "duration": 1.0743999999999687,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "supports capture-only and paint-only receipts, including the transparent one-pixel canvas",
+          "status": "passed",
+          "title": "supports capture-only and paint-only receipts, including the transparent one-pixel canvas",
+          "duration": 1.1204999999999927,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "keeps exact viewport scaling and maps full rotation/shear into native matrix order",
+          "status": "passed",
+          "title": "keeps exact viewport scaling and maps full rotation/shear into native matrix order",
+          "duration": 0.4616000000000895,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "accepts only producer-classified exact viewport and image-bound clips",
+          "status": "passed",
+          "title": "accepts only producer-classified exact viewport and image-bound clips",
+          "duration": 0.8975000000000364,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "refuses masks and unsupported blend modes without dropping their facts",
+          "status": "passed",
+          "title": "refuses masks and unsupported blend modes without dropping their facts",
+          "duration": 0.4496999999998934,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "refuses canvas-limit, stale-identity and invalid-clip receipts",
+          "status": "passed",
+          "title": "refuses canvas-limit, stale-identity and invalid-clip receipts",
+          "duration": 0.5995000000000346,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "binds the published projection to the exact LSDP hash and receipt geometry",
+          "status": "passed",
+          "title": "binds the published projection to the exact LSDP hash and receipt geometry",
+          "duration": 3.6667999999999665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299375953,
+      "endTime": 1793299375974.6667,
+      "status": "passed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/native-composition.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated prepare with identical layout",
+          "status": "passed",
+          "title": "renews the source hash on coordinated prepare with identical layout",
+          "duration": 65.03070000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated commit with identical layout",
+          "status": "passed",
+          "title": "renews the source hash on coordinated commit with identical layout",
+          "duration": 41.04209999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated finalize with identical layout",
+          "status": "passed",
+          "title": "renews the source hash on coordinated finalize with identical layout",
+          "duration": 52.74319999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated cleanup with identical layout",
+          "status": "passed",
+          "title": "renews the source hash on coordinated cleanup with identical layout",
+          "duration": 34.36709999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment binds the restored projection to the abort hash and replays only that state to a replacement peer",
+          "status": "passed",
+          "title": "binds the restored projection to the abort hash and replays only that state to a replacement peer",
+          "duration": 54.471000000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes a joining coordinated commit snapshot with its full resource hash",
+          "status": "passed",
+          "title": "publishes a joining coordinated commit snapshot with its full resource hash",
+          "duration": 34.462999999999965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes a joining coordinated finalize snapshot with its full resource hash",
+          "status": "passed",
+          "title": "publishes a joining coordinated finalize snapshot with its full resource hash",
+          "duration": 32.617899999999736,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes a joining coordinated abort snapshot with its full resource hash",
+          "status": "passed",
+          "title": "publishes a joining coordinated abort snapshot with its full resource hash",
+          "duration": 33.68560000000025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment keeps the accepted projection on failed staging and rejects invalid phases without publication",
+          "status": "passed",
+          "title": "keeps the accepted projection on failed staging and rejects invalid phases without publication",
+          "duration": 52.17309999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment cannot publish a coordinated state after stopping during feedback",
+          "status": "passed",
+          "title": "cannot publish a coordinated state after stopping during feedback",
+          "duration": 38.26319999999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment refreshes the full resource hash when only another selected entry changes",
+          "status": "passed",
+          "title": "refreshes the full resource hash when only another selected entry changes",
+          "duration": 30.784300000000258,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes the accepted Vision receipt and refreshes it after a scalar patch",
+          "status": "passed",
+          "title": "publishes the accepted Vision receipt and refreshes it after a scalar patch",
+          "duration": 32.97509999999966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment reconnects only the composition peer with a fresh token and the latest accepted state",
+          "status": "passed",
+          "title": "reconnects only the composition peer with a fresh token and the latest accepted state",
+          "duration": 45.53279999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "gives primary reconnection priority over a pending composition retry",
+          "status": "passed",
+          "title": "gives primary reconnection priority over a pending composition retry",
+          "duration": 0.7233000000001084,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not reset composition backoff when peer construction returns",
+          "status": "passed",
+          "title": "does not reset composition backoff when peer construction returns",
+          "duration": 0.7201999999997497,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects a composition token fetch superseded by primary token refresh",
+          "status": "passed",
+          "title": "rejects a composition token fetch superseded by primary token refresh",
+          "duration": 0.3362999999999374,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not admit a token fetch from a stopped composition lifetime",
+          "status": "passed",
+          "title": "does not admit a token fetch from a stopped composition lifetime",
+          "duration": 0.38200000000006185,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299372220,
+      "endTime": 1793299372772.382,
+      "status": "passed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber receives all 512 states in order and confirms every identity after their covering frame",
+          "status": "passed",
+          "title": "receives all 512 states in order and confirms every identity after their covering frame",
+          "duration": 436.6414,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber catches up explicit native overflow on the same socket and retained canvas",
+          "status": "passed",
+          "title": "catches up explicit native overflow on the same socket and retained canvas",
+          "duration": 36.999299999999494,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber stages a new archive for an image absent from the current package and retains the media controller",
+          "status": "passed",
+          "title": "stages a new archive for an image absent from the current package and retains the media controller",
+          "duration": 30.526200000000244,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber keeps exact generation identity and ignores changes to another physical lane",
+          "status": "passed",
+          "title": "keeps exact generation identity and ignores changes to another physical lane",
+          "duration": 31.408800000000156,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber waits for a missing generation and clears a removed session instead of selecting another entry",
+          "status": "passed",
+          "title": "waits for a missing generation and clears a removed session instead of selecting another entry",
+          "duration": 31.7488000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber subscribes to an unselected resource and renders the first real LSML received",
+          "status": "passed",
+          "title": "subscribes to an unselected resource and renders the first real LSML received",
+          "duration": 34.079099999999926,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber subscribes only after the fragmented snapshot is rendered",
+          "status": "passed",
+          "title": "subscribes only after the fragmented snapshot is rendered",
+          "duration": 26.88680000000022,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber reads and renders a fresh baseline when the scene advances before subscription",
+          "status": "passed",
+          "title": "reads and renders a fresh baseline when the scene advances before subscription",
+          "duration": 32.04819999999927,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber surfaces repeated baseline conflicts after four attempts",
+          "status": "passed",
+          "title": "surfaces repeated baseline conflicts after four attempts",
+          "duration": 31.055199999999786,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber applies and presents received mutations without producer feedback or projection",
+          "status": "passed",
+          "title": "applies and presents received mutations without producer feedback or projection",
+          "duration": 46.326100000000224,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber rebuilds a structural edit in memory while retaining the original source manifest",
+          "status": "passed",
+          "title": "rebuilds a structural edit in memory while retaining the original source manifest",
+          "duration": 35.35779999999977,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber rejects stale baselines and invalid receipts without touching Vision",
+          "status": "passed",
+          "title": "rejects stale baselines and invalid receipts without touching Vision",
+          "duration": 43.455299999999625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber drains camera uploads before staging a structural replacement",
+          "status": "passed",
+          "title": "drains camera uploads before staging a structural replacement",
+          "duration": 47.612700000000586,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber rejects failed presentation and late work after disconnect",
+          "status": "passed",
+          "title": "rejects failed presentation and late work after disconnect",
+          "duration": 30.882000000000517,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber keeps the accepted scene alive when staging activation fails",
+          "status": "passed",
+          "title": "keeps the accepted scene alive when staging activation fails",
+          "duration": 31.635299999999916,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar subscriber"
+          ],
+          "fullName": "native Solar subscriber recovers subscription failures through a fresh native snapshot",
+          "status": "passed",
+          "title": "recovers subscription failures through a fresh native snapshot",
+          "duration": 33.13540000000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation reconstructs a fresh subscriber from a compact commit resource",
+          "status": "passed",
+          "title": "reconstructs a fresh subscriber from a compact commit resource",
+          "duration": 26.65059999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation reconstructs a fresh subscriber from a compact finalize resource",
+          "status": "passed",
+          "title": "reconstructs a fresh subscriber from a compact finalize resource",
+          "duration": 31.70090000000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation fetches and mounts a fresh scene on A to B to A without retaining inactive frames",
+          "status": "passed",
+          "title": "fetches and mounts a fresh scene on A to B to A without retaining inactive frames",
+          "duration": 61.767800000000534,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation restores a fresh subscriber after an aborted Prism request",
+          "status": "passed",
+          "title": "restores a fresh subscriber after an aborted Prism request",
+          "duration": 56.21180000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation acknowledges preparation, commit and abort on solar/lane-a as preview",
+          "status": "passed",
+          "title": "acknowledges preparation, commit and abort on solar/lane-a as preview",
+          "duration": 56.02739999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation acknowledges preparation, commit and abort on solar/lane-a as program",
+          "status": "passed",
+          "title": "acknowledges preparation, commit and abort on solar/lane-a as program",
+          "duration": 39.621399999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation acknowledges preparation, commit and abort on solar/lane-b as preview",
+          "status": "passed",
+          "title": "acknowledges preparation, commit and abort on solar/lane-b as preview",
+          "duration": 66.65179999999964,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation acknowledges preparation, commit and abort on solar/lane-b as program",
+          "status": "passed",
+          "title": "acknowledges preparation, commit and abort on solar/lane-b as program",
+          "duration": 56.94419999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation finalizes and retires the previous frame on solar/lane-a",
+          "status": "passed",
+          "title": "finalizes and retires the previous frame on solar/lane-a",
+          "duration": 58.417599999999766,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation finalizes and retires the previous frame on solar/lane-b",
+          "status": "passed",
+          "title": "finalizes and retires the previous frame on solar/lane-b",
+          "duration": 76.32740000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation rejects a physical transition without an explicit logical role",
+          "status": "passed",
+          "title": "rejects a physical transition without an explicit logical role",
+          "duration": 35.62010000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation prepares invisibly, commits while retaining old frame, and aborts without recreating it",
+          "status": "passed",
+          "title": "prepares invisibly, commits while retaining old frame, and aborts without recreating it",
+          "duration": 39.30380000000059,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation finalizes once and re-acknowledges replay without another mount",
+          "status": "passed",
+          "title": "finalizes once and re-acknowledges replay without another mount",
+          "duration": 42.12209999999959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation keeps a committed presentation alive through a null coordinator seed",
+          "status": "passed",
+          "title": "keeps a committed presentation alive through a null coordinator seed",
+          "duration": 69.02570000000014,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation honors a null authoritative clear after coordinated finalization",
+          "status": "passed",
+          "title": "honors a null authoritative clear after coordinated finalization",
+          "duration": 46.348399999999856,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation can compensate finalization while its receipt or cleanup is unresolved",
+          "status": "passed",
+          "title": "can compensate finalization while its receipt or cleanup is unresolved",
+          "duration": 40.22270000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "coordinated physical lane presentation"
+          ],
+          "fullName": "coordinated physical lane presentation reports failed staging while preserving accepted frame",
+          "status": "passed",
+          "title": "reports failed staging while preserving accepted frame",
+          "duration": 44.11570000000029,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299368566,
+      "endTime": 1793299370376.1157,
+      "status": "passed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime.test.ts"
+    }
+  ]
+}

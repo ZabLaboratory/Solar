@@ -1,0 +1,254 @@
+{
+  "numTotalTestSuites": 2,
+  "numPassedTestSuites": 0,
+  "numFailedTestSuites": 2,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 17,
+  "numPassedTests": 8,
+  "numFailedTests": 9,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1793299359715,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated prepare with identical layout",
+          "status": "failed",
+          "title": "renews the source hash on coordinated prepare with identical layout",
+          "duration": 98.19090000000006,
+          "failureMessages": [
+            "AssertionError: expected 'tree-sha256:ba0b24717acfae4191052ff6f…' to be 'tree-sha256:9755c8f7e869869a8aef75fdb…' // Object.is equality\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:331:31\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated commit with identical layout",
+          "status": "failed",
+          "title": "renews the source hash on coordinated commit with identical layout",
+          "duration": 55.785699999999906,
+          "failureMessages": [
+            "AssertionError: expected { lsml: '1.1', …(4) } to deeply equal { lsml: '1.1', …(4) }\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:328:31\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated finalize with identical layout",
+          "status": "failed",
+          "title": "renews the source hash on coordinated finalize with identical layout",
+          "duration": 40.247100000000046,
+          "failureMessages": [
+            "AssertionError: expected { lsml: '1.1', …(4) } to deeply equal { lsml: '1.1', …(4) }\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:328:31\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment renews the source hash on coordinated cleanup with identical layout",
+          "status": "passed",
+          "title": "renews the source hash on coordinated cleanup with identical layout",
+          "duration": 47.65109999999959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment binds the restored projection to the abort hash and replays only that state to a replacement peer",
+          "status": "failed",
+          "title": "binds the restored projection to the abort hash and replays only that state to a replacement peer",
+          "duration": 52.04710000000023,
+          "failureMessages": [
+            "AssertionError: expected [ { …(7) }, …(2) ] to deeply equal [ { …(7) }, …(2) ]\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:357:59\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes a joining coordinated commit snapshot with its full resource hash",
+          "status": "failed",
+          "title": "publishes a joining coordinated commit snapshot with its full resource hash",
+          "duration": 32.141599999999926,
+          "failureMessages": [
+            "AssertionError: expected undefined to be 'tree-sha256:0556db0865bb51304224774e2…' // Object.is equality\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:383:66\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes a joining coordinated finalize snapshot with its full resource hash",
+          "status": "failed",
+          "title": "publishes a joining coordinated finalize snapshot with its full resource hash",
+          "duration": 31.27669999999989,
+          "failureMessages": [
+            "AssertionError: expected undefined to be 'tree-sha256:ee88fd96bf0e9a61d6b2718f4…' // Object.is equality\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:383:66\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes a joining coordinated abort snapshot with its full resource hash",
+          "status": "failed",
+          "title": "publishes a joining coordinated abort snapshot with its full resource hash",
+          "duration": 30.56989999999996,
+          "failureMessages": [
+            "AssertionError: expected undefined to be 'tree-sha256:bdb3730bf78968d3d915f6c1f…' // Object.is equality\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:383:66\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment keeps the accepted projection on failed staging and rejects invalid phases without publication",
+          "status": "failed",
+          "title": "keeps the accepted projection on failed staging and rejects invalid phases without publication",
+          "duration": 38.52280000000019,
+          "failureMessages": [
+            "AssertionError: expected [ { …(7) }, …(2) ] to deeply equal [ { …(7) }, …(2) ]\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:403:59\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment cannot publish a coordinated state after stopping during feedback",
+          "status": "passed",
+          "title": "cannot publish a coordinated state after stopping during feedback",
+          "duration": 45.08809999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment refreshes the full resource hash when only another selected entry changes",
+          "status": "failed",
+          "title": "refreshes the full resource hash when only another selected entry changes",
+          "duration": 45.804999999999836,
+          "failureMessages": [
+            "AssertionError: expected [ { …(7) }, …(2) ] to deeply equal [ { …(7) }, …(2) ]\n    at <SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts:455:59\n    at file:///D:/Documents/Zab/Solar/.worktrees/eleven-local-20261019-complete-dev/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment publishes the accepted Vision receipt and refreshes it after a scalar patch",
+          "status": "passed",
+          "title": "publishes the accepted Vision receipt and refreshes it after a scalar patch",
+          "duration": 49.13850000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "native Solar composition attachment"
+          ],
+          "fullName": "native Solar composition attachment reconnects only the composition peer with a fresh token and the latest accepted state",
+          "status": "passed",
+          "title": "reconnects only the composition peer with a fresh token and the latest accepted state",
+          "duration": 46.63079999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "gives primary reconnection priority over a pending composition retry",
+          "status": "passed",
+          "title": "gives primary reconnection priority over a pending composition retry",
+          "duration": 1.2721000000001368,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not reset composition backoff when peer construction returns",
+          "status": "passed",
+          "title": "does not reset composition backoff when peer construction returns",
+          "duration": 0.8575000000000728,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "rejects a composition token fetch superseded by primary token refresh",
+          "status": "passed",
+          "title": "rejects a composition token fetch superseded by primary token refresh",
+          "duration": 0.5010999999999513,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [],
+          "fullName": "does not admit a token fetch from a stopped composition lifetime",
+          "status": "passed",
+          "title": "does not admit a token fetch from a stopped composition lifetime",
+          "duration": 0.4481999999998152,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1793299363011,
+      "endTime": 1793299363629.5012,
+      "status": "failed",
+      "message": "",
+      "name": "<SOLAR_WORKTREE>/tests/unit/native-lsdp-runtime-composition.test.ts"
+    }
+  ]
+}
