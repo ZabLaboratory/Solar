@@ -34,6 +34,10 @@ An individual watch failure resynchronizes against the live receiver. It never
 restarts a healthy child from the watcher's older state. Child exit or a
 failed readiness probe remains the authority for process recovery. Watched state
 uses immutable path copies and cached normative hashes, shared with Solar's reader.
+Read snapshots of the currently active LSML identity reuse bounded, verified subtree
+digests. A different scene identity replaces that resource's digests, and receiver
+shutdown clears them. Every snapshot is still independently validated and hashed;
+the original returned state remains unchanged for callers.
 `recoveryAttempts: 0` retains an explicit fatal-exit policy. `stop()` cancels
 recovery and reaps children. Explicit stop/start seeds the original state.
 No journal, outbox or mutated LSML is written. A lost parent cannot recover live

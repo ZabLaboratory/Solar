@@ -16,6 +16,7 @@ import { requireLSML } from "../scenes/native-document";
 import { requireNativeCompositionState } from "../scenes/native-composition-state";
 import type { Operation } from "fast-json-patch";
 import { NativeState } from "../internal/native-state";
+import { ActiveSnapshotHash } from "./active-snapshot-hash";
 
 export const NATIVE_WIRE = "LSDP-TCP/2.0-draft2";
 export interface ReceptionResource {
@@ -153,6 +154,7 @@ export class SolarReceptionServer {
   private probing = false;
   private readonly settings: Record<string, unknown>;
   private readonly peers = new Set<BrowserLSDP>();
+  private readonly activeSnapshotHash = new ActiveSnapshotHash();
   private readonly watches = new Set<() => void>();
   private readonly recoveryListeners = new Set<() => void>();
   private wanted = false;
@@ -431,7 +433,11 @@ export class SolarReceptionServer {
           context.metadata.target !== target
         )
           throw new Error("LSDP_SNAPSHOT_INVALID");
-        const stateHash = nativeTreeHash(state);
+        const stateHash = this.activeSnapshotHash.hash(
+          target,
+          state,
+          this.resource(target).type === "solar.lsml/1",
+        );
         resolveSnapshot({ state, stateHash });
         return { level: "received" };
       };
@@ -726,6 +732,7 @@ export class SolarReceptionServer {
 
   private halt(): Promise<void> {
     if (this.stopping) return this.stopping;
+    this.activeSnapshotHash.clear();
     this.abort?.abort();
     this.connection = null;
     if (this.monitor) clearInterval(this.monitor);
