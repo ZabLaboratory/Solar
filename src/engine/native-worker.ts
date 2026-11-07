@@ -2,7 +2,11 @@ import { BrowserLSDP } from "../../vendor/lsdp-native-browser/src/browser.js";
 import { NativeState } from "../internal/native-state";
 import { NativeTreeHasher } from "../internal/native-tree";
 import { workerDigest } from "../internal/native-digest";
-import { nativeChange, type NativeChange } from "../internal/native-stream";
+import {
+  nativeChange,
+  scalarOperations,
+  type NativeChange,
+} from "../internal/native-stream";
 
 const scope = globalThis as unknown as {
   onmessage: (event: MessageEvent) => void;
@@ -85,11 +89,15 @@ scope.onmessage = ({ data }) => {
           value,
           metadata: context.metadata,
           // Verification (portable JSON, limits, sequence and Merkle hashes)
-          // happened above. Structured clone owns a separate rendering copy.
+          // happened above. Only the initial/structural delivery needs a full rendering copy.
           ...(event?.kind !== "resync" && state
             ? {
                 verifiedState: {
-                  value: state.value,
+                  ...(context.metadata.profile ===
+                    "lsdp.state.subscription/1" &&
+                  scalarOperations(event.mutation.operations)
+                    ? { beforeHash: event.mutation.beforeHash }
+                    : { value: state.value }),
                   stateHash: state.stateHash,
                 },
               }

@@ -1,4 +1,5 @@
 import { expect, it, vi } from "vitest";
+import jsonPatch, { type Operation } from "fast-json-patch";
 import { nativeTreeHash } from "../../src/internal/native-tree";
 import {
   NativeCompositionPublisher,
@@ -26,6 +27,8 @@ interface FakeShared {
   reads?: number;
   activePeerCalls?: number;
   maxActivePeerCalls?: number;
+  badReceiptOnce?: boolean;
+  receiptLevel?: "applied" | "persisted";
 }
 
 function projection(): NativeCompositionProjection {
@@ -206,19 +209,23 @@ function fakePeerFactory(shared: FakeShared): NativeCompositionPeerFactory {
           throw Object.assign(new Error("BASE_MISMATCH"), {
             code: "BASE_MISMATCH",
           });
-        const operations = value.operations as Array<{
-          op: string;
-          path: string;
-          value?: unknown;
-        }>;
-        const graphs = shared.state.graphs as Record<string, unknown>;
-        for (const operation of operations) {
-          shared.applied.push(operation);
-          const key = operation.path.split("/").at(-1)!;
-          if (operation.op === "remove") delete graphs[key];
-          else graphs[key] = operation.value;
+        const operations = value.operations as Operation[];
+        shared.applied.push(...operations);
+        jsonPatch.applyPatch(shared.state, operations, true, true);
+        if (shared.badReceiptOnce) {
+          shared.badReceiptOnce = false;
+          return {
+            level: "applied",
+            target: "solar/composition",
+            transactionId: "wrong",
+            stateHash: nativeTreeHash(shared.state),
+          };
         }
-        return { level: "applied" };
+        return {
+          level: shared.receiptLevel ?? "applied",
+          target: "solar/composition",
+          transactionId: value.id,
+        };
       } finally {
         shared.activePeerCalls--;
       }
@@ -268,6 +275,127 @@ function makeReadGate(): ReadGate {
     release: () => release(),
   };
 }
+
+it.each(["applied", "persisted"] as const)(
+  "reuses the locally derived baseline after a %s receipt without a state hash",
+  async (receiptLevel) => {
+    const shared: FakeShared = {
+      receiptLevel,
+      state: claimedState("host-a-incarnation-1"),
+      staleOnce: false,
+      applied: [],
+    };
+    const publisher = new NativeCompositionPublisher(
+      options(),
+      () => {},
+      fakePeerFactory(shared),
+    );
+    const doc = { scene_id: "scene-a", scene_version: "sha256:revision-a" };
+    await publisher.publish(projection(), doc, "tree-sha256:first");
+    await publisher.publish(projection(), doc, "tree-sha256:second");
+    expect(shared.applied).toHaveLength(2);
+    expect(shared.reads).toBe(1);
+    publisher.discard();
+  },
+);
+
+it("publishes only guarded capture translation leaves and falls back for appearance changes", async () => {
+  const shared: FakeShared = {
+    state: claimedState("host-a-incarnation-1"),
+    staleOnce: false,
+    applied: [],
+  };
+  const publisher = new NativeCompositionPublisher(
+    options(),
+    () => {},
+    fakePeerFactory(shared),
+  );
+  const key = "__editable.63616d657261.translate";
+  const doc = {
+    scene_id: "scene-a",
+    scene_version: "sha256:revision-a",
+    defaults: { [key]: [0, 0] },
+    layout: {
+      kind: "frame",
+      children: [
+        {
+          id: "camera",
+          kind: "x-zab.capture",
+          bindAnimate: { "transform.translate": key },
+        },
+      ],
+    },
+  };
+  const first = captureOnlyProjection();
+  await publisher.publish(first, doc, "tree-sha256:first");
+  const second = structuredClone(first);
+  const child = second.groups[0]!.children[0]!;
+  if (child.kind !== "capture") throw new Error("expected capture");
+  child.affine.tx = 42;
+  const before = shared.applied.length;
+  await publisher.publish(second, doc, "tree-sha256:second");
+  const paths = shared.applied.slice(before).map((op) => op.path);
+  expect(paths).toContain("/graphs/A/groups/0/children/0/affine/tx");
+  expect(paths).toContain("/graphs/A/source/stateHash");
+  expect(paths).toContain("/graphs/A/planHash");
+  expect(paths).not.toContain("/graphs/A");
+  expect(
+    (shared.state.graphs as Record<string, NativeCompositionPlan>).A!.groups[0]!
+      .children[0],
+  ).toEqual(child);
+  const changed = structuredClone(second);
+  changed.groups[0]!.opacity = 0.2;
+  const afterMove = shared.applied.length;
+  await publisher.publish(changed, doc, "tree-sha256:third");
+  expect(shared.applied.slice(afterMove).map((op) => op.path)).toEqual([
+    "/graphs/A",
+  ]);
+  publisher.discard();
+});
+
+it("re-reads ownership after a concurrent change invalidates a verified receipt", async () => {
+  const shared: FakeShared = {
+    state: claimedState("host-a-incarnation-1"),
+    staleOnce: false,
+    applied: [],
+  };
+  const publisher = new NativeCompositionPublisher(
+    options(),
+    () => {},
+    fakePeerFactory(shared),
+  );
+  const doc = { scene_id: "scene-a", scene_version: "sha256:revision-a" };
+  await publisher.publish(projection(), doc, "tree-sha256:first");
+  expect(shared.reads).toBe(1);
+  (shared.state.producers as Record<string, string>).A = "new-owner";
+  delete (shared.state.graphs as Record<string, unknown>).A;
+  await publisher.publish(projection(), doc, "tree-sha256:second");
+  expect(shared.reads).toBe(2);
+  expect((shared.state.producers as Record<string, string>).A).toBe(
+    "new-owner",
+  );
+  expect(shared.applied).toHaveLength(1);
+  publisher.discard();
+});
+
+it("falls back to an authoritative read when a receipt has the wrong transaction", async () => {
+  const shared: FakeShared = {
+    state: claimedState("host-a-incarnation-1"),
+    staleOnce: false,
+    applied: [],
+    badReceiptOnce: true,
+  };
+  const publisher = new NativeCompositionPublisher(
+    options(),
+    () => {},
+    fakePeerFactory(shared),
+  );
+  const doc = { scene_id: "scene-a", scene_version: "sha256:revision-a" };
+  await publisher.publish(projection(), doc, "tree-sha256:first");
+  await publisher.publish(projection(), doc, "tree-sha256:second");
+  expect(shared.reads).toBe(2);
+  publisher.discard();
+});
 
 it("publishes the active physical graph with source hash and retries only a CAS conflict", async () => {
   const shared = {
@@ -567,7 +695,7 @@ it("bounds a slow publisher to one active write and the latest pending plan", as
     .A!;
   expect(plan.source.stateHash).toBe("tree-sha256:pending-129");
   expect(shared.applied).toHaveLength(2);
-  expect(shared.reads).toBe(2);
+  expect(shared.reads).toBe(1);
   expect(shared.maxActivePeerCalls).toBe(1);
   await publisher.retire();
 });

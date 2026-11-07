@@ -11,7 +11,7 @@ interface Message {
   value?: unknown;
   metadata?: { profile: string; target: string };
   error?: { code?: string; message: string };
-  verifiedState?: { value: unknown; stateHash: string };
+  verifiedState?: { value?: unknown; beforeHash?: string; stateHash: string };
   verificationMs?: number;
   sentAt?: number;
 }
@@ -103,6 +103,45 @@ describe("isolated native transport lifecycle", () => {
     await vi.waitFor(() => expect(worker.messages.at(-1)?.type).toBe("result"));
     expect(seen).toHaveBeenCalledOnce();
     expect(verifiedNativeWorkerState(receivedContext)).toBeUndefined();
+    client.close();
+  });
+  it("reconstructs scalar deliveries in message order and rejects a missing baseline", async () => {
+    const seen: unknown[] = [];
+    const { client, worker } = start(async (_v, c) => {
+      seen.push(verifiedNativeWorkerState(c)?.value);
+      return { level: "received" };
+    });
+    const h1 = "tree-sha256:" + "1".repeat(64),
+      h2 = "tree-sha256:" + "2".repeat(64);
+    const value = { layout: { kind: "frame" }, defaults: { x: 1 } };
+    worker.receive({
+      ...incoming(1, "lsdp.state.read/1"),
+      value,
+      verifiedState: { value, stateHash: h1 },
+    });
+    const delta = {
+      ...incoming(2),
+      value: {
+        mutation: {
+          beforeHash: h1,
+          operations: [{ op: "replace", path: "/defaults/x", value: 2 }],
+        },
+      },
+      verifiedState: { beforeHash: h1, stateHash: h2 },
+    };
+    worker.receive(delta);
+    worker.receive({ ...delta, id: 3 });
+    await vi.waitFor(() =>
+      expect(
+        worker.messages.some((m) => m.id === 3 && m.type === "result"),
+      ).toBe(true),
+    );
+    expect(seen).toEqual([value, { layout: value.layout, defaults: { x: 2 } }]);
+    expect((seen[1] as typeof value).layout).toBe(value.layout);
+    expect(
+      worker.messages.find((m) => m.type === "result" && m.id === 3)?.error
+        ?.message,
+    ).toMatch(/baseline/);
     client.close();
   });
   it("rejects a malformed private certificate before invoking the render consumer", async () => {

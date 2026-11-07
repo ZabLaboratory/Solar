@@ -16,6 +16,8 @@ import { requireLSML } from "../scenes/native-document";
 import { requireNativeCompositionState } from "../scenes/native-composition-state";
 import type { Operation } from "fast-json-patch";
 import { NativeState } from "../internal/native-state";
+import { ActiveSnapshotHash } from "./active-snapshot-hash";
+import { captureTranslationGuard } from "../scenes/capture-translation-guard";
 
 export const NATIVE_WIRE = "LSDP-TCP/2.0-draft2";
 export interface ReceptionResource {
@@ -51,6 +53,24 @@ export interface NativeSnapshot {
   state: unknown;
   stateHash: string;
 }
+// A single bounded native get can carry an editable scene and its authoritative
+// hash together. Peers negotiate their own lower limits with this receiver.
+const currentReadBytes = 512 * 1024;
+const receiverLimits = {
+  frameBytes: currentReadBytes,
+  controlBytes: currentReadBytes,
+  receiptBytes: currentReadBytes,
+  channelWindowBytes: currentReadBytes,
+  windowBytes: 1048576,
+  mutationReserveBytes: 65536,
+  messageBytes: 16777216,
+  bufferedMessageBytes: 33554432,
+  streamBytes: 1073741824,
+  channels: 32,
+  timeoutMs: 30000,
+  handshakeMs: 5000,
+  idleMs: 120000,
+};
 const targetPattern = /^[a-zA-Z0-9][a-zA-Z0-9._/-]{0,127}$/;
 const requiredProfiles = [
   "lsdp.state.application/1",
@@ -107,6 +127,7 @@ export function receptionSettings(
   )
     throw new Error("LSDP_LOCAL_ORIGIN_REQUIRED");
   return {
+    limits: { ...receiverLimits },
     listen: "127.0.0.1:0",
     resources,
     websocket: { listen: "127.0.0.1:0", origins: options.origins },
@@ -141,6 +162,10 @@ export async function packagedNativeBinary(
 
 /** Owned by a system host (Prism main), never by Solar's browser renderer. */
 export class SolarReceptionServer {
+  readonly captureTranslationGuard = (value: unknown, ids: readonly string[]) =>
+    captureTranslationGuard(value, ids, (data) =>
+      createHash("sha256").update(data).digest("hex"),
+    );
   private child: ChildProcessWithoutNullStreams | null = null;
   private connection: ReceptionConnection | null = null;
   private starting: Promise<ReceptionConnection> | null = null;
@@ -153,7 +178,9 @@ export class SolarReceptionServer {
   private probing = false;
   private readonly settings: Record<string, unknown>;
   private readonly peers = new Set<BrowserLSDP>();
+  private readonly activeSnapshotHash = new ActiveSnapshotHash();
   private readonly watches = new Set<() => void>();
+  private currentReader: BrowserLSDP | null = null;
   private readonly recoveryListeners = new Set<() => void>();
   private wanted = false;
   private recovering: Promise<ReceptionConnection> | null = null;
@@ -431,7 +458,12 @@ export class SolarReceptionServer {
           context.metadata.target !== target
         )
           throw new Error("LSDP_SNAPSHOT_INVALID");
-        const stateHash = nativeTreeHash(state);
+        const stateHash = this.activeSnapshotHash.hash(
+          target,
+          state,
+          this.resource(target).type === "solar.lsml/1",
+          true,
+        );
         resolveSnapshot({ state, stateHash });
         return { level: "received" };
       };
@@ -442,6 +474,62 @@ export class SolarReceptionServer {
         signal.removeEventListener("abort", cancel);
       }
     });
+  }
+
+  /** Read the tree and its hash from the same Rust revision. Concurrent lane
+   * reads share a connection and retain no scene after the call returns. */
+  async readCurrent(target: string): Promise<NativeSnapshot> {
+    const type = this.resource(target).type;
+    if (type !== "solar.lsml/1" && type !== "solar.native-composition/1")
+      return this.read(target);
+    const connection = this.connection;
+    const lifetime = this.abort;
+    if (!connection || !lifetime || lifetime.signal.aborted)
+      throw new Error("LSDP_NOT_READY");
+    if (!this.currentReader) {
+      const options = {
+        limits: receiverLimits,
+        onClose: () => {
+          if (this.currentReader === peer) this.currentReader = null;
+          this.peers.delete(peer);
+        },
+      };
+      const peer = new BrowserLSDP(connection.websocketUrl, options);
+      this.currentReader = peer;
+      this.peers.add(peer);
+    }
+    const peer = this.currentReader;
+    const signal = AbortSignal.any([
+      lifetime.signal,
+      AbortSignal.timeout(this.options.timeoutMs ?? 15000),
+    ]);
+    try {
+      await peer.ready;
+      signal.throwIfAborted();
+      const result = (await peer.transaction(
+        { kind: "get", target },
+        { signal },
+      )) as NativeSnapshot & { target: string };
+      signal.throwIfAborted();
+      if (
+        !result ||
+        result.target !== target ||
+        !Object.hasOwn(result, "state") ||
+        typeof result.stateHash !== "string" ||
+        !/^tree-sha256:[a-f0-9]{64}$/.test(result.stateHash)
+      )
+        throw new Error("LSDP_SNAPSHOT_INVALID");
+      return { state: result.state, stateHash: result.stateHash };
+    } catch (error) {
+      signal.throwIfAborted();
+      if (
+        error instanceof Error &&
+        (("code" in error && error.code === "SNAPSHOT_LIMIT") ||
+          this.currentReader !== peer)
+      )
+        return this.read(target);
+      throw error;
+    }
   }
 
   async apply(
@@ -726,6 +814,8 @@ export class SolarReceptionServer {
 
   private halt(): Promise<void> {
     if (this.stopping) return this.stopping;
+    this.currentReader = null;
+    this.activeSnapshotHash.clear();
     this.abort?.abort();
     this.connection = null;
     if (this.monitor) clearInterval(this.monitor);

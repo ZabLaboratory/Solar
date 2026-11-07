@@ -46,6 +46,7 @@ try {
   assert.ok(first.resources.includes("solar/composition"));
   const baseline = await server.read("solar/composition");
   assert.deepEqual(baseline.state, seed);
+  assert.deepEqual(await server.readCurrent("solar/composition"), baseline);
   assert.match(baseline.stateHash, /^tree-sha256:[a-f0-9]{64}$/);
   stopWatch = await server.watch(
     "solar/composition",
@@ -101,7 +102,7 @@ try {
   assert.notEqual(recovered.pid, first.pid);
   assert.equal(recovered.address, first.address);
   assert.equal(recovered.websocketUrl, first.websocketUrl);
-  assert.deepEqual((await server.read("solar/composition")).state, seed);
+  assert.deepEqual((await server.readCurrent("solar/composition")).state, seed);
   await wait(
     () => states.at(-1)?.producers.A === undefined,
     "recovery watch seed",

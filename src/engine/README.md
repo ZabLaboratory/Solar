@@ -99,6 +99,20 @@ action and may be superseded by a newer plan. `retire` is terminal: it blocks
 later side-channel work and clears after the active operation before closing
 the peer. Publisher, session replay and reconnect paths have targeted Solar unit
 coverage; real cross-process/Main/Pulsar composition remains a separate qualification.
+For eligible editable capture translations, Solar attaches a guard covering the
+entire source document with only those translation leaves normalized. References
+must belong uniquely to their capture; ambiguous documents retain the strict hash
+path. The guard allows the consumer to join a recent Vision plan to a newer
+translation-only document without accepting unrelated structural or style edits.
+After an applied or persisted receipt, the publisher applies the exact operations
+to its immutable native state. A translation rehashes only the changed paths.
+The worker sends verified scalar operations and the resulting hash to the render
+thread. Its immutable path copy shares unrelated scene data. The publisher reuses
+a translation guard only while all unmasked fields are identical.
+The next compare-and-set verifies that candidate against Rust; a conflict rereads it.
+When the prior and next plans differ only in guarded capture translations and
+their source/plan hashes, the publication contains just those changed leaves.
+All other plan changes remain full graph replacements. Both paths are atomic.
 `tests/bench/native-composition-capture-translation.bench.ts` isolates that CPU
 path with deterministic synthetic receipts that mutate one capture's x/y values.
 The 2026-10-18 Node 24.16.0 / Vitest 4.1.11 run measured mean totals of 0.119 ms

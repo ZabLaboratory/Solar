@@ -5,8 +5,10 @@ separate from the browser renderer. A single instance accepts declared resources
 for Solar and Orion; neither consumer launches a second daemon.
 
 `SolarReceptionServer.start()` injects resource seeds and typed local routes over
-stdin, waits for listeners and checks native capabilities. It creates no automatic
-resource subscriptions or JavaScript recovery mirror. `replace()` sends the full desired LSML to Rust's existing
+stdin, waits for listeners and checks native capabilities. `readCurrent()` requests the current tree and
+its native hash together on a shared loopback LSDP connection. Reads above the
+512 KiB receipt budget use streamed snapshots. Closing the receiver closes the
+reader and invalidates pending results. `replace()` sends the full desired LSML to Rust's existing
 state route, which computes the diff. `apply()` sends explicit operations with a
 baseline precondition. `stop()` cancels requests and reaps the owned process.
 
@@ -34,6 +36,10 @@ An individual watch failure resynchronizes against the live receiver. It never
 restarts a healthy child from the watcher's older state. Child exit or a
 failed readiness probe remains the authority for process recovery. Watched state
 uses immutable path copies and cached normative hashes, shared with Solar's reader.
+Read snapshots of the currently active LSML identity reuse bounded, verified subtree
+digests. A different scene identity replaces that resource's digests, and receiver
+shutdown clears them. Full read snapshots are still independently validated and hashed;
+the original returned state remains unchanged for callers.
 `recoveryAttempts: 0` retains an explicit fatal-exit policy. `stop()` cancels
 recovery and reaps children. Explicit stop/start seeds the original state.
 No journal, outbox or mutated LSML is written. A lost parent cannot recover live
