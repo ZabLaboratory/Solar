@@ -1,3 +1,4 @@
+import { isImmutableNativeValue } from "../internal/native-state";
 import { canonicalize } from "@lumencast/canonical";
 import { sha256 } from "@noble/hashes/sha256";
 import { bytesToHex } from "@noble/hashes/utils";
@@ -99,5 +100,74 @@ export function captureTranslationGuard(
     version: "capture-translation/1",
     components: eligible.map((item) => item.id),
     hash: `sha256:${digest(new TextEncoder().encode(canonicalize(normalized)))}`,
+  };
+}
+
+/** One publisher can reuse the verified digest across immutable path copies
+ * when every changed leaf is masked by that exact digest. */
+export function activeCaptureTranslationGuard() {
+  let previous:
+    | {
+        document: WeakRef<Record<string, unknown>>;
+        requested: string[];
+        keys: Set<string>;
+        guard: CaptureTranslationGuard;
+      }
+    | undefined;
+  return (
+    document: Record<string, unknown>,
+    ids: string[],
+  ): CaptureTranslationGuard | null => {
+    const owned = isImmutableNativeValue(document);
+    const cached = previous;
+    const prior = cached?.document.deref();
+    const defaults = record(document.defaults);
+    const before = record(prior?.defaults);
+    if (
+      owned &&
+      prior &&
+      cached &&
+      defaults &&
+      before &&
+      ids.length === cached.requested.length &&
+      ids.every((id, i) => id === cached.requested[i]) &&
+      Object.keys(prior).length === Object.keys(document).length &&
+      Object.keys(document).every(
+        (key) =>
+          Object.hasOwn(prior, key) &&
+          (key === "defaults" || Object.is(document[key], prior[key])),
+      ) &&
+      Object.keys(before).length === Object.keys(defaults).length &&
+      Object.entries(defaults).every(
+        ([key, value]) =>
+          Object.hasOwn(before, key) &&
+          (Object.is(value, before[key]) ||
+            (cached.keys.has(key) &&
+              Array.isArray(value) &&
+              value.length === 2 &&
+              value.every((n) => typeof n === "number" && Number.isFinite(n)))),
+      )
+    ) {
+      cached.document = new WeakRef(document);
+      return cached.guard;
+    }
+    const guard = captureTranslationGuard(document, ids);
+    previous =
+      owned && guard
+        ? {
+            document: new WeakRef(document),
+            requested: [...ids],
+            keys: new Set(
+              guard.components.map(
+                (id) =>
+                  "__editable." +
+                  bytesToHex(new TextEncoder().encode(id)) +
+                  ".translate",
+              ),
+            ),
+            guard,
+          }
+        : undefined;
+    return guard;
   };
 }

@@ -106,6 +106,9 @@ path. The guard allows the consumer to join a recent Vision plan to a newer
 translation-only document without accepting unrelated structural or style edits.
 After an applied or persisted receipt, the publisher applies the exact operations
 to its immutable native state. A translation rehashes only the changed paths.
+The worker sends verified scalar operations and the resulting hash to the render
+thread. Its immutable path copy shares unrelated scene data. The publisher reuses
+a translation guard only while all unmasked fields are identical.
 The next compare-and-set verifies that candidate against Rust; a conflict rereads it.
 When the prior and next plans differ only in guarded capture translations and
 their source/plan hashes, the publication contains just those changed leaves.

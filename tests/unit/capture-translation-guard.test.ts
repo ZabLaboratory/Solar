@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
 import { createHash } from "node:crypto";
-import { captureTranslationGuard } from "../../src/scenes/capture-translation-guard";
+import { NativeState } from "../../src/internal/native-state";
+import {
+  activeCaptureTranslationGuard,
+  captureTranslationGuard,
+} from "../../src/scenes/capture-translation-guard";
 
 const key = "__editable.63616d.translate";
 
@@ -92,4 +96,28 @@ it("does not hide edits to other properties, the scene, or a reference bundle", 
   expect(captureTranslationGuard(withBundle, ["cam"])?.hash).not.toBe(
     bundleGuard?.hash,
   );
+});
+
+it("reuses only a verified translation and invalidates on appearance, binding or mutable input", () => {
+  const guard = activeCaptureTranslationGuard();
+  let state = NativeState.from(document());
+  const check = () => guard(state.value as Record<string, unknown>, ["cam"]);
+  const baseline = check();
+  expect(baseline).toBeTruthy();
+  state = state.patch([
+    { op: "replace", path: "/defaults/" + key, value: [42, 71] },
+  ]);
+  expect(check()).toBe(baseline);
+  state = state.patch([
+    { op: "replace", path: "/defaults/title", value: "new" },
+  ]);
+  expect(check()).not.toEqual(baseline);
+  state = state.patch([
+    { op: "replace", path: "/layout/children/1/value", value: key },
+  ]);
+  expect(check()).toBeNull();
+  const shallow = Object.freeze(document());
+  expect(guard(shallow, ["cam"])).toEqual(baseline);
+  shallow.defaults.title = "modified";
+  expect(guard(shallow, ["cam"])).not.toEqual(baseline);
 });

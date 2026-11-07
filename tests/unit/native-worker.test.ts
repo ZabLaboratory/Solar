@@ -104,7 +104,7 @@ describe("worker admission receipts", () => {
       ([message]) => message.type === "incoming",
     )![0];
     expect(message.verifiedState).toEqual({
-      value: changed.value,
+      beforeHash: state.stateHash,
       stateHash: changed.stateHash,
     });
     const receipt = { level: "received", stateHash: changed.stateHash };

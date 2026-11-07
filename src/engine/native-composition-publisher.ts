@@ -3,7 +3,10 @@ import type { IncomingContext } from "../../vendor/lsdp-native-browser/src/brows
 import type { Operation } from "fast-json-patch";
 import jsonPatch from "fast-json-patch";
 import { NativeState } from "../internal/native-state";
-import { captureTranslationGuard } from "../scenes/capture-translation-guard";
+import {
+  activeCaptureTranslationGuard,
+  type CaptureTranslationGuard,
+} from "../scenes/capture-translation-guard";
 import {
   withNativeCompositionSource,
   type NativeCompositionPlan,
@@ -133,6 +136,7 @@ function captureTranslationOperations(
 /** Publish a Solar-owned plan on its own LSDP resource without blocking frame ACKs. */
 export class NativeCompositionPublisher {
   private readonly peer: Peer;
+  private readonly translationGuard = activeCaptureTranslationGuard();
   private readonly abort = new AbortController();
   private pendingSnapshot: Deferred<Snapshot> | null = null;
   private lastAcceptedSnapshot: Snapshot | null = null;
@@ -179,10 +183,10 @@ export class NativeCompositionPublisher {
     stateHash: string,
   ): Promise<NativeCompositionPublishResult> {
     if (this.retiring || this.retired) return Promise.resolve("retired");
-    let guard: ReturnType<typeof captureTranslationGuard> = null;
+    let guard: CaptureTranslationGuard | null = null;
     if (projection) {
       try {
-        guard = captureTranslationGuard(
+        guard = this.translationGuard(
           document,
           projection.groups.flatMap((group) =>
             group.children.flatMap((child) =>

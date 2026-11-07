@@ -3,6 +3,8 @@ import {
   type IncomingContext,
 } from "../../vendor/lsdp-native-browser/src/browser.js";
 
+import { freezeNativeValue, patchNativeValue } from "../internal/native-state";
+
 type Options = NonNullable<ConstructorParameters<typeof BrowserLSDP>[1]>;
 interface VerifiedWorkerState {
   readonly value: unknown;
@@ -58,6 +60,7 @@ export class NativeWorkerClient {
     { resolve: (value: unknown) => void; reject: (error: Error) => void }
   >();
   private queue: Promise<void> = Promise.resolve();
+  private renderState: VerifiedWorkerState | undefined;
   private queuedDeliveries = 0;
   private queueHighWater = 0;
   private rejectReady!: (error: Error) => void;
@@ -104,6 +107,46 @@ export class NativeWorkerClient {
           );
         else call?.resolve(data.value);
       } else if (data.type === "incoming") {
+        // Reconstruct in worker message order. A resync can enter the renderer
+        // while an earlier callback is waiting for its snapshot.
+        let verified: VerifiedWorkerState | undefined;
+        let verificationError: Error | undefined;
+        const certificate = data.verifiedState;
+        if (certificate) {
+          try {
+            if (
+              data.metadata.target !== resource ||
+              !/^tree-sha256:[a-f0-9]{64}$/.test(certificate.stateHash)
+            )
+              throw new Error("Invalid verified worker delivery.");
+            if ("beforeHash" in certificate) {
+              if (
+                !this.renderState ||
+                this.renderState.stateHash !== certificate.beforeHash ||
+                data.metadata.profile !== "lsdp.state.subscription/1" ||
+                data.value?.mutation?.beforeHash !== certificate.beforeHash
+              )
+                throw new Error("Verified worker baseline mismatch.");
+              verified = {
+                value: patchNativeValue(
+                  this.renderState.value,
+                  data.value.mutation.operations,
+                ),
+                stateHash: certificate.stateHash,
+              };
+            } else {
+              if (!Object.hasOwn(certificate, "value"))
+                throw new Error("Invalid verified worker snapshot.");
+              freezeNativeValue(certificate.value);
+              verified = certificate;
+            }
+            this.renderState = verified;
+          } catch (error) {
+            this.renderState = undefined;
+            verificationError =
+              error instanceof Error ? error : new Error(String(error));
+          }
+        }
         const delivery = new AbortController();
         this.deliveries.set(data.id, delivery);
         const queued = data.metadata.profile !== "lsdp.state.read/1";
@@ -172,14 +215,8 @@ export class NativeWorkerClient {
           };
           try {
             context.signal.throwIfAborted();
-            if (data.verifiedState) {
-              if (
-                data.metadata.target !== resource ||
-                !/^tree-sha256:[a-f0-9]{64}$/.test(data.verifiedState.stateHash)
-              )
-                throw new Error("Invalid verified worker delivery.");
-              verifiedStates.set(context, data.verifiedState);
-            }
+            if (verificationError) throw verificationError;
+            if (verified) verifiedStates.set(context, verified);
             const value = await options?.onTransaction?.(data.value, context);
             context.signal.throwIfAborted();
             this.worker.postMessage({ type: "result", id: data.id, value });
@@ -277,6 +314,7 @@ export class NativeWorkerClient {
     this.abort.abort();
     this.rejectReady(new Error("Native worker closed."));
     this.worker.terminate();
+    this.renderState = undefined;
     this.deliveries.clear();
     for (const call of this.requests.values())
       call.reject(new Error("Native worker closed."));
