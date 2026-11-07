@@ -1,7 +1,7 @@
 import type { CanvasSceneSourceOptions } from "./canvas";
 import { encodeSceneSource, sceneSourceKey, decodeSceneSource } from "./cache";
 import type { SceneSourceStore } from "./cache";
-import type { SceneSourceProvider } from "./types";
+import type { SceneSourceDelivery, SceneSourceProvider } from "./types";
 
 export interface SceneCacheSync {
   discovered: number;
@@ -12,6 +12,7 @@ export interface SceneCacheSync {
 }
 
 export interface SceneSyncOptions {
+  encodeSource?: (source: SceneSourceDelivery) => Promise<Uint8Array>;
   onSource?: (sceneId: string, sceneVersion: string) => void;
 }
 
@@ -122,7 +123,9 @@ export async function synchronizeSceneSources(
             });
             if (source.sceneId !== item.id)
               throw new Error("SOURCE_CACHE_IDENTITY_MISMATCH");
-            const capsule = encodeSceneSource(source);
+            const capsule = sync.encodeSource
+              ? await sync.encodeSource(source)
+              : encodeSceneSource(source);
             signal.throwIfAborted();
             await store.write(
               sceneSourceKey(

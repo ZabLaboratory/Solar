@@ -17,7 +17,7 @@ import { requireNativeCompositionState } from "../scenes/native-composition-stat
 import type { Operation } from "fast-json-patch";
 import { NativeState } from "../internal/native-state";
 import { ActiveSnapshotHash } from "./active-snapshot-hash";
-import { captureTranslationGuard } from "../scenes/capture-translation-guard";
+import { activeCaptureTranslationGuard } from "../scenes/capture-translation-guard";
 
 export const NATIVE_WIRE = "LSDP-TCP/2.0-draft2";
 export interface ReceptionResource {
@@ -53,6 +53,12 @@ export interface NativeSnapshot {
   state: unknown;
   stateHash: string;
 }
+interface ActiveReadScene {
+  snapshot: NativeSnapshot | null;
+  confirming: boolean;
+  close?: () => void;
+}
+
 // A single bounded native get can carry an editable scene and its authoritative
 // hash together. Peers negotiate their own lower limits with this receiver.
 const currentReadBytes = 512 * 1024;
@@ -162,10 +168,9 @@ export async function packagedNativeBinary(
 
 /** Owned by a system host (Prism main), never by Solar's browser renderer. */
 export class SolarReceptionServer {
-  readonly captureTranslationGuard = (value: unknown, ids: readonly string[]) =>
-    captureTranslationGuard(value, ids, (data) =>
-      createHash("sha256").update(data).digest("hex"),
-    );
+  readonly captureTranslationGuard = activeCaptureTranslationGuard((data) =>
+    createHash("sha256").update(data).digest("hex"),
+  );
   private child: ChildProcessWithoutNullStreams | null = null;
   private connection: ReceptionConnection | null = null;
   private starting: Promise<ReceptionConnection> | null = null;
@@ -180,7 +185,9 @@ export class SolarReceptionServer {
   private readonly peers = new Set<BrowserLSDP>();
   private readonly activeSnapshotHash = new ActiveSnapshotHash();
   private readonly watches = new Set<() => void>();
+  private readonly activeReadScenes = new Map<string, ActiveReadScene>();
   private currentReader: BrowserLSDP | null = null;
+  private confirmationPeer: BrowserLSDP | null = null;
   private readonly recoveryListeners = new Set<() => void>();
   private wanted = false;
   private recovering: Promise<ReceptionConnection> | null = null;
@@ -477,7 +484,7 @@ export class SolarReceptionServer {
   }
 
   /** Read the tree and its hash from the same Rust revision. Concurrent lane
-   * reads share a connection and retain no scene after the call returns. */
+   * reads share a connection. An active LSML witness is confirmed by Rust. */
   async readCurrent(target: string): Promise<NativeSnapshot> {
     const type = this.resource(target).type;
     if (type !== "solar.lsml/1" && type !== "solar.native-composition/1")
@@ -486,6 +493,10 @@ export class SolarReceptionServer {
     const lifetime = this.abort;
     if (!connection || !lifetime || lifetime.signal.aborted)
       throw new Error("LSDP_NOT_READY");
+    if (type === "solar.lsml/1") {
+      const verified = await this.confirmActiveScene(target, lifetime.signal);
+      if (verified) return verified;
+    }
     if (!this.currentReader) {
       const options = {
         limits: receiverLimits,
@@ -529,6 +540,97 @@ export class SolarReceptionServer {
       )
         return this.read(target);
       throw error;
+    }
+  }
+
+  /** A verified watch supplies an immutable candidate. A new read-only native
+   * subscription succeeds only if Rust still holds that exact tree hash. The
+   * temporary confirmation subscription is released before returning. */
+  private async confirmActiveScene(
+    target: string,
+    signal: AbortSignal,
+  ): Promise<NativeSnapshot | null> {
+    const current = this.activeReadScenes.get(target);
+    if (!current) {
+      const entry: ActiveReadScene = {
+        snapshot: null,
+        confirming: false,
+      };
+      this.activeReadScenes.set(target, entry);
+      const release = (): void => {
+        if (this.activeReadScenes.get(target) === entry)
+          this.activeReadScenes.delete(target);
+        entry.snapshot = null;
+        entry.close?.();
+      };
+      void this.watchOnce(
+        target,
+        (state, stateHash) => {
+          if (state === null) release();
+          else if (this.activeReadScenes.get(target) === entry)
+            entry.snapshot = { state, stateHash };
+        },
+        release,
+      ).then((close) => {
+        if (this.activeReadScenes.get(target) === entry) entry.close = close;
+        else close();
+      }, release);
+      return null;
+    }
+    const candidate = current.snapshot;
+    const connection = this.connection;
+    if (!candidate || !connection || current.confirming) return null;
+    current.confirming = true;
+    if (!this.confirmationPeer) {
+      const peer: BrowserLSDP = new BrowserLSDP(connection.websocketUrl, {
+        onClose: () => {
+          this.peers.delete(peer);
+          if (this.confirmationPeer === peer) this.confirmationPeer = null;
+        },
+        // The verified watcher owns application. This short-lived subscription
+        // only confirms the baseline and can receive a change before release.
+        onTransaction: async () => ({ level: "received" }),
+      });
+      this.confirmationPeer = peer;
+      this.peers.add(peer);
+    }
+    const peer = this.confirmationPeer;
+    const deadline = AbortSignal.any([
+      signal,
+      AbortSignal.timeout(this.options.timeoutMs ?? 15000),
+    ]);
+    try {
+      await peer.ready;
+      const response = (await peer.transaction(
+        { kind: "subscribe", target, stateHash: candidate.stateHash },
+        { signal: deadline },
+      )) as { status?: string; target?: string; stateHash?: string };
+      await peer.transaction(
+        { kind: "unsubscribe", target },
+        { signal: deadline },
+      );
+      signal.throwIfAborted();
+      return response.status === "subscribed" &&
+        response.target === target &&
+        response.stateHash === candidate.stateHash &&
+        this.activeReadScenes.get(target) === current
+        ? candidate
+        : null;
+    } catch (error) {
+      signal.throwIfAborted();
+      if (
+        !(
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "BASE_MISMATCH"
+        )
+      ) {
+        if (this.confirmationPeer === peer) this.confirmationPeer = null;
+        peer.close();
+      }
+      return null;
+    } finally {
+      current.confirming = false;
     }
   }
 
@@ -625,7 +727,11 @@ export class SolarReceptionServer {
         try {
           await this.start();
           if (closed || !this.wanted) return;
-          dispose = await this.watchOnce(target, onState, failed);
+          dispose = await this.watchOnce(
+            target,
+            (state) => onState(state),
+            failed,
+          );
           if (closed) dispose();
         } catch (next) {
           if (!closed && this.wanted) {
@@ -657,7 +763,7 @@ export class SolarReceptionServer {
     this.recoveryListeners.add(reconnect);
     this.watches.add(close);
     try {
-      dispose = await this.watchOnce(target, onState, failed);
+      dispose = await this.watchOnce(target, (state) => onState(state), failed);
       if (closed) dispose();
       return close;
     } catch (error) {
@@ -668,7 +774,7 @@ export class SolarReceptionServer {
 
   private async watchOnce(
     target: string,
-    onState: (state: unknown) => void,
+    onState: (state: unknown, stateHash: string) => void,
     onError: (error: Error) => void,
   ): Promise<() => void> {
     this.resource(target);
@@ -709,7 +815,7 @@ export class SolarReceptionServer {
         if (context.metadata.profile === "lsdp.state.read/1") {
           state = NativeState.from(value);
           hash = state.stateHash;
-          onState(state.value);
+          onState(state.value, hash);
           snapshotResolve();
           return { level: "received" };
         }
@@ -756,7 +862,7 @@ export class SolarReceptionServer {
           throw new Error("Native watch integrity mismatch.");
         sequence = event.sequence;
         state = next;
-        onState(state.value);
+        onState(state.value, hash);
         return event.kind === "applied_change"
           ? { level: "applied", transactionId: event.mutation.id }
           : { level: "applied", stateHash: hash };
@@ -814,6 +920,9 @@ export class SolarReceptionServer {
 
   private halt(): Promise<void> {
     if (this.stopping) return this.stopping;
+    for (const entry of this.activeReadScenes.values()) entry.close?.();
+    this.activeReadScenes.clear();
+    this.confirmationPeer = null;
     this.currentReader = null;
     this.activeSnapshotHash.clear();
     this.abort?.abort();

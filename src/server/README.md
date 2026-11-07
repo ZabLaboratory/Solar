@@ -6,7 +6,9 @@ for Solar and Orion; neither consumer launches a second daemon.
 
 `SolarReceptionServer.start()` injects resource seeds and typed local routes over
 stdin, waits for listeners and checks native capabilities. `readCurrent()` requests the current tree and
-its native hash together on a shared loopback LSDP connection. Reads above the
+its native hash together on a shared loopback LSDP connection. An active immutable
+LSML witness is returned only after a separate native subscription confirms that
+exact hash. A missing or conflicting witness falls back to reading the full tree. Reads above the
 512 KiB receipt budget use streamed snapshots. Closing the receiver closes the
 reader and invalidates pending results. `replace()` sends the full desired LSML to Rust's existing
 state route, which computes the diff. `apply()` sends explicit operations with a
@@ -97,9 +99,21 @@ read verification and initial resource checks retain their existing Merkle hashe
 `SceneSourceLibrary` owns immutable sources only. Its directory is partitioned by
 SHA-256(gateway, stable account id); no token is persisted. `synchronize` walks every
 accessible catalogue page and verifies current descriptors before disk reuse.
+Each catalogue pass performs capsule decoding, integrity checks and encoding on one
+lazily created Node worker. Its parent owns network access and index publication.
+Cancellation rejects pending codec operations and terminates the worker.
 Sources include the published LSMLZ assets and complete Blue closure. A completed
 pass atomically publishes its index and prunes obsolete capsules; interrupted passes
 never publish a partial catalogue. An index on disk cannot authorize reads after restart.
 `read` serves only revisions admitted by the current pass. `revoke` clears admission.
 The application owns launch waiting, refresh cadence and abort on account/logout.
 Tests exercise 75 scenes, unchanged transfers, revised sources, removals and cancellation.
+
+
+For active LSML reads the host follows the current physical resource and applies
+its verified LSDP changes to an immutable document. Before returning that
+document it opens a short-lived subscription at its exact tree hash on the
+local Rust receiver. A changed hash, a concurrent confirmation or a missing
+witness falls back to the native snapshot read. Empty resources, failed watches
+and receiver shutdown release the witness. The local reception probe covers
+concurrent reads, independent confirmation and replacement.

@@ -24,6 +24,8 @@ export interface CanvasSceneSourceOptions {
   fetch?: typeof globalThis.fetch;
   /** Launcher-owned store; descriptor authorization/revision is checked before reuse. */
   store?: SceneSourceStore;
+  /** Server hosts can verify local capsules outside their presentation thread. */
+  decodeCachedSource?: (bytes: Uint8Array) => Promise<SceneSourceDelivery>;
 }
 
 interface Descriptor {
@@ -227,7 +229,9 @@ export function createCanvasSceneSourceProvider(
           sceneSourceKey(sceneId, d.scene_version, format),
         );
         if (cached) {
-          const local = decodeSceneSource(cached);
+          const local = options.decodeCachedSource
+            ? await options.decodeCachedSource(cached)
+            : decodeSceneSource(cached);
           if (
             local.sceneId !== sceneId ||
             local.sceneVersion !== d.scene_version ||
