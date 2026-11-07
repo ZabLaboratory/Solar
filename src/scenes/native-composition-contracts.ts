@@ -95,6 +95,7 @@ export interface NativeCompositionSource {
   scene_id: string;
   scene_version: string;
   stateHash: string;
+  captureTranslationGuard?: import("./capture-translation-guard").CaptureTranslationGuard;
 }
 
 export interface NativeCompositionPlan {

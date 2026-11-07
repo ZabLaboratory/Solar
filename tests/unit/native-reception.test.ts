@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   receptionSettings,
   SolarReceptionServer,
@@ -168,5 +168,77 @@ describe("Solar-owned shared receiver settings", () => {
     expect(() =>
       receptionSettings({ origins: ["http://127.0.0.1:8099"], resources: {} }),
     ).toThrow("LSDP_RESOURCES_REQUIRED");
+  });
+});
+
+describe("current native reception reads", () => {
+  const target = "solar/composition";
+  const seed = {
+    schema: "solar.native-composition.state/1",
+    producers: {},
+    graphs: {},
+  };
+  const hash = "tree-sha256:" + "a".repeat(64);
+  const setup = () => {
+    const server = new SolarReceptionServer({
+      origins: ["http://127.0.0.1:8099"],
+      resources: {
+        [target]: { type: "solar.native-composition/1", initial: seed },
+      },
+    });
+    const transaction = vi.fn();
+    const lifetime = new AbortController();
+    Object.assign(server, {
+      connection: {},
+      abort: lifetime,
+      currentReader: { ready: Promise.resolve(), transaction },
+    });
+    const full = vi
+      .spyOn(server, "read")
+      .mockResolvedValue({ state: seed, stateHash: hash });
+    return { server, transaction, full, lifetime };
+  };
+  it("reads the state and hash of the same native revision", async () => {
+    const { server, transaction, full } = setup();
+    transaction.mockResolvedValue({ target, state: seed, stateHash: hash });
+    expect(await server.readCurrent(target)).toEqual({
+      state: seed,
+      stateHash: hash,
+    });
+    expect(transaction).toHaveBeenCalledWith(
+      { kind: "get", target },
+      { signal: expect.any(AbortSignal) },
+    );
+    expect(full).not.toHaveBeenCalled();
+  });
+  it("streams oversized snapshots and propagates other native failures", async () => {
+    const { server, transaction, full } = setup();
+    transaction.mockRejectedValueOnce(
+      Object.assign(new Error("too large"), { code: "SNAPSHOT_LIMIT" }),
+    );
+    await expect(server.readCurrent(target)).resolves.toEqual({
+      state: seed,
+      stateHash: hash,
+    });
+    transaction.mockRejectedValueOnce(new Error("TARGET_UNKNOWN"));
+    await expect(server.readCurrent(target)).rejects.toThrow("TARGET_UNKNOWN");
+    expect(full).toHaveBeenCalledTimes(1);
+  });
+  it("rejects a wrong target, a missing hash and an answer from a stopped receiver", async () => {
+    const { server, transaction, lifetime } = setup();
+    transaction
+      .mockResolvedValueOnce({ target: "other", state: seed, stateHash: hash })
+      .mockResolvedValueOnce({ target, state: seed })
+      .mockImplementationOnce(async () => {
+        lifetime.abort();
+        return { target, state: seed, stateHash: hash };
+      });
+    await expect(server.readCurrent(target)).rejects.toThrow(
+      "LSDP_SNAPSHOT_INVALID",
+    );
+    await expect(server.readCurrent(target)).rejects.toThrow(
+      "LSDP_SNAPSHOT_INVALID",
+    );
+    await expect(server.readCurrent(target)).rejects.toThrow();
   });
 });

@@ -39,6 +39,7 @@ interface TreeDigest {
 
 /** Scoped to one immutable resource. Shared subtrees retain their normative digest. */
 export class NativeTreeHasher {
+  private freshLSDP = false;
   private readonly cache = new WeakMap<object, TreeDigest>();
   private readonly origins = new WeakMap<object, object>();
   // Absolute native assignments may resend identical immutable LSML subtrees.
@@ -59,6 +60,19 @@ export class NativeTreeHasher {
     return `tree-sha256:${bytesToHex(result.hash)}`;
   }
 
+  /** Hash one freshly strict-decoded LSDP value synchronously. Never trust
+   * object identity: decoded values can be returned mutable to the caller.
+   * The existing bounded byte-keyed subtree cache remains safe across reads. */
+  hashFreshLSDP(value: unknown): string {
+    if (this.freshLSDP) throw new Error("REENTRANT_LSDP_HASH");
+    this.freshLSDP = true;
+    try {
+      return this.hash(value);
+    } finally {
+      this.freshLSDP = false;
+    }
+  }
+
   private digest(value: unknown): TreeDigest {
     if (value === null) return this.scalar(sha256(bytes("n")));
     if (typeof value === "boolean")
@@ -72,11 +86,15 @@ export class NativeTreeHasher {
       );
     }
     const object = value as object;
-    const cached = this.cache.get(object);
+    const cached = this.freshLSDP ? undefined : this.cache.get(object);
     if (cached) return cached;
+    if (this.freshLSDP) this.serialized.delete(object);
     // Path copies already have a verified origin for incremental hashing.
     // Serializing their full subtree for content lookup defeats that boundary.
-    if (Object.isFrozen(object) && !this.origins.has(object)) {
+    if (
+      (this.freshLSDP || Object.isFrozen(object)) &&
+      !this.origins.has(object)
+    ) {
       const text = JSON.stringify(value);
       if (text.length >= 1024 && text.length <= 512 * 1024) {
         this.serialized.set(object, text);
@@ -84,7 +102,7 @@ export class NativeTreeHasher {
         if (previous) {
           this.content.delete(text);
           this.content.set(text, previous);
-          this.cache.set(object, previous);
+          if (!this.freshLSDP) this.cache.set(object, previous);
           return previous;
         }
       }
@@ -102,7 +120,7 @@ export class NativeTreeHasher {
         ...this.budget(children),
       });
     }
-    let original = this.origins.get(object);
+    let original = this.freshLSDP ? undefined : this.origins.get(object);
     while (original && !this.cache.has(original))
       original = this.origins.get(original);
     const previous = original ? this.cache.get(original)?.entries : undefined;
@@ -240,7 +258,10 @@ export class NativeTreeHasher {
   }
 
   private remember(value: object, result: TreeDigest): TreeDigest {
-    this.cache.set(value, result);
+    if (!this.freshLSDP) {
+      this.cache.set(value, result);
+      this.origins.delete(value);
+    }
     const text = this.serialized.get(value);
     if (text && !this.content.has(text)) {
       this.content.set(text, result);

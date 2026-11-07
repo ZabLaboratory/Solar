@@ -1,7 +1,9 @@
 import { BrowserLSDP } from "../../vendor/lsdp-native-browser/src/browser.js";
 import type { IncomingContext } from "../../vendor/lsdp-native-browser/src/browser.js";
 import type { Operation } from "fast-json-patch";
-import { nativeTreeHash } from "../internal/native-tree";
+import jsonPatch from "fast-json-patch";
+import { NativeState } from "../internal/native-state";
+import { captureTranslationGuard } from "../scenes/capture-translation-guard";
 import {
   withNativeCompositionSource,
   type NativeCompositionPlan,
@@ -39,7 +41,7 @@ interface PublisherOptions extends NativeCompositionLSDPOptions {
 
 interface Snapshot {
   state: NativeCompositionState;
-  stateHash: string;
+  tree: NativeState;
 }
 
 interface Deferred<T> {
@@ -82,11 +84,58 @@ function randomTransactionId(): string {
   return crypto.randomUUID().replaceAll("-", "");
 }
 
+/** Keep one atomic publication, but do not retransmit an entire unchanged atlas
+ * for an unambiguous capture translation. Any other difference takes the full
+ * replacement path. */
+function captureTranslationOperations(
+  current: NativeCompositionPlan,
+  next: NativeCompositionPlan,
+  graph: "A" | "B",
+): Operation[] | null {
+  const oldGuard = current.source?.captureTranslationGuard;
+  const nextGuard = next.source?.captureTranslationGuard;
+  if (
+    !oldGuard ||
+    !nextGuard ||
+    oldGuard.hash !== nextGuard.hash ||
+    JSON.stringify(oldGuard.components) !== JSON.stringify(nextGuard.components)
+  )
+    return null;
+  const changes = jsonPatch.compare(current, next);
+  let moved = false;
+  for (const change of changes) {
+    if (change.op !== "replace") return null;
+    if (change.path === "/planHash" || change.path === "/source/stateHash")
+      continue;
+    const match = /^\/groups\/(\d+)\/children\/(\d+)\/affine\/(?:tx|ty)$/.exec(
+      change.path,
+    );
+    if (!match) return null;
+    const before = current.groups[Number(match[1])]?.children[Number(match[2])];
+    const after = next.groups[Number(match[1])]?.children[Number(match[2])];
+    if (
+      before?.kind !== "capture" ||
+      after?.kind !== "capture" ||
+      before.sourceComponentId !== after.sourceComponentId ||
+      !oldGuard.components.includes(before.sourceComponentId)
+    )
+      return null;
+    moved = true;
+  }
+  return moved
+    ? changes.map((change) => ({
+        ...change,
+        path: `/graphs/${graph}${change.path}`,
+      }))
+    : null;
+}
+
 /** Publish a Solar-owned plan on its own LSDP resource without blocking frame ACKs. */
 export class NativeCompositionPublisher {
   private readonly peer: Peer;
   private readonly abort = new AbortController();
   private pendingSnapshot: Deferred<Snapshot> | null = null;
+  private lastAcceptedSnapshot: Snapshot | null = null;
   private pendingAction: QueuedAction | null = null;
   private draining = false;
   private retiring = false;
@@ -107,6 +156,7 @@ export class NativeCompositionPublisher {
       onIncomingFailed: (_context, error) =>
         this.pendingSnapshot?.reject(error),
       onClose: (error) => {
+        this.lastAcceptedSnapshot = null;
         this.pendingSnapshot?.reject(error);
         if (!this.retiring && !this.retired) {
           this.disconnected = true;
@@ -122,10 +172,28 @@ export class NativeCompositionPublisher {
 
   publish(
     projection: NativeCompositionProjection | null,
-    document: { scene_id: string; scene_version: string },
+    document: { scene_id: string; scene_version: string } & Record<
+      string,
+      unknown
+    >,
     stateHash: string,
   ): Promise<NativeCompositionPublishResult> {
     if (this.retiring || this.retired) return Promise.resolve("retired");
+    let guard: ReturnType<typeof captureTranslationGuard> = null;
+    if (projection) {
+      try {
+        guard = captureTranslationGuard(
+          document,
+          projection.groups.flatMap((group) =>
+            group.children.flatMap((child) =>
+              child.kind === "capture" ? [child.sourceComponentId] : [],
+            ),
+          ),
+        );
+      } catch {
+        // An unclassifiable document keeps the strict source-hash path.
+      }
+    }
     const plan =
       projection && projection.groups.length > 0
         ? withNativeCompositionSource(projection, this.options.producer_id, {
@@ -136,6 +204,7 @@ export class NativeCompositionPublisher {
             scene_id: document.scene_id,
             scene_version: document.scene_version,
             stateHash,
+            ...(guard ? { captureTranslationGuard: guard } : {}),
           })
         : null;
     return this.enqueueLatest(() =>
@@ -181,6 +250,7 @@ export class NativeCompositionPublisher {
     const error = new Error("Composition publisher discarded.");
     this.pendingSnapshot?.reject(error);
     this.pendingSnapshot = null;
+    this.lastAcceptedSnapshot = null;
     this.pendingAction?.completions.forEach((completion) =>
       completion.resolve("retired"),
     );
@@ -256,8 +326,11 @@ export class NativeCompositionPublisher {
     )
       throw new Error("NATIVE_COMPOSITION_SNAPSHOT_INVALID");
     try {
-      const state = requireNativeCompositionState(value);
-      pending.resolve({ state, stateHash: nativeTreeHash(value) });
+      const tree = NativeState.from(value);
+      pending.resolve({
+        state: requireNativeCompositionState(tree.value),
+        tree,
+      });
       return { level: "received" };
     } catch (error) {
       pending.reject(error);
@@ -286,11 +359,12 @@ export class NativeCompositionPublisher {
   private async apply(
     beforeHash: string,
     operations: Operation[],
-  ): Promise<void> {
-    await this.peer.transaction(
+  ): Promise<{ receipt: unknown; transactionId: string }> {
+    const transactionId = randomTransactionId();
+    const receipt = await this.peer.transaction(
       {
         format: "lsdp.apply/1",
-        id: randomTransactionId(),
+        id: transactionId,
         target: this.options.resource,
         beforeHash,
         operations,
@@ -298,11 +372,18 @@ export class NativeCompositionPublisher {
       },
       { signal: this.abort.signal },
     );
+    return { receipt, transactionId };
   }
 
   private async write(plan: NativeCompositionPlan): Promise<void> {
     for (let attempt = 0; attempt < 4; attempt++) {
-      const { state, stateHash } = await this.read();
+      const cached = this.lastAcceptedSnapshot;
+      const snapshot =
+        cached &&
+        cached.state.graphs[this.options.graph]?.planHash !== plan.planHash
+          ? cached
+          : await this.read();
+      const { state, tree } = snapshot;
       if (state.producers[this.options.graph] !== this.options.producer_id)
         return;
       const current = state.graphs[this.options.graph];
@@ -312,9 +393,11 @@ export class NativeCompositionPublisher {
         current?.producer_id === this.options.producer_id &&
         current.planHash === plan.planHash
       ) {
+        this.lastAcceptedSnapshot = null;
         return;
       }
-      const operations: Operation[] = [
+      const operations: Operation[] = (current &&
+        captureTranslationOperations(current, plan, this.options.graph)) || [
         {
           op: current === undefined ? "add" : "replace",
           path: `/graphs/${this.options.graph}`,
@@ -322,9 +405,31 @@ export class NativeCompositionPublisher {
         },
       ];
       try {
-        await this.apply(stateHash, operations);
+        const applied = await this.apply(tree.stateHash, operations);
+        const receipt = record(applied.receipt);
+        // lsdp.apply/1 acknowledges the transaction, target and guarantee but
+        // does not return a state hash. Applying these exact operations to the
+        // accepted baseline determines the next hash locally. It is only a CAS
+        // candidate: a concurrent change makes the next write re-read Rust.
+        this.lastAcceptedSnapshot = null;
+        if (
+          receipt?.target === this.options.resource &&
+          receipt.transactionId === applied.transactionId &&
+          (receipt.level === "applied" || receipt.level === "persisted")
+        ) {
+          const next = tree.patch(operations);
+          if (
+            receipt.stateHash === undefined ||
+            receipt.stateHash === next.stateHash
+          )
+            this.lastAcceptedSnapshot = {
+              state: requireNativeCompositionState(next.value),
+              tree: next,
+            };
+        }
         return;
       } catch (error) {
+        this.lastAcceptedSnapshot = null;
         if (attempt === 3 || !isBaseMismatch(error)) throw error;
       }
     }
@@ -332,14 +437,16 @@ export class NativeCompositionPublisher {
 
   private async clearOwnedGraph(): Promise<void> {
     if (this.retired) return;
+    // Retire/clear must observe current ownership even after a successful write.
+    this.lastAcceptedSnapshot = null;
     for (let attempt = 0; attempt < 4; attempt++) {
-      const { state, stateHash } = await this.read();
+      const { state, tree } = await this.read();
       if (state.producers[this.options.graph] !== this.options.producer_id)
         return;
       const current = state.graphs[this.options.graph];
       if (!current || current.producer_id !== this.options.producer_id) return;
       try {
-        await this.apply(stateHash, [
+        await this.apply(tree.stateHash, [
           { op: "remove", path: `/graphs/${this.options.graph}` },
         ]);
         return;

@@ -8,7 +8,12 @@ export class ActiveSnapshotHash {
     { sceneId: string; sceneVersion: string; hasher: NativeTreeHasher }
   >();
 
-  hash(target: string, state: unknown, isScene: boolean): string {
+  hash(
+    target: string,
+    state: unknown,
+    isScene: boolean,
+    alreadyValidatedLSDP = false,
+  ): string {
     const document =
       state && typeof state === "object" && !Array.isArray(state)
         ? (state as Record<string, unknown>)
@@ -34,9 +39,11 @@ export class ActiveSnapshotHash {
       };
       this.resources.set(target, current);
     }
-    // NativeState owns, validates and freezes its snapshot before hashing.
-    // The original received value remains mutable for existing callers.
-    return NativeState.from(state, current.hasher).stateHash;
+    // The wire parser has already validated fresh decoded values. Hash without
+    // retaining their mutable identities; all other callers use full validation.
+    return alreadyValidatedLSDP
+      ? current.hasher.hashFreshLSDP(state)
+      : NativeState.from(state, current.hasher).stateHash;
   }
 
   clear(): void {

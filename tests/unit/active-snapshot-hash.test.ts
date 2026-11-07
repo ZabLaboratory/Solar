@@ -40,3 +40,25 @@ it("validates fresh snapshots and matches the normative digest across edits and 
     nativeTreeHash(document),
   );
 });
+
+it("hashes validated mutable LSDP reads without trusting prior object identities", () => {
+  const hashes = new ActiveSnapshotHash();
+  const document = {
+    scene_id: "one",
+    scene_version: "version",
+    layout: { text: "x".repeat(2000) },
+    defaults: { translate: [1, 2] },
+  };
+  for (let i = 0; i < 20; i++) {
+    document.defaults.translate[0] = i;
+    if (i === 7) document.layout.text = "short";
+    if (i === 14) document.layout.text = "x".repeat(2000);
+    expect(hashes.hash("solar/lane-b", document, true, true)).toBe(
+      nativeTreeHash(document),
+    );
+  }
+  expect(Object.isFrozen(document)).toBe(false);
+  expect(hashes.hash("solar/lane-b", document, true)).toBe(
+    nativeTreeHash(document),
+  );
+});
