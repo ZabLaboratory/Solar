@@ -97,6 +97,21 @@ try {
   const desired = structuredClone(original);
   desired.defaults ??= {};
   desired.defaults["__lit.text.text_msxz43eh_1"] = "Full LSML, native diff";
+  const activeRead = await server.readCurrent("solar/program");
+  assert.deepEqual(activeRead, {
+    state: original,
+    stateHash: baseline.stateHash,
+  });
+  // The receiver must independently confirm the observed immutable snapshot.
+  // Wait for initial subscription only in the test; production reads fall back.
+  let confirmed;
+  for (let attempt = 0; attempt < 100; attempt++) {
+    confirmed = await server.readCurrent("solar/program");
+    if (Object.isFrozen(confirmed.state)) break;
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
+  assert.ok(Object.isFrozen(confirmed.state));
+  assert.deepEqual(confirmed, activeRead);
   const id = randomBytes(16).toString("hex");
   const receipt = await server.replace("solar/program", desired, id);
   const event = await eventPromise.finally(() => clearTimeout(timer));
@@ -116,6 +131,14 @@ try {
     /ID_REUSED/,
   );
   assert.deepEqual((await server.read("solar/program")).state, desired);
+  const competingReads = await Promise.all([
+    server.readCurrent("solar/program"),
+    server.readCurrent("solar/program"),
+  ]);
+  for (const read of competingReads) {
+    assert.deepEqual(read.state, desired);
+    assert.notEqual(read.stateHash, baseline.stateHash);
+  }
   assert.deepEqual((await server.read("orion/state")).state, { revision: 0 });
   assert.equal((await server.read("solar/preview")).state, null);
   await server.replace("orion/state", { revision: 1, runtime: "Orion" });

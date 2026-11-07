@@ -6,8 +6,9 @@ execFileSync(
   { stdio: "inherit" },
 );
 await build({
-  entryPoints: ["src/server/index.ts"],
-  outfile: "dist/server/index.mjs",
+  entryPoints: ["src/server/index.ts", "src/server/scene-capsule-worker.ts"],
+  outdir: "dist/server",
+  outExtension: { ".js": ".mjs" },
   bundle: true,
   platform: "node",
   target: "node22",

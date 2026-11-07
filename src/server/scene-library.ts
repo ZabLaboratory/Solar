@@ -10,6 +10,7 @@ import {
   synchronizeSceneSources,
   type SceneCacheSync,
 } from "../scenes/startup";
+import { SceneCapsuleCodec } from "./scene-capsule-codec";
 import { FileSceneSourceStore } from "./scene-store";
 
 /** Disk source library. No Vision instance, graph or live mutation is retained. */
@@ -42,14 +43,22 @@ export class SceneSourceLibrary {
     signal: AbortSignal,
   ): Promise<SceneCacheSync> {
     const next = new Map<string, string>();
+    const codec = new SceneCapsuleCodec(signal);
     const report = await synchronizeSceneSources(
       options,
-      createCanvasSceneSourceProvider({ ...options, store: this.store }),
+      createCanvasSceneSourceProvider({
+        ...options,
+        store: this.store,
+        decodeCachedSource: (bytes) => codec.decode(bytes),
+      }),
       this.store,
       signal,
       Number.MAX_SAFE_INTEGER,
-      { onSource: (id, version) => next.set(id, version) },
-    );
+      {
+        encodeSource: (source) => codec.encode(source),
+        onSource: (id, version) => next.set(id, version),
+      },
+    ).finally(() => codec.close());
     signal.throwIfAborted();
     await mkdir(this.root, { recursive: true });
     const temporary = join(this.root, `${randomUUID()}.index.tmp`);

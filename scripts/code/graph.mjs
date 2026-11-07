@@ -95,9 +95,9 @@ export function sourceGraph(root) {
         ts.isNewExpression(node) &&
         node.expression.getText(source) === "URL" &&
         ts.isStringLiteral(node.arguments?.[0]) &&
-        node.arguments[0].text.endsWith(".ts")
+        /\.(?:ts|mjs)$/.test(node.arguments[0].text)
       )
-        dependency(node.arguments[0].text, true);
+        dependency(node.arguments[0].text.replace(/\.mjs$/, ".ts"), true);
       if (
         (ts.isFunctionDeclaration(node) ||
           ts.isClassDeclaration(node) ||

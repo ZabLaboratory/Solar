@@ -2,12 +2,33 @@
 import { mkdtemp, readdir, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
 import { canonicalize, bundleAddress } from "@lumencast/canonical";
 import { unzipSync, zipSync, strToU8, strFromU8 } from "fflate";
 import { createHash } from "node:crypto";
 import { cacheSource } from "../helpers/cache-source";
-import { SceneSourceLibrary } from "../../src/server/scene-library";
+import { build } from "esbuild";
+import { pathToFileURL } from "node:url";
+import type * as Server from "../../src/server/index";
+let SceneSourceLibrary: typeof Server.SceneSourceLibrary;
+let built: string;
+beforeAll(async () => {
+  built = await mkdtemp(join(tmpdir(), "solar-server-codec-"));
+  await build({
+    entryPoints: ["src/server/index.ts", "src/server/scene-capsule-worker.ts"],
+    outdir: built,
+    outExtension: { ".js": ".mjs" },
+    bundle: true,
+    platform: "node",
+    format: "esm",
+  });
+  ({ SceneSourceLibrary } = await import(
+    pathToFileURL(join(built, "index.mjs")).href
+  ));
+});
+afterAll(async () => {
+  if (built) await rm(built, { recursive: true, force: true });
+});
 import { createLocalSceneSourceProvider } from "../../src/scenes/local-library";
 import { decodeSceneSource, encodeSceneSource } from "../../src/scenes/cache";
 import type { SceneSourceDelivery } from "../../src/scenes/types";

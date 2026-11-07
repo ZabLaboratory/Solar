@@ -105,7 +105,9 @@ export function captureTranslationGuard(
 
 /** One publisher can reuse the verified digest across immutable path copies
  * when every changed leaf is masked by that exact digest. */
-export function activeCaptureTranslationGuard() {
+export function activeCaptureTranslationGuard(
+  digest?: (data: Uint8Array) => string,
+) {
   let previous:
     | {
         document: WeakRef<Record<string, unknown>>;
@@ -151,7 +153,7 @@ export function activeCaptureTranslationGuard() {
       cached.document = new WeakRef(document);
       return cached.guard;
     }
-    const guard = captureTranslationGuard(document, ids);
+    const guard = captureTranslationGuard(document, ids, digest);
     previous =
       owned && guard
         ? {
