@@ -15,7 +15,7 @@ import {
   type NativeCompositionProjection,
 } from "../scenes/native-composition";
 
-/** Prepare the active scene; inactive sources and GPU frames are never retained. */
+/** Prepare a hidden candidate while the accepted scene remains independently owned. */
 export class NativeSceneFrames {
   constructor(
     private readonly options: MountOptions,

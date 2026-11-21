@@ -341,6 +341,7 @@ it("disables atlas output when the same engine later renders a canonical scene",
     { ...pack, nativeComposition: true },
     true,
   );
+  atlas.dispose(); // Only retired engines may be reused for another scene.
   const canonical = await mountVisionScene(
     target,
     delivery,
@@ -623,7 +624,7 @@ it("retires a queued old lifetime while fonts are pending and leaves an explicit
   expect(fake.terminated).toBe(2);
 });
 
-it("keeps one presenter alive across scene switches and scene-handle disposal", async () => {
+it("keeps accepted and prepared scenes independent, restores edits on abort and reuses idle engines", async () => {
   const { target, delivery, pack } = setup();
   const first = await mountVisionScene(
     target,
@@ -657,17 +658,37 @@ it("keeps one presenter alive across scene switches and scene-handle disposal", 
   fake.held.find(({ type }) => type === "load")!.deliver();
 
   const second = await loading;
-  second.activate();
-  first.dispose();
+  const candidateLayer = target.lastElementChild as HTMLElement;
+  expect(candidateLayer).not.toBe(layer);
+  expect(candidateLayer.style.opacity).toBe("0");
   expect(layer.style.opacity).toBe("1");
-  expect(target.firstElementChild).toBe(layer);
-  expect(fake.created).toBe(1);
-  expect(fake.terminated).toBe(0);
-
+  await expect(first.applyPatch({ count: 1 })).resolves.toBeUndefined();
+  second.activate();
+  first.deactivate?.();
+  expect(candidateLayer.style.opacity).toBe("1");
+  first.activate(); // Compensate a committed candidate, then discard it.
   second.dispose();
+  expect(layer.style.opacity).toBe("1");
+  expect(candidateLayer.style.opacity).toBe("0");
+  await expect(first.applyPatch({ count: 2 })).resolves.toBeUndefined();
+  fake.heldTypes.clear();
+  const third = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    pack,
+    true,
+  );
+  expect(fake.created).toBe(2); // Reuse the retired candidate, including its font bank.
   expect(fake.terminated).toBe(0);
+  third.activate();
+  first.dispose();
+  expect((target.lastElementChild as HTMLElement).style.opacity).toBe("1");
+  third.dispose();
   disconnectVisionSession(target);
-  expect(fake.terminated).toBe(1);
+  expect(fake.terminated).toBe(2);
 });
 
 it("keeps the first rejected scene load hidden when no accepted frame exists", async () => {
@@ -717,6 +738,7 @@ it("retains the last accepted frame through a rejected replacement and permits a
   expect(target.querySelector("[data-solar-vision-scene]")).toBe(layer);
   expect(layer?.style.opacity).toBe("1");
   expect(layer?.lastElementChild).toBe(frontCanvas);
+  await expect(first.applyPatch({ count: 1 })).resolves.toBeUndefined();
 
   const recovered = await mountVisionScene(
     target,
@@ -729,7 +751,7 @@ it("retains the last accepted frame through a rejected replacement and permits a
   );
   recovered.activate();
 
-  expect(fake.created).toBe(1);
+  expect(fake.created).toBe(2);
   expect(fake.requests.filter((type) => type === "load")).toHaveLength(3);
   expect(target.querySelector("[data-solar-vision-scene]")).toBe(layer);
   expect(layer?.style.opacity).toBe("1");
@@ -769,6 +791,7 @@ it("ignores a retired presenter callback after termination fails and the target 
   oldListener({ data: { type: "error", seq: 1 } });
   expect(target.firstElementChild).toBe(currentLayer);
 
+  reopened.dispose();
   const switched = await mountVisionScene(
     target,
     { ...delivery, sceneVersion: "v2" },
@@ -787,6 +810,41 @@ it("ignores a retired presenter callback after termination fails and the target 
   switched.dispose();
   disconnectVisionSession(target);
   expect(fake.terminated).toBe(2);
+});
+
+it("preserves the accepted engine after candidate initialization fails", async () => {
+  const { target, delivery, pack } = setup();
+  const accepted = await mountVisionScene(
+    target,
+    delivery,
+    {},
+    vi.fn(),
+    vi.fn(),
+    pack,
+    true,
+  );
+  accepted.activate();
+  fake.failInitEmpty = 1;
+  await expect(
+    mountVisionScene(target, delivery, {}, vi.fn(), vi.fn(), pack, true),
+  ).rejects.toThrow("empty engine initialization failed");
+  expect(visionMaxTextureSize(target)).toBe(8192);
+  expect((target.firstElementChild as HTMLElement).style.opacity).toBe("1");
+  await expect(accepted.applyPatch({ count: 1 })).resolves.toBeUndefined();
+  accepted.dispose();
+});
+
+it("retires every owned engine even when termination throws", async () => {
+  const { target, delivery, pack } = setup();
+  await mountVisionScene(target, delivery, {}, vi.fn(), vi.fn(), pack, true);
+  await mountVisionScene(target, delivery, {}, vi.fn(), vi.fn(), pack, true);
+  fake.failTerminate = true;
+  expect(() => disconnectVisionSession(target)).toThrow(
+    "presenter termination failed",
+  );
+  expect(fake.terminated).toBe(2);
+  expect(target.children.length).toBe(0);
+  fake.failTerminate = false;
 });
 
 function captureSource(path: string): VisionLiveMediaSource {

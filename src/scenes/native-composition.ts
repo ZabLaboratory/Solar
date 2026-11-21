@@ -101,13 +101,41 @@ function insertChild(
   children.push(child);
 }
 
-function compareChildren(a: OrderedChild, b: OrderedChild): number {
-  if (a.paintOrder !== b.paintOrder) return a.paintOrder - b.paintOrder;
-  if (a.nodeId !== null && a.nodeId === b.beforeNodeId) return 1;
-  if (b.nodeId !== null && b.nodeId === a.beforeNodeId) return -1;
-  if (a.nodeId !== null && a.nodeId === b.afterNodeId) return -1;
-  if (b.nodeId !== null && b.nodeId === a.afterNodeId) return 1;
-  return a.sequence - b.sequence;
+function orderChildren(children: OrderedChild[]): OrderedChild[] {
+  const native = children
+    .filter((child) => child.nodeId !== null)
+    .sort((a, b) => a.paintOrder - b.paintOrder || a.sequence - b.sequence);
+  const positions = new Map(
+    native.map((child, index) => [child.nodeId, index]),
+  );
+  // Surface paintOrder is a raster-band ordinal. Capture/owner paintOrder is
+  // a graph traversal ordinal. Anchor bands in gaps between native siblings
+  // instead of comparing these unrelated numbers (or using a cyclic comparator).
+  const positioned = children.map((child) => {
+    const nativePosition = positions.get(child.nodeId);
+    if (nativePosition !== undefined)
+      return { child, slot: nativePosition, band: 1 };
+    const before = positions.get(child.beforeNodeId ?? null);
+    const after = positions.get(child.afterNodeId ?? null);
+    let slot = before ?? (after === undefined ? undefined : after + 1);
+    if (slot === undefined) {
+      // No native boundary in this scope: retain the receipt's stable order.
+      const next = native.findIndex(
+        (node) => node.paintOrder > child.paintOrder,
+      );
+      slot = next < 0 ? native.length : next;
+    }
+    return { child, slot, band: 0 };
+  });
+  return positioned
+    .sort(
+      (a, b) =>
+        a.slot - b.slot ||
+        a.band - b.band ||
+        a.child.paintOrder - b.child.paintOrder ||
+        a.child.sequence - b.child.sequence,
+    )
+    .map(({ child }) => child);
 }
 
 /**
@@ -293,7 +321,7 @@ export function projectNativeCompositionFrame(
 
   for (const owner of frame.owners) {
     const destination = children.get(owner.nodeId)!;
-    for (const child of destination.sort(compareChildren))
+    for (const child of orderChildren(destination))
       projectedOwners.get(owner.nodeId)!.children.push(child.child);
   }
 

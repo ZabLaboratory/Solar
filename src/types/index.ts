@@ -5,7 +5,7 @@ import type {
 } from "../scenes/types";
 
 export type SolarMode = "broadcast" | "control" | "test";
-export type SolarStatus = "disconnected" | "connecting" | "live";
+export type SolarStatus = "disconnected" | "connecting" | "live" | "blocked";
 
 export interface SolarTokenProvider {
   fetch: () => Promise<string>;
@@ -34,6 +34,7 @@ export type SolarErrorCode =
   | "INSTANCE_SOURCE_INVALID"
   | "VISION_INIT_FAILED"
   | "VISION_PATCH_FAILED"
+  | "VISION_EFFECT_UNSUPPORTED"
   | "NATIVE_COMPOSITION_FAILED"
   | "SOUND_FAILED"
   | "CAMERA_CAPTURE_FAILED";
