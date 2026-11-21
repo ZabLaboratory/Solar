@@ -125,6 +125,23 @@ describe("Vision live camera textures", () => {
     vi.unstubAllGlobals();
   });
 
+  it("resumes the same texture without uploads until real readiness or invalidation", async () => {
+    let active = makeScene();
+    const first = active;
+    const controller = new LiveMediaController({liveAudio:false, resolveCaptureDevice:vi.fn(async()=>({deviceId:"device-1"})), peers:peerSources(), onError:vi.fn(), getScene:()=>active});
+    try {
+      controller.update([localCamera]);
+      await vi.waitFor(()=>expect(first.updateMedia).toHaveBeenCalledOnce());
+      for(let cycle=0;cycle<5;cycle++){await controller.pause();controller.resume();}
+      await new Promise(resolve=>setTimeout(resolve,10));
+      expect(first.updateMedia).toHaveBeenCalledOnce();
+      controller.refresh();
+      await vi.waitFor(()=>expect(first.updateMedia).toHaveBeenCalledTimes(2));
+      await controller.pause();active=makeScene();controller.resume();
+      await vi.waitFor(()=>expect(active.updateMedia).toHaveBeenCalledOnce());
+    } finally {controller.dispose();}
+  });
+
   it("resolves a local camera and sends fitted video frames into Vision", async () => {
     const scene = makeScene();
     const peers = peerSources();

@@ -25,19 +25,22 @@ import {
   type VisionCompositionFrame,
 } from "./vision-composition-frame";
 
-interface PresenterEvent {
-  data: VisionPresenterMessage;
-}
-
-interface VisionPresenter {
-  addEventListener(
-    type: "message",
-    listener: (event: PresenterEvent) => void,
-  ): void;
-  postMessage(request: Record<string, unknown>): void;
-  terminate(): void;
-  flush(): Promise<void>;
-}
+import {
+  visionSessions,
+  visionSessionPools,
+  sceneLoads,
+  visionLifetimes,
+  disconnectedError,
+  lifetimeFor,
+  isCurrentLifetime,
+  assertCurrentLifetime,
+  awaitLifetime,
+  type PresenterEvent,
+  type VisionPresenter,
+  type PersistentVisionSession,
+  type PersistentVisionLifetime,
+} from "./vision-session";
+export { visionMaxTextureSize } from "./vision-session";
 
 type PresenterModule = {
   createMainThreadPresenter: (
@@ -45,142 +48,6 @@ type PresenterModule = {
     dependencies: Record<string, unknown>,
   ) => VisionPresenter;
 };
-
-interface PersistentVisionSession {
-  layer: HTMLDivElement;
-  canvas: HTMLCanvasElement;
-  presentation: CanvasPresentation;
-  presenter: VisionPresenter | null;
-  lifetime: PersistentVisionLifetime;
-  sequence: number;
-  owner: object;
-  closed: boolean;
-  engineReady: boolean;
-  fontsReady: boolean;
-  nativeComposition?: boolean;
-  admittedFonts: Set<string>;
-  onMessage: (event: PresenterEvent) => void;
-  retire: (error: Error) => void;
-}
-
-interface PersistentVisionLifetime {
-  closed: boolean;
-  signal: AbortSignal;
-  close(error: Error): void;
-}
-
-const visionSessions = new WeakMap<HTMLElement, PersistentVisionSession>();
-const sceneLoads = new WeakMap<HTMLElement, Promise<void>>();
-const visionLifetimes = new WeakMap<HTMLElement, PersistentVisionLifetime>();
-
-/** Read the cap from Vision's already initialized, session-owned WebGL2 context. */
-export function visionMaxTextureSize(target: HTMLElement): number {
-  const session = visionSessions.get(target);
-  if (!session || session.closed || !session.presenter || !session.fontsReady)
-    throw new Error("NATIVE_COMPOSITION_VISION_SESSION_UNAVAILABLE");
-  // The presenter initializes this exact canvas as WebGL2 before the session is
-  // marked ready. getContext therefore returns the owned context; this does not
-  // create an auxiliary canvas or GPU context.
-  const context = session.canvas.getContext("webgl2");
-  if (!context || context.isContextLost())
-    throw new Error("NATIVE_COMPOSITION_WEBGL2_CONTEXT_UNAVAILABLE");
-  const limit = context.getParameter(context.MAX_TEXTURE_SIZE);
-  if (!Number.isSafeInteger(limit) || limit < 1)
-    throw new Error("NATIVE_COMPOSITION_TEXTURE_LIMIT_UNAVAILABLE");
-  return limit;
-}
-
-function disconnectedError(): Error {
-  const error = new Error("Vision host session disconnected.");
-  error.name = "AbortError";
-  return error;
-}
-
-function lifetimeFor(target: HTMLElement): PersistentVisionLifetime {
-  const current = visionLifetimes.get(target);
-  if (current && !current.closed) return current;
-
-  const controller = new AbortController();
-  const lifetime: PersistentVisionLifetime = {
-    closed: false,
-    signal: controller.signal,
-    close(error) {
-      if (lifetime.closed) return;
-      lifetime.closed = true;
-      controller.abort(error);
-    },
-  };
-  visionLifetimes.set(target, lifetime);
-  return lifetime;
-}
-
-function isCurrentLifetime(
-  target: HTMLElement,
-  lifetime: PersistentVisionLifetime,
-): boolean {
-  return !lifetime.closed && visionLifetimes.get(target) === lifetime;
-}
-
-function assertCurrentLifetime(
-  target: HTMLElement,
-  lifetime: PersistentVisionLifetime,
-): void {
-  if (!isCurrentLifetime(target, lifetime)) throw disconnectedError();
-}
-
-function awaitLifetime<T>(
-  target: HTMLElement,
-  lifetime: PersistentVisionLifetime | null,
-  pending: Promise<T>,
-): Promise<T> {
-  if (!lifetime) return pending;
-  if (!isCurrentLifetime(target, lifetime)) {
-    void pending.catch(() => {});
-    return Promise.reject(disconnectedError());
-  }
-  return new Promise<T>((resolve, reject) => {
-    let context: {
-      target: HTMLElement;
-      lifetime: PersistentVisionLifetime;
-    } | null = { target, lifetime };
-    let signal: AbortSignal | null = lifetime.signal;
-    let resolveResult: ((value: T) => void) | null = resolve;
-    let rejectResult: ((reason?: unknown) => void) | null = reject;
-    let onAbort: (() => void) | null = null;
-    const cleanup = (): void => {
-      if (signal && onAbort) signal.removeEventListener("abort", onAbort);
-      signal = null;
-      onAbort = null;
-      context = null;
-    };
-    const finish = (succeeded: boolean, value: unknown): void => {
-      if (!context) return;
-      const resolveCurrent = resolveResult;
-      const rejectCurrent = rejectResult;
-      resolveResult = null;
-      rejectResult = null;
-      cleanup();
-      if (succeeded) resolveCurrent?.(value as T);
-      else rejectCurrent?.(value);
-    };
-    onAbort = () => finish(false, signal?.reason ?? disconnectedError());
-    signal.addEventListener("abort", onAbort, { once: true });
-    pending.then(
-      (value) => {
-        const active = context;
-        if (!active) return;
-        try {
-          assertCurrentLifetime(active.target, active.lifetime);
-          finish(true, value);
-        } catch (error) {
-          finish(false, error);
-        }
-      },
-      (error: unknown) => finish(false, error),
-    );
-    if (signal.aborted) onAbort();
-  });
-}
 
 function createSessionPresenter(
   module: PresenterModule,
@@ -206,10 +73,18 @@ function listenToSession(session: PersistentVisionSession): void {
 export function disconnectVisionSession(target: HTMLElement): void {
   delete target.dataset.solarEngineReady;
   visionLifetimes.get(target)?.close(disconnectedError());
-  const session = visionSessions.get(target);
-  if (!session) return;
+  const sessions = visionSessionPools.get(target);
   visionSessions.delete(target);
-  session.retire(disconnectedError());
+  visionSessionPools.delete(target);
+  const errors: unknown[] = [];
+  for (const session of sessions ?? []) {
+    try {
+      session.retire(disconnectedError());
+    } catch (error) {
+      errors.push(error);
+    }
+  }
+  if (errors.length) throw errors[0];
 }
 
 /** Mount one revision-pinned LSMLZ scene into Vision and wait for its first frame. */
@@ -332,20 +207,25 @@ async function mountVisionSceneNow(
     throw new Error("Vision scene delivery must be an LSMLZ archive.");
   }
 
-  const currentSession = persistent ? visionSessions.get(target) : undefined;
-  const existing =
-    currentSession?.lifetime === lifetime && !currentSession.closed
-      ? currentSession
-      : undefined;
+  const pool = persistent
+    ? (visionSessionPools.get(target) ?? new Set<PersistentVisionSession>())
+    : null;
+  if (pool) visionSessionPools.set(target, pool);
+  const existing = [...(pool ?? [])].find(
+    (candidate) =>
+      candidate.lifetime === lifetime &&
+      !candidate.closed &&
+      candidate.owner === null,
+  );
   const owner = {};
   const layer = existing?.layer ?? document.createElement("div");
   if (delivery) layer.dataset.solarVisionScene = delivery.sceneVersion;
   Object.assign(layer.style, {
     position: "absolute",
     inset: "0",
-    // The persistent front surface already contains the active frame.
-    // Structural/effect loads must not hide it while awaiting the next frame.
-    ...(!existing ? { opacity: "0" } : {}),
+    // A candidate always has a private hidden front. The accepted handle owns
+    // its separate layer until activation and explicit retirement.
+    opacity: "0",
     pointerEvents: "none",
   });
   if (getComputedStyle(target).position === "static") {
@@ -416,6 +296,14 @@ async function mountVisionSceneNow(
     session.retire = (error) => {
       if (session.closed) return;
       session.closed = true;
+      pool!.delete(session);
+      if (visionSessions.get(target) === session) {
+        const retained = [...pool!].find(
+          (item) => !item.closed && item.fontsReady,
+        );
+        if (retained) visionSessions.set(target, retained);
+        else visionSessions.delete(target);
+      }
       session.onMessage = () => {};
       try {
         frameQueue?.close();
@@ -435,6 +323,7 @@ async function mountVisionSceneNow(
         waiters.clear();
       }
     };
+    pool!.add(session);
     visionSessions.set(target, session);
   }
 
@@ -703,7 +592,10 @@ async function mountVisionSceneNow(
       }
       session.fontsReady = true;
     }
-    if (!delivery) return null;
+    if (!delivery) {
+      if (session) session.owner = null;
+      return null;
+    }
     if (persistent) {
       await admitFonts(renderPackage?.hostFonts ?? []);
       for (const digest of renderPackage?.requiredFontDigests ?? [])
@@ -893,8 +785,10 @@ async function mountVisionSceneNow(
             (!session.closed &&
               session.owner === owner &&
               (!lifetime || isCurrentLifetime(target, lifetime))))
-        )
+        ) {
           layer.style.opacity = "1";
+          if (session) visionSessions.set(target, session);
+        }
       },
       deactivate: () => {
         if (
@@ -944,6 +838,7 @@ async function mountVisionSceneNow(
           const seq = ++session.sequence;
           presenter?.postMessage({ type: "clear-scene", seq });
           session.onMessage = () => {};
+          session.owner = null;
         }
         termination = presenter?.flush() ?? Promise.resolve();
         presenter = null;
@@ -966,13 +861,13 @@ async function mountVisionSceneNow(
     ) {
       session.retire(disconnectedError());
     } else if (!session.engineReady) {
-      if (visionSessions.get(target) === session) visionSessions.delete(target);
       session.retire(error instanceof Error ? error : new Error(String(error)));
     } else {
       session.onMessage = () => {};
       presenter?.postMessage({ type: "clear-scene", seq: ++session.sequence });
-      // Keep the layer's previous visibility: its front canvas is the last
-      // accepted frame. New and prewarmed layers already start hidden.
+      session.owner = null;
+      // A rejected candidate owns only this hidden layer. The accepted handle
+      // and its engine are still available for edits and compensation.
     }
     throw error;
   }

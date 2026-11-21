@@ -87,6 +87,7 @@ export class LiveMediaController {
   private uploadPending = false;
   private paused = false;
   private uploadCompletion: Promise<void> | null = null;
+  private uploadedScene: VisionSceneHandle | null = null;
   private readonly metrics: LiveMediaStageMetrics;
 
   constructor(private readonly options: LiveMediaOptions) {
@@ -113,7 +114,8 @@ export class LiveMediaController {
   resume(): void {
     if (this.disposed) return;
     this.paused = false;
-    this.refresh();
+    if (this.options.getScene() !== this.uploadedScene) this.refresh();
+    else this.schedulePump();
   }
 
   update(sources: readonly VisionLiveMediaSource[]): void {
@@ -414,6 +416,7 @@ export class LiveMediaController {
             frames.map(({ path, bitmap }) => ({ path, bitmap })),
             (receipt) => this.metrics.recordSubmissionReceipt(token, receipt),
           );
+          this.uploadedScene = scene;
           this.metrics.finishMediaUpdate(token, true);
         } catch (error) {
           this.metrics.finishMediaUpdate(token, false);

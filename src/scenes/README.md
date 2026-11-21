@@ -212,6 +212,11 @@ scene change; no scene instance or inactive asset owner is retained.
 
 `native-composition.ts` projects the exact accepted Vision receipt into the
 ordered group graph and global Solar surface slots. Owners keep their own
+ordering by graph traversal. Raster band ordinals are a separate namespace:
+their before/after native occurrence boundaries anchor them into sibling gaps.
+Bands within a gap keep receipt order. This preserves text above captures and
+interleaves several bands without a non-transitive comparison between ordinals.
+Owners keep their own
 opacity, effective visibility and blend facts; owner groups use identity affine
 and canonical viewport bounds because surfaces and capture affines are already
 in global scene texels. Captures use unique Vision occurrence IDs plus their

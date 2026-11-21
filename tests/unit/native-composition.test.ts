@@ -18,6 +18,61 @@ function project(frame: VisionCompositionFrame) {
   return projectNativeCompositionFrame(frame, expected);
 }
 
+it("places a final painted band above a capture despite its smaller band ordinal", () => {
+  const frame = compositionFrame();
+  frame.surfaces[0]!.paintOrder = 0;
+  frame.surfaces[0]!.beforeNodeId = null;
+  frame.surfaces[0]!.afterNodeId = 2;
+  frame.captures[0]!.paintOrder = 9;
+  expect(project(frame).groups[0]!.children.map((child) => child.kind)).toEqual(
+    ["capture", "solarBand"],
+  );
+});
+
+it("interleaves band ordinals around native traversal ordinals transitively", () => {
+  const frame = compositionFrame();
+  frame.captures[0]!.paintOrder = 8;
+  frame.captures.push({
+    ...frame.captures[0]!,
+    nodeId: 9,
+    paintOrder: 19,
+    effectiveComponentId: "webcam",
+  });
+  const surface = frame.surfaces[0]!;
+  frame.surfaces = [
+    {
+      ...surface,
+      bandIndex: 0,
+      paintOrder: 0,
+      beforeNodeId: 2,
+      afterNodeId: null,
+    },
+    {
+      ...surface,
+      bandIndex: 1,
+      paintOrder: 1,
+      beforeNodeId: 9,
+      afterNodeId: 2,
+    },
+    {
+      ...surface,
+      bandIndex: 2,
+      paintOrder: 2,
+      beforeNodeId: null,
+      afterNodeId: 9,
+    },
+  ];
+  expect(
+    project(frame).groups[0]!.children.map((child) =>
+      child.kind === "capture"
+        ? child.sourceComponentId
+        : child.kind === "solarBand"
+          ? child.band
+          : child.kind,
+    ),
+  ).toEqual([0, "camera", 1, "webcam", 2]);
+});
+
 it("projects nested owners and interleaved global bands without applying owner affine twice", () => {
   const frame = compositionFrame();
   frame.owners.push({
@@ -179,6 +234,7 @@ it("uses a unique child id per capture occurrence and requires its base author i
     localToWorld: [1, 0, 0, 1, 50, 60],
   });
   frame.captures[0]!.paintOrder = 4;
+  frame.surfaces[0]!.beforeNodeId = 8;
   const result = project(frame);
   const owner = result.groups[0]!;
   expect(owner.children).toMatchObject([
@@ -419,4 +475,36 @@ it("binds the published projection to the exact LSDP hash and receipt geometry",
     affine: { m00: 2, m01: 0, tx: 20, m10: 0, m11: 2, ty: 40 },
     cropPercent: { left: 0, top: 10, right: 0, bottom: 15 },
   });
+});
+
+it("preserves a promoted Difference paint owner above its capture with opacity applied once", () => {
+  const frame = compositionFrame();
+  frame.schema = "vision.native-composition-frame/2";
+  frame.coverageSurfaces = [];
+  frame.owners.push({
+    ...frame.owners[0]!,
+    nodeId: 3,
+    parentNodeId: 0,
+    paintOrder: 3,
+    opacity: 0.5,
+    blendMode: "difference",
+  });
+  for (const item of [...frame.owners, ...frame.captures])
+    item.maskSurfaceIndex = null;
+  frame.captures[0]!.localOpacity = 1;
+  frame.surfaces[0]!.ownerNodeId = 3;
+  frame.surfaces[0]!.beforeNodeId = null;
+  frame.surfaces[0]!.afterNodeId = null;
+  const result = project(frame);
+  expect(result.groups[0]!.children.map((child) => child.kind)).toEqual([
+    "capture",
+    "group",
+  ]);
+  const owner = result.groups.find((group) => group.id === "vision.owner.3")!;
+  expect(owner).toMatchObject({
+    parentId: "prism.native-composition.root.v1",
+    blendMode: "difference",
+    opacity: 0.5,
+  });
+  expect(owner.children).toEqual([{ kind: "solarBand", band: 0 }]);
 });
