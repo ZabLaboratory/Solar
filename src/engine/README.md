@@ -38,7 +38,12 @@ it does not add a native Rust audio-device backend to Vision.
 
 `animations.ts` owns catalogue validation, easing and the local playback clock.
 Translation, rotation, opacity and blur patch private bindings in the active Vision
-scene. Translation adds the sampled offset to the current authored/bound position;
+scene. After the submission completes, the runtime publishes that same handle's
+accepted native receipt against the unchanged authoritative source hash. Scene,
+document, source-hash and disconnect fences exclude queued or in-flight frames
+from a retired admission; cancel publishes the geometry restored by the frame.
+`native-lsdp-runtime-composition.test.ts` covers consecutive animation frames,
+cancel and disconnect during submission. Translation adds the sampled offset to the current authored/bound position;
 source positions and the published LSML are preserved. Existing editable geometry
 is projected before these animation bindings so its source authority remains aliased.
 Scale retains the document-variant path and does not share the retained-position
@@ -66,7 +71,34 @@ application recover through a fresh resource snapshot. The camera pool spans
 document rebuilds. See `docs/development/native-lsdp.md` for local operation.
 If preparation advances the resource between read and subscribe, BASE_MISMATCH
 causes a fresh read/render/hash check, bounded to four attempts on that connection.
-Other failures and repeated conflicts remain visible and reconnect normally.
+Transport failures and repeated conflicts remain visible and reconnect normally.
+`native-lsdp-subscription.ts` owns this bounded handshake. `native-transition.ts`
+validates the Orion phase and explicit logical lane, while the runtime keeps
+prepared/committed/compensating scene ownership.
+
+`native-render-supervision.ts` recognizes the presenter's deterministic
+`Vision render: unsupported GPU effect:` refusal. It records the verified resource
+as received, reports `VISION_EFFECT_UNSUPPORTED` with `recoverable: false` and
+status `blocked`, and emits `solar:lsdp-blocked` with resource, optional selector,
+stateHash, code and message. It keeps the healthy subscription and accepted front;
+that document has no applied frame ACK or native composition publication. The
+same rejected hash cannot trigger another admission. A changed hash retries full
+admission against the accepted front, never a partial patch against the rejected
+source. Successful admission restores `live` and emits `solar:lsdp-unblocked`
+with resource, optional selector and stateHash. Transport/cancellation/validation
+failures retain their own recovery paths; this is no generic suppression of errors.
+
+`native-presentation.ts` owns the separate last-presented document/hash/handle.
+Animation submissions capture that state only when their serialized visual turn
+starts, even if newer scalar state was already received. Equal semantic JSON
+assignments produce no Vision patch or duplicate publication, but every queued
+receipt still waits behind its covering frame. A changed resource hash still
+rebinds native publication when selected values are unchanged. Checks before and
+after asynchronous submission exclude cancellation. Repeated identical animation
+patches are suppressed without stopping the shared playback/audio clock; source
+or handle changes invalidate their cache and cancel restores authored values.
+`native-lsdp-runtime-admission.test.ts` and `native-presentation.test.ts` cover
+these races, receipts, deterministic refusals, recovery and counters.
 The separate composition publisher also handles its own terminal socket close:
 it is discarded without a remote clear, then the runtime's shared reconnect
 backoff refreshes its token and republishes only the latest accepted plan or
@@ -194,50 +226,48 @@ retires both frames; ordinary clears outside that transition remain authoritativ
 Native runtime tests cover the null seed, cleanup without remount or refetch,
 and an actual clear after finalization.
 
-`vision-presenter.ts` owns one Vision engine, GPU canvas and presentation surface
-per native host target. Fresh scene packages use Vision's serialized `load`
-request on that same device and surface. The outgoing scene's images, graph,
-geometry and composition caches are released.
-The native connection starts that empty engine and admits installation fonts
-before reading its first resource snapshot. Both physical hosts therefore warm
-independently of scene selection. Empty prewarm creates no LSML package, scene
-identity, media subscription or visible presentation; the first real load shares
-its lifetime and queue. Host disconnection aborts prewarm and queued admission.
-The `engine-ready` receipt is the reuse boundary: if `init-empty` fails before
-that receipt, Solar retires the incomplete presenter and hidden layer; a later
-prewarm creates a fresh presenter in the current host lifetime. A missing
-`engine-ready` receipt has a 30-second deadline; prewarm then rejects and
-reports the failure through the host error callback. If only installation-font
-admission fails, the acknowledged engine stays available for a retry of the
-incomplete font bank. Neither path retains a scene or starts a parallel engine.
-The engine-owned font registry survives scene replacement: installation fonts
-are preloaded once at engine startup, and additional scene fonts are admitted
-by content digest only when new. Scene-local layout and glyph caches remain fresh.
-There is no inactive source or scene retention and A-B-A loads A freshly.
-Runtime packages exclude the separately admitted flat font files. WebCrypto
-identifies supplied font bytes; only acknowledged digests are reused in this
-engine session. New fonts still pass Rust decoding and registration limits.
-Package preparation and host font discovery run concurrently. A live-media clear
-acknowledges without drawing when Rust reports that its active texture was already
-transparent; clearing actual live pixels still submits a frame.
-`native-scene-frames.ts` owns verified source acquisition and temporary packages.
-Scene handles close their observers and pending work on retirement without
-terminating the host engine. Stale handles cannot submit into a newer scene.
-Clearing the active scene keeps the engine ready; host disconnect terminates it.
-Each persistent mount captures the current host lifetime before it enters the
-serialized scene-load queue. Terminal disconnect aborts that lifetime immediately,
-including queued mounts and pending presenter/font/frame work; each settled wait
-removes its abort listener. A later explicit mount starts a fresh lifetime, while
-late work and callbacks from the retired lifetime cannot attach to or retire it.
-Disposing a scene handle or switching scenes remains nonterminal and retains the
-single host presenter.
-If a replacement `load` fails, Solar reports the Vision error, clears the failed
-engine scene, and leaves the layer's existing opacity unchanged. The retained
-front canvas is not cleared by that engine request, so an active scene keeps its
-last submitted frame visible; a first load or empty prewarm remains hidden because
-its layer starts hidden. The rejected transaction still has no applied-presentation
-receipt. A later valid snapshot reloads the same engine and the next valid mutation
-can resume normal presentation.
+`vision-session.ts` owns target-scoped persistent engine pools and terminal host
+lifetime fences. `vision-presenter.ts` owns each engine's requests, scene handle,
+GPU canvas and retained front. A live handle keeps exclusive ownership of its
+engine until disposal. Preparation loads a candidate in a separate hidden layer;
+it cannot replace the accepted pixels, receipt, patches or media ownership before
+activation. Commit reveals that layer, while the previous handle can be kept for
+compensation. Abort reactivates the previous handle and disposes the candidate;
+subsequent edits still use the previous engine and its accepted graph.
+
+The native connection prewarms one empty engine and admits installation fonts
+before reading its first resource snapshot. Empty prewarm retains no scene identity
+or media subscription, and the first real load reuses that engine. The first
+replacement initializes another engine and admits its fonts; later replacements
+reuse the retired idle engine. The runtime owns at most current + candidate during
+coordinated transitions, so ordinary replacement alternates two persistent engines.
+This adds a second engine's GPU/font allocation and first-replacement initialization
+cost; native timing and memory remain separate qualifications.
+
+Only engines whose handles have been disposed can accept another scene. Disposal
+closes observers and queued work, clears the graph and media, hides the layer, and
+retains acknowledged fonts for reuse. No inactive source is cached for later scene
+selection: A-B-A still loads A freshly. Compensation is the explicit exception: the
+previous live handle and its graph survive only until the transition is resolved.
+A retired handle cannot submit to a newer scene. Host disconnect aborts all queued
+admissions, rejects their waits, and terminates every engine in the pool, including
+when one termination throws. Reopening creates a fresh host lifetime; late messages
+from the retired lifetime cannot attach to it.
+
+The `engine-ready` receipt is the reuse boundary. Initialization failure retires
+the incomplete engine; its missing receipt has a 30-second deadline. Font admission
+failure leaves an initialized idle engine available to retry only its incomplete
+font bank. A rejected candidate load clears only its hidden engine and preserves
+the accepted handle's visible front and editability. The rejected transaction has
+no applied-presentation receipt. A later preparation can reuse that idle engine.
+
+Font digests are admitted once per engine. Runtime packages omit separately admitted
+flat fonts; new bytes still pass Rust decoding and registration limits. Package
+preparation and host font discovery remain concurrent. `native-scene-frames.ts`
+owns verified source acquisition and temporary packages; it projects each candidate's
+matching receipt after its queue flushes. A media clear acknowledges without drawing
+when Rust reports that its texture was already transparent, while clearing actual
+live pixels still submits a frame.
 Explicit WebGL context-loss recovery remains distinct from a scene switch.
 Solar's host path uses Vision's desynchronized WebGL2 main-thread presenter; it
 does not automatically switch to Vision's standalone WebGPU worker or its
@@ -361,7 +391,11 @@ Frame callbacks schedule one coalesced upload microtask instead of waiting for a
 second animation-frame boundary after a render completes. One upload remains in
 flight; dirty state retains only the latest pending video content. Pause and
 disposal invalidate the queued token, so an old callback cannot consume a resumed
-pump. The fallback video watcher still uses animation frames when the browser
+pump. Resume on the last successfully uploaded handle preserves clean textures;
+real video readiness/dirtiness still schedules an upload. A different handle or
+explicit `refresh()` invalidates textures and submits current ready frames.
+`live-media.test.ts` checks repeated clean resumes, explicit refresh and handle
+replacement. The fallback video watcher still uses animation frames when the browser
 does not support video-frame callbacks.
 
 The active scene record keeps the ZabCanvas Blue manifest pinned to the source
@@ -394,11 +428,11 @@ arrays are copied and hashed. An already acknowledged digest causes no transfer
 copy or WASM admission. Host manifest acquisition still occurs on each scene load
 so changes to the registry remain observable.
 
-During a persistent structural/effect load, the current front surface stays
-visible and attached. Only a newly created session starts hidden. The replacement
-is presented after its submitted frame; reusing the engine must not reapply the
-initial opacity-zero staging rule to the active layer. This also avoids detaching
-and reattaching its GPU/front canvases during ordinary document replacement.
+During structural/effect preparation, the accepted front remains attached and
+visible. The candidate always starts hidden, including when its idle engine is
+reused. Activation is the sole visibility boundary; disposing the candidate cannot
+hide or disconnect the accepted handle. `vision-session.test.ts` covers prepared
+and committed abort, post-abort patches, rejected loads, engine reuse and teardown.
 
 The pinned Vision engine accepts live text style leaves and stroke.width/stroke.color. Glyph outlines are tessellated by Rust in positioned scene pixels; Solar transports these as ordinary LSDP mutations.
 

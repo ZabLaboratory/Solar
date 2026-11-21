@@ -12,6 +12,11 @@ const required = [
 
 const manifest = JSON.parse(readFileSync(resolve(root, "public/vision/vision-assets.json"), "utf8"));
 if (manifest.schema !== "solar.vision-assets.v1") throw new Error("Invalid Vision asset pin manifest.");
+if (!/^[a-f0-9]{40}$/.test(manifest.source_revision) ||
+    manifest.source_provenance?.engine_commit !== manifest.source_revision ||
+    !/^[a-f0-9]{40}$/.test(manifest.source_provenance?.engine_tree ?? "")) {
+  throw new Error("Vision source pin must name the committed engine and its tree.");
+}
 for (const [path, minimumBytes] of required) {
   const absolute = resolve(root, path);
   const size = statSync(absolute).size;

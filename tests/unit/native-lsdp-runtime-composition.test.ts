@@ -1,263 +1,15 @@
-import type { Operation } from "fast-json-patch";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { strToU8, zipSync } from "fflate";
-import { nativeTreeHash } from "../../src/internal/native-tree";
-import { NativeLsdpRuntime } from "../../src/engine/native-lsdp-runtime";
-import { NativeLsdpReconnect } from "../../src/engine/native-lsdp-reconnect";
 import type { MountOptions } from "../../src/types";
-import type { SceneSourceDelivery } from "../../src/scenes/types";
-import { nativeManifest } from "../helpers/native-source";
-import { compositionFrame } from "../helpers/vision-composition-frame";
-
-const mocks = vi.hoisted(() => ({
-  compositionPublisherOptions: null as unknown,
-  compositionPublishers: [] as Array<{
-    options: Record<string, unknown>;
-    onDisconnected: (error: unknown) => void;
-  }>,
-  composition: {
-    publish: vi.fn(async (..._args: unknown[]) => "completed"),
-    clear: vi.fn(async () => "completed"),
-    retire: vi.fn(async () => {}),
-  },
-  peers: [] as Array<{ options: Record<string, unknown> }>,
-  mount: vi.fn(),
-  prewarm: vi.fn(async () => {}),
-  disconnectSession: vi.fn(),
-  activate: vi.fn(),
-  feedback: vi.fn(
-    async (
-      _url: string,
-      _lane: string,
-      _value: unknown,
-      _signal: AbortSignal,
-    ) => {},
-  ),
-  media: {
-    update: vi.fn(),
-    refresh: vi.fn(),
-    pause: vi.fn(async () => {}),
-    resume: vi.fn(),
-    dispose: vi.fn(),
-  },
-  stream: { onReservedLeaves: vi.fn(), dispose: vi.fn() },
-}));
-
-vi.mock("../../vendor/lsdp-native-browser/src/browser.js", () => ({
-  BrowserLSDP: class {
-    ready = Promise.resolve();
-    close = vi.fn();
-    transaction = vi.fn(async () => ({}));
-    constructor(
-      _url: string,
-      readonly options: Record<string, unknown>,
-    ) {
-      mocks.peers.push(this);
-    }
-  },
-}));
-vi.mock("../../src/engine/control-feedback", () => ({
-  presentationFeedback: mocks.feedback,
-}));
-vi.mock("../../src/engine/vision-presenter", () => ({
-  mountVisionScene: mocks.mount,
-  prewarmVisionSession: mocks.prewarm,
-  disconnectVisionSession: mocks.disconnectSession,
-  activateVisionScene: mocks.activate,
-  visionMaxTextureSize: vi.fn(() => 8192),
-}));
-vi.mock("../../src/engine/native-composition-publisher", () => ({
-  NativeCompositionPublisher: class {
-    constructor(
-      options: unknown,
-      _onError: (error: unknown) => void,
-      _createPeer: unknown,
-      onDisconnected: (error: unknown) => void,
-    ) {
-      mocks.compositionPublisherOptions = options;
-      mocks.compositionPublishers.push({
-        options: options as Record<string, unknown>,
-        onDisconnected,
-      });
-    }
-    publish(...args: unknown[]) {
-      return mocks.composition.publish(...args);
-    }
-    clear() {
-      return mocks.composition.clear();
-    }
-    discard() {}
-    retire() {
-      return mocks.composition.retire();
-    }
-  },
-}));
-vi.mock("../../src/engine/live-media", () => ({
-  CaptureStreamPool: class {},
-  LiveMediaController: class {
-    update = mocks.media.update;
-    refresh = mocks.media.refresh;
-    pause = mocks.media.pause;
-    resume = mocks.media.resume;
-    dispose = mocks.media.dispose;
-  },
-}));
-vi.mock("../../src/sources/peers", () => ({
-  createPeerSources: () => mocks.stream,
-}));
-vi.mock("../../src/sources/capture", () => ({
-  createCaptureResolver: () => () => null,
-}));
-
-const version = `sha256:${"1".repeat(64)}`;
-const document = {
-  lsml: "1.1",
-  scene_id: "real-source",
-  scene_version: version,
-  layout: { type: "frame", children: [] },
-  defaults: { "__lit.text.title": "before" },
-};
-const origin: SceneSourceDelivery = {
-  sceneId: document.scene_id,
-  sceneVersion: version,
-  sourceDigest: version,
-  revision: 1,
-  data: zipSync({ "scene.lsml": strToU8(JSON.stringify(document)) }),
-  format: "lsmlz",
-  assets: new Map(),
-  blueManifest: nativeManifest(document.scene_id, version),
-};
-
-async function setup(
-  initial: unknown,
-  token: MountOptions["token"] = "",
-  selector?: string,
-  varyProjection = false,
-) {
-  const scenes: Array<ReturnType<typeof makeScene>> = [];
-  function makeScene(frame: ReturnType<typeof compositionFrame>) {
-    return {
-      sceneId: frame.sceneId,
-      sceneVersion: frame.sceneVersion,
-      get compositionFrame() {
-        return frame;
-      },
-      applyPatch: vi.fn(async () => {
-        frame = {
-          ...frame,
-          pixelRevision: (BigInt(frame.pixelRevision) + 1n).toString(),
-        };
-      }),
-      clearMedia: vi.fn(async () => {}),
-      canApplyPatch: vi.fn(() => true),
-      dispose: vi.fn(),
-      mediaSources: [],
-      activate: vi.fn(),
-      deactivate: vi.fn(),
-      feedback: vi.fn(async () => {}),
-      flush: vi.fn(async () => {}),
-    };
-  }
-  mocks.mount.mockImplementation(async (...args: unknown[]) => {
-    const source = args[1] as SceneSourceDelivery;
-    const renderPackage = args[5] as { sceneVersion: string };
-    const frame = compositionFrame();
-    frame.sceneId = source.sceneId;
-    frame.sceneVersion = renderPackage.sceneVersion;
-    frame.sceneSize = [640, 480];
-    frame.sceneScale = [1, 1];
-    frame.atlasSize = [640, 480];
-    frame.canvasSize = [640, 480];
-    frame.owners[0]!.localSize = [640, 480];
-    frame.owners[0]!.localToWorld = [1, 0, 0, 1, 0, 0];
-    if (varyProjection && scenes.length > 0) frame.owners[0]!.opacity = 0.5;
-    frame.captures[0]!.localToWorld = [1, 0, 0, 1, 20, 30];
-    frame.surfaces[0]!.sceneRect = [0, 0, 640, 480];
-    frame.surfaces[0]!.atlasRect = [0, 0, 640, 480];
-    const scene = makeScene(frame);
-    scenes.push(scene);
-    return scene;
-  });
-  const resource = "solar/lane-a";
-  const options: MountOptions = {
-    target: documentElement(),
-    nativeLSDP: {
-      url: "ws://127.0.0.1:4520/lsdp",
-      resource,
-      selector,
-    },
-    nativeComposition: { width: 640, height: 480 },
-    nativeCompositionLSDP: {
-      url: "ws://127.0.0.1:4520/lsdp",
-      resource: "solar/composition",
-      graph: "A",
-      producer_id: "solar-host-a-incarnation-1",
-    },
-    token,
-    mode: "test",
-    sceneSourceProvider: { get: vi.fn(async () => origin) },
-    onStatus: vi.fn(),
-    onError: vi.fn(),
-  };
-  const runtime = new NativeLsdpRuntime(options);
-  runtime.start();
-  await turn();
-  const peer = mocks.peers.at(-1)!;
-  const receiveRaw = peer.options.onTransaction as (
-    value: unknown,
-    context: unknown,
-  ) => Promise<unknown>;
-  const flush = () =>
-    (
-      runtime as unknown as { patches: { flush: () => Promise<void> } | null }
-    ).patches?.flush();
-  const receive = async (value: unknown, context: unknown) => {
-    const receipt = await receiveRaw(value, context);
-    await flush();
-    return receipt;
-  };
-  const context = (profile: string) => ({
-    metadata: { target: resource, profile },
-    signal: new AbortController().signal,
-  });
-  await receive(structuredClone(initial), context("lsdp.state.read/1"));
-  await turn();
-  return { runtime, scene: scenes[0]!, scenes, receive, context, options };
-}
-
-function documentElement(): HTMLElement {
-  return globalThis.document.createElement("div");
-}
-
-function change() {
-  const id = "a".repeat(32);
-  return {
-    kind: "applied_change",
-    sequence: 1,
-    mutation: {
-      format: "lsdp.apply/1",
-      id,
-      target: "solar/lane-a",
-      beforeHash: "",
-      operations: [
-        {
-          op: "replace",
-          path: "/defaults/__lit.text.title",
-          value: "edited",
-        },
-      ] as Operation[],
-    },
-    receipt: {
-      transactionId: id,
-      target: "solar/lane-a",
-      level: "applied",
-    },
-  };
-}
-
-function turn(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 10));
-}
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { nativeTreeHash } from "../../src/internal/native-tree";
+import { NativeLsdpReconnect } from "../../src/engine/native-lsdp-reconnect";
+import type { AnimationFrame } from "../../src/engine/animations";
+import {
+  NativeLsdpRuntime,
+  mocks,
+  setup,
+  document,
+  change,
+} from "../helpers/native-runtime-composition";
 
 describe("native Solar composition attachment", () => {
   beforeEach(() => {
@@ -538,6 +290,108 @@ describe("native Solar composition attachment", () => {
       "__lit.text.title": "edited",
     });
     ready.runtime.disconnect();
+  });
+
+  function animatedDocument() {
+    return {
+      ...structuredClone(document),
+      layout: {
+        kind: "x-zab.capture",
+        id: "camera",
+        position: { x: 30, y: 20 },
+        size: { w: 100, h: 50 },
+      },
+      animations: {
+        move: {
+          target: "camera",
+          keyframes: {
+            duration_ms: 100,
+            easing: "linear",
+            steps: [
+              { at: 0, translateX: 0 },
+              { at: 1, translateX: 40 },
+            ],
+          },
+        },
+      },
+    };
+  }
+  function animationCallback(runtime: NativeLsdpRuntime) {
+    return (
+      runtime as unknown as {
+        animations: {
+          apply: (frames: readonly AnimationFrame[]) => Promise<void>;
+        };
+      }
+    ).animations;
+  }
+
+  it("publishes each submitted animation receipt and restores native geometry on cancel", async () => {
+    const initial = animatedDocument();
+    const ready = await setup(initial);
+    try {
+      const animations = animationCallback(ready.runtime);
+      for (const [offset, expectedX] of [
+        [40, 70],
+        [5, 35],
+      ] as const) {
+        await animations.apply([
+          { target: "camera", values: { translateX: offset } },
+        ]);
+        const publication = mocks.composition.publish.mock.calls.at(-1)!;
+        expect(publication[2]).toBe(nativeTreeHash(initial));
+        expect(publication[0]).toMatchObject({
+          groups: [
+            {
+              children: [
+                { kind: "solarBand" },
+                { kind: "capture", affine: { tx: expectedX, ty: 30 } },
+              ],
+            },
+          ],
+        });
+      }
+      await animations.apply([]);
+      expect(mocks.composition.publish).toHaveBeenCalledTimes(4);
+      expect(mocks.composition.publish.mock.calls.at(-1)?.[0]).toMatchObject({
+        groups: [
+          {
+            children: [
+              { kind: "solarBand" },
+              { kind: "capture", affine: { tx: 30, ty: 30 } },
+            ],
+          },
+        ],
+      });
+      expect(mocks.mount).toHaveBeenCalledOnce();
+    } finally {
+      ready.runtime.disconnect();
+    }
+  });
+
+  it("does not publish an animation whose scene disconnects during submission", async () => {
+    const ready = await setup(animatedDocument());
+    let release!: () => void;
+    let entered!: () => void;
+    const pending = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const submitting = new Promise<void>((resolve) => {
+      entered = resolve;
+    });
+    ready.scene.applyPatch.mockImplementationOnce(async () => {
+      entered();
+      await pending;
+    });
+    const publications = mocks.composition.publish.mock.calls.length;
+    const animation = animationCallback(ready.runtime).apply([
+      { target: "camera", values: { translateX: 40 } },
+    ]);
+    await submitting;
+    ready.runtime.disconnect();
+    release();
+    await animation;
+    expect(mocks.composition.publish).toHaveBeenCalledTimes(publications);
   });
 
   it("reconnects only the composition peer with a fresh token and the latest accepted state", async () => {
