@@ -2,8 +2,8 @@
   "schema": "solar.vision-assets.v1",
   "upstream": "Lumencast/lumencast-vision",
   "base_revision": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-  "source_revision": "9a5774f46c7ab72d25f542019b5c52e453cb52ee",
-  "source_state": "Vision measures intrinsic image dimensions, preserves ordered capture-adjacent paint islands, serializes camera staging with scene admission, and selects an RGBA8 UNORM browser surface for contribution presentation when available. Solar pins the presenter and generated WASM from the Vision source commit; physical cockpit opening is qualified separately in Prism. Local uncommitted paint-owner correction is recorded separately in local_patch_provenance; source_revision remains its committed base.",
+  "source_revision": "776b8ff7c1c64e8083c1ba8b13b227594cc25012",
+  "source_state": "Pinned Vision sources include capture-adjacent paint ownership, nested paint-only isolation and retained composition. The generated assets are identified by the four file digests.",
   "files": {
     "ui/mainpresenter.mjs": {
       "sha256": "8d22a413bd596c4ead6a7378e7c972264f5358b9fef467efdfaff90e4987cf41",
@@ -24,35 +24,25 @@
   },
   "source_provenance": {
     "repository": "Lumencast/lumencast-vision",
-    "engine_branch": "main",
+    "engine_branch": "eleven/local-20261019-complete-dev",
     "engine_base": "6df746efb087e032d4ca3466cbedfc972e4a2bbf",
-    "engine_commit": "9a5774f46c7ab72d25f542019b5c52e453cb52ee",
-    "engine_tree": "ff058af9d40e6cc4a530536f79307e6f92dfbee4",
-    "build_command": "scripts/vision/build-web.ps1 (cargo release locked; wasm-bindgen 0.2.129)",
+    "engine_commit": "776b8ff7c1c64e8083c1ba8b13b227594cc25012",
+    "engine_tree": "7a795c2333c340f54f4fe61b726805ac51b0b75b",
+    "build_command": "cargo build --locked -p lumencast-vision-web --target wasm32-unknown-unknown --release; wasm-bindgen 0.2.129 --target web",
     "source_files": {
       "crates/vision-web/src/lib.rs": "30f531738da20acb0dad00884d148c47ff49820c",
       "crates/vision-web/ui/mainpresenter.mjs": "1a72d2fd949d1be41b1c06b91a0c197d29ad18b9",
-      "crates/vision-gpu/src/renderer/contribution.rs": "9d97bc50ccf29cc7f587a5bd63e6996272468d64",
+      "crates/vision-gpu/src/renderer/contribution.rs": "54f2b0583feb0e8d44fc03e6b69aa4bcae358663",
       "crates/vision-gpu/src/renderer/contribution/encode.rs": "33ec6b786e78416748d82993025f0ce0fc551c76",
       "crates/vision-gpu/src/renderer/contribution/draw.rs": "0d5eb955022279e4db9d62a5c9d6dabda9aae1e6",
-      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "eaa052279e881b9301b804093de13e51c7c04001"
+      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "c1cedb7bfb89f0a3511b3d4077beb56c3fc35965",
+      "crates/vision-gpu/src/renderer/contribution/owners.rs": "531b77aa92ee61614dd676bad41ca6f076287bda"
     },
     "source_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T111626Z-agent-report.md",
     "capture_free_evidence": "evidence/local-20261018-empty-capture-contribution/eleven/20261018T103049Z-render-report.json",
     "intrinsic_measure_evidence": "evidence/local-20261018-image-intrinsic-measure/eleven/20261018T100318Z-agent-report.md",
     "validation": "40 alternating loads of exact cached scenes in WebGL2 without GPU error; browser contribution proof including capture-free scene and pixel assertions; Vision web build and cargo fmt; Solar build and pin check",
-    "full_vision_lib_test": "not completed: interrupted during 512-PNG dynamic image lifetime test"
-  },
-  "local_patch_provenance": {
-    "base_revision": "9a5774f46c7ab72d25f542019b5c52e453cb52ee",
-    "branch": "eleven/local-20261019-complete-dev",
-    "state": "uncommitted local patch: direct paint blend after native capture uses effective native owner; nested paint-only isolation remains refused",
-    "source_files_sha256": {
-      "crates/vision-gpu/src/renderer/contribution.rs": "9cef4079fc8ca98e85723a4d70c82afeeffd72b64f99d38743af78b4f2f14fe3",
-      "crates/vision-gpu/src/renderer/contribution/owners.rs": "e4e3eec67b3a8a8f2fa0605234e70d3829e1d0fc29fb7376d24686c9837dc4ae",
-      "crates/vision-gpu/src/renderer/tests/contribution/pixels.rs": "414045d280c3d8b2b00607c6cc8fceb95aebf1331edb5fc31c22122c74f8aa2c"
-    },
-    "validation": "29 contribution GPU tests passed on RTX 3070 Vulkan including unattenuated atlas and canonical Difference pixels",
-    "build": "cargo build --locked -p lumencast-vision-web --target wasm32-unknown-unknown --release; wasm-bindgen 0.2.129 --target web"
+    "full_vision_lib_test": "not completed: interrupted during 512-PNG dynamic image lifetime test",
+    "paint_owner_base": "9a5774f46c7ab72d25f542019b5c52e453cb52ee"
   }
 }
